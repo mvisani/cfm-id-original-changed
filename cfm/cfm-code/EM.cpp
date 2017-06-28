@@ -3,7 +3,7 @@
 #
 # EM.cpp
 #
-# Description: 	Class to apply Expectation Maximization algorithm to derive
+# Description: 	Class to apply Expectation Maximization algorithm to derive 
 #				model parameters.
 #					E-step: IPFP or equivalent.
 #					M-step: Gradient Ascent
@@ -35,7 +35,7 @@
 #include "time.h"
 
 EM::EM(config_t *a_cfg, FeatureCalculator *an_fc, std::string &a_status_filename, std::string initial_params_filename){
-	cfg = a_cfg;
+	cfg = a_cfg; 
 	fc = an_fc;
 	status_filename = a_status_filename;
 	initComms();
@@ -49,7 +49,7 @@ EM::EM(config_t *a_cfg, FeatureCalculator *an_fc, std::string &a_status_filename
 		param = boost::shared_ptr<Param>( new Param( initial_params_filename ) );
 		while( param->getNumEnergyLevels() < num_energies_to_include )
 			param->appendRepeatedPrevEnergyParams();
-		initial_params_provided = true;
+		initial_params_provided = true; 
 		std::string msg = "EM: Initial params provided from " + initial_params_filename;
 		comm->printToMasterOnly( msg.c_str() );
 	}
@@ -81,7 +81,7 @@ void EM::writeParamsToFile( std::string &filename ){
 	param->saveToFile( filename );
 }
 
-void EM::initParams(){
+void EM::initParams(){	
 	if( cfg->em_init_type == PARAM_FULL_ZERO_INIT ) param->fullZeroInit();
 	else if(cfg->em_init_type == PARAM_ZERO_INIT ) param->zeroInit();
 	else param->randomInit();
@@ -130,9 +130,9 @@ double EM::run( std::vector<MolData> &data, int group, std::string &out_param_fi
 		//Do the inference part (E-step)
 		itdata = data.begin();
 		for( int molidx = 0; itdata != data.end(); ++itdata, molidx++ ){
-
+		
 			if( !itdata->hasComputedGraph() ) continue;	//If we couldn't compute it's graph for some reason..
-			if( itdata->hasEmptySpectrum() ){
+			if( itdata->hasEmptySpectrum() ){ 
 				std::cout << "Warning: No peaks with explanatory fragment found for " << itdata->getId() << ", ignoring this input molecule." << std::endl;
 				continue; //Ignore any molecule with poor (no peaks matched a fragment) or missing spectra.
 			}
@@ -144,7 +144,7 @@ double EM::run( std::vector<MolData> &data, int group, std::string &out_param_fi
 			//Compute the transition probabilities
 			computeThetas(moldata);
 			moldata->computeTransitionProbabilities();
-
+			
 			//Apply the peak evidencee, compute the beliefs and record the sufficient statistics
 			if( cfg->use_single_energy_cfm ){
 				beliefs_t beliefs;
@@ -153,7 +153,7 @@ double EM::run( std::vector<MolData> &data, int group, std::string &out_param_fi
 				recordSufficientStatistics( suft, molidx, moldata, &beliefs);
 			}
 			else{
-				IPFP ipfp( moldata, cfg);
+				IPFP ipfp( moldata, cfg); 
 				beliefs_t *beliefs = ipfp.calculateBeliefs();
 				int status = ipfp.status;
 				if( status == NON_CONVERGE || status == OSC_CONVERGE ) num_nonconverged++;
@@ -181,9 +181,9 @@ double EM::run( std::vector<MolData> &data, int group, std::string &out_param_fi
 		MPI_Barrier(MPI_COMM_WORLD);   	//All threads wait for master
 		//Find a new set of parameters to maximize the expected log likelihood (M-step)
 		before = time( NULL );
-		if( cfg->use_lbfgs_for_ga )
+		if( cfg->use_lbfgs_for_ga ) 
 			Q = updateParametersLBFGS(data, suft);
-		else
+		else 
 			Q = updateParametersSimpleGradientDescent(data, suft);
 		after = time( NULL );
 		std::string param_update_time_msg = "Completed M-step param update: Time Elapsed = " + boost::lexical_cast<std::string>(after - before) + " seconds";
@@ -191,7 +191,7 @@ double EM::run( std::vector<MolData> &data, int group, std::string &out_param_fi
 		comm->printToMasterOnly(param_update_time_msg.c_str());
 
 		//Write the params
-		if( comm->isMaster() ){
+		if( comm->isMaster() ){ 
 			writeParamsToFile( iter_out_param_filename );
 			writeParamsToFile( out_param_filename );
 		}
@@ -204,14 +204,14 @@ double EM::run( std::vector<MolData> &data, int group, std::string &out_param_fi
 		if( cfg->ga_minibatch_nth_size > 1 ) Q = 0.0;
 		double valQ = 0.0; int molidx = 0, numvalmols = 0, numnonvalmols = 0;
 		for( itdata = data.begin(); itdata != data.end(); ++itdata, molidx++ ){
-			if( itdata->getGroup() == validation_group ){
+			if( itdata->getGroup() == validation_group ){ 
 				//valQ += computeQ( molidx, *itdata, suft );
 				numvalmols++;
 			}
 			else if(cfg->ga_minibatch_nth_size > 1 ){
 				Q += computeQ( molidx, *itdata, suft );
 				numnonvalmols++;
-			}else
+			}else	
 				numnonvalmols++;
 		}
 
@@ -219,7 +219,7 @@ double EM::run( std::vector<MolData> &data, int group, std::string &out_param_fi
 		after = time( NULL );
 		std::string debug_time_msg2 = "Finished Q compute: Time Elapsed = " + boost::lexical_cast<std::string>(after - before) + " seconds";
 		if( comm->isMaster() ) writeStatus(debug_time_msg2.c_str());
-
+		
 		valQ = comm->collectQInMaster(valQ);
 		if( cfg->ga_minibatch_nth_size > 1 ){
 			Q = comm->collectQInMaster(Q);
@@ -228,7 +228,7 @@ double EM::run( std::vector<MolData> &data, int group, std::string &out_param_fi
 		numvalmols = comm->collectSumInMaster(numvalmols);
 		numnonvalmols = comm->collectSumInMaster(numnonvalmols);
 
-		//Check for convergence
+		//Check for convergence	
 		double Qratio = fabs((Q-prevQ)/Q);
 		if( comm->isMaster() ){
 			std::string qdif_str = boost::lexical_cast<std::string>(Qratio) + " " + boost::lexical_cast<std::string>(prevQ) + " ";
@@ -242,7 +242,7 @@ double EM::run( std::vector<MolData> &data, int group, std::string &out_param_fi
 		else count_no_progress = 0;
 
 		prevQ = Q;
-		if( Qratio < cfg->em_converge_thresh || count_no_progress >= 3 ){
+		if( Qratio < cfg->em_converge_thresh || count_no_progress >= 3 ){ 
 			comm->printToMasterOnly(("EM Converged after " + boost::lexical_cast<std::string>(iter) + " iterations").c_str());
 			break;
 		}
@@ -252,7 +252,7 @@ double EM::run( std::vector<MolData> &data, int group, std::string &out_param_fi
 	if( iter >= MAX_EM_ITERATIONS )
 		comm->printToMasterOnly(("Warning: EM did not converge after " + boost::lexical_cast<std::string>(iter) + " iterations.").c_str());
 
-	return Q;
+	return Q;		
 }
 
 void EM::initSuft(suft_counts_t &suft, std::vector<MolData> &data ){
@@ -279,7 +279,7 @@ void EM::recordSufficientStatistics( suft_counts_t &suft, int molidx, MolData *m
 
 	//Accumulate the Sufficient Statistics
 	for( unsigned int i = 0; i < num_transitions; i++ ){
-
+		
 		const Transition *t = fg->getTransitionAtIdx(i);
 
 		double belief = 0.0;
@@ -300,7 +300,7 @@ void EM::recordSufficientStatistics( suft_counts_t &suft, int molidx, MolData *m
 	//Accumulate the persistence terms
 	int offset = num_transitions;
 	for( unsigned int i = 0; i < num_fragments; i++ ){
-
+		
 		double belief = 0.0;
 		int energy = cfg->map_d_to_energy[0];
 		if( i == 0 )	//main ion is always id = 0
@@ -353,7 +353,7 @@ double EM::updateParametersLBFGS( std::vector<MolData> &data, suft_counts_t &suf
 		//Collect the used_idxs from all the processors into the MASTER
 		comm->setMasterUsedIdxs();
 
-		//Copy the used parameters into the LBFGS array
+		//Copy the used parameters into the LBFGS array 
 		if( comm->isMaster() ) zeroUnusedParams();
 	}
 
@@ -383,13 +383,13 @@ double EM::updateParametersLBFGS( std::vector<MolData> &data, suft_counts_t &suf
 	Q = -fx;
 	comm->broadcastParams( param.get() );
 	Q = comm->broadcastQ( Q );
-
+	
 	return( Q );
 
 }
 
 lbfgsfloatval_t *EM::convertCurrentParamsToLBFGS(int N){
-
+    
 	lbfgsfloatval_t *x;
 	if( sparse_params){
 		x = lbfgs_malloc(N);
@@ -403,7 +403,7 @@ lbfgsfloatval_t *EM::convertCurrentParamsToLBFGS(int N){
 		if( comm->isMaster() ){
 			std::set<unsigned int>::iterator it = ((MasterComms *)comm)->master_used_idxs.begin();
 			for( unsigned int i = 0; it != ((MasterComms *)comm)->master_used_idxs.end(); ++it )
-				x[i++] = param->getWeightAtIdx(*it);
+				x[i++] = param->getWeightAtIdx(*it);	
 		}
 	}
 	else x = &((*param->getWeightsPtr())[0]);	//If not sparse, just use the existing param array
@@ -411,12 +411,12 @@ lbfgsfloatval_t *EM::convertCurrentParamsToLBFGS(int N){
 }
 
 void EM::copyGradsToLBFGS(lbfgsfloatval_t *g, std::vector<double> &grads, int n){
-
+    
 	if( comm->isMaster() ){
 		if( sparse_params ){
 			std::set<unsigned int>::iterator it = ((MasterComms *)comm)->master_used_idxs.begin();
 			for( unsigned int i = 0; it != ((MasterComms *)comm)->master_used_idxs.end(); ++it )
-				g[i++] = -grads[*it];
+				g[i++] = -grads[*it];	
 		}
 		else{
 			for( int i = 0; i < n; i++ ) g[i] *= -1;
@@ -429,12 +429,12 @@ void EM::copyLBFGSToParams( const lbfgsfloatval_t *x ){
 	if( sparse_params && comm->isMaster() ){
 		std::set<unsigned int>::iterator it = ((MasterComms *)comm)->master_used_idxs.begin();
 		for( unsigned int i = 0; it != ((MasterComms *)comm)->master_used_idxs.end(); ++it )
-			param->setWeightAtIdx(x[i++], *it);
+			param->setWeightAtIdx(x[i++], *it);	
 	}
 }
 
 lbfgsfloatval_t EM::evaluateLBFGS( const lbfgsfloatval_t *x, lbfgsfloatval_t *g, const int n, const lbfgsfloatval_t step){
-
+	
 	//Retrieve params from LBFGS and sync between processors
 	copyLBFGSToParams(x);
 	comm->broadcastParams( param.get() );
@@ -442,11 +442,11 @@ lbfgsfloatval_t EM::evaluateLBFGS( const lbfgsfloatval_t *x, lbfgsfloatval_t *g,
 	//Set the location for the computed gradients (new array if sparse, else the provided g) and initialise
 	double *grad_ptr;
 	std::vector<double> grads;
-	if( sparse_params ){
+	if( sparse_params ){ 
 		grads.resize(param->getNumWeights(), 0.0);
 		grad_ptr = &grads[0];
 	}
-	else{
+	else{ 
 		grad_ptr = g;
 		std::set<unsigned int>::iterator sit = comm->used_idxs.begin();
 		for( ; sit != comm->used_idxs.end(); ++sit ) *(grad_ptr + *sit) = 0.0;
@@ -472,7 +472,7 @@ lbfgsfloatval_t EM::evaluateLBFGS( const lbfgsfloatval_t *x, lbfgsfloatval_t *g,
 
 void EM::progressLBFGS( const lbfgsfloatval_t *x, const lbfgsfloatval_t *g, const lbfgsfloatval_t fx, const lbfgsfloatval_t xnorm, const lbfgsfloatval_t gnorm, const lbfgsfloatval_t step, int n, int k, int ls){
 
-	if( comm->isMaster() ){
+	if( comm->isMaster() ){ 
 		writeStatus(("LBFGS Iteration " + boost::lexical_cast<std::string>(k) + ": fx = " + boost::lexical_cast<std::string>(fx)).c_str());
 		std::cout << "LBFGS Iteration " << k << ": fx = " << fx << std::endl;
 	}
@@ -486,7 +486,7 @@ void EM::progressLBFGS( const lbfgsfloatval_t *x, const lbfgsfloatval_t *g, cons
 }
 
 double EM::updateParametersSimpleGradientDescent( std::vector<MolData> &data, suft_counts_t &suft ){
-
+	
 	double Q = 0.0, prev_Q = 100000.0;
 
 	std::vector<double> grads(param->getNumWeights(), 0.0);
@@ -499,7 +499,7 @@ double EM::updateParametersSimpleGradientDescent( std::vector<MolData> &data, su
 			if( itdata->getGroup() != validation_group )
 				Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs);
 		}
-		if( comm->isMaster() ) Q += addRegularizers( &grads[0] );
+		if( comm->isMaster() ) Q += addRegularizers( &grads[0] );	
 		Q = comm->collectQInMaster(Q);
 		Q = comm->broadcastQ(Q);
 		comm->setMasterUsedIdxs();
@@ -530,7 +530,7 @@ double EM::updateParametersSimpleGradientDescent( std::vector<MolData> &data, su
 		for( ; git != grads.end(); ++git ) *git = 0.0;
 		Q = 0.0; itdata = data.begin();
 		for( int molidx = 0; itdata != data.end(); ++itdata, molidx++ ){
-			if( minibatch_flags[molidx] )
+			if( minibatch_flags[molidx] ) 
 				Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, false, comm->used_idxs);
 		}
 		if( comm->isMaster() ) Q += addRegularizers( &grads[0] );
@@ -562,7 +562,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 	const FragmentGraph *fg = moldata.getFragmentGraph();
 	unsigned int num_transitions = fg->getNumTransitions();
 	unsigned int num_fragments = fg->getNumFragments();
-
+	
 	int offset = num_transitions;
 
 	if( !moldata.hasComputedGraph() ) return Q;
@@ -570,7 +570,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 	//Compute the latest transition thetas
 	moldata.computeTransitionThetas( *param );
 	suft_t *suft_values = &(suft.values[molidx]);
-
+	
 	//Collect energies to compute
 	std::vector<unsigned int> energies;
 	unsigned int energy;
@@ -599,11 +599,11 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 			for( ; itt != it->end(); ++itt )
 				denom += exp( moldata.getThetaForIdx(energy, *itt) );
 
-			//Complete the innermost sum terms	(sum over j')
+			//Complete the innermost sum terms	(sum over j')	
 			std::map<unsigned int, double> sum_terms;
 			for( itt = it->begin(); itt != it->end(); ++itt ){
 				const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
-				std::vector<feature_t>::const_iterator fvit = fv->getFeatureBegin();
+				std::vector<feature_t>::const_iterator fvit = fv->getFeatureBegin();				
 				for( ; fvit != fv->getFeatureEnd(); ++fvit ){
 					double val = exp( moldata.getThetaForIdx(energy, *itt))/denom;
 					if( sum_terms.find(*fvit) != sum_terms.end() )
@@ -619,7 +619,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 				double nu = (*suft_values)[*itt + suft_offset];
 				nu_sum += nu;
 				const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
-				std::vector<feature_t>::const_iterator fvit = fv->getFeatureBegin();
+				std::vector<feature_t>::const_iterator fvit = fv->getFeatureBegin();				
 				for( ; fvit != fv->getFeatureEnd(); ++fvit ){
 					*( grads + *fvit + grad_offset ) += nu;
 					if( record_used_idxs) used_idxs.insert(*fvit + grad_offset);
@@ -627,11 +627,11 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 				Q += nu*(moldata.getThetaForIdx(energy, *itt) - log(denom));
 			}
 
-			//Accumulate the last term of each transition and the
+			//Accumulate the last term of each transition and the 
 			//persistence (i = j) terms of the gradient and Q
 			std::map<unsigned int, double>::iterator sit = sum_terms.begin();
 			double nu = (*suft_values)[offset + from_idx + suft_offset];	//persistence (i=j)
-			for( ; sit != sum_terms.end(); ++sit ){
+			for( ; sit != sum_terms.end(); ++sit ){ 
 				*( grads + sit->first + grad_offset) -= (nu_sum + nu)*sit->second;
 				if( record_used_idxs) used_idxs.insert(sit->first + grad_offset);
 			}
@@ -648,7 +648,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft){
 	const FragmentGraph *fg = moldata.getFragmentGraph();
 	unsigned int num_transitions = fg->getNumTransitions();
 	unsigned int num_fragments = fg->getNumFragments();
-
+	
 	int offset = num_transitions;
 
 	if( !moldata.hasComputedGraph() ) return Q;
@@ -656,7 +656,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft){
 	//Compute the latest transition thetas
 	moldata.computeTransitionThetas( *param );
 	suft_t *suft_values = &(suft.values[molidx]);
-
+	
 	//Collect energies to compute
 	std::vector<unsigned int> energies;
 	unsigned int energy;
@@ -690,7 +690,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft){
 				Q += nu*(moldata.getThetaForIdx(energy, *itt) - log(denom));
 			}
 
-			//Accumulate the last term of each transition and the
+			//Accumulate the last term of each transition and the 
 			//persistence (i = j) terms of the gradient and Q
 			double nu = (*suft_values)[offset + from_idx + suft_offset];	//persistence (i=j)
 			Q -= nu*log(denom);
@@ -706,17 +706,17 @@ double EM::addRegularizers( double *grads ){
 	double Q = 0.0;
 	std::set<unsigned int>::iterator it = ((MasterComms *)comm)->master_used_idxs.begin();
 	for( ; it != ((MasterComms *)comm)->master_used_idxs.end(); ++it ){
-
+		
 		double weight = param->getWeightAtIdx(*it);
 		Q -= 0.5*cfg->lambda*weight*weight;
-		*(grads+*it) -= cfg->lambda*weight;
+		*(grads+*it) -= cfg->lambda*weight;		
 	}
 
 	//Remove the Bias terms (don't regularize the bias terms!)
 	unsigned int weights_per_energy = param->getNumWeightsPerEnergyLevel();
 	for( unsigned int energy = 0; energy < param->getNumEnergyLevels(); energy++ ){
 		double bias = param->getWeightAtIdx(energy * weights_per_energy);
-		Q += 0.5*cfg->lambda*bias*bias;
+		Q += 0.5*cfg->lambda*bias*bias; 
 		*(grads + energy * weights_per_energy) += cfg->lambda*bias;
 	}
 	return Q;
@@ -729,7 +729,7 @@ void EM::zeroUnusedParams(){
 		if( ((MasterComms *)comm)->master_used_idxs.find(i) == ((MasterComms *)comm)->master_used_idxs.end() )
 			param->setWeightAtIdx(0.0, i);
 	}
-
+	
 }
 
 
