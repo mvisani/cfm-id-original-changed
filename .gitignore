@@ -6,3 +6,5 @@ cfm/bin/
 cfm/build/
 
 supplementary_material/
+
+cfm/cmake-build-debug/
