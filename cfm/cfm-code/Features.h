@@ -187,6 +187,18 @@ private:
 	int discretizeGasteigerCharge( double gc ) const;
 };
 
+// Features use fingerprint encode ion fragmentation
+class IonRootEncoding : public RootPathFeature {
+	IonRootEncoding(){ size = 2048; name = "IonRootEncoding"; };
+	void compute( FeatureVector &fv, const RootedROMolPtr *ion ) const;
+};
+
+// Features use fingerprint encode Neutral Loss
+class NLRootEncoding : public RootPathFeature {
+	NLRootEncoding(){ size = 2048; name = "NLRootEncoding"; };
+	void compute( FeatureVector &fv, const RootedROMolPtr *nl ) const;
+};
+
 class HydrogenMovement : public Feature {
 public:
 	HydrogenMovement(){ size = 10; name = "HydrogenMovement"; };

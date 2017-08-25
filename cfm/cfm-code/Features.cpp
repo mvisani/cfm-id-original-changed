@@ -36,10 +36,13 @@
 #include <GraphMol/ForceFieldHelpers/MMFF/AtomTyper.h>
 #include <GraphMol/FragCatalog/FragCatParams.h>
 #include <GraphMol/Substruct/SubstructMatch.h>
+#include <GraphMol/Fingerprints/Fingerprints.h>
 
+#include <DataStructs/SparseIntVect.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
+#include <DataStructs/ExplicitBitVect.h>
 #include "Features.h"
 
 typedef std::pair<std::string,std::string> symbol_pair_t;
@@ -472,6 +475,33 @@ void NLRootTriples::compute( FeatureVector &fv, const RootedROMolPtr *ion, const
 	addRootTripleFeatures( fv, paths, ring_break);
 }
 
+void IonRootEncoding::compute( FeatureVector &fv, const RootedROMolPtr *ion ) const
+{
+    RDKit::ROMol &ion_ref = *(ion->mol.get());
+
+    unsigned int minPath=1;
+    unsigned int maxPath=7;
+    unsigned int fpSize = 2048;
+    ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(ion_ref, minPath, maxPath, fpSize);
+    for(unsigned int i = 0; i < fingerPrint->getNumBits(); ++i)
+    {
+        fv.addFeature((*fingerPrint)[i]);
+    }
+}
+
+void NLRootEncoding::compute( FeatureVector &fv, const RootedROMolPtr *nl ) const
+{
+    RDKit::ROMol &nl_ref = *(nl->mol.get());
+
+    unsigned int minPath=1;
+    unsigned int maxPath=7;
+    unsigned int fpSize = 2048;
+    ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(nl_ref, minPath, maxPath, fpSize);
+    for(unsigned int i = 0; i < fingerPrint->getNumBits(); ++i)
+    {
+        fv.addFeature((*fingerPrint)[i]);
+    }
+}
 
 void RootAtomFeature::computeRootAtomFeature( FeatureVector &fv, const RootedROMolPtr *mol, bool ring_break ) const{
 
