@@ -98,6 +98,7 @@ protected:
 	static const std::vector<std::string> &OKsymbols();
 	static const std::vector<std::string> &OKSymbolsLess();
 	void replaceUncommonWithX( std::string &symbol ) const;
+	int getSymbolsLessIndex( std::string& symbol) const;
 
 };
 
@@ -156,14 +157,17 @@ protected:
 							int len, 
 							bool ring_break,
 							bool with_bond) const;
+
 	// function to add features with a length of two						
 	void addRootPairFeatures(FeatureVector &fv, 
 							std::vector<path_t> &paths, 
 							int ring_break) const;
+
 	// function to add features with a length of three
 	void addRootTripleFeatures(FeatureVector &fv, 
 								std::vector<path_t> &paths, 
-								int ring_break) const;
+								int ring_break,
+								bool with_bond) const;
 private:
 	// function to add path from given atom
 	void addPathsFromAtom( std::vector<path_t> &paths, const RDKit::Atom *atom, 

@@ -274,6 +274,15 @@ void Feature::replaceUncommonWithX( std::string &symbol ) const{
 		symbol = "X";
 }
 
+int Feature:: getSymbolsLessIndex( std::string& symbol) const{
+	int index = 0;
+	if(symbol == "C") index = 0;
+	if(symbol == "N") index = 1;
+	if(symbol == "O") index = 2;
+	if(symbol == "P") index = 3;
+	if(symbol == "S") index = 4;
+	if(symbol == "X") index = 5;
+}
 //*************************
 //FEATURE IMPLEMENTATIONS:
 //*************************
@@ -430,11 +439,15 @@ void RootPathFeature::addRootPairFeatures(FeatureVector &fv, std::vector<path_t>
 	}
 }
 
-void RootPathFeature::addRootTripleFeatures(FeatureVector &fv, std::vector<path_t> &paths, int ring_break ) const{
-	
+void RootPathFeature::addRootTripleFeatures(FeatureVector &fv,
+											std::vector<path_t> &paths, 
+											int ring_break, 
+											bool with_bond) const
+{	
 	//Add a feature indicating that there are no triples
 	fv.addFeature( (double)(paths.size() == 0) );
 
+	/*
 	//Iterate through all combinations of atom triples, adding a count
 	//of the number of times each is seen;
 	//Note: the order matters here, root atom first then the next in the path, etc.
@@ -468,8 +481,38 @@ void RootPathFeature::addRootTripleFeatures(FeatureVector &fv, std::vector<path_
 				else fv.addFeature( 0.0 );
 			}
 		} 
-	}
+	}*/
 
+	double count = 0.0, ring_count = 0.0;
+	int num_symbol_type = OKSymbolsLess().size();
+	int base_feature_idx = fv.getTotalLength();
+	//for each path in the path list
+	for(std::vector<path_t>::iterator path = paths.begin(); path != paths.end(); ++path )
+	{
+		int feature_idx_offset = 0;
+		for(unsigned int idx = 0; idx < path->size(); ++idx)
+		{
+			std::string symbol = path->at(idx);
+			// if there are bond type information in the path
+			// every second item in the list is bond type
+			if(with_bond == true && idx % 2 == 1)
+			{
+				feature_idx_offset = num_symbol_type * feature_idx_offset + std::stoi(symbol);
+			}
+			else
+			{
+				feature_idx_offset = num_symbol_type * feature_idx_offset + getSymbolsLessIndex(symbol);
+			}
+		}
+		if(ring_break)
+		{
+			fv.addFeatureAtIdx(1.0, base_feature_idx + feature_idx_offset * 2 + 1);
+		}
+		else
+		{
+			fv.addFeatureAtIdx(1.0, base_feature_idx + feature_idx_offset * 2);
+		}
+	}
 }
 
 void IonRootPairs::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const{
@@ -496,7 +539,7 @@ void IonRootTriples::compute( FeatureVector &fv, const RootedROMolPtr *ion, cons
 	nl->mol.get()->getProp( "IsRingBreak", ring_break );
 	std::vector<path_t> paths;
 	computeRootPaths( paths, ion, 3, ring_break, false);
-	addRootTripleFeatures( fv, paths, ring_break);
+	addRootTripleFeatures( fv, paths, ring_break, false);
 }
 
 void NLRootTriples::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const{
@@ -505,7 +548,7 @@ void NLRootTriples::compute( FeatureVector &fv, const RootedROMolPtr *ion, const
 	nl->mol.get()->getProp( "IsRingBreak", ring_break );
 	std::vector<path_t> paths;
 	computeRootPaths( paths, nl, 3, ring_break, false);
-	addRootTripleFeatures( fv, paths, ring_break);
+	addRootTripleFeatures( fv, paths, ring_break, false);
 }
 
 void IonRootEncoding::compute( FeatureVector &fv, const RootedROMolPtr *ion ) const
