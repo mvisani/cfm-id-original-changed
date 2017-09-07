@@ -328,16 +328,28 @@ void BreakAtomPair::compute( FeatureVector &fv, const RootedROMolPtr *ion, const
 
 }
 
-void RootPathFeature::computeRootPaths(std::vector<path_t> &paths, const RootedROMolPtr *mol, int len, bool ring_break) const{
-
+void RootPathFeature::computeRootPaths(std::vector<path_t> &paths,
+										const RootedROMolPtr *mol, 
+										int len, 
+										bool ring_break,
+										bool with_bond = false) const
+{
 	path_t path_so_far;
 	addPathsFromAtom( paths, mol->root, mol->mol, mol->root, path_so_far, len );
-	if( ring_break ) addPathsFromAtom( paths, mol->other_root, mol->mol, mol->other_root, path_so_far, len );
-
+	if( ring_break ) 
+	{
+		addPathsFromAtom( paths, mol->other_root, mol->mol, mol->other_root, path_so_far, len );
+	}
 }
 
-void RootPathFeature::addPathsFromAtom( std::vector<path_t> &paths, const RDKit::Atom *atom, const romol_ptr_t mol, const RDKit::Atom *prev_atom, path_t &path_so_far, int len ) const{
-
+void RootPathFeature::addPathsFromAtom( std::vector<path_t> &paths, 
+										const RDKit::Atom *atom, 
+										const romol_ptr_t mol, 
+										const RDKit::Atom *prev_atom, 
+										path_t &path_so_far, 
+										int len,
+										bool with_bond = false) const
+{
 	//Add the current symbol
 	std::string symbol = atom->getSymbol();
 	replaceUncommonWithX(symbol);
@@ -346,9 +358,19 @@ void RootPathFeature::addPathsFromAtom( std::vector<path_t> &paths, const RDKit:
 	//Iterate until len is reached, then add the path
 	if( len > 1 ){
 		RDKit::ROMol::ADJ_ITER_PAIR itp = mol.get()->getAtomNeighbors( atom );
-		for( ; itp.first != itp.second; ++itp.first ){
+		for( ; itp.first != itp.second; ++itp.first )
+		{
+			if(with_bind == true)
+			{
+				int bond_type = mol.get()->GetBondBetweenAtoms(atom->getIdx(),nbr->get_Idx()).getBondType();
+				std::string bond_typer_str = std::to_string(bond_type);
+				path_so_far.push_back(bond_typer_str)
+			}
 			RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);	
-			if( nbr_atom != prev_atom ) addPathsFromAtom( paths, nbr_atom, mol, atom, path_so_far, len-1 );
+			if( nbr_atom != prev_atom ) 
+			{
+				addPathsFromAtom( paths, nbr_atom, mol, atom, path_so_far, len-1 );
+			}
 		}
 	}
 	else paths.push_back( path_so_far );
@@ -357,8 +379,8 @@ void RootPathFeature::addPathsFromAtom( std::vector<path_t> &paths, const RDKit:
 	path_so_far.pop_back();
 }
 
-void RootPathFeature::addRootPairFeatures(FeatureVector &fv, std::vector<path_t> &paths, int ring_break) const{
-
+void RootPathFeature::addRootPairFeatures(FeatureVector &fv, std::vector<path_t> &paths, int ring_break) const
+{
 	//Add a feature indicating that there are no pairs
 	fv.addFeature( (double)(paths.size() == 0) );
 
