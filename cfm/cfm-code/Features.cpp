@@ -335,10 +335,22 @@ void RootPathFeature::computeRootPaths(std::vector<path_t> &paths,
 										bool with_bond = false) const
 {
 	path_t path_so_far;
-	addPathsFromAtom( paths, mol->root, mol->mol, mol->root, path_so_far, len );
+	addPathsFromAtom( paths, 
+					  mol->root, 
+					  mol->mol, 
+					  mol->root, 
+					  path_so_far, 
+					  len, 
+					  with_bond);
 	if( ring_break ) 
 	{
-		addPathsFromAtom( paths, mol->other_root, mol->mol, mol->other_root, path_so_far, len );
+		addPathsFromAtom( paths, 
+						  mol->other_root, 
+						  mol->mol, 
+						  mol->other_root, 
+						  path_so_far, 
+						  len, 
+						  with_bond);
 	}
 }
 
@@ -348,7 +360,7 @@ void RootPathFeature::addPathsFromAtom( std::vector<path_t> &paths,
 										const RDKit::Atom *prev_atom, 
 										path_t &path_so_far, 
 										int len,
-										bool with_bond = false) const
+										bool with_bond) const
 {
 	//Add the current symbol
 	std::string symbol = atom->getSymbol();
@@ -360,16 +372,15 @@ void RootPathFeature::addPathsFromAtom( std::vector<path_t> &paths,
 		RDKit::ROMol::ADJ_ITER_PAIR itp = mol.get()->getAtomNeighbors( atom );
 		for( ; itp.first != itp.second; ++itp.first )
 		{
-			if(with_bind == true)
-			{
-				int bond_type = mol.get()->GetBondBetweenAtoms(atom->getIdx(),nbr->get_Idx()).getBondType();
-				std::string bond_typer_str = std::to_string(bond_type);
-				path_so_far.push_back(bond_typer_str)
-			}
 			RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);	
+			if(with_bond == true)
+			{
+				int bond_type = mol.get()->getBondBetweenAtoms(atom->getIdx(), nbr_atom->getIdx())->getBondType();
+				path_so_far.push_back(boost::lexical_cast<std::string>(bond_type));
+			}
 			if( nbr_atom != prev_atom ) 
 			{
-				addPathsFromAtom( paths, nbr_atom, mol, atom, path_so_far, len-1 );
+				addPathsFromAtom( paths, nbr_atom, mol, atom, path_so_far, len-1, with_bond);
 			}
 		}
 	}
@@ -466,7 +477,7 @@ void IonRootPairs::compute( FeatureVector &fv, const RootedROMolPtr *ion, const 
 	int ring_break;
 	nl->mol.get()->getProp( "IsRingBreak", ring_break );
 	std::vector<path_t> paths;
-	computeRootPaths( paths, ion, 2, ring_break );
+	computeRootPaths( paths, ion, 2, ring_break, false );
 	addRootPairFeatures( fv, paths, ring_break );
 }
 
@@ -475,7 +486,7 @@ void NLRootPairs::compute( FeatureVector &fv, const RootedROMolPtr *ion, const R
 	int ring_break;
 	nl->mol.get()->getProp( "IsRingBreak", ring_break );
 	std::vector<path_t> paths;
-	computeRootPaths( paths, nl, 2, ring_break );
+	computeRootPaths( paths, nl, 2, ring_break, false);
 	addRootPairFeatures( fv, paths, ring_break);
 }
 
@@ -484,7 +495,7 @@ void IonRootTriples::compute( FeatureVector &fv, const RootedROMolPtr *ion, cons
 	int ring_break;
 	nl->mol.get()->getProp( "IsRingBreak", ring_break );
 	std::vector<path_t> paths;
-	computeRootPaths( paths, ion, 3, ring_break );
+	computeRootPaths( paths, ion, 3, ring_break, false);
 	addRootTripleFeatures( fv, paths, ring_break);
 }
 
@@ -493,7 +504,7 @@ void NLRootTriples::compute( FeatureVector &fv, const RootedROMolPtr *ion, const
 	int ring_break;
 	nl->mol.get()->getProp( "IsRingBreak", ring_break );
 	std::vector<path_t> paths;
-	computeRootPaths( paths, nl, 3, ring_break );
+	computeRootPaths( paths, nl, 3, ring_break, false);
 	addRootTripleFeatures( fv, paths, ring_break);
 }
 

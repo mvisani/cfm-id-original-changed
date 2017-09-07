@@ -23,11 +23,13 @@
 #include <GraphMol/FragCatalog/FragCatParams.h>
 
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <string>
 #include <vector>
 #include <iostream>
 #include <fstream>
+
 
 struct input_file_t;
 
