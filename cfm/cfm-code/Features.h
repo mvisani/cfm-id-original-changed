@@ -202,6 +202,19 @@ public:
 	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };
 
+class IonRootTriplesIncludeBond : public RootPathFeature {
+public:
+	IonRootTriplesIncludeBond
+	(){ size = 865; name = "IonRootTriples"; }; 
+	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+};
+
+class NLRootTriplesIncludeBond : public RootPathFeature {
+public:
+	NLRootTriplesIncludeBond(){ size = 865; name = "NLRootTriples"; }; 
+	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+};
+
 class GasteigerCharges : public RootPathFeature {
 public:
 	GasteigerCharges(){ size = 72; name = "GasteigerCharges"; };
