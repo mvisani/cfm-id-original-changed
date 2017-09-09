@@ -7,7 +7,6 @@
 # Created: August 2013
 ##########################################################################
 
-set (CMAKE_CXX_STANDARD 11)
 set ( BASE_HEADERS FragmentGraph.h Features.h Config.h Spectrum.h
 FragmentGraphGenerator.h FragmentTreeNode.h Inference.h IPFP.h MILP.h Isotope.h
 MolData.h MspReader.h Param.h NNParam.h Util.h Message.h Identifier.h Comparators.h

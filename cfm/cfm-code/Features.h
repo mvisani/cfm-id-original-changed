@@ -27,6 +27,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <iostream>
 #include <fstream>
 
@@ -205,13 +206,13 @@ public:
 class IonRootTriplesIncludeBond : public RootPathFeature {
 public:
 	IonRootTriplesIncludeBond
-	(){ size = 865; name = "IonRootTriples"; }; 
+	(){ size = 865; name = "IonRootTriplesIncludeBond"; }; 
 	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };
 
 class NLRootTriplesIncludeBond : public RootPathFeature {
 public:
-	NLRootTriplesIncludeBond(){ size = 865; name = "NLRootTriples"; }; 
+	NLRootTriplesIncludeBond(){ size = 865; name = "NLRootTriplesIncludeBond"; }; 
 	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };
 

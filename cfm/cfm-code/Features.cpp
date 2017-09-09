@@ -82,6 +82,8 @@ const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs(){
 		cogs.push_back( new IonNeighbourMMFFAtomType() );
 		cogs.push_back( new NLNeighbourMMFFAtomType() );
 		cogs.push_back( new QuadraticFeatures() );
+		cogs.push_back( new IonRootTriplesIncludeBond());
+		cogs.push_back( new NLRootTriplesIncludeBond());
 		initialised = true;
 	}
 	return cogs;
@@ -470,22 +472,31 @@ void RootPathFeature::addRootTripleFeatures(FeatureVector &fv,
 				//First feature indicates at least 1
 				//Second feature indicates more than 1
 				//Non-Ring
-				if( count > 0.0 ) fv.addFeature( 1.0 );
-				else fv.addFeature( 0.0 );
-				if( count > 1.0 ) fv.addFeature( 1.0 );
-				else fv.addFeature( 0.0 );
+				if( count > 0.0 ) 
+					fv.addFeature( 1.0 );
+				else 
+					fv.addFeature( 0.0 );
+				if( count > 1.0 ) 
+					fv.addFeature( 1.0 );
+				else 
+					fv.addFeature( 0.0 );
 				//Ring
-				if( ring_count > 0.0 ) fv.addFeature( 1.0 );
-				else fv.addFeature( 0.0 );
-				if( ring_count > 1.0 ) fv.addFeature( 1.0 );
-				else fv.addFeature( 0.0 );
+				if( ring_count > 0.0 ) 
+					fv.addFeature( 1.0 );
+				else 
+					fv.addFeature( 0.0 );
+				if( ring_count > 1.0 ) 
+					fv.addFeature( 1.0 );
+				else 
+					fv.addFeature( 0.0 );
 			}
 		} 
 	}*/
 
-	double count = 0.0, ring_count = 0.0;
+	//double count = 0.0, ring_count = 0.0;
 	int num_symbol_type = OKSymbolsLess().size();
 	int base_feature_idx = fv.getTotalLength();
+	std::unordered_map<int,int> counts;
 	//for each path in the path list
 	for(std::vector<path_t>::iterator path = paths.begin(); path != paths.end(); ++path )
 	{
@@ -504,14 +515,21 @@ void RootPathFeature::addRootTripleFeatures(FeatureVector &fv,
 				feature_idx_offset = num_symbol_type * feature_idx_offset + getSymbolsLessIndex(symbol);
 			}
 		}
-		if(ring_break)
+
+		int key = ring_break ? feature_idx_offset * 4 : feature_idx_offset * 4 + 2;
+
+		if(counts.find(key) == counts.end())
 		{
-			fv.addFeatureAtIdx(1.0, base_feature_idx + feature_idx_offset * 2 + 1);
-		}
-		else
+			counts[key] = 0;							
+		}	
+		counts[key] += 1;
+		
+		if(counts[key] > 1)
 		{
-			fv.addFeatureAtIdx(1.0, base_feature_idx + feature_idx_offset * 2);
+			key += 1;
 		}
+		fv.addFeatureAtIdx(1.0, base_feature_idx + key);
+	
 	}
 }
 
