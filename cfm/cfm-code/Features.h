@@ -206,13 +206,13 @@ public:
 class IonRootTriplesIncludeBond : public RootPathFeature {
 public:
 	IonRootTriplesIncludeBond
-	(){ size = 865; name = "IonRootTriplesIncludeBond"; }; 
+	(){ size = 10585; name = "IonRootTriplesIncludeBond"; }; 
 	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };
 
 class NLRootTriplesIncludeBond : public RootPathFeature {
 public:
-	NLRootTriplesIncludeBond(){ size = 865; name = "NLRootTriplesIncludeBond"; }; 
+	NLRootTriplesIncludeBond(){ size = 10585; name = "NLRootTriplesIncludeBond"; }; 
 	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };
 

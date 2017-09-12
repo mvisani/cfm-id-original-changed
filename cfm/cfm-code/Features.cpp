@@ -386,7 +386,8 @@ void RootPathFeature::addPathsFromAtom( std::vector<path_t> &paths,
 			RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);	
 			if(with_bond == true)
 			{
-				int bond_type = mol.get()->getBondBetweenAtoms(atom->getIdx(), nbr_atom->getIdx())->getBondType();
+				int bond_type= 0;
+				mol.get()->getBondBetweenAtoms(atom->getIdx(), nbr_atom->getIdx())->getProp("OrigBondType", bond_type);
 				path_so_far.push_back(boost::lexical_cast<std::string>(bond_type));
 			}
 			if( nbr_atom != prev_atom ) 
