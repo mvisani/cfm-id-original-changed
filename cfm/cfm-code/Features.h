@@ -179,17 +179,7 @@ private:
 						   bool with_bond) const;
 };
 
-class IonRootPairs : public RootPathFeature {
-public:
-	IonRootPairs(){ size = 145; name = "IonRootPairs"; };
-	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
-};
 
-class NLRootPairs : public RootPathFeature {
-public:
-	NLRootPairs(){ size = 145; name = "NLRootPairs"; }; 
-	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
-};
 
 class IonRootTriples : public RootPathFeature {
 public:

@@ -1,5 +1,6 @@
 #pragma once
 #include "../Feature.h"
+#include "RootPathFeature.h"
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
@@ -16,3 +17,8 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+class IonRootPairs : public RootPathFeature {
+public:
+	IonRootPairs(){ size = 145; name = "IonRootPairs"; };
+	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+};
