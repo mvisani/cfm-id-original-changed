@@ -16,3 +16,8 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+class IonFunctionalGroupRootOnlyFeatures : public FunctionalGroupFeature {
+public:
+    IonFunctionalGroupRootOnlyFeatures(){ size = NUM_FGRPS+1; name = "IonFunctionalGroupRootOnlyFeatures";  };
+    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const;
+};

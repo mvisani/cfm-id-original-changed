@@ -1,5 +1,3 @@
-#pragma once
-#include "../Feature.h"
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
@@ -16,3 +14,11 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+#pragma once
+#include "../Feature.h"
+
+class IonFunctionalGroupFeaturesD2 : public FunctionalGroupFeature {
+public:
+    IonFunctionalGroupFeaturesD2(){ size = (NUM_FGRPS+1)*3; name = "IonFunctionalGroupFeaturesD2";  };
+    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const;
+};

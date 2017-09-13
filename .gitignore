@@ -10,3 +10,5 @@ supplementary_material/
 cfm/cmake-build-debug/
 
 cfm/\.vscode/
+
+cfm/data/

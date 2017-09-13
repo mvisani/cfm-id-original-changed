@@ -1,3 +1,5 @@
+
+#include "GastigerCharges.h"
 int GasteigerCharges::discretizeGasteigerCharge( double gc ) const{
     
         //Discretize the Gasteiger Charges into 6 levels:
