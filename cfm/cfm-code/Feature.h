@@ -54,18 +54,6 @@ public:
 	~FeatureCalculationException() throw() {};
 };
 
-class FeatureHelperException: public std::exception{
-private:
-    std::string message_;
-public:
-	FeatureHelperException(const std::string& message) throw() : message_(message) {};
-	virtual const char* what() const throw(){
-		std::cout << "Error in FeatureHelper: " << message_ << std::endl;
-		return message_.c_str();
-	}
-	~FeatureHelperException() throw() {};
-};
-
 //Structure to hold a sparse computed feature vector
 typedef unsigned int feature_t;
 class FeatureVector{

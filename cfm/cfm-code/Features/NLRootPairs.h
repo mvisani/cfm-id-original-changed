@@ -18,7 +18,8 @@
 #pragma once
 #include "../RootPathFeature.h"
 
-class NLRootEncoding : public RootPathFeature {
-    NLRootEncoding(){ size = 2048; name = "NLRootEncoding"; };
-    void compute( FeatureVector &fv, const RootedROMolPtr *nl ) const;
+class NLRootAtom : public RootAtomFeature {
+public:
+    IonRootAtom(){ size = 13; name = "NLRootAtom";  };
+    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };
