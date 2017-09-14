@@ -234,27 +234,12 @@ public:
 	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };
 
-class RadicalFeatures : public Feature {
-public:
-	RadicalFeatures(){ size = 3; name = "RadicalFeatures"; };
-	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
-};
-
 class IonicFeatures: public Feature {
 public:
 	IonicFeatures(){ size = 5; name = "IonicFeatures"; };
 	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };
 
-class RingFeatures : public Feature {
-public:
-	RingFeatures(){ size = 12; name = "RingFeatures";  };
-	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
-private:
-	//Helper function - compute the distance between two root 
-	//atoms in a molecule (assumes ring break)
-	int calcRootDistance(const RootedROMolPtr *mol)  const;
-};
 
 class ExtraRingFeatures : public Feature {
 public:
@@ -274,10 +259,7 @@ public:
 	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };
 
-class RootAtomFeature : public Feature {
-protected:
-	void computeRootAtomFeature( FeatureVector &fv, const RootedROMolPtr *mol, bool ring_break ) const;
-};
+
 
 class IonRootAtom : public RootAtomFeature {
 public:

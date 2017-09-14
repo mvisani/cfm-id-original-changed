@@ -289,29 +289,12 @@ int Feature:: getSymbolsLessIndex( std::string& symbol) const{
 //*************************
 //FEATURE IMPLEMENTATIONS:
 //*************************
-void NLFunctionalGroupFeaturesD2::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const{
-	int ring_break;
-	nl->mol.get()->getProp( "IsRingBreak", ring_break );
-	addFunctionalGroupFeatures( fv, nl, 2, ring_break );
-}
 
-void IonFunctionalGroupFeaturesD2::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const{
-	int ring_break;
-	nl->mol.get()->getProp( "IsRingBreak", ring_break );
-	addFunctionalGroupFeatures( fv, ion, 2, ring_break );
-}
 
-void NLExtraFunctionalGroupFeatures::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const{
-	int ring_break;
-	nl->mol.get()->getProp( "IsRingBreak", ring_break );
-	addFunctionalGroupFeatures( fv, nl, 1, ring_break, true );
-}
 
-void IonExtraFunctionalGroupFeatures::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const{
-	int ring_break;
-	nl->mol.get()->getProp( "IsRingBreak", ring_break );
-	addFunctionalGroupFeatures( fv, ion, 1, ring_break, true );
-}
+
+
+
 
 
 
