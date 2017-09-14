@@ -16,6 +16,7 @@
 #########################################################################*/
 #pragma once
 #include "FunctionalGroupFeature.h"
+
 class IonExtraFunctionalGroupFeatures : public FunctionalGroupFeature {
 public:
     IonExtraFunctionalGroupFeatures(){ size = (NUM_EXTRA_FGRPS+1)*2; name = "IonExtraFunctionalGroupFeatures";  };

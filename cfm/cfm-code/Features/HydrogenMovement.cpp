@@ -15,6 +15,7 @@
 # of the cfm source tree.
 #########################################################################*/
 #include "HydrogenMovement.h"
+
 void HydrogenMovement::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl  ) const{
     
         double h_movement = 0.0;

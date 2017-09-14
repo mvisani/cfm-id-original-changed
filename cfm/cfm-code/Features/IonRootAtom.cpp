@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# IonRootAtom.h
+# IonRootAtom.cpp
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see param.cpp.
@@ -14,6 +14,7 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+#include "IonRootAtom.h"
 
 void IonRootAtom::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const{
     

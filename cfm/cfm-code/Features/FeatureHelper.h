@@ -15,6 +15,9 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+#include <exception>
+#include <string>
+#include <iostream>
 
 class FeatureHelperException: public std::exception{
 private:

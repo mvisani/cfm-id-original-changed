@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# FunctionGroupFeature.h
+# IonRootPairs.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see param.cpp.
@@ -15,10 +15,10 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "../RootAtomFeature.h"
+#include "RootPathFeature.h"
 
-class IonRootAtom : public RootAtomFeature {
+class IonRootPairs : public RootPathFeature {
 public:
-    IonRootAtom(){ size = 13; name = "IonRootAtom";  };
+    IonRootPairs(){ size = 145; name = "IonRootPairs"; };
     void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };

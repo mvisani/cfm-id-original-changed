@@ -15,7 +15,7 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "../RootPathFeature.h"
+#include "RootPathFeature.h"
 
 class IonRootTriplesIncludeBond : public RootPathFeature {
 public:

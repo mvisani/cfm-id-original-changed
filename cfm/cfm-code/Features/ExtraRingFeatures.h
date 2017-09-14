@@ -16,7 +16,7 @@
 #########################################################################*/
 
 #pragma once
-#include "Feature.h"
+#include "../Feature.h"
 #include "FeatureHelper.h"
 
 class ExtraRingFeatures : public Feature {

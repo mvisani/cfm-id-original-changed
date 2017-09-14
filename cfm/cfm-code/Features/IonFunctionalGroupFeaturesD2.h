@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# FunctionGroupFeature.h
+# IonFunctionalGroupFeaturesD2.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see param.cpp.
@@ -15,7 +15,7 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "../Feature.h"
+#include "FunctionalGroupFeature.h"
 
 class IonFunctionalGroupFeaturesD2 : public FunctionalGroupFeature {
 public:

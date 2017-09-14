@@ -15,7 +15,7 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "RootPathFeature.h.h"
+#include "RootPathFeature.h"
 
 class NLRootTriples : public RootPathFeature {
 public:

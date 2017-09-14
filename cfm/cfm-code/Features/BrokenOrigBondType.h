@@ -15,7 +15,7 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "Feature.h"
+#include "../Feature.h"
 class BrokenOrigBondType : public Feature {
 public:
     BrokenOrigBondType(){ size = 7; name = "BrokenOrigBondType"; };

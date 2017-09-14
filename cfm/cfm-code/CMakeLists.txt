@@ -3,8 +3,9 @@
 #
 # cfm-code/CMakeLists.txt
 #
-# Author: Felicity Allen
+# Author: Felicity Allen, Fei Wang
 # Created: August 2013
+# Last Modified: Sep 2017
 ##########################################################################
 
 set ( BASE_HEADERS FragmentGraph.h Feature.h Config.h Spectrum.h
@@ -12,10 +13,13 @@ FragmentGraphGenerator.h FragmentTreeNode.h Inference.h IPFP.h MILP.h Isotope.h
 MolData.h MspReader.h Param.h NNParam.h Util.h Message.h Identifier.h Comparators.h
 FunctionalGroups.h )
 
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Features FEATURES_SRC_DIR)
+
 set ( TRAIN_HEADERS Comms.h EM.h EM_NN.h )
  
 set ( BASE_SRC_FILES  FragmentGraph.cpp
         Feature.cpp
+        ${FEATURES_SRC_DIR}
                       Config.cpp
                       FragmentGraphGenerator.cpp
                       FragmentTreeNode.cpp

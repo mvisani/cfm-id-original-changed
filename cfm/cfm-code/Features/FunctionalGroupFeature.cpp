@@ -35,7 +35,7 @@ void FunctionalGroupFeature::addFunctionalGroupFeatures( FeatureVector &fv, cons
             fv.addFeatureAtIdx((double)(*it), offset + idx);
     }
     
-    void FunctionalGroupFeature::addFunctionalGroupFeaturesFromAtom( std::vector<int> &tmp_full_fv, const RDKit::Atom *atom, const romol_ptr_t mol, const RDKit::Atom *prev_atom, int max_depth, int depth, bool extra ) const{
+void FunctionalGroupFeature::addFunctionalGroupFeaturesFromAtom( std::vector<int> &tmp_full_fv, const RDKit::Atom *atom, const romol_ptr_t mol, const RDKit::Atom *prev_atom, int max_depth, int depth, bool extra ) const{
     
         int num_grps = NUM_FGRPS;
         if( extra ) num_grps = NUM_EXTRA_FGRPS;

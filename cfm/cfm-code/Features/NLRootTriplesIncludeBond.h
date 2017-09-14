@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# RootPathFeature.cpp
+# NLRootTriplesIncludeBond.cpp
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see param.cpp.
@@ -15,7 +15,7 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "../RootPathFeature.h"
+#include "RootPathFeature.h"
 
 class NLRootTriplesIncludeBond : public RootPathFeature {
 public:

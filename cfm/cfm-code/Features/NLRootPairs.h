@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# FunctionGroupFeature.h
+# NLRootAtom.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see param.cpp.
@@ -16,10 +16,10 @@
 #########################################################################*/
 //Features use fingerprint encode Neutral Loss
 #pragma once
-#include "../RootPathFeature.h"
+#include "RootAtomFeature.h"
 
 class NLRootAtom : public RootAtomFeature {
 public:
-    IonRootAtom(){ size = 13; name = "NLRootAtom";  };
+    NLRootAtom(){ size = 13; name = "NLRootAtom";  };
     void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };

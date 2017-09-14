@@ -15,7 +15,7 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "Feature.h"
+#include "../Feature.h"
 
 class RootPathFeature : public Feature {
 protected:

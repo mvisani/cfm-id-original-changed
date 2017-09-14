@@ -49,7 +49,7 @@
 #include "Features/ExtraRingFeatures.h"
 #include "Features/FeatureHelper.h"
 #include "Features/FunctionalGroupFeature.h"
-#include "Features/GastigerCharges.h"
+#include "Features/GasteigerCharges.h"
 #include "Features/HydrogenMovement.h"
 #include "Features/HydrogenRemoval.h"
 #include "Features/IonExtraFunctionalGroupFeatures.h"

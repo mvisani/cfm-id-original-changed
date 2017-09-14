@@ -14,7 +14,7 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#include "GastigerCharges.h"
+#include "GasteigerCharges.h"
 int GasteigerCharges::discretizeGasteigerCharge( double gc ) const{
     
         //Discretize the Gasteiger Charges into 6 levels:

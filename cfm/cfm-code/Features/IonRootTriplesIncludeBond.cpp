@@ -14,6 +14,7 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+#include "IonRootTriplesIncludeBond.h"
 
 void IonRootTriplesIncludeBond::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const{
 	
