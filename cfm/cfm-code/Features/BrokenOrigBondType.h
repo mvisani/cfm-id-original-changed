@@ -15,4 +15,9 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "../Feature.h"
+#include "Feature.h"
+class BrokenOrigBondType : public Feature {
+public:
+    BrokenOrigBondType(){ size = 7; name = "BrokenOrigBondType"; };
+    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+};

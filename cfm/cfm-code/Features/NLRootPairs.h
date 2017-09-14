@@ -1,5 +1,3 @@
-#pragma once
-#include "../Feature.h"
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
@@ -16,3 +14,11 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+//Features use fingerprint encode Neutral Loss
+#pragma once
+#include "../RootPathFeature.h"
+
+class NLRootEncoding : public RootPathFeature {
+    NLRootEncoding(){ size = 2048; name = "NLRootEncoding"; };
+    void compute( FeatureVector &fv, const RootedROMolPtr *nl ) const;
+};

@@ -13,7 +13,7 @@
 #define __FEATURE_TEST_H__
 
 #include "../test.h"
-#include "Features.h"
+#include "Feature.h"
 
 class FeaturesTestInit : public Test {
 public:

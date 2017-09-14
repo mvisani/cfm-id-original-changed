@@ -19,7 +19,7 @@
 #define __FRAG_TREE_NODE_H__
 
 #include "Util.h"
-#include "Features.h"
+#include "Feature.h"
 
 //Class for storing information about a particular break
 class Break{

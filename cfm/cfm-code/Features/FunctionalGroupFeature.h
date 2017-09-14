@@ -1,5 +1,3 @@
-#pragma once
-#include "../Feature.h"
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
@@ -16,6 +14,9 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+#pragma once
+#include "../Feature.h"
+
 class FunctionalGroupFeature : public Feature {
 protected:
     void addFunctionalGroupFeaturesFromAtom( std::vector<int> &tmp_full_fv, const RDKit::Atom *atom, const romol_ptr_t mol, const RDKit::Atom *prev_atom, int max_depth, int depth, bool extra ) const;

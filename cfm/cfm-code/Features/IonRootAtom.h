@@ -1,10 +1,7 @@
-#pragma once
-#include "../Feature.h"
-#include "RootPathFeature.h"
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# FunctionGroupFeature.h
+# IonRootPairs.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see param.cpp.
@@ -17,6 +14,9 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+#pragma once
+#include "RootPathFeature.h"
+
 class IonRootPairs : public RootPathFeature {
 public:
 	IonRootPairs(){ size = 145; name = "IonRootPairs"; };

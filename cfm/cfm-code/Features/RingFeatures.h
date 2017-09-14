@@ -16,7 +16,7 @@
 #########################################################################*/
 
 #pragma once
-#include "../Features.h"
+#include "Feature.h"
 
 class RingFeatures : public Feature {
 public:

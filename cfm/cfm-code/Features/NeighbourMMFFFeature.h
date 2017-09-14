@@ -1,9 +1,7 @@
-#pragma once
-#include "../Feature.h"
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# FunctionGroupFeature.h
+# NeighbourMMFFFeature.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see param.cpp.
@@ -16,3 +14,11 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+#pragma once
+#include "Feature.h"
+
+class NeighbourMMFFFeature : public Feature {
+protected:
+    void addNeighbourAtomTypes( FeatureVector &fv, const RootedROMolPtr *mol, const RDKit::Atom *root, int offset ) const;
+
+};

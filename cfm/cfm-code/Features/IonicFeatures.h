@@ -15,7 +15,7 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "../Features.h"
+#include "Feature.h"
 
 class IonicFeatures: public Feature {
 
@@ -23,3 +23,4 @@ public:
 	IonicFeatures(){ size = 5; name = "IonicFeatures"; };
 	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
 };
+

@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "Util.h"
-#include "Features.h"
+#include "Feature.h"
 #include "FragmentTreeNode.h"
 #include "Isotope.h"
 

@@ -43,7 +43,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
 #include <DataStructs/ExplicitBitVect.h>
-#include "Features.h"
+#include "Feature.h"
 
 typedef std::pair<std::string,std::string> symbol_pair_t;
 

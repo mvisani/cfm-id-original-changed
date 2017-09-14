@@ -21,3 +21,4 @@ public:
     IonExtraFunctionalGroupFeatures(){ size = (NUM_EXTRA_FGRPS+1)*2; name = "IonExtraFunctionalGroupFeatures";  };
     void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const;
 };
+

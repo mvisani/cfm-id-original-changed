@@ -18,7 +18,7 @@
 #ifndef __PARAM_H__
 #define __PARAM_H__
 
-#include "Features.h"
+#include "Feature.h"
 
 #include <string>
 

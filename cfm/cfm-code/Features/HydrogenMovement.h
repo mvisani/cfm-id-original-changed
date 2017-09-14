@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# FunctionGroupFeature.h
+# HydrogenMovement.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see param.cpp.
@@ -16,6 +16,7 @@
 #########################################################################*/
 #pragma once
 #include "../Feature.h"
+
 class HydrogenMovement : public Feature {
 public:
     HydrogenMovement(){ size = 10; name = "HydrogenMovement"; };

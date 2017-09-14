@@ -7,15 +7,15 @@
 # Created: August 2013
 ##########################################################################
 
-set ( BASE_HEADERS FragmentGraph.h Features.h Config.h Spectrum.h
+set ( BASE_HEADERS FragmentGraph.h Feature.h Config.h Spectrum.h
 FragmentGraphGenerator.h FragmentTreeNode.h Inference.h IPFP.h MILP.h Isotope.h
 MolData.h MspReader.h Param.h NNParam.h Util.h Message.h Identifier.h Comparators.h
 FunctionalGroups.h )
 
 set ( TRAIN_HEADERS Comms.h EM.h EM_NN.h )
  
-set ( BASE_SRC_FILES  FragmentGraph.cpp 
-                      Features.cpp
+set ( BASE_SRC_FILES  FragmentGraph.cpp
+        Feature.cpp
                       Config.cpp
                       FragmentGraphGenerator.cpp
                       FragmentTreeNode.cpp
