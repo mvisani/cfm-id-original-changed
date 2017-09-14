@@ -10,7 +10,6 @@
 #
 # Copyright (c) 2013, Felicity Allen
 # All rights reserved.
-
 # This file is part of the cfm-id project.
 # The contents are covered by the terms of the GNU Lesser General Public
 # License, which is included in the file license.txt, found at the root
@@ -83,7 +82,6 @@
 #include "Features/RootAtomFeature.h"
 #include "Features/RootPathFeature.h"
 
-typedef std::pair<std::string,std::string> symbol_pair_t;
 
 const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs(){
 	

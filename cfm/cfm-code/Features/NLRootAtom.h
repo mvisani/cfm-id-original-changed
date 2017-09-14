@@ -15,7 +15,7 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "../RootAtomFeature.h"
+#include "RootAtomFeature.h"
 
 class NLRootAtom : public RootAtomFeature {
 public:

@@ -15,7 +15,7 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "../FunctionalGroupFeature.h"
+#include "FunctionalGroupFeature.h"
 
 class NLFunctionalGroupFeaturesD2 : public FunctionalGroupFeature {
 public:

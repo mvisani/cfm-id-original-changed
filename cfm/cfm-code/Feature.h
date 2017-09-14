@@ -31,8 +31,9 @@
 #include <iostream>
 #include <fstream>
 
-
 struct input_file_t;
+
+typedef std::pair<std::string,std::string> symbol_pair_t;
 
 //Exception to throw when the input feature configuration file is invalid 
 class InvalidConfigException: public std::exception{
