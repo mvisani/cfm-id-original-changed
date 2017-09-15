@@ -4,7 +4,8 @@
 # FunctionGroupFeature.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -16,10 +17,17 @@
 #########################################################################*/
 #pragma once
 #include "../Feature.h"
+#include "../FunctionalGroups.h"
 
-class FunctionalGroupFeature : public Feature
-{
-  protected:
-    void addFunctionalGroupFeaturesFromAtom(std::vector<int> &tmp_full_fv, const RDKit::Atom *atom, const romol_ptr_t mol, const RDKit::Atom *prev_atom, int max_depth, int depth, bool extra) const;
-    void addFunctionalGroupFeatures(FeatureVector &fv, const RootedROMolPtr *mol, int max_dist, int is_ring_break, bool extra = false) const;
+class FunctionalGroupFeature : public Feature {
+protected:
+  void addFunctionalGroupFeaturesFromAtom(std::vector<int> &tmp_full_fv,
+                                          const RDKit::Atom *atom,
+                                          const romol_ptr_t mol,
+                                          const RDKit::Atom *prev_atom,
+                                          int max_depth, int depth,
+                                          bool extra) const;
+  void addFunctionalGroupFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+                                  int max_dist, int is_ring_break,
+                                  bool extra = false) const;
 };

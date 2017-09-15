@@ -17,6 +17,7 @@ param.cpp.
 #########################################################################*/
 #pragma once
 #include "NeighbourMMFFFeature.h"
+
 class NLNeighbourMMFFAtomType : public NeighbourMMFFFeature {
 public:
   NLNeighbourMMFFAtomType() {

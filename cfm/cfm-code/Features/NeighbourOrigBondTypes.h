@@ -24,6 +24,13 @@ public:
     size = 12;
     name = "NeighbourOrigBondTypes";
   };
+
   void compute(FeatureVector &fv, const RootedROMolPtr *ion,
                const RootedROMolPtr *nl) const;
+
+  // void addNeighbourOrigBondFeatures(FeatureVector &fv,
+  //                                  const RootedROMolPtr *mol, int
+  //                                  ring_break);
 };
+void addNeighbourOrigBondFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+                                  int ring_break);

@@ -16,14 +16,10 @@ the feature
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-
-#include <GraphMol/Fingerprints/Fingerprints.h>
-
 #include <DataStructs/SparseIntVect.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
-#include <DataStructs/ExplicitBitVect.h>
 
 #include "Feature.h"
 #include "Features/BreakAtomPair.h"
@@ -314,43 +310,4 @@ int Feature::getSymbolsLessIndex(std::string &symbol) const {
     index = 4;
   if (symbol == "X")
     index = 5;
-}
-
-//*************************
-// FEATURE IMPLEMENTATIONS:
-//*************************
-
-void addNeighbourOrigBondFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
-                                  int ring_break) {
-
-  std::vector<int> seen_types(6, 0);
-  int feature_offset = fv.getTotalLength();
-  RDKit::ROMol::ADJ_ITER_PAIR itp = mol->mol->getAtomNeighbors(mol->root);
-  for (; itp.first != itp.second; ++itp.first) {
-    RDKit::Bond *bond =
-        mol->mol->getBondBetweenAtoms(*itp.first, mol->root->getIdx());
-    int bondtype;
-    bond->getProp("OrigBondType", bondtype);
-    int idx = feature_offset + bondtype;
-    if (!seen_types[bondtype])
-      fv.addFeatureAtIdx(1.0, idx);
-    seen_types[bondtype] = 1;
-  }
-  if (ring_break) {
-    itp = mol->mol->getAtomNeighbors(mol->other_root);
-    for (; itp.first != itp.second; ++itp.first) {
-      RDKit::Bond *bond =
-          mol->mol->getBondBetweenAtoms(*itp.first, mol->other_root->getIdx());
-      int bondtype;
-      bond->getProp("OrigBondType", bondtype);
-      int idx = feature_offset + bondtype;
-      if (!seen_types[bondtype])
-        fv.addFeatureAtIdx(1.0, idx);
-      seen_types[bondtype] = 1;
-    }
-  }
-  if (fv.getTotalLength() - feature_offset == 0)
-    fv.addFeatureAtIdx(1.0, feature_offset); // No connected bonds
-  if (fv.getTotalLength() - feature_offset < 6)
-    fv.addFeatureAtIdx(0.0, feature_offset + 5); // Update length
 }

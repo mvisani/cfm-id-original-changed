@@ -14,7 +14,9 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#include "RootPathFeature.h"
+#include "NLRootEncoding.h"
+#include <GraphMol/Fingerprints/Fingerprints.h>
+#include <DataStructs/ExplicitBitVect.h>
 
 void NLRootEncoding::compute(FeatureVector &fv,
                              const RootedROMolPtr *nl) const {

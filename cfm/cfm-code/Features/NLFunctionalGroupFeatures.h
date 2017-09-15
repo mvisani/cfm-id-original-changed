@@ -16,7 +16,7 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "../Feature.h"
+#include "FunctionalGroupFeature.h"
 
 class NLFunctionalGroupFeatures : public FunctionalGroupFeature {
 public:

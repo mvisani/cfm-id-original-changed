@@ -15,8 +15,8 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#pragma once
 #include "RingFeatures.h"
+#include <queue>
 
 void RingFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                            const RootedROMolPtr *nl) const {

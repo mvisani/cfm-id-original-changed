@@ -16,6 +16,9 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #include "IonRootEncoding.h"
+#include <GraphMol/Fingerprints/Fingerprints.h>
+#include <DataStructs/ExplicitBitVect.h>
+
 void IonRootEncoding::compute(FeatureVector &fv,
                               const RootedROMolPtr *ion) const {
   RDKit::ROMol &ion_ref = *(ion->mol.get());

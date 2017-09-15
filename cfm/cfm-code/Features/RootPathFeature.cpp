@@ -17,6 +17,8 @@ param.cpp.
 #########################################################################*/
 #include "RootPathFeature.h"
 
+#include <queue>
+
 void RootPathFeature::computeRootPaths(std::vector<path_t> &paths,
                                        const RootedROMolPtr *mol, int len,
                                        bool ring_break,

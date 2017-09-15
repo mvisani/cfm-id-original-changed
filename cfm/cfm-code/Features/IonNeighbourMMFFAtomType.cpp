@@ -15,7 +15,6 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#pragma once
 #include "IonNeighbourMMFFAtomType.h"
 
 void IonNeighbourMMFFAtomType::compute(FeatureVector &fv,
