@@ -17,7 +17,7 @@
 #include "BreakAtomPair.h"
 
 void BreakAtomPair::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const{
-	
+
 	int ring_break;
 	nl->mol.get()->getProp( "IsRingBreak", ring_break );
 	std::vector<symbol_pair_t> pairs;
@@ -42,7 +42,7 @@ void BreakAtomPair::compute( FeatureVector &fv, const RootedROMolPtr *ion, const
 
 	//Pairs
 	pairs.push_back( symbol_pair_t( irootsymbol, nlrootsymbol ));
-	if( ring_break ) 
+	if( ring_break )
 		pairs.push_back( symbol_pair_t( iotherrootsymbol, nlotherrootsymbol ));
 
 	//Iterate through all combinations of atom pairs, appending
@@ -54,14 +54,14 @@ void BreakAtomPair::compute( FeatureVector &fv, const RootedROMolPtr *ion, const
 		for( it2 = ok_symbols->begin(); it2 != ok_symbols->end(); ++it2 ){
 			symbol_pair_t sp = symbol_pair_t(*it1, *it2);
 			double nonringf = 0.0, ringf = 0.0;
-			if( sp == *pairs.begin() ){ 
+			if( sp == *pairs.begin() ){
 				nonringf = !ring_break;
 				ringf = ring_break;
 			}
 			if( sp == *pairs.rbegin() ) ringf = ring_break;
 			fv.addFeature(nonringf);
 			fv.addFeature(ringf);
-		} 
+		}
 	}
 
 }

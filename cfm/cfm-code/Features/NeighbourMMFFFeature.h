@@ -4,7 +4,8 @@
 # NeighbourMMFFFeature.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -19,6 +20,6 @@
 
 class NeighbourMMFFFeature : public Feature {
 protected:
-    void addNeighbourAtomTypes( FeatureVector &fv, const RootedROMolPtr *mol, const RDKit::Atom *root, int offset ) const;
-
+  void addNeighbourAtomTypes(FeatureVector &fv, const RootedROMolPtr *mol,
+                             const RDKit::Atom *root, int offset) const;
 };

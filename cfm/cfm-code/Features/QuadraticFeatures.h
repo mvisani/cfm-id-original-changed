@@ -4,7 +4,8 @@
 # QuadraticFeatures.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -19,7 +20,10 @@
 
 class QuadraticFeatures : public Feature {
 public:
-    QuadraticFeatures(){ size = 0; name = "QuadraticFeatures";  };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const;
+  QuadraticFeatures() {
+    size = 0;
+    name = "QuadraticFeatures";
+  };
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+               const RootedROMolPtr *nl) const;
 };
-

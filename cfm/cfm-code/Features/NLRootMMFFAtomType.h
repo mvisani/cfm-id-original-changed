@@ -4,7 +4,8 @@
 # FunctionGroupFeature.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -19,6 +20,10 @@
 
 class NLRootMMFFAtomType : public Feature {
 public:
-    NLRootMMFFAtomType(){ size = 100; name = "NLRootMMFFAtomType";  };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+  NLRootMMFFAtomType() {
+    size = 100;
+    name = "NLRootMMFFAtomType";
+  };
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+               const RootedROMolPtr *nl) const;
 };

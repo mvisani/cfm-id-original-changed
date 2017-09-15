@@ -4,7 +4,8 @@
 # NeighbourOrigBondTypes.cpp
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -16,11 +17,12 @@
 #########################################################################*/
 #include "NeighbourOrigBondTypes.h"
 
-void NeighbourOrigBondTypes::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const{
-    
-        int ring_break;
-        nl->mol.get()->getProp( "IsRingBreak", ring_break );
-        addNeighbourOrigBondFeatures( fv, ion, ring_break );
-        addNeighbourOrigBondFeatures( fv, nl, ring_break );
-    }
-    
+void NeighbourOrigBondTypes::compute(FeatureVector &fv,
+                                     const RootedROMolPtr *ion,
+                                     const RootedROMolPtr *nl) const {
+
+  int ring_break;
+  nl->mol.get()->getProp("IsRingBreak", ring_break);
+  addNeighbourOrigBondFeatures(fv, ion, ring_break);
+  addNeighbourOrigBondFeatures(fv, nl, ring_break);
+}

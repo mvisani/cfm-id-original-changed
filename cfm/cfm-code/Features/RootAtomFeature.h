@@ -4,7 +4,8 @@
 # RootAtomFeature.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -19,5 +20,6 @@
 
 class RootAtomFeature : public Feature {
 protected:
-	void computeRootAtomFeature( FeatureVector &fv, const RootedROMolPtr *mol, bool ring_break ) const;
+  void computeRootAtomFeature(FeatureVector &fv, const RootedROMolPtr *mol,
+                              bool ring_break) const;
 };

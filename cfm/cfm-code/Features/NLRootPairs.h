@@ -4,7 +4,8 @@
 # NLRootAtom.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -14,12 +15,16 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-//Features use fingerprint encode Neutral Loss
+// Features use fingerprint encode Neutral Loss
 #pragma once
-#include "RootAtomFeature.h"
+#include "RootPathFeature.h"
 
-class NLRootAtom : public RootAtomFeature {
+class NLRootPairs : public RootPathFeature {
 public:
-    NLRootAtom(){ size = 13; name = "NLRootAtom";  };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+  NLRootPairs() {
+    size = 145;
+    name = "NLRootPairs";
+  };
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+               const RootedROMolPtr *nl) const;
 };

@@ -4,7 +4,8 @@
 # IonRootTriplesIncludeBond.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -19,7 +20,10 @@
 
 class IonRootTriplesIncludeBond : public RootPathFeature {
 public:
-    IonRootTriplesIncludeBond
-            (){ size = 10585; name = "IonRootTriplesIncludeBond"; };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+  IonRootTriplesIncludeBond() {
+    size = 10585;
+    name = "IonRootTriplesIncludeBond";
+  };
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+               const RootedROMolPtr *nl) const;
 };
