@@ -4,7 +4,8 @@
 # NLRootTriples.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -19,6 +20,10 @@
 
 class NLRootTriples : public RootPathFeature {
 public:
-    NLRootTriples(){ size = 865; name = "NLRootTriples"; };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+  NLRootTriples() {
+    size = 865;
+    name = "NLRootTriples";
+  };
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+               const RootedROMolPtr *nl) const;
 };

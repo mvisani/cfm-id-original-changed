@@ -16,6 +16,7 @@
 #########################################################################*/
 #pragma once
 #include "../Feature.h"
+
 class BrokenOrigBondType : public Feature {
 public:
     BrokenOrigBondType(){ size = 7; name = "BrokenOrigBondType"; };

@@ -4,7 +4,8 @@
 # NLFunctionalGroupFeaturesD2.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -19,6 +20,10 @@
 
 class NLFunctionalGroupFeaturesD2 : public FunctionalGroupFeature {
 public:
-    NLFunctionalGroupFeaturesD2(){ size = (NUM_FGRPS+1)*3; name = "NLFunctionalGroupFeaturesD2";  };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const;
+  NLFunctionalGroupFeaturesD2() {
+    size = (NUM_FGRPS + 1) * 3;
+    name = "NLFunctionalGroupFeaturesD2";
+  };
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+               const RootedROMolPtr *nl) const;
 };

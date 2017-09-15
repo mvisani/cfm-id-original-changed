@@ -14,10 +14,11 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#include "IonFunctionalGroupFeatures.h"
+#include "IonExtraFunctionalGroupFeatures.h"
 
-void IonExtraFunctionalGroupFeatures::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const{
+void IonExtraFunctionalGroupFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const
+{
 	int ring_break;
-	nl->mol.get()->getProp( "IsRingBreak", ring_break );
-	addFunctionalGroupFeatures( fv, ion, 1, ring_break, true );
+	nl->mol.get()->getProp("IsRingBreak", ring_break);
+	addFunctionalGroupFeatures(fv, ion, 1, ring_break, true);
 }

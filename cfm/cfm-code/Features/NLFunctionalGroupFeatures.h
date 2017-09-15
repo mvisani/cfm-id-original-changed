@@ -4,7 +4,8 @@
 # FunctionGroupFeature.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -15,10 +16,14 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
-#include "../Feature.h"
+#include "FunctionalGroupFeature.h"
 
 class NLFunctionalGroupFeatures : public FunctionalGroupFeature {
 public:
-NLFunctionalGroupFeatures(){ size = (NUM_FGRPS+1)*2; name = "NLFunctionalGroupFeatures";  };
-void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const;
+  NLFunctionalGroupFeatures() {
+    size = (NUM_FGRPS + 1) * 2;
+    name = "NLFunctionalGroupFeatures";
+  };
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+               const RootedROMolPtr *nl) const;
 };

@@ -1,12 +1,11 @@
-#pragma once
-#include "../Feature.h"
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# FunctionGroupFeature.h
+# NLRootEncoding.cpp
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -16,3 +15,13 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+#include "RootPathFeature.h"
+
+// Features use fingerprint encode ion fragmentation
+class NLRootEncoding : public RootPathFeature {
+  NLRootEncoding() {
+    size = 2048;
+    name = "NLRootEncoding";
+  };
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion) const;
+};

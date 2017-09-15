@@ -4,7 +4,8 @@
 # NLRootTriplesIncludeBond.cpp
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -19,6 +20,10 @@
 
 class NLRootTriplesIncludeBond : public RootPathFeature {
 public:
-    NLRootTriplesIncludeBond(){ size = 10585; name = "NLRootTriplesIncludeBond"; };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+  NLRootTriplesIncludeBond() {
+    size = 10585;
+    name = "NLRootTriplesIncludeBond";
+  };
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+               const RootedROMolPtr *nl) const;
 };

@@ -4,7 +4,8 @@
 # IonRootTriples.cpp
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -14,14 +15,14 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#pragma once
 #include "IonRootTriples.h"
 
-void IonRootTriples::compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const{
-    
-        int ring_break;
-        nl->mol.get()->getProp( "IsRingBreak", ring_break );
-        std::vector<path_t> paths;
-        computeRootPaths( paths, ion, 3, ring_break, false);
-        addRootTripleFeatures( fv, paths, ring_break, false);
-    }
+void IonRootTriples::compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                             const RootedROMolPtr *nl) const {
+
+  int ring_break;
+  nl->mol.get()->getProp("IsRingBreak", ring_break);
+  std::vector<path_t> paths;
+  computeRootPaths(paths, ion, 3, ring_break, false);
+  addRootTripleFeatures(fv, paths, ring_break, false);
+}
