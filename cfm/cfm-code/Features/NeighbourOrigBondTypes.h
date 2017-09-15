@@ -32,5 +32,7 @@ public:
   //                                  const RootedROMolPtr *mol, int
   //                                  ring_break);
 };
+
+// TODO FIX THIS, this should be a member function
 void addNeighbourOrigBondFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
                                   int ring_break);
