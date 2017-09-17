@@ -67,6 +67,34 @@ void RootPathFeature::addPathsFromAtom(std::vector<path_t> &paths,
   path_so_far.pop_back();
 }
 
+void RootPathFeature::getRmoveAtomIdxOfRange(
+    const romol_ptr_t mol, const RDKit::Atom *atom,
+    const RDKit::Atom *prev_atom, std::vector<unsigned int> &remove_atom_ids,
+    int range) const {
+  // if range <= 0 , that means this atom is out of range
+  // thus we need remove it
+  if (range <= 0) {
+    remove_atom_ids.push_back(atom->getIdx());
+  }
+
+  // get all the neighbors
+  for (auto itp = mol.get()->getAtomNeighbors(atom); itp.first != itp.second;
+       ++itp.first) {
+    RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
+    if (nbr_atom != prev_atom) {
+      getRmoveAtomIdxOfRange(mol, nbr_atom, atom, remove_atom_ids, range - 1);
+    }
+  }
+}
+
+void RootPathFeature::removeAtomNotInTheList(
+    RDKit::RWMol &mol, const std::vector<unsigned int> &remove_atom_ids) const {
+
+  for (auto atom_idx : remove_atom_ids) {
+    mol.removeAtom(atom_idx);
+  }
+}
+
 void RootPathFeature::addRootPairFeatures(FeatureVector &fv,
                                           std::vector<path_t> &paths,
                                           int ring_break) const {

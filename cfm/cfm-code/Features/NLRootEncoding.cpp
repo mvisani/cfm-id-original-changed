@@ -21,10 +21,19 @@ param.cpp.
 void NLRootEncoding::compute(FeatureVector &fv,
                              const RootedROMolPtr *nl) const {
   RDKit::ROMol &nl_ref = *(nl->mol.get());
+  // Get list of atom we need to remove
+  std::vector<unsigned int> remove_atom_ids;
+  this->getRmoveAtomIdxOfRange(nl->mol, nl->root, nullptr, remove_atom_ids, 3);
 
+  // Get Mol Object and remove atoms
+  RDKit::RWMol part;
+  part.insertMol(*(nl->mol.get()));
+  this->removeAtomNotInTheList(part, remove_atom_ids);
+
+  // Get finger prints with size
   unsigned int minPath = 1;
   unsigned int maxPath = 7;
-  unsigned int fpSize = 2048;
+  unsigned int fpSize = size;
   ExplicitBitVect *fingerPrint =
       RDKit::RDKFingerprintMol(nl_ref, minPath, maxPath, fpSize);
   for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {

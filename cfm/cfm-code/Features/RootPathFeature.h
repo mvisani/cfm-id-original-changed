@@ -17,6 +17,7 @@ param.cpp.
 #########################################################################*/
 #pragma once
 #include "../Feature.h"
+#include <GraphMol/RWMol.h>
 
 class RootPathFeature : public Feature {
 protected:
@@ -32,6 +33,17 @@ protected:
   // function to add features with a length of three
   void addRootTripleFeatures(FeatureVector &fv, std::vector<path_t> &paths,
                              int ring_break, bool with_bond) const;
+
+  // function to get part of Mol from given root
+  // and all atom within given range
+  void getRmoveAtomIdxOfRange(const romol_ptr_t mol, const RDKit::Atom *atom,
+                              const RDKit::Atom *prev_atom,
+                              std::vector<unsigned int> &remove_atom_ids,
+                              int range) const;
+
+  void removeAtomNotInTheList(
+      RDKit::RWMol &mol,
+      const std::vector<unsigned int> &remove_atom_ids) const;
 
 private:
   // function to add path from given atom
