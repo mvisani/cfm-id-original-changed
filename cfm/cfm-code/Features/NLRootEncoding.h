@@ -20,8 +20,10 @@ param.cpp.
 // Features use fingerprint encode ion fragmentation
 class NLRootEncoding : public RootPathFeature {
   NLRootEncoding() {
-    size = 256;
+    size = 512;
     name = "NLRootEncoding";
   };
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion) const;
+
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+               const RootedROMolPtr *nl) const;
 };

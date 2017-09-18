@@ -4,7 +4,8 @@
 # IonRootEncoding.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+#				gradients..etc) during parameter update - see
+param.cpp.
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
@@ -18,6 +19,11 @@
 
 // Features use fingerprint encode ion fragmentation
 class IonRootEncoding : public RootPathFeature {
-    IonRootEncoding(){ size = 2048; name = "IonRootEncoding"; };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion ) const;
+  IonRootEncoding() {
+    size = 512;
+    name = "IonRootEncoding";
+  };
+
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+               const RootedROMolPtr *nl) const;
 };

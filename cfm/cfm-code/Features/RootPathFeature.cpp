@@ -19,8 +19,8 @@ param.cpp.
 
 #include <queue>
 
-#include <GraphMol/Fingerprints/Fingerprints.h>
 #include <DataStructs/ExplicitBitVect.h>
+#include <GraphMol/Fingerprints/Fingerprints.h>
 
 void RootPathFeature::computeRootPaths(std::vector<path_t> &paths,
                                        const RootedROMolPtr *mol, int len,
@@ -119,10 +119,31 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
   unsigned int minPath = 1;
   unsigned int maxPath = 7;
   ExplicitBitVect *fingerPrint =
-      RDKit::RDKFingerprintMol(nl_ref, minPath, maxPath, finger_print_size);
+      RDKit::RDKFingerprintMol(part, minPath, maxPath, finger_print_size);
 
   for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
     fv.addFeature((*fingerPrint)[i]);
+  }
+
+  if (ring_break) {
+    remove_atom_ids.clear();
+    this->getRmoveAtomIdxOfRange(mol->mol, mol->other_root, nullptr,
+                                 remove_atom_ids, path_range);
+
+    // Get Mol Object and remove atoms
+    RDKit::RWMol other_part;
+    part.insertMol(*(mol->mol.get()));
+    this->removeAtomNotInTheList(other_part, remove_atom_ids);
+
+    ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(
+        other_part, minPath, maxPath, finger_print_size);
+    for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
+      fv.addFeature((*fingerPrint)[i]);
+    }
+  } else {
+    for (unsigned int i = 0; i < finger_print_size; ++i) {
+      fv.addFeature(0);
+    }
   }
 }
 

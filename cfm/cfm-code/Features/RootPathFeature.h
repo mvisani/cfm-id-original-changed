@@ -54,4 +54,6 @@ private:
   void addPathsFromAtom(std::vector<path_t> &paths, const RDKit::Atom *atom,
                         const romol_ptr_t mol, const RDKit::Atom *prev_atom,
                         path_t &path_so_far, int len, bool with_bond) const;
-};
+  void getAtomsWithRange(int range);
+  };
+  
