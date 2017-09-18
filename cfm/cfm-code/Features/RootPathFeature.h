@@ -45,6 +45,10 @@ protected:
       RDKit::RWMol &mol,
       const std::vector<unsigned int> &remove_atom_ids) const;
 
+  void addFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
+                      const int finger_print_size, const int path_range,
+                      int ring_break) const;
+
 private:
   // function to add path from given atom
   void addPathsFromAtom(std::vector<path_t> &paths, const RDKit::Atom *atom,
