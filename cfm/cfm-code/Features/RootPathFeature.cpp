@@ -19,6 +19,9 @@ param.cpp.
 
 #include <queue>
 
+#include <GraphMol/Fingerprints/Fingerprints.h>
+#include <DataStructs/ExplicitBitVect.h>
+
 void RootPathFeature::computeRootPaths(std::vector<path_t> &paths,
                                        const RootedROMolPtr *mol, int len,
                                        bool ring_break,
@@ -65,6 +68,62 @@ void RootPathFeature::addPathsFromAtom(std::vector<path_t> &paths,
 
   // Remove the latest symbol
   path_so_far.pop_back();
+}
+
+void RootPathFeature::getRmoveAtomIdxOfRange(
+    const romol_ptr_t mol, const RDKit::Atom *atom,
+    const RDKit::Atom *prev_atom, std::vector<unsigned int> &remove_atom_ids,
+    int range) const {
+  // if range <= 0 , that means this atom is out of range
+  // thus we need remove it
+  if (range <= 0) {
+    remove_atom_ids.push_back(atom->getIdx());
+  }
+
+  // get all the neighbors
+  for (auto itp = mol.get()->getAtomNeighbors(atom); itp.first != itp.second;
+       ++itp.first) {
+    RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
+    if (nbr_atom != prev_atom) {
+      getRmoveAtomIdxOfRange(mol, nbr_atom, atom, remove_atom_ids, range - 1);
+    }
+  }
+}
+
+void RootPathFeature::removeAtomNotInTheList(
+    RDKit::RWMol &mol, const std::vector<unsigned int> &remove_atom_ids) const {
+
+  for (auto atom_idx : remove_atom_ids) {
+    mol.removeAtom(atom_idx);
+  }
+}
+
+void RootPathFeature::addFingerPrint(FeatureVector &fv,
+                                     const RootedROMolPtr *mol,
+                                     const int finger_print_size,
+                                     const int path_range,
+                                     int ring_break) const {
+
+  RDKit::ROMol &nl_ref = *(mol->mol.get());
+  // Get list of atom we need to remove
+  std::vector<unsigned int> remove_atom_ids;
+  this->getRmoveAtomIdxOfRange(mol->mol, mol->root, nullptr, remove_atom_ids,
+                               path_range);
+
+  // Get Mol Object and remove atoms
+  RDKit::RWMol part;
+  part.insertMol(*(mol->mol.get()));
+  this->removeAtomNotInTheList(part, remove_atom_ids);
+
+  // Get finger prints with size
+  unsigned int minPath = 1;
+  unsigned int maxPath = 7;
+  ExplicitBitVect *fingerPrint =
+      RDKit::RDKFingerprintMol(nl_ref, minPath, maxPath, finger_print_size);
+
+  for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
+    fv.addFeature((*fingerPrint)[i]);
+  }
 }
 
 void RootPathFeature::addRootPairFeatures(FeatureVector &fv,
