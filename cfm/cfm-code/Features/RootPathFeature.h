@@ -36,14 +36,14 @@ protected:
 
   // function to get part of Mol from given root
   // and all atom within given range
-  void getRmoveAtomIdxOfRange(const romol_ptr_t mol, const RDKit::Atom *atom,
-                              const RDKit::Atom *prev_atom,
-                              std::vector<unsigned int> &remove_atom_ids,
-                              int range) const;
+  void getRemoveAtomIdxOfRange(const romol_ptr_t mol, const RDKit::Atom *atom,
+                               const RDKit::Atom *prev_atom,
+                               std::vector<unsigned int> &remove_atom_ids,
+                               int range) const;
 
-  void removeAtomNotInTheList(
-      RDKit::RWMol &mol,
-      const std::vector<unsigned int> &remove_atom_ids) const;
+  // remove atoms from mol in given list
+  void removeAtomNotInTheList(RDKit::RWMol &mol,
+                              std::vector<unsigned int> &remove_atom_ids) const;
 
   void addFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
                       const int finger_print_size, const int path_range,
@@ -55,5 +55,4 @@ private:
                         const romol_ptr_t mol, const RDKit::Atom *prev_atom,
                         path_t &path_so_far, int len, bool with_bond) const;
   void getAtomsWithRange(int range);
-  };
-  
+};
