@@ -32,7 +32,11 @@ protected:
 
   // function to add features with a length of three
   void addRootTripleFeatures(FeatureVector &fv, std::vector<path_t> &paths,
-                             int ring_break, bool with_bond) const;
+                             int ring_break) const;
+
+  // function to add root path feature with bond type
+  void addRootFeaturesWithBond(FeatureVector &fv, std::vector<path_t> &paths,
+                               int ring_break, int len) const;
 
   // function to get part of Mol from given root
   // and all atom within given range

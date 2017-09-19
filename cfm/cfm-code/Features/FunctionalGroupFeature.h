@@ -27,6 +27,7 @@ protected:
                                           const RDKit::Atom *prev_atom,
                                           int max_depth, int depth,
                                           bool extra) const;
+
   void addFunctionalGroupFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
                                   int max_dist, int is_ring_break,
                                   bool extra = false) const;

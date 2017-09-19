@@ -215,56 +215,63 @@ void RootPathFeature::addRootPairFeatures(FeatureVector &fv,
 
 void RootPathFeature::addRootTripleFeatures(FeatureVector &fv,
                                             std::vector<path_t> &paths,
-                                            int ring_break,
-                                            bool with_bond) const {
+                                            int ring_break) const {
   // Add a feature indicating that there are no triples
   fv.addFeature((double)(paths.size() == 0));
 
-  /*
-  //Iterate through all combinations of atom triples, adding a count
-  //of the number of times each is seen;
-  //Note: the order matters here, root atom first then the next in the path,
-  etc.
+  // Iterate through all combinations of atom triples, adding a count
+  // of the number of times each is seen;
+  // Note: the order matters here, root atom first then the next in the path,
   std::vector<std::string>::const_iterator it1, it2, it3;
   const std::vector<std::string> *ok_symbols = &OKSymbolsLess();
-  for( it1 = ok_symbols->begin(); it1 != ok_symbols->end(); ++it1 ){
-  for( it2 = ok_symbols->begin(); it2 != ok_symbols->end(); ++it2 ){
-  for( it3 = ok_symbols->begin(); it3 != ok_symbols->end(); ++it3 ){
-  //Count how many of each possible symbol pair we have
-  path_t trp; trp.push_back(*it1); trp.push_back(*it2); trp.push_back(*it3);
-  std::vector<path_t>::iterator it4 = paths.begin();
-  double count = 0.0, ring_count = 0.0;
-  for( ; it4 != paths.end(); ++it4 ){
-  if( trp[0] == (*it4)[0] && trp[1] == (*it4)[1] && trp[2] == (*it4)[2] ){
-  if( !ring_break ) count += 1.0;
-  else ring_count += 1.0;
-  }
-  }
+  for (it1 = ok_symbols->begin(); it1 != ok_symbols->end(); ++it1) {
+    for (it2 = ok_symbols->begin(); it2 != ok_symbols->end(); ++it2) {
+      for (it3 = ok_symbols->begin(); it3 != ok_symbols->end(); ++it3) {
+        // Count how many of each possible symbol pair we have
+        path_t trp;
+        trp.push_back(*it1);
+        trp.push_back(*it2);
+        trp.push_back(*it3);
+        std::vector<path_t>::iterator it4 = paths.begin();
+        double count = 0.0, ring_count = 0.0;
+        for (; it4 != paths.end(); ++it4) {
+          if (trp[0] == (*it4)[0] && trp[1] == (*it4)[1] &&
+              trp[2] == (*it4)[2]) {
+            if (!ring_break)
+              count += 1.0;
+            else
+              ring_count += 1.0;
+          }
+        }
 
-  //First feature indicates at least 1
-  //Second feature indicates more than 1
-  //Non-Ring
-  if( count > 0.0 )
-  fv.addFeature( 1.0 );
-  else
-  fv.addFeature( 0.0 );
-  if( count > 1.0 )
-  fv.addFeature( 1.0 );
-  else
-  fv.addFeature( 0.0 );
-  //Ring
-  if( ring_count > 0.0 )
-  fv.addFeature( 1.0 );
-  else
-  fv.addFeature( 0.0 );
-  if( ring_count > 1.0 )
-  fv.addFeature( 1.0 );
-  else
-  fv.addFeature( 0.0 );
+        // First feature indicates at least 1
+        // Second feature indicates more than 1
+        // Non-Ring
+        if (count > 0.0)
+          fv.addFeature(1.0);
+        else
+          fv.addFeature(0.0);
+        if (count > 1.0)
+          fv.addFeature(1.0);
+        else
+          fv.addFeature(0.0);
+        // Ring
+        if (ring_count > 0.0)
+          fv.addFeature(1.0);
+        else
+          fv.addFeature(0.0);
+        if (ring_count > 1.0)
+          fv.addFeature(1.0);
+        else
+          fv.addFeature(0.0);
+      }
+    }
   }
-  }
-  }*/
+}
 
+void RootPathFeature::addRootFeaturesWithBond(FeatureVector &fv,
+                                              std::vector<path_t> &paths,
+                                              int ring_break, int len) const {
   // double count = 0.0, ring_count = 0.0;
   int num_symbol_type = OKSymbolsLess().size();
   int base_feature_idx = fv.getTotalLength();
@@ -277,7 +284,7 @@ void RootPathFeature::addRootTripleFeatures(FeatureVector &fv,
       std::string symbol = path->at(idx);
       // if there are bond type information in the path
       // every second item in the list is bond type
-      if (with_bond == true && idx % 2 == 1) {
+      if (idx % 2 == 1) {
         feature_idx_offset =
             num_symbol_type * feature_idx_offset + std::stoi(symbol);
       } else {

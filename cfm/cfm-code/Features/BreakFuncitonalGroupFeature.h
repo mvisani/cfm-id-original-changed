@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# IonRootTriples.cpp
+# BreakFuncitonalGroupFeature.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
@@ -15,14 +15,15 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#include "IonRootTriples.h"
+#pragma once
+#include "FunctionalGroupFeature.h"
 
-void IonRootTriples::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                             const RootedROMolPtr *nl) const {
-
-  int ring_break;
-  nl->mol.get()->getProp("IsRingBreak", ring_break);
-  std::vector<path_t> paths;
-  computeRootPaths(paths, ion, 3, ring_break, false);
-  addRootTripleFeatures(fv, paths, ring_break);
-}
+class BreakFuncitonalGroupFeature : public FunctionalGroupFeature {
+public:
+  BreakFuncitonalGroupFeature() {
+    size = size = (NUM_FGRPS + 1) * 2;
+    name = "BreakFuncitonalGroupFeature";
+  };
+  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+               const RootedROMolPtr *nl) const;
+};
