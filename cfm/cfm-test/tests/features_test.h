@@ -17,128 +17,134 @@
 
 class FeaturesTestInit : public Test {
 public:
-	FeaturesTestInit();
-	void runTest();
+  FeaturesTestInit();
+  void runTest();
 };
 
 class FeaturesTestBreakAtomPair : public Test {
 public:
-	FeaturesTestBreakAtomPair();
-	void runTest();
+  FeaturesTestBreakAtomPair();
+  void runTest();
 };
 
 class FeaturesTestRootPairs : public Test {
 public:
-	FeaturesTestRootPairs();
-	void runTest();
+  FeaturesTestRootPairs();
+  void runTest();
 };
 
 class FeaturesTestRootTriples : public Test {
 public:
-	FeaturesTestRootTriples();
-	void runTest();
+  FeaturesTestRootTriples();
+  void runTest();
 };
 
 class FeaturesTestGasteigerCharges : public Test {
 public:
-	FeaturesTestGasteigerCharges();
-	void runTest();
+  FeaturesTestGasteigerCharges();
+  void runTest();
 };
 
 class FeaturesTestHydrogenMovement : public Test {
 public:
-	FeaturesTestHydrogenMovement();
-	void runTest();
+  FeaturesTestHydrogenMovement();
+  void runTest();
 };
 
 class FeaturesTestRadicalFeatures : public Test {
 public:
-	FeaturesTestRadicalFeatures();
-	void runTest();
+  FeaturesTestRadicalFeatures();
+  void runTest();
 };
 
 class FeaturesTestIonicFeatures : public Test {
 public:
-	FeaturesTestIonicFeatures();
-	void runTest();
+  FeaturesTestIonicFeatures();
+  void runTest();
 };
 
 class FeaturesTestRingFeatures : public Test {
 public:
-	FeaturesTestRingFeatures();
-	void runTest();
+  FeaturesTestRingFeatures();
+  void runTest();
 };
 
 class FeaturesTestExtraRingFeatures : public Test {
 public:
-	FeaturesTestExtraRingFeatures();
-	void runTest();
+  FeaturesTestExtraRingFeatures();
+  void runTest();
 };
 
 class FeaturesTestFunctionalGroups : public Test {
 public:
-	FeaturesTestFunctionalGroups();
-	void runTest();
+  FeaturesTestFunctionalGroups();
+  void runTest();
 };
 
 class FeaturesTestExtraFunctionalGroups : public Test {
 public:
-	FeaturesTestExtraFunctionalGroups();
-	void runTest();
+  FeaturesTestExtraFunctionalGroups();
+  void runTest();
 };
 
 class FeaturesTestFunctionalGroupsRootOnly : public Test {
 public:
-	FeaturesTestFunctionalGroupsRootOnly();
-	void runTest();
+  FeaturesTestFunctionalGroupsRootOnly();
+  void runTest();
 };
 
-class FeaturesTestRootMMFFAtomType :  public Test {
+class FeaturesTestRootMMFFAtomType : public Test {
 public:
-	FeaturesTestRootMMFFAtomType();
-	void runTest();
+  FeaturesTestRootMMFFAtomType();
+  void runTest();
 };
 
-class FeaturesTestNeighbourMMFFAtomType :  public Test {
+class FeaturesTestNeighbourMMFFAtomType : public Test {
 public:
-	FeaturesTestNeighbourMMFFAtomType();
-	void runTest();
+  FeaturesTestNeighbourMMFFAtomType();
+  void runTest();
 };
 
-class FeaturesTestBrokenOrigBondType :  public Test {
+class FeaturesTestBrokenOrigBondType : public Test {
 public:
-	FeaturesTestBrokenOrigBondType();
-	void runTest();
+  FeaturesTestBrokenOrigBondType();
+  void runTest();
 };
 
 class FeaturesTestNeighbourOrigBondType : public Test {
 public:
-	FeaturesTestNeighbourOrigBondType();
-	void runTest();
+  FeaturesTestNeighbourOrigBondType();
+  void runTest();
 };
 
-class FeaturesTestRootAtom :  public Test {
+class FeaturesTestRootAtom : public Test {
 public:
-	FeaturesTestRootAtom();
-	void runTest();
+  FeaturesTestRootAtom();
+  void runTest();
 };
 
 class FeaturesTestQuadraticFeatures : public Test {
 public:
-	FeaturesTestQuadraticFeatures();
-	void runTest();
+  FeaturesTestQuadraticFeatures();
+  void runTest();
 };
 
 class FeaturesTestLength : public Test {
 public:
-	FeaturesTestLength();
-	void runTest();
+  FeaturesTestLength();
+  void runTest();
 };
 
 class FeaturesTestMetlinExample : public Test {
 public:
-	FeaturesTestMetlinExample();
-	void runTest();
+  FeaturesTestMetlinExample();
+  void runTest();
 };
+
+/*class FeaturesTestFingerPrint : public Test {
+public:
+  FeaturesTestFingerPrint();
+  void runTest();
+};*/
 
 #endif // __FEATURE_TEST_H__
