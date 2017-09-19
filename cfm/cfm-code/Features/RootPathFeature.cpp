@@ -21,6 +21,7 @@ param.cpp.
 
 #include <DataStructs/ExplicitBitVect.h>
 #include <GraphMol/Fingerprints/Fingerprints.h>
+#include <GraphMol/MolOps.h>
 
 void RootPathFeature::computeRootPaths(std::vector<path_t> &paths,
                                        const RootedROMolPtr *mol, int len,
@@ -134,6 +135,7 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
     RDKit::RWMol other_part;
     part.insertMol(*(mol->mol.get()));
     this->removeAtomNotInTheList(other_part, remove_atom_ids);
+    RDKit::MolOps::sanitizeMol(part);
 
     ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(
         other_part, minPath, maxPath, finger_print_size);
