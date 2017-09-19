@@ -17,8 +17,8 @@ param.cpp.
 #########################################################################*/
 #include "RootPathFeature.h"
 
-#include <queue>
 #include <algorithm>
+#include <queue>
 
 #include <DataStructs/ExplicitBitVect.h>
 #include <GraphMol/Fingerprints/Fingerprints.h>
@@ -148,7 +148,10 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
     RDKit::RWMol other_part;
     part.insertMol(*(mol->mol.get()));
     this->removeAtomNotInTheList(other_part, remove_atom_ids);
-    RDKit::MolOps::sanitizeMol(part);
+
+    // we don't want to part to be santilized
+    // because if we are taking part of ring
+    // RDKit::MolOps::sanitizeMol(part);
 
     ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(
         other_part, minPath, maxPath, finger_print_size);
