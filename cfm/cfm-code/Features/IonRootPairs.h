@@ -8,7 +8,6 @@
 #
 # Copyright (c) 2013,2017
 # All rights reserved.
-
 # This file is part of the cfm-id project.
 # The contents are covered by the terms of the GNU Lesser General Public
 # License, which is included in the file license.txt, found at the root

@@ -42,6 +42,7 @@ class FeatureHelper
   public:
     FeatureHelper()
     {
+        //TODO fix this: magic number is evil
         exec_flags.resize(6);
         for (int i = 0; i < 6; i++)
             exec_flags[i] = 0;
@@ -53,7 +54,7 @@ class FeatureHelper
         exec_flags[1] = fc->includesFeature("HydrogenMovement") || fc->includesFeature("HydrogenRemoval");
         exec_flags[2] = fc->includesFeature("IonRootMMFFAtomType") || fc->includesFeature("NLRootMMFFAtomType") ||
                         fc->includesFeature("IonNeighbourMMFFAtomType") || fc->includesFeature("NLNeighbourMMFFAtomType");
-        exec_flags[3] = fc->includesFeature("BrokenOrigBondType") || fc->includesFeature("NeighbourOrigBondTypes");
+        exec_flags[3] = fc->includesFeature("BrokenOrigBondType") || fc->includesFeature("NeighbourOrigBondTypes" || fc->includesFeature("NLRootEncoding") || fc->includesFeature("IonRootEncoding" );
         exec_flags[4] = fc->includesFeature("IonFunctionalGroupFeatures") || fc->includesFeature("NLFunctionalGroupFeatures") ||
                         fc->includesFeature("IonFunctionalGroupFeaturesD2") || fc->includesFeature("NLFunctionalGroupFeaturesD2") ||
                         fc->includesFeature("IonFunctionalGroupRootOnlyFeatures") || fc->includesFeature("NLFunctionalGroupRootOnlyFeatures");
