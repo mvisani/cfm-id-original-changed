@@ -49,6 +49,9 @@ protected:
   void removeAtomNotInTheList(RDKit::RWMol &mol,
                               std::vector<unsigned int> &remove_atom_ids) const;
 
+  // replace bond type with orig bond type
+  void replaceWithOrigBondType(RDKit::RWMol &mol) const;
+
   void addFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
                       const int finger_print_size, const int path_range,
                       int ring_break) const;

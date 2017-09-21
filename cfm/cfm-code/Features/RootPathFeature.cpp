@@ -23,6 +23,7 @@ param.cpp.
 #include <DataStructs/ExplicitBitVect.h>
 #include <GraphMol/Fingerprints/Fingerprints.h>
 #include <GraphMol/MolOps.h>
+#include <GraphMol/BondIterators.h>
 
 void RootPathFeature::computeRootPaths(std::vector<path_t> &paths,
                                        const RootedROMolPtr *mol, int len,
@@ -112,6 +113,16 @@ void RootPathFeature::removeAtomNotInTheList(
   }
 }
 
+// replace bond type with orig bond type
+void RootPathFeature::replaceWithOrigBondType(RDKit::RWMol &rwmol) const {
+
+  for (auto bi = rwmol.beginBonds(); bi != rwmol.endBonds(); ++bi) {
+    int bond_type;
+    (*bi)->getProp("OrigBondTypeRaw", bond_type);
+    (*bi)->setBondType(static_cast<RDKit::Bond::BondType>(bond_type));
+  }
+}
+
 void RootPathFeature::addFingerPrint(FeatureVector &fv,
                                      const RootedROMolPtr *mol,
                                      const int finger_print_size,
@@ -121,13 +132,15 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
   RDKit::ROMol &nl_ref = *(mol->mol.get());
   // Get list of atom we need to remove
   std::vector<unsigned int> remove_atom_ids;
-  this->getRemoveAtomIdxOfRange(mol->mol, mol->root, nullptr, remove_atom_ids,
-                                path_range);
+  getRemoveAtomIdxOfRange(mol->mol, mol->root, nullptr, remove_atom_ids,
+                          path_range);
 
   // Get Mol Object and remove atoms
   RDKit::RWMol part;
   part.insertMol(*(mol->mol.get()));
-  this->removeAtomNotInTheList(part, remove_atom_ids);
+  removeAtomNotInTheList(part, remove_atom_ids);
+  // replace bond with OrigBondType
+  replaceWithOrigBondType(part);
 
   // Get finger prints with size
   unsigned int minPath = 1;
