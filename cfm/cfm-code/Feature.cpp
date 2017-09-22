@@ -98,6 +98,8 @@ const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
     cogs.push_back(new QuadraticFeatures());
     cogs.push_back(new IonRootTriplesIncludeBond());
     cogs.push_back(new NLRootTriplesIncludeBond());
+    cogs.push_back(new NLRootEncoding());
+    cogs.push_back(new IonRootEncoding());
     initialised = true;
   }
   return cogs;
