@@ -21,5 +21,5 @@ void IonRootEncoding::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                               const RootedROMolPtr *nl) const {
   int ring_break;
   nl->mol.get()->getProp("IsRingBreak", ring_break);
-  addFingerPrint(fv, ion, size, 3, ring_break);
+  addFingerPrint(fv, ion, size/2, 3, ring_break);
 }
