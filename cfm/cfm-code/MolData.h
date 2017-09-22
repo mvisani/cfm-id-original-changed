@@ -26,7 +26,7 @@
 
 #include <DataStructs/ExplicitBitVect.h>
 
-#include "Features.h"
+#include "Feature.h"
 #include "FragmentGraph.h"
 #include "FragmentGraphGenerator.h"
 #include "MspReader.h"

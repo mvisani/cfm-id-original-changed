@@ -19,7 +19,7 @@
 
 #include "FragmentGraph.h"
 #include "FragmentTreeNode.h"
-#include "Features.h"
+#include "Feature.h"
 #include "Param.h"
 #include "NNParam.h"
 #include "Config.h"

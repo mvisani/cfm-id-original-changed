@@ -28,7 +28,7 @@
 
 #include "EM.h"
 #include "EM_NN.h"
-#include "Features.h"
+#include "Feature.h"
 #include "Config.h"
 #include "MolData.h"
 #include "FragmentGraphGenerator.h"

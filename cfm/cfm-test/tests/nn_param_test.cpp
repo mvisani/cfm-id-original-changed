@@ -13,7 +13,7 @@
 
 #include "nn_param_test.h"
 #include "MolData.h"
-#include "Features.h"
+#include "Feature.h"
 #include "Config.h"
 #include "EM_NN.h"
 

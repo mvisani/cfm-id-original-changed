@@ -17,7 +17,7 @@
 
 #include "FragmentTreeNode.h"
 #include "MILP.h"
-#include "Features.h"
+#include "Feature.h"
 #include "Config.h"
 
 #include <GraphMol/RWMol.h>

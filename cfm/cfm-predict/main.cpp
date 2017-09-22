@@ -17,7 +17,7 @@
 
 #include "Config.h"
 #include "Param.h"
-#include "Features.h"
+#include "Feature.h"
 #include "MolData.h"
 
 #include <GraphMol/SanitException.h>
