@@ -18,7 +18,7 @@ param.cpp.
 #include "RootPathFeature.h"
 
 #include <algorithm>
-#include <queue>
+
 
 #include <DataStructs/ExplicitBitVect.h>
 #include <GraphMol/Fingerprints/Fingerprints.h>
@@ -73,11 +73,24 @@ void RootPathFeature::addPathsFromAtom(std::vector<path_t> &paths,
   path_so_far.pop_back();
 }
 
-void RootPathFeature::getRemoveAtomIdxOfRange(
-    const romol_ptr_t mol, const RDKit::Atom *atom,
-    const RDKit::Atom *prev_atom, std::vector<unsigned int> &remove_atom_ids,
-    int range) const {
+void RootPathFeature::getRemoveAtomIdxOfRange(const romol_ptr_t mol, 
+                                              const RDKit::Atom *atom,
+                                              const RDKit::Atom *prev_atom, 
+                                              std::vector<unsigned int> &remove_atom_ids,
+                                              std::unordered_set<unsigned int> &visited,
+                                              int range) const {
 
+  if (atom == nullptr)
+  {
+    return;
+  }
+  if (visited.find(atom->getIdx()) != visited.end())
+  {
+    return;
+  }
+
+  visited.insert(atom->getIdx());
+  
   // if range <= 0 , that means this atom is out of range
   // thus we need remove it
   if (range <= 0) {
@@ -89,7 +102,7 @@ void RootPathFeature::getRemoveAtomIdxOfRange(
        ++itp.first) {
     RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
     if (nbr_atom != prev_atom) {
-      getRemoveAtomIdxOfRange(mol, nbr_atom, atom, remove_atom_ids, range - 1);
+      getRemoveAtomIdxOfRange(mol, nbr_atom, atom, remove_atom_ids,visited, range - 1);
     }
   }
 }
@@ -132,7 +145,12 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
   RDKit::ROMol &nl_ref = *(mol->mol.get());
   // Get list of atom we need to remove
   std::vector<unsigned int> remove_atom_ids;
-  getRemoveAtomIdxOfRange(mol->mol, mol->root, nullptr, remove_atom_ids,
+  std::unordered_set<unsigned int> visited;
+  getRemoveAtomIdxOfRange(mol->mol,
+                          mol->root, 
+                          nullptr, 
+                          remove_atom_ids,
+                          visited,
                           path_range);
 
   // Get Mol Object and remove atoms
@@ -154,8 +172,12 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
 
   if (ring_break) {
     remove_atom_ids.clear();
-    this->getRemoveAtomIdxOfRange(mol->mol, mol->other_root, nullptr,
-                                  remove_atom_ids, path_range);
+    getRemoveAtomIdxOfRange(mol->mol,
+                            mol->root, 
+                            nullptr, 
+                            remove_atom_ids,
+                            visited,
+                            path_range);
 
     // Get Mol Object and remove atoms
     RDKit::RWMol other_part;

@@ -17,6 +17,10 @@ param.cpp.
 #########################################################################*/
 #pragma once
 #include "../Feature.h"
+
+
+#include <unordered_set>
+
 #include <GraphMol/RWMol.h>
 
 class RootPathFeature : public Feature {
@@ -43,6 +47,7 @@ protected:
   void getRemoveAtomIdxOfRange(const romol_ptr_t mol, const RDKit::Atom *atom,
                                const RDKit::Atom *prev_atom,
                                std::vector<unsigned int> &remove_atom_ids,
+                               std::unordered_set<unsigned int> &visited,
                                int range) const;
 
   // remove atoms from mol in given list

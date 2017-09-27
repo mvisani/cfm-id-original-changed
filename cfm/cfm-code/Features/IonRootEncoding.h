@@ -19,6 +19,7 @@ param.cpp.
 
 // Features use fingerprint encode ion fragmentation
 class IonRootEncoding : public RootPathFeature {
+public:
   IonRootEncoding() {
     size = 512;
     name = "IonRootEncoding";

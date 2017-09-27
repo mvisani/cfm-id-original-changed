@@ -12,3 +12,7 @@ cfm/cmake-build-debug/
 cfm/\.vscode/
 
 cfm/data/
+
+data_set/
+
+jobs/
