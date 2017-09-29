@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
     to_stdout = false;
   }
 
-  double cumulative_intensity_thresh = 0.0;
+  double cumulative_intensity_thresh = 1.0;
   int apply_cutoffs = 0, clean_target_spectra = 0;
   int quantise_spectra_dec_pl = -1;
   if (argc >= 9) {
