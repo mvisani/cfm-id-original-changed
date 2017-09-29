@@ -17,17 +17,14 @@
 #include "Comparators.h"
 #include "MolData.h"
 
-
 #include <GraphMol/SanitException.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
-
 
 void reportMeanStd(std::ostream &out, std::vector<double> &scores);
 void parseInputFile(std::vector<MolData> &data, std::string &input_filename);
@@ -289,7 +286,7 @@ int main(int argc, char *argv[]) {
       if (measured_is_msp)
         mit->readInSpectraFromMSP(*measured_msp);
       else {
-        std::string spec_file = measured_spec_dir + "/" + mit->getId() + ".log";
+        std::string spec_file = measured_spec_dir + "/" + mit->getId() + ".txt";
         mit->readInSpectraFromFile(spec_file);
       }
       if (predicted_is_msp) {
@@ -301,7 +298,7 @@ int main(int argc, char *argv[]) {
         } // If it's not in the MSP, we failed to predict/enumerate it
       } else {
         std::string pred_spec_file =
-            predicted_spec_dir + "/" + mit->getId() + ".txt";
+            predicted_spec_dir + "/" + mit->getId() + ".log";
         mit->readInSpectraFromFile(pred_spec_file, true);
       }
       if (quantise_spectra_dec_pl >= 0) {
