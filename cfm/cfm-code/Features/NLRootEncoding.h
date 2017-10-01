@@ -21,7 +21,7 @@ param.cpp.
 class NLRootEncoding : public RootPathFeature {
 public:
   NLRootEncoding() {
-    size = 512;
+    size = 1024;
     name = "NLRootEncoding";
   };
 

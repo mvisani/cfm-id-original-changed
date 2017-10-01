@@ -162,7 +162,7 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
 
   // Get finger prints with size
   unsigned int minPath = 1;
-  unsigned int maxPath = 7;
+  unsigned int maxPath = 3;
   ExplicitBitVect *fingerPrint =
       RDKit::RDKFingerprintMol(part, minPath, maxPath, finger_print_size);
 
