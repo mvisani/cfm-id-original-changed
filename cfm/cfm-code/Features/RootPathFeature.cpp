@@ -138,9 +138,11 @@ void RootPathFeature::replaceWithOrigBondType(RDKit::RWMol &rwmol) const {
 
 void RootPathFeature::addFingerPrint(FeatureVector &fv,
                                      const RootedROMolPtr *mol,
-                                     const int finger_print_size,
-                                     const int path_range,
-                                     int ring_break) const {
+                                     const unsigned int finger_print_size,
+                                     const unsigned int path_range,
+                                     const int ring_break,
+                                     const unsigned int finger_print_min_path,
+                                     const unsigned int finger_print_max_path) const {
 
   RDKit::ROMol &nl_ref = *(mol->mol.get());
   // Get list of atom we need to remove
@@ -161,10 +163,10 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
   replaceWithOrigBondType(part);
 
   // Get finger prints with size
-  unsigned int minPath = 1;
-  unsigned int maxPath = 3;
-  ExplicitBitVect *fingerPrint =
-      RDKit::RDKFingerprintMol(part, minPath, maxPath, finger_print_size);
+  ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(part, 
+                                                          finger_print_min_path, 
+                                                          finger_print_max_path, 
+                                                          finger_print_size);
 
   for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
     fv.addFeature((*fingerPrint)[i]);
@@ -188,12 +190,16 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
     // because if we are taking part of ring
     // RDKit::MolOps::sanitizeMol(part);
 
-    ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(
-        other_part, minPath, maxPath, finger_print_size);
+    ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(other_part, 
+                                                            finger_print_min_path, 
+                                                            finger_print_max_path, 
+                                                            finger_print_size);
+
     for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
       fv.addFeature((*fingerPrint)[i]);
     }
-  } else {
+  } 
+  else {
     for (unsigned int i = 0; i < finger_print_size; ++i) {
       fv.addFeature(0);
     }

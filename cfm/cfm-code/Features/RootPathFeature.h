@@ -58,8 +58,11 @@ protected:
   void replaceWithOrigBondType(RDKit::RWMol &mol) const;
 
   void addFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
-                      const int finger_print_size, const int path_range,
-                      int ring_break) const;
+                      const unsigned int finger_print_size, 
+                      const unsigned int path_range,
+                      const int ring_break,
+                      const unsigned int finger_print_min_path,
+                      const unsigned int finger_print_max_path) const;
 
 private:
   // function to add path from given atom

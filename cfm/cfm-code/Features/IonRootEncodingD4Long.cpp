@@ -15,16 +15,16 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#include "IonRootEncoding.h"
+#include "IonRootEncodingD4Long.h"
 
-void IonRootEncoding::compute(FeatureVector &fv, const RootedROMolPtr *ion,
+void IonRootEncodingD4Long::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                               const RootedROMolPtr *nl) const {
   int ring_break;
   nl->mol.get()->getProp("IsRingBreak", ring_break);
 
   unsigned int min_path = 1;
-  unsigned int max_path = 3;
-  unsigned int path_range = 3;
+  unsigned int max_path = 4;
+  unsigned int path_range = 4;
   unsigned finger_print_size = size/2;
   
   addFingerPrint(fv, ion, finger_print_size, path_range, ring_break, min_path, max_path);

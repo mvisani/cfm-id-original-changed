@@ -60,6 +60,10 @@ the feature
 #include "Features/RingFeatures.h"
 #include "Features/RootAtomFeature.h"
 #include "Features/RootPathFeature.h"
+#include "Features/IonRootEncodingD4.h"
+#include "Features/NLRootEncodingD4.h"
+#include "Features/IonRootEncodingD4Long.h"
+#include "Features/NLRootEncodingD4Long.h"
 
 const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
 
@@ -100,6 +104,10 @@ const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
     cogs.push_back(new NLRootTriplesIncludeBond());
     cogs.push_back(new NLRootEncoding());
     cogs.push_back(new IonRootEncoding());
+    cogs.push_back(new NLRootEncodingD4());
+    cogs.push_back(new IonRootEncodingD4());
+    cogs.push_back(new NLRootEncodingD4Long());
+    cogs.push_back(new IonRootEncodingD4Long());
     initialised = true;
   }
   return cogs;
