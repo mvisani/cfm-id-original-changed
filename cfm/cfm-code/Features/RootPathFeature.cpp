@@ -136,14 +136,14 @@ void RootPathFeature::replaceWithOrigBondType(RDKit::RWMol &rwmol) const {
   }
 }
 
-void RootPathFeature::addFingerPrint(FeatureVector &fv,
-                                     const RootedROMolPtr *mol,
-                                     const unsigned int finger_print_size,
-                                     const unsigned int path_range,
-                                     const int ring_break,
-                                     const unsigned int finger_print_min_path,
-                                     const unsigned int finger_print_max_path) const {
-
+void RootPathFeature::addFingerPrint(FeatureVector &fv, 
+                                      const RootedROMolPtr *mol,
+                                      const unsigned int finger_print_size, 
+                                      const unsigned int path_range,
+                                      const int ring_break,
+                                      const unsigned int finger_print_min_path,
+                                      const unsigned int finger_print_max_path) const {
+                                        
   RDKit::ROMol &nl_ref = *(mol->mol.get());
   // Get list of atom we need to remove
   std::vector<unsigned int> remove_atom_ids;

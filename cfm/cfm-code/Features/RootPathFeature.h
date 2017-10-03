@@ -57,7 +57,8 @@ protected:
   // replace bond type with orig bond type
   void replaceWithOrigBondType(RDKit::RWMol &mol) const;
 
-  void addFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
+  void addFingerPrint(FeatureVector &fv, 
+                      const RootedROMolPtr *mol,
                       const unsigned int finger_print_size, 
                       const unsigned int path_range,
                       const int ring_break,
