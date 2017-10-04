@@ -31,8 +31,8 @@ public:
 	  id( an_id ), smiles_or_inchi( a_smiles_or_inchi ), score( 0.0 ) {};
 
 	//Access Functions
-	std::string *const getId(){ return &id; };
-	std::string *const getSmilesOrInchi(){ return &smiles_or_inchi; };
+	const std::string * getId(){ return &id; };
+	const std::string * getSmilesOrInchi(){ return &smiles_or_inchi; };
 	double getScore() const { return score; };
 	void setScore(double val){ score = val; };
 
@@ -51,9 +51,9 @@ public:
 	  id( an_id ), smiles_or_inchi( a_smiles_or_inchi ), score( 0.0 ), has_spectra(true) { spectra = a_msp->fetchSpectrumForId( an_id.c_str() ); };
 
 	//Access Functions
-	std::string *const getId(){ return &id; };
-	std::string *const getSpectrumFilename(){ return &spectrum_filename; };
-	std::string *const getSmilesOrInchi(){ return &smiles_or_inchi; };
+	const std::string * getId(){ return &id; };
+	const std::string * getSpectrumFilename(){ return &spectrum_filename; };
+	const std::string * getSmilesOrInchi(){ return &smiles_or_inchi; };
 	const std::vector<Spectrum> *getSpectra(){ return spectra; };
 	double getScore() const { return score; };
 	void setScore(double val){ score = val; };

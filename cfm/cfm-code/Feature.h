@@ -64,7 +64,7 @@ public:
   FeatureVector() { fv_idx = 0; };
   void addFeature(double value);
   void addFeatureAtIdx(double value, unsigned int idx);
-  unsigned int const getTotalLength() const { return fv_idx; };
+  unsigned int getTotalLength() const { return fv_idx; };
   feature_t const getFeature(int idx) const { return fv[idx]; };
   std::vector<feature_t>::const_iterator getFeatureBegin() const {
     return fv.begin();
@@ -72,7 +72,7 @@ public:
   std::vector<feature_t>::const_iterator getFeatureEnd() const {
     return fv.end();
   };
-  unsigned int const getNumSetFeatures() const { return fv.size(); };
+  unsigned int getNumSetFeatures() const { return fv.size(); };
 
 private:
   std::vector<feature_t> fv;

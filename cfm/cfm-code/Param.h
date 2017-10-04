@@ -74,9 +74,9 @@ public:
 	//Access functions
 	double getWeightAtIdx(int index){ return weights[index];};
 	std::vector<double> *getWeightsPtr(){ return &weights; };
-	unsigned int const getNumWeights(){ return weights.size(); };
-	unsigned int const getNumWeightsPerEnergyLevel(){ return weights.size()/num_energy_levels; };
-	unsigned int const getNumEnergyLevels(){ return num_energy_levels; };
+	unsigned int getNumWeights(){ return weights.size(); };
+	unsigned int getNumWeightsPerEnergyLevel(){ return weights.size()/num_energy_levels; };
+	unsigned int getNumEnergyLevels(){ return num_energy_levels; };
 	std::vector<std::string> *const getFeatureNames(){ return &feature_list; };
 
 protected:
