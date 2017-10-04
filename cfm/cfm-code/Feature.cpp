@@ -104,10 +104,10 @@ const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
     cogs.push_back(new NLRootTriplesIncludeBond());
     cogs.push_back(new NLRootEncoding());
     cogs.push_back(new IonRootEncoding());
-    /*cogs.push_back(new NLRootEncodingD4());
+    cogs.push_back(new NLRootEncodingD4());
     cogs.push_back(new IonRootEncodingD4());
     cogs.push_back(new NLRootEncodingD4Long());
-    cogs.push_back(new IonRootEncodingD4Long());*/
+    cogs.push_back(new IonRootEncodingD4Long());
     initialised = true;
   }
   return cogs;
