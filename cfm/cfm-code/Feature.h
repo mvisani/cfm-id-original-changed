@@ -65,7 +65,7 @@ public:
   void addFeature(double value);
   void addFeatureAtIdx(double value, unsigned int idx);
   unsigned int getTotalLength() const { return fv_idx; };
-  feature_t const getFeature(int idx) const { return fv[idx]; };
+  feature_t getFeature(int idx) const { return fv[idx]; };
   std::vector<feature_t>::const_iterator getFeatureBegin() const {
     return fv.begin();
   };
