@@ -51,7 +51,7 @@ protected:
                                int range) const;
 
   // remove atoms from mol in given list
-  void removeAtomNotInTheList(RDKit::RWMol &mol,
+  void removeAtomInTheList(RDKit::RWMol &mol,
                               std::vector<unsigned int> &remove_atom_ids) const;
 
   // replace bond type with orig bond type

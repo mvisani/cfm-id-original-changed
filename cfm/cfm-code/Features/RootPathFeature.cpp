@@ -107,7 +107,7 @@ void RootPathFeature::getRemoveAtomIdxOfRange(const romol_ptr_t mol,
   }
 }
 
-void RootPathFeature::removeAtomNotInTheList(
+void RootPathFeature::removeAtomInTheList(
     RDKit::RWMol &mol, std::vector<unsigned int> &remove_atom_ids) const {
 
   // remove all duplications in the list
@@ -158,7 +158,7 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
   // Get Mol Object and remove atoms
   RDKit::RWMol part;
   part.insertMol(*(mol->mol.get()));
-  removeAtomNotInTheList(part, remove_atom_ids);
+  removeAtomInTheList(part, remove_atom_ids);
   // replace bond with OrigBondType
   replaceWithOrigBondType(part);
 
@@ -183,8 +183,8 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
 
     // Get Mol Object and remove atoms
     RDKit::RWMol other_part;
-    part.insertMol(*(mol->mol.get()));
-    this->removeAtomNotInTheList(other_part, remove_atom_ids);
+    other_part.insertMol(*(mol->mol.get()));
+    this->removeAtomInTheList(other_part, remove_atom_ids);
 
     // we don't want to part to be santilized
     // because if we are taking part of ring
