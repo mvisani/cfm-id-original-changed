@@ -21,7 +21,7 @@ param.cpp.
 class IonRootEncoding : public RootPathFeature {
 public:
   IonRootEncoding() {
-    size = 1024;
+    size = 512;
     name = "IonRootEncoding";
   };
 
