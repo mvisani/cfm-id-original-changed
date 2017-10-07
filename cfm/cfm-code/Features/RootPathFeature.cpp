@@ -175,7 +175,7 @@ void RootPathFeature::addFingerPrint(FeatureVector &fv,
   if (ring_break) {
     remove_atom_ids.clear();
     getRemoveAtomIdxOfRange(mol->mol,
-                            mol->root, 
+                            mol->other_root, 
                             nullptr, 
                             remove_atom_ids,
                             visited,

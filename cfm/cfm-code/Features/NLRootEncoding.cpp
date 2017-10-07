@@ -23,7 +23,7 @@ void NLRootEncoding::compute(FeatureVector &fv, const RootedROMolPtr *ion,
 
   unsigned int min_path = 1;
   unsigned int max_path = 3;
-  unsigned int path_range = 3;
+  unsigned int path_range = 4;
   unsigned int finger_print_size = 512;
 
   addFingerPrint(fv, nl, finger_print_size, path_range, ring_break, min_path, max_path);
