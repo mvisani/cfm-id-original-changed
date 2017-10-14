@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# IonRootEncoding.h
+# IonRootEncodingD3.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
@@ -18,11 +18,11 @@ param.cpp.
 #include "RootPathFeature.h"
 
 // Features use fingerprint encode ion fragmentation
-class IonRootEncoding : public RootPathFeature {
+class IonRootEncodingD3 : public RootPathFeature {
 public:
-  IonRootEncoding() {
+  IonRootEncodingD3() {
     size = 1024;
-    name = "IonRootEncoding";
+    name = "IonRootEncodingD3";
   };
 
   void compute(FeatureVector &fv, const RootedROMolPtr *ion,
