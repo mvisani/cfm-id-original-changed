@@ -59,6 +59,8 @@ public:
     exec_flags[3] = fc->includesFeature("BrokenOrigBondType") ||
                     fc->includesFeature("NeighbourOrigBondTypes") ||
                     fc->includesFeature("NLRootEncoding") ||
+                    fc->includesFeature("IonRootEncodingD3Short") ||
+                    fc->includesFeature("NLRootEncodingD3Short") ||
                     fc->includesFeature("IonRootEncoding") ||
                     fc->includesFeature("NLRootEncodingD4") ||
                     fc->includesFeature("IonRootEncodingD4") ||
