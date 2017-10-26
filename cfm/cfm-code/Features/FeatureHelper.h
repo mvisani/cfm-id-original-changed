@@ -60,12 +60,12 @@ public:
                     fc->includesFeature("NeighbourOrigBondTypes") ||
                     fc->includesFeature("IonRootEncodingD3") ||
                     fc->includesFeature("NLRootEncodingD3") ||
-                    fc->includesFeature("IonRootEncodingD3Short") ||
-                    fc->includesFeature("NLRootEncodingD3Short") ||
                     fc->includesFeature("NLRootEncodingD4") ||
                     fc->includesFeature("IonRootEncodingD4") ||
                     fc->includesFeature("NLRootEncodingD4Long") ||
-                    fc->includesFeature("IonRootEncodingD4Long");                    ;
+                    fc->includesFeature("IonRootEncodingD4Long") ||
+                    fc->includesFeature("NLRootEncodingMorganD3") ||
+                    fc->includesFeature("IonRootEncodingMorganD3");
 
     exec_flags[4] = fc->includesFeature("IonFunctionalGroupFeatures") ||
                     fc->includesFeature("NLFunctionalGroupFeatures") ||
