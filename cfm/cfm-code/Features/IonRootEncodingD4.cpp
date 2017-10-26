@@ -18,7 +18,7 @@ param.cpp.
 #include "IonRootEncodingD4.h"
 
 void IonRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                              const RootedROMolPtr *nl) const {
+                                const RootedROMolPtr *nl) const {
   int ring_break;
   nl->mol.get()->getProp("IsRingBreak", ring_break);
 
@@ -26,6 +26,8 @@ void IonRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *ion,
   unsigned int max_path = 4;
   unsigned int path_range = 4;
   unsigned finger_print_size = 512;
-  
-  addFingerPrint(fv, ion, finger_print_size, path_range, ring_break, min_path, max_path);
+
+  const FP_METHODS fp_type = RDKit_FP;
+  addFingerPrint(fv, ion, finger_print_size, path_range, ring_break, fp_type,
+                 min_path, max_path);
 }

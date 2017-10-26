@@ -18,7 +18,6 @@ param.cpp.
 #pragma once
 #include "../Feature.h"
 
-
 #include <unordered_set>
 
 #include <GraphMol/RWMol.h>
@@ -42,33 +41,9 @@ protected:
   void addRootFeaturesWithBond(FeatureVector &fv, std::vector<path_t> &paths,
                                int ring_break, int len) const;
 
-  // function to get part of Mol from given root
-  // and all atom within given range
-  void getRemoveAtomIdxOfRange(const romol_ptr_t mol, const RDKit::Atom *atom,
-                               const RDKit::Atom *prev_atom,
-                               std::vector<unsigned int> &remove_atom_ids,
-                               std::unordered_set<unsigned int> &visited,
-                               int range) const;
-
-  // remove atoms from mol in given list
-  void removeAtomInTheList(RDKit::RWMol &mol,
-                              std::vector<unsigned int> &remove_atom_ids) const;
-
-  // replace bond type with orig bond type
-  void replaceWithOrigBondType(RDKit::RWMol &mol) const;
-
-  void addFingerPrint(FeatureVector &fv, 
-                      const RootedROMolPtr *mol,
-                      const unsigned int finger_print_size, 
-                      const unsigned int path_range,
-                      const int ring_break,
-                      const unsigned int finger_print_min_path,
-                      const unsigned int finger_print_max_path) const;
-
 private:
   // function to add path from given atom
   void addPathsFromAtom(std::vector<path_t> &paths, const RDKit::Atom *atom,
                         const romol_ptr_t mol, const RDKit::Atom *prev_atom,
                         path_t &path_so_far, int len, bool with_bond) const;
-  void getAtomsWithRange(int range);
 };

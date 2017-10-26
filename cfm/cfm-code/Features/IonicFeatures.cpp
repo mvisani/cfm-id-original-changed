@@ -16,8 +16,9 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #include "IonicFeatures.h"
-#include <GraphMol/ROMol.h>
 #include <GraphMol/AtomIterators.h>
+#include <GraphMol/ROMol.h>
+
 
 void IonicFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                             const RootedROMolPtr *nl) const {

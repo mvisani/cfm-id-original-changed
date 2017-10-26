@@ -17,7 +17,7 @@
 
 #include "FunctionalGroups.h"
 
-const std::string FGRPS_PICKLE =	
+const std::string FGRPS_PICKLE =
 							"0 20 1e-008\n"
 							"161\n"
 							"fr_C=O	[CX3]=[OX1]\n"
@@ -182,7 +182,7 @@ const std::string FGRPS_PICKLE =
 							"-C#CH	*-[C;D2]#[C;D1;H]\n"
 							"-cPropyl	*-[C;D3]1-[C;D2]-[C;D2]1\n";
 
-const std::string EXTRA_FGRPS_PICKLE =	
+const std::string EXTRA_FGRPS_PICKLE =
 							"0 20 1e-008\n"
 							"13\n"
 							"x_CH0	[CH0]\n"
@@ -198,4 +198,3 @@ const std::string EXTRA_FGRPS_PICKLE =
 							"x_r7	[r7]\n"
 							"x_r8	[r8]\n"
 							"x_N4	[N+H0]\n";
-
