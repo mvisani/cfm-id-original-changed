@@ -24,7 +24,7 @@ param.cpp.
 
 class FingerPirntFeature : public Feature {
 protected:
-  enum FP_METHODS { RDKit_FP = 0, RDKit_ECFP4 };
+  typedef enum { RDKit_FP = 0, RDKit_ECFP4 } FP_METHODS;
 
   // function to get part of Mol from given root
   // and all atom within given range

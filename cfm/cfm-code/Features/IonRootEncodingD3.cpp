@@ -27,5 +27,6 @@ void IonRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
   unsigned int path_range = 3;
   unsigned int finger_print_size = 512;
   
-  addFingerPrint(fv, ion, finger_print_size, path_range, ring_break, min_path, max_path);
+  addFingerPrint(fv, ion, finger_print_size, path_range, ring_break, RDKit_FP,
+                 min_path, max_path);
 }

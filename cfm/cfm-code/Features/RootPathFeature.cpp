@@ -18,11 +18,6 @@ param.cpp.
 #include "RootPathFeature.h"
 
 #include <algorithm>
-
-#include <DataStructs/ExplicitBitVect.h>
-#include <GraphMol/BondIterators.h>
-#include <GraphMol/Fingerprints/Fingerprints.h>
-#include <GraphMol/Fingerprints/MorganFingerprints.h>
 #include <GraphMol/MolOps.h>
 
 

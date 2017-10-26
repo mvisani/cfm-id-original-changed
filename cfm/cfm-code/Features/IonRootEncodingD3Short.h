@@ -29,4 +29,4 @@ public:
   void compute(FeatureVector &fv, const RootedROMolPtr *ion,
                const RootedROMolPtr *nl) const;
 };
->>>>>>> f8750844127ca8974966a0482f78619025ecfb54:cfm/cfm-code/Features/IonRootEncodingD3Short.h
+
