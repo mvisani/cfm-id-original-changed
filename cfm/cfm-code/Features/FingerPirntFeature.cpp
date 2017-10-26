@@ -83,59 +83,114 @@ void FingerPirntFeature::replaceWithOrigBondType(RDKit::RWMol &rwmol) const {
   }
 }
 
-void FingerPirntFeature::addFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
-                                        const unsigned int finger_print_size,
-                                        const unsigned int path_range, const int ring_break,
-                                        const FP_METHODS fp_type,
-                                        const unsigned int finger_print_min_path,
-                                        const unsigned int finger_print_max_path) const {
+void FingerPirntFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
+                                            const unsigned int finger_print_size,
+                                            const unsigned int path_range, const int ring_break,
+                                            const unsigned int finger_print_min_path,
+                                            const unsigned int finger_print_max_path) const {
 
-  RDKit::ROMol &nl_ref = *(mol->mol.get());
-  // Get list of atom we need to remove
-  std::vector<unsigned int> remove_atom_ids;
-  std::unordered_set<unsigned int> visited;
-  getRemoveAtomIdxOfRange(mol->mol, mol->root, nullptr, remove_atom_ids,
-                          visited, path_range);
-
-  // Get Mol Object and remove atoms
-  RDKit::RWMol part;
-  part.insertMol(*(mol->mol.get()));
-  removeAtomInTheList(part, remove_atom_ids);
-  // replace bond with OrigBondType
-  replaceWithOrigBondType(part);
-
-  // Get finger prints with size
-  ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(
-      part, finger_print_min_path, finger_print_max_path, finger_print_size);
-
-  for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
-    fv.addFeature((*fingerPrint)[i]);
-  }
-
-  if (ring_break) {
-    remove_atom_ids.clear();
-    getRemoveAtomIdxOfRange(mol->mol, mol->other_root, nullptr, remove_atom_ids,
+    RDKit::ROMol &nl_ref = *(mol->mol.get());
+    // Get list of atom we need to remove
+    std::vector<unsigned int> remove_atom_ids;
+    std::unordered_set<unsigned int> visited;
+    getRemoveAtomIdxOfRange(mol->mol, mol->root, nullptr, remove_atom_ids,
                             visited, path_range);
-
+  
     // Get Mol Object and remove atoms
-    RDKit::RWMol other_part;
-    other_part.insertMol(*(mol->mol.get()));
-    this->removeAtomInTheList(other_part, remove_atom_ids);
-
-    // we don't want to part to be santilized
-    // because if we are taking part of ring
-    // RDKit::MolOps::sanitizeMol(part);
-
-    ExplicitBitVect *fingerPrint =
-        RDKit::RDKFingerprintMol(other_part, finger_print_min_path,
-                                 finger_print_max_path, finger_print_size);
-
+    RDKit::RWMol part;
+    part.insertMol(*(mol->mol.get()));
+    removeAtomInTheList(part, remove_atom_ids);
+    // replace bond with OrigBondType
+    replaceWithOrigBondType(part);
+  
+    // Get finger prints with size
+    ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(
+        part, finger_print_min_path, finger_print_max_path, finger_print_size);
+  
     for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
       fv.addFeature((*fingerPrint)[i]);
     }
-  } else {
-    for (unsigned int i = 0; i < finger_print_size; ++i) {
-      fv.addFeature(0);
+  
+    if (ring_break) {
+      remove_atom_ids.clear();
+      getRemoveAtomIdxOfRange(mol->mol, mol->other_root, nullptr, remove_atom_ids,
+                              visited, path_range);
+  
+      // Get Mol Object and remove atoms
+      RDKit::RWMol other_part;
+      other_part.insertMol(*(mol->mol.get()));
+      this->removeAtomInTheList(other_part, remove_atom_ids);
+  
+      // we don't want to part to be santilized
+      // because if we are taking part of ring
+      // RDKit::MolOps::sanitizeMol(part);
+  
+      ExplicitBitVect *fingerPrint =
+      RDKit::RDKFingerprintMol(other_part, finger_print_min_path,
+                                   finger_print_max_path, finger_print_size);
+  
+      for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
+        fv.addFeature((*fingerPrint)[i]);
+      }
+    } else {
+      for (unsigned int i = 0; i < finger_print_size; ++i) {
+        fv.addFeature(0);
+      }
     }
-  }
+}
+
+void FingerPirntFeature::addMorganFingerPrint(FeatureVector &fv, 
+                                              const RootedROMolPtr *mol,
+                                              const unsigned int finger_print_size,
+                                              const unsigned int path_range, 
+                                              const int ring_break,
+                                              const int radius) const {
+    
+    RDKit::ROMol &nl_ref = *(mol->mol.get());
+    // Get list of atom we need to remove
+    std::vector<unsigned int> remove_atom_ids;
+    std::unordered_set<unsigned int> visited;
+    getRemoveAtomIdxOfRange(mol->mol, mol->root, nullptr, remove_atom_ids,
+                            visited, path_range);
+  
+    // Get Mol Object and remove atoms
+    RDKit::RWMol part;
+    part.insertMol(*(mol->mol.get()));
+    removeAtomInTheList(part, remove_atom_ids);
+    // replace bond with OrigBondType
+    replaceWithOrigBondType(part);
+  
+    // Get finger prints with size
+    ExplicitBitVect *fingerPrint = RDKit::MorganFingerprints::getFingerprintAsBitVect (
+        part, radius, finger_print_size);
+  
+    for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
+      fv.addFeature((*fingerPrint)[i]);
+    }
+  
+    if (ring_break) {
+      remove_atom_ids.clear();
+      getRemoveAtomIdxOfRange(mol->mol, mol->other_root, nullptr, remove_atom_ids,
+                              visited, path_range);
+  
+      // Get Mol Object and remove atoms
+      RDKit::RWMol other_part;
+      other_part.insertMol(*(mol->mol.get()));
+      this->removeAtomInTheList(other_part, remove_atom_ids);
+  
+      // we don't want to part to be santilized
+      // because if we are taking part of ring
+      // RDKit::MolOps::sanitizeMol(part);
+  
+      ExplicitBitVect *fingerPrint =
+          RDKit::MorganFingerprints::getFingerprintAsBitVect(other_part, radius, finger_print_size);
+  
+      for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
+        fv.addFeature((*fingerPrint)[i]);
+      }
+    } else {
+      for (unsigned int i = 0; i < finger_print_size; ++i) {
+        fv.addFeature(0);
+      }
+    }
 }

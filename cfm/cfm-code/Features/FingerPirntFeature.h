@@ -24,7 +24,6 @@ param.cpp.
 
 class FingerPirntFeature : public Feature {
 protected:
-  typedef enum { RDKit_FP = 0, RDKit_ECFP4 } FP_METHODS;
 
   // function to get part of Mol from given root
   // and all atom within given range
@@ -41,13 +40,18 @@ protected:
   // replace bond type with orig bond type
   void replaceWithOrigBondType(RDKit::RWMol &mol) const;
 
-  void addFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
-                      const unsigned int finger_print_size,
-                      const unsigned int path_range, const int ring_break,
-                      const FP_METHODS fp_type,
-                      const unsigned int finger_print_min_path,
-                      const unsigned int finger_print_max_path) const;
-
+  void addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
+                            const unsigned int finger_print_size,
+                            const unsigned int path_range, const int ring_break,
+                            const unsigned int finger_print_min_path,
+                            const unsigned int finger_print_max_path) const;
+  
+  void addMorganFingerPrint(FeatureVector &fv, 
+                            const RootedROMolPtr *mol,
+                            const unsigned int finger_print_size,
+                            const unsigned int path_range, 
+                            const int ring_break,
+                            const int radius) const;
 private:
   void getAtomsWithRange(int range);
 };

@@ -60,8 +60,6 @@ the feature
 #include "Features/RootPathFeature.h"
 #include "Features/IonRootEncodingD3.h"
 #include "Features/NLRootEncodingD3.h"
-#include "Features/IonRootEncodingD3Short.h"
-#include "Features/NLRootEncodingD3Short.h"
 #include "Features/IonRootEncodingD4.h"
 #include "Features/NLRootEncodingD4.h"
 #include "Features/IonRootEncodingD4Long.h"
@@ -106,8 +104,6 @@ const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
     cogs.push_back(new NLRootTriplesIncludeBond());
     cogs.push_back(new NLRootEncodingD3());
     cogs.push_back(new IonRootEncodingD3());
-    cogs.push_back(new NLRootEncodingD3Short());
-    cogs.push_back(new IonRootEncodingD3Short());
     cogs.push_back(new NLRootEncodingD4());
     cogs.push_back(new IonRootEncodingD4());
     cogs.push_back(new NLRootEncodingD4Long());

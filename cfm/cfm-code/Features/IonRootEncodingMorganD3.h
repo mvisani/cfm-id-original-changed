@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# NLRootEncodingD3Short.cpp
+# IonRootEncodingD3.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
@@ -18,11 +18,11 @@ param.cpp.
 #include "FingerPirntFeature.h"
 
 // Features use fingerprint encode ion fragmentation
-class NLRootEncodingD3Short : public FingerPirntFeature {
+class IonRootEncodingMorganD3  : public FingerPirntFeature {
 public:
-  NLRootEncodingD3Short() {
-    size = 512;
-    name = "NLRootEncodingD3Short";
+  IonRootEncodingMorganD3() {
+    size = 1024;
+    name = "IonRootEncodingMorganD3";
   };
 
   void compute(FeatureVector &fv, const RootedROMolPtr *ion,
