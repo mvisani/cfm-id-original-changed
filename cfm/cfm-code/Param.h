@@ -77,7 +77,7 @@ public:
 	unsigned int getNumWeights(){ return weights.size(); };
 	unsigned int getNumWeightsPerEnergyLevel(){ return weights.size()/num_energy_levels; };
 	unsigned int getNumEnergyLevels(){ return num_energy_levels; };
-	std::vector<std::string> *const getFeatureNames(){ return &feature_list; };
+	std::vector<std::string> *getFeatureNames(){ return &feature_list; };
 
 protected:
 	std::vector<double> weights;

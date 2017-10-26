@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# IonRootEncoding.h
+# IonRootEncodingD3Short.cpp
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
@@ -15,16 +15,17 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#include "FingerPirntFeature.h"
+#include "IonRootEncodingD3Short.h"
 
-// Features use fingerprint encode ion fragmentation
-class IonRootEncoding : public FingerPirntFeature {
-public:
-  IonRootEncoding() {
-    size = 512;
-    name = "IonRootEncoding";
-  };
+void IonRootEncodingD3Short::compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                              const RootedROMolPtr *nl) const {
+  int ring_break;
+  nl->mol.get()->getProp("IsRingBreak", ring_break);
 
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
-};
+  unsigned int min_path = 1;
+  unsigned int max_path = 2;
+  unsigned int path_range = 3;
+  unsigned int finger_print_size = 256;
+  
+  addFingerPrint(fv, ion, finger_print_size, path_range, ring_break, min_path, max_path);
+}
