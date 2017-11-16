@@ -101,7 +101,7 @@ void FingerPirntFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
     part.insertMol(*(mol->mol.get()));
     removeAtomInTheList(part, remove_atom_ids);
     // replace bond with OrigBondType
-    replaceWithOrigBondType(part);
+    // replaceWithOrigBondType(part);
   
     // Get finger prints with size
     ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(
@@ -157,8 +157,9 @@ void FingerPirntFeature::addMorganFingerPrint(FeatureVector &fv,
     RDKit::RWMol part;
     part.insertMol(*(mol->mol.get()));
     removeAtomInTheList(part, remove_atom_ids);
+    
     // replace bond with OrigBondType
-    replaceWithOrigBondType(part);
+    // replaceWithOrigBondType(part);
   
     // Get finger prints with size
     ExplicitBitVect *fingerPrint = RDKit::MorganFingerprints::getFingerprintAsBitVect (
