@@ -16,6 +16,7 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #include "FingerPrintFeature.h"
+#include "FeatureHelper.h"
 
 #include <DataStructs/ExplicitBitVect.h>
 #include <GraphMol/BondIterators.h>
@@ -201,15 +202,17 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
     }
   }
  
-  
+  //Method to get atom visited order
   void FingerPrintFeature::getAtomVisitOrder(
     const romol_ptr_t mol, const RDKit::Atom *atom,
-    const RDKit::Atom *prev_atom, std::vector<unsigned int> &visited) const {
+    const RDKit::Atom *prev_atom,  int range,
+    std::vector<unsigned int> &visited) const {
 
     if (atom == nullptr ) {
       return;
     }
-    if (visited.find(atom->getIdx()) != visited.end()) {
+
+    if (std::find(visited.begin(), visited.end(), atom->getIdx()) != visited.end()) {
       return;
     }
 
@@ -245,7 +248,7 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
     
     for(auto itp = childs.begin(); itp != childs.end(); ++itp )
     {
-      getAtomVisitOrder(mol, itp, atom, visited); 
+      getAtomVisitOrder(mol, *itp, atom, range-1, visited); 
     }
   }
  
@@ -260,12 +263,10 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
 
   */
 
-  void FingerPrintFeature::addHomeMadeFingerPrint(std::vector<int> &ids, 
+  void FingerPrintFeature::addHomeMadeFingerPrint(FeatureVector &fv, 
                                               const RootedROMolPtr *mol,
-                                              const unsigned int finger_print_size,
                                               const unsigned int path_range, 
-                                              const int ring_break,
-                                              const int radius) const {
+                                              const int ring_break) const {
     
     RDKit::ROMol &nl_ref = *(mol->mol.get());
     // Get list of atom we need to remove
@@ -279,24 +280,59 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
     part.insertMol(*(mol->mol.get()));
     removeAtomInTheList(part, remove_atom_ids);
     std::vector<unsigned int> visitOrder;
-    getAtomVisitOrder(mol->mol, mol->root, nullptr, visitOrder);
+    getAtomVisitOrder(mol->mol, mol->root, nullptr, path_range, visitOrder);
     
-    // for all the bounds
-    for (auto bi = mol->mol.get().beginBonds(); bi != mol->mol.get().endBonds(); ++bi) {
-      // for each bond
-      
+
+    std::map<unsigned int, int> visit_order_map;
+    
+    for(int i = 0; i < visitOrder.size(); ++i )
+    {
+      visit_order_map[visitOrder[i]] = i;
+    }
+
+    unsigned int num_atom = 16;
+    int ajcent_matrix[num_atom][num_atom] = { {0} };
+
+    for (auto bi = mol->mol->beginBonds(); bi != mol->mol->endBonds(); ++bi) {
+    // for each bond
+      unsigned int beginIdx = (*bi)->getBeginAtomIdx();
+      unsigned int endIdx = (*bi)->getEndAtomIdx();
+      int bond_type = getBondTypeAsInt(*bi);
+
+      // if atoms in the list
+      if(visit_order_map.find(beginIdx) != visit_order_map.end() 
+        && visit_order_map.find(endIdx) != visit_order_map.end())
+        {
+            ajcent_matrix[visit_order_map[beginIdx]][visit_order_map[endIdx]] = bond_type;
+            ajcent_matrix[visit_order_map[endIdx]][visit_order_map[beginIdx]] = bond_type;
+        }
     }
     
+    // we only need half of matrix
+    for (int i = 0 ; i < num_atom; ++i)
+    {
+      for(int j = i + 1; j < num_atom; ++j)
+      {
+          int temp_feature[5] = {0};
+          if(ajcent_matrix[i][j] > 0)
+          {
+            // first bit indicate if there is a bond
+            temp_feature[0] = 1;
+            // one hot encoding bond type
+            temp_feature[ajcent_matrix[i][j]] = 1;
+          }
+      }
+    }
     // add features
-    for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
-      fv.addFeature((*fingerPrint)[i]);
-    }
+    /*for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
+      //fv.addFeature((*fingerPrint)[i]);
+    }*/
   
     if (ring_break) {
     
     } else {
-      for (unsigned int i = 0; i < finger_print_size; ++i) {
+      /*for (unsigned int i = 0; i < finger_print_size; ++i) {
         fv.addFeature(0);
-      }
+      }*/
     }
-}
+  }

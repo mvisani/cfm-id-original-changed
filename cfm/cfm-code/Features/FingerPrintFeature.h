@@ -52,6 +52,13 @@ protected:
                             const unsigned int path_range, 
                             const int ring_break,
                             const int radius) const;
+
+  void addHomeMadeFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
+                                              const unsigned int path_range, 
+                                              const int ring_break) const;
 private:
   void getAtomsWithRange(int range);
+  void getAtomVisitOrder(const romol_ptr_t mol, const RDKit::Atom *atom, 
+  const RDKit::Atom *prev_atom, int range, std::vector<unsigned int> &visited) const;
+
 };

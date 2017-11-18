@@ -203,16 +203,28 @@ void FeatureHelper::labelAtomsWithLonePairs(RDKit::RWMol *rwmol) {
   }
 }
 
+int FeatureHelper::getBondTypeAsInt(RDKit::Bond *bond)
+{
+  int bondType = 0;
+  if (bond->getIsAromatic())
+  {
+    return 4;
+  }
+  else if (bond->getIsConjugated())
+  {
+    return 5;
+  }
+  else
+  {
+    return (int)(bond->getBondTypeAsDouble());
+  }
+
+}
 void FeatureHelper::labelOriginalBondTypes(RDKit::RWMol *rwmol) {
   RDKit::ROMol::BondIterator bi;
   for (bi = rwmol->beginBonds(); bi != rwmol->endBonds(); ++bi) {
-    (*bi)->setProp("OrigBondTypeRaw", (int)((*bi)->getBondType()));
-
-    if ((*bi)->getIsAromatic())
-      (*bi)->setProp("OrigBondType", 4);
-    else if ((*bi)->getIsConjugated())
-      (*bi)->setProp("OrigBondType", 5);
-    else
-      (*bi)->setProp("OrigBondType", (int)((*bi)->getBondTypeAsDouble()));
+    //(*bi)->setProp("OrigBondTypeRaw", (int)((*bi)->getBondType()));
+    int bondType = getBondTypeAsInt(*bi);
+    (*bi)->setProp("OrigBondType", bondType);
   }
 }

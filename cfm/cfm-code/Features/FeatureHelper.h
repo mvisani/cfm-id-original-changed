@@ -125,7 +125,9 @@ public:
     labelAtomsWithLonePairs(rwmol);
   };
   bool getExecFlag(unsigned int idx) { return exec_flags[idx]; };
-
+  
+  static int getBondTypeAsInt(RDKit::Bond *bond);
+  
 private:
   std::vector<int> exec_flags;
   // Helper functions - used to create labels on atoms and bonds,
