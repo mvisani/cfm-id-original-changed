@@ -263,16 +263,17 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
 
   */
 
-  void FingerPrintFeature::addHomeMadeFingerPrint(FeatureVector &fv, 
+  void FingerPrintFeature::addAdjacentMatrixRepesentation(FeatureVector &fv, 
                                               const RootedROMolPtr *mol,
-                                              const unsigned int path_range, 
-                                              const int ring_break) const {
+                                              const RDKit::Atom *root,
+                                              const unsigned int path_range,
+                                              const unsigned int num_atom) const {
     
     RDKit::ROMol &nl_ref = *(mol->mol.get());
     // Get list of atom we need to remove
     std::vector<unsigned int> remove_atom_ids;
     std::unordered_set<unsigned int> visited;
-    getRemoveAtomIdxOfRange(mol->mol, mol->root, nullptr, remove_atom_ids,
+    getRemoveAtomIdxOfRange(mol->mol, root, nullptr, remove_atom_ids,
                             visited, path_range);
   
     // Get Mol Object and remove atoms
@@ -280,7 +281,7 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
     part.insertMol(*(mol->mol.get()));
     removeAtomInTheList(part, remove_atom_ids);
     std::vector<unsigned int> visitOrder;
-    getAtomVisitOrder(mol->mol, mol->root, nullptr, path_range, visitOrder);
+    getAtomVisitOrder(mol->mol, root, nullptr, path_range, visitOrder);
     
 
     std::map<unsigned int, int> visit_order_map;
@@ -290,7 +291,6 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
       visit_order_map[visitOrder[i]] = i;
     }
 
-    unsigned int num_atom = 16;
     int ajcent_matrix[num_atom][num_atom] = { {0} };
 
     for (auto bi = mol->mol->beginBonds(); bi != mol->mol->endBonds(); ++bi) {
@@ -308,8 +308,9 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
         }
     }
     
-    // we only need half of matrix
-    for (int i = 0 ; i < num_atom; ++i)
+    // we only need half of matrix miuns diagonal
+    // so i start from 1 not 0
+    for (int i = 1 ; i < num_atom; ++i)
     {
       for(int j = i + 1; j < num_atom; ++j)
       {
@@ -327,10 +328,6 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
       }
     }
 
-    // add features
-    /*for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
-      //fv.addFeature((*fingerPrint)[i]);
-    }*/
     for(int i = 0 ; i < num_atom; ++i)
     {
       int atom_type_feature[5] = {0};
@@ -349,12 +346,27 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
       fv.addFeatures(atom_type_feature, 5);
       fv.addFeatures(atom_degree_feature, 5);
     }
+  }
 
-    if (ring_break) {
-    
-    } else {
-      /*for (unsigned int i = 0; i < finger_print_size; ++i) {
-        fv.addFeature(0);
-      }*/
+
+  // for all the samples we have max atoms with a 3 atom group is 10
+  // for all the samples we have max atoms with a 3 atom group is 16
+  // therefore  we need 50 features for arcs
+  void FingerPrintFeature::addAdjacentMatrixRepesentationFeature(FeatureVector &fv, 
+                                                          const RootedROMolPtr *mol,
+                                                          const unsigned int path_range, 
+                                                          const unsigned int num_atom,
+                                                          const int ring_break) const {
+
+    addAdjacentMatrixRepesentation(fv,mol, mol->root, path_range, num_atom);
+    if(ring_break > 0)
+    {
+      addAdjacentMatrixRepesentation(fv, mol, mol->other_root, path_range, num_atom);
+    }
+    else
+    {
+      unsigned int feature_size = num_atom * (num_atom-1) / 2 * 5 + num_atom * 10;
+      double empty_feature[feature_size] = {0};
+      fv.addFeatures(empty_feature, feature_size);
     }
   }

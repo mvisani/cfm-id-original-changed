@@ -53,9 +53,18 @@ protected:
                             const int ring_break,
                             const int radius) const;
 
-  void addHomeMadeFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
-                                              const unsigned int path_range, 
-                                              const int ring_break) const;
+  
+  void addAdjacentMatrixRepesentation(FeatureVector &fv, 
+                                              const RootedROMolPtr *mol,
+                                              const RDKit::Atom *root,
+                                              const unsigned int path_range,
+                                              const unsigned int num_atom) const;
+
+  void addAdjacentMatrixRepesentationFeature(FeatureVector &fv, 
+                                              const RootedROMolPtr *mol,
+                                              const unsigned int path_range,
+                                              const unsigned int num_atom,
+                                              const int ring_break) const;                                       
 private:
   void getAtomsWithRange(int range);
   void getAtomVisitOrder(const romol_ptr_t mol, const RDKit::Atom *atom, 
