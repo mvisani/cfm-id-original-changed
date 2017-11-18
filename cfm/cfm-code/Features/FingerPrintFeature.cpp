@@ -41,6 +41,7 @@ void FingerPrintFeature::getRemoveAtomIdxOfRange(
 
   // if range <= 0 , that means this atom is out of range
   // thus we need remove it
+  // also we does not care Hs
   if (range <= 0 ||
       atom->getSymbol() == "H") 
   {
