@@ -297,7 +297,7 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
     // for each bond
       unsigned int beginIdx = (*bi)->getBeginAtomIdx();
       unsigned int endIdx = (*bi)->getEndAtomIdx();
-      int bond_type = getBondTypeAsInt(*bi);
+      int bond_type = FeatureHelper::getBondTypeAsInt(*bi);
 
       // if atoms in the list
       if(visit_order_map.find(beginIdx) != visit_order_map.end() 
@@ -321,13 +321,35 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
             // one hot encoding bond type
             temp_feature[ajcent_matrix[i][j]] = 1;
           }
+
+           // TODO Change to C++11 array
+          fv.addFeatures(temp_feature, 5);
       }
     }
+
     // add features
     /*for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
       //fv.addFeature((*fingerPrint)[i]);
     }*/
-  
+    for(int i = 0 ; i < num_atom; ++i)
+    {
+      int atom_type_feature[5] = {0};
+      int atom_degree_feature[5] = {0};
+      if(i < visitOrder.size())
+      {
+        int atom_idx = visitOrder[i];
+        std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
+        int degree = mol->mol->getAtomWithIdx(atom_idx)->getDegree();
+        degree = degree > 4 ? 4 : degree;
+        int atom_feature = getSymbolsLessIndex(symbol);
+        atom_type_feature[atom_feature] = 1;
+        atom_degree_feature[degree] = 1;
+      }
+      // TODO Change to C++11 array
+      fv.addFeatures(atom_type_feature, 5);
+      fv.addFeatures(atom_degree_feature, 5);
+    }
+
     if (ring_break) {
     
     } else {

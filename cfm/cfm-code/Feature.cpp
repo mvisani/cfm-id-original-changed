@@ -256,6 +256,21 @@ void FeatureVector::addFeatureAtIdx(double value, unsigned int idx) {
     fv.push_back(idx);
 }
 
+void FeatureVector::addFeatures(double values[], int size)
+{
+  for(int i = 0; i < size; ++i)
+  {
+    this->addFeature((int)values[i]);
+  }
+}
+
+void FeatureVector::addFeatures(int values[], int size)
+{
+  for(int i = 0; i < size; ++i)
+  {
+    this->addFeature((double)values[i]);
+  }
+}
 // Helper functions for multiple features
 const std::vector<std::string> &Feature::OKsymbols() {
 
@@ -301,23 +316,28 @@ const std::vector<std::string> &Feature::OKSymbolsLess() {
 void Feature::replaceUncommonWithX(std::string &symbol) const {
 
   // Replace uncommon symbols with X
-  if (symbol != "C" && symbol != "N" && symbol != "O" && symbol != "P" &&
-      symbol != "S")
-    symbol = "X";
+   const std::vector<std::string> *ok_symbols = &OKSymbolsLess();
+   for(auto str : *ok_symbols)
+   {
+     if(symbol == str)
+     {
+       return;
+     }
+   }
+   symbol = "X";
 }
 
-int Feature::getSymbolsLessIndex(std::string &symbol) const {
+// assume last is always "X"
+int Feature::getSymbolsLessIndex(const std::string &symbol) const {
   int index = 0;
-  if (symbol == "C")
-    index = 0;
-  if (symbol == "N")
-    index = 1;
-  if (symbol == "O")
-    index = 2;
-  if (symbol == "P")
-    index = 3;
-  if (symbol == "S")
-    index = 4;
-  if (symbol == "X")
-    index = 5;
+  const std::vector<std::string> *ok_symbols = &OKSymbolsLess();
+  for(auto str : *ok_symbols)
+  {
+    if(symbol == str)
+    {
+      break;
+    }
+    index ++;
+  }
+  return index;
 }

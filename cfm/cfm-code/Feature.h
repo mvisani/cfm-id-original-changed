@@ -64,6 +64,8 @@ public:
   FeatureVector() { fv_idx = 0; };
   void addFeature(double value);
   void addFeatureAtIdx(double value, unsigned int idx);
+  void addFeatures(double values[], int size);
+  void addFeatures(int values[], int size);
   unsigned int getTotalLength() const { return fv_idx; };
   feature_t getFeature(int idx) const { return fv[idx]; };
   std::vector<feature_t>::const_iterator getFeatureBegin() const {
@@ -95,7 +97,7 @@ protected:
   static const std::vector<std::string> &OKsymbols();
   static const std::vector<std::string> &OKSymbolsLess();
   void replaceUncommonWithX(std::string &symbol) const;
-  int getSymbolsLessIndex(std::string &symbol) const;
+  int getSymbolsLessIndex(const std::string &symbol) const;
 };
 
 // Class to compute a feature vector
