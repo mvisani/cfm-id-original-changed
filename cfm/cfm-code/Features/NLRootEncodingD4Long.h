@@ -15,10 +15,10 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#include "FingerPirntFeature.h"
+#include "FingerPrintFeature.h"
 
 // Features use fingerprint encode ion fragmentation
-class NLRootEncodingD4Long : public FingerPirntFeature {
+class NLRootEncodingD4Long : public FingerPrintFeature {
 public:
   NLRootEncodingD4Long() {
     size = 2048;

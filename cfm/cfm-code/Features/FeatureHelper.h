@@ -65,7 +65,9 @@ public:
                     fc->includesFeature("NLRootEncodingD4Long") ||
                     fc->includesFeature("IonRootEncodingD4Long") ||
                     fc->includesFeature("NLRootEncodingMorganD3") ||
-                    fc->includesFeature("IonRootEncodingMorganD3");
+                    fc->includesFeature("IonRootEncodingMorganD3") ||
+                    fc->includesFeature("NLRootEncodingMorganD3Long") ||
+                    fc->includesFeature("IonRootEncodingMorganD3Long");                    
 
     exec_flags[4] = fc->includesFeature("IonFunctionalGroupFeatures") ||
                     fc->includesFeature("NLFunctionalGroupFeatures") ||
