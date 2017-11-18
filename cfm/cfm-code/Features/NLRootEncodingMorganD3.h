@@ -15,10 +15,10 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#include "FingerPirntFeature.h"
+#include "FingerPrintFeature.h"
 
 // Features use fingerprint encode NL fragmentatNL
-class NLRootEncodingMorganD3  : public FingerPirntFeature {
+class NLRootEncodingMorganD3  : public FingerPrintFeature {
 public:
   NLRootEncodingMorganD3() {
     size = 1024;

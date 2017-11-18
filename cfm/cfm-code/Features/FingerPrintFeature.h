@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# FingerPirntFeature.h
+# FingerPrintFeature.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
@@ -22,7 +22,7 @@ param.cpp.
 
 #include <GraphMol/RWMol.h>
 
-class FingerPirntFeature : public Feature {
+class FingerPrintFeature : public Feature {
 protected:
 
   // function to get part of Mol from given root
