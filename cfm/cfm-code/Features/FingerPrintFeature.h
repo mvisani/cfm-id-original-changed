@@ -53,12 +53,6 @@ protected:
                             const int ring_break,
                             const int radius) const;
 
-  
-  void addAdjacentMatrixRepesentation(FeatureVector &fv, 
-                                              const RootedROMolPtr *mol,
-                                              const RDKit::Atom *root,
-                                              const unsigned int path_range,
-                                              const unsigned int num_atom) const;
 
   void addAdjacentMatrixRepesentationFeature(FeatureVector &fv, 
                                               const RootedROMolPtr *mol,
@@ -68,6 +62,18 @@ protected:
 private:
   void getAtomsWithRange(int range);
   void getAtomVisitOrder(const romol_ptr_t mol, const RDKit::Atom *atom, 
-  const RDKit::Atom *prev_atom, int range, std::vector<unsigned int> &visited) const;
+  const RDKit::Atom *prev_atom, int range, std::vector<unsigned int> &visited, const std::map<unsigned int, std::string> &sorting_labels) const;
+
+  std::string getSortingLabels(
+    const romol_ptr_t mol, const RDKit::Atom *atom,
+    const RDKit::Atom *prev_atom,  int range,
+    std::unordered_set<unsigned int> & visited,
+    std::map<unsigned int, std::string> &sorting_labels) const;
+  
+    void addAdjacentMatrixRepesentation(FeatureVector &fv, 
+                                              const RootedROMolPtr *mol,
+                                              const RDKit::Atom *root,
+                                              const unsigned int path_range,
+                                              const unsigned int num_atom) const;
 
 };

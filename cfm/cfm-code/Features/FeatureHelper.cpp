@@ -218,8 +218,8 @@ int FeatureHelper::getBondTypeAsInt(RDKit::Bond *bond)
   {
     return (int)(bond->getBondTypeAsDouble());
   }
-
 }
+
 void FeatureHelper::labelOriginalBondTypes(RDKit::RWMol *rwmol) {
   RDKit::ROMol::BondIterator bi;
   for (bi = rwmol->beginBonds(); bi != rwmol->endBonds(); ++bi) {
