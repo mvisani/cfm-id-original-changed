@@ -16,10 +16,11 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "../Feature.h"
 
 class RootAtomFeature : public Feature {
 protected:
-  void computeRootAtomFeature(FeatureVector &fv, const RootedROMolPtr *mol,
-                              bool ring_break) const;
+    void computeRootAtomFeature(FeatureVector &fv, const RootedROMolPtr *mol,
+                                bool ring_break) const;
 };

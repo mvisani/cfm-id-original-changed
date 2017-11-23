@@ -10,7 +10,7 @@
 set ( SRC_FILES  main.cpp )
                                            
 add_executable ( cfm-predict ${SRC_FILES} )
-target_link_libraries ( cfm-predict cfm-code ${REQUIRED_LIBS} )
+target_link_libraries ( cfm-predict cfm-code ${REQUIRED_LIBS})
 
 install ( TARGETS cfm-predict
           DESTINATION ${CFM_OUTPUT_DIR} )

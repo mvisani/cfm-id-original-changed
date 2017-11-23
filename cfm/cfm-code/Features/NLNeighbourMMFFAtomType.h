@@ -16,14 +16,16 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "NeighbourMMFFFeature.h"
 
 class NLNeighbourMMFFAtomType : public NeighbourMMFFFeature {
 public:
-  NLNeighbourMMFFAtomType() {
-    size = 101;
-    name = "NLNeighbourMMFFAtomType";
-  };
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    NLNeighbourMMFFAtomType() {
+        size = 101;
+        name = "NLNeighbourMMFFAtomType";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };

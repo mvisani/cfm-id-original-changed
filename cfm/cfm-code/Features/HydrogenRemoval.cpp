@@ -17,19 +17,16 @@
 #include "HydrogenRemoval.h"
 
 #include <GraphMol/PeriodicTable.h>
-#include <GraphMol/ROMol.h>
 #include <GraphMol/AtomIterators.h>
 
-void HydrogenRemoval::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const
-{
+void HydrogenRemoval::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     double h_movement = 0.0;
 
     //Compute the mass difference in the neutral loss
     RDKit::PeriodicTable *pt = RDKit::PeriodicTable::getTable();
     RDKit::ROMol::AtomIterator ai;
-    for (ai = nl->mol.get()->beginAtoms(); ai != nl->mol.get()->endAtoms(); ++ai)
-    {
+    for (ai = nl->mol.get()->beginAtoms(); ai != nl->mol.get()->endAtoms(); ++ai) {
         double orig_mass, mass = 0.0;
         std::string symbol = (*ai)->getSymbol();
         mass += pt->getMostCommonIsotopeMass(symbol);
@@ -39,8 +36,7 @@ void HydrogenRemoval::compute(FeatureVector &fv, const RootedROMolPtr *ion, cons
     }
 
     //Binary on/off indicating whether a particular transfer occurred
-    for (double h = -4.0; h <= 4.0; h += 1.0)
-    {
+    for (double h = -4.0; h <= 4.0; h += 1.0) {
         if (fabs(h - h_movement) < 0.5)
             fv.addFeature(1.0);
         else

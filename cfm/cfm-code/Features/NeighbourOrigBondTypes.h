@@ -16,21 +16,22 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "../Feature.h"
 
 class NeighbourOrigBondTypes : public Feature {
 public:
-  NeighbourOrigBondTypes() {
-    size = 12;
-    name = "NeighbourOrigBondTypes";
-  };
+    NeighbourOrigBondTypes() {
+        size = 12;
+        name = "NeighbourOrigBondTypes";
+    };
 
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 
-  // void addNeighbourOrigBondFeatures(FeatureVector &fv,
-  //                                  const RootedROMolPtr *mol, int
-  //                                  ring_break);
+    // void addNeighbourOrigBondFeatures(FeatureVector &fv,
+    //                                  const RootedROMolPtr *mol, int
+    //                                  ring_break);
 };
 
 // TODO FIX THIS, this should be a member function

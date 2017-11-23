@@ -16,10 +16,11 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "../Feature.h"
 
 class NeighbourMMFFFeature : public Feature {
 protected:
-  void addNeighbourAtomTypes(FeatureVector &fv, const RootedROMolPtr *mol,
-                             const RDKit::Atom *root, int offset) const;
+    void addNeighbourAtomTypes(FeatureVector &fv, const RootedROMolPtr *mol,
+                               const RDKit::Atom *root, int offset) const;
 };

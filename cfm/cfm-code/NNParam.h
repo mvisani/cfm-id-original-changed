@@ -27,72 +27,86 @@ typedef std::vector<double> azd_vals_t;
 
 
 //Exception to throw when the activation function id is unknown
-class NNParamActivationFunctionIdException: public std::exception{
+class NNParamActivationFunctionIdException : public std::exception {
 
-	virtual const char* what() const throw(){
-		return "Unknown activation function";
-	}
+    virtual const char *what() const throw() {
+        return "Unknown activation function";
+    }
 };
 
 //Exception to throw when a param file is expected to contain the neural net configuration
 //information but doesn't
-class NNParamFileReadException: public std::exception{
+class NNParamFileReadException : public std::exception {
 
-	virtual const char* what() const throw(){
-		return "Couldn't find neural net configuration information in param file";
-	}
+    virtual const char *what() const throw() {
+        return "Couldn't find neural net configuration information in param file";
+    }
 };
 
 
 class NNParam : public Param {
 public:
-	NNParam( std::vector<std::string> a_feature_list, int a_num_energy_levels, std::vector<int> &a_hlayer_num_nodes, std::vector<int> &a_act_func_ids );
-		
-	//Constructor for loading parameters from file
-	NNParam( std::string &filename );
+    NNParam(std::vector<std::string> a_feature_list, int a_num_energy_levels, std::vector<int> &a_hlayer_num_nodes,
+            std::vector<int> &a_act_func_ids);
 
-	//Initialisation options
-	void randomInit();
-	
-	//Save parameters to file (non-sparse format, includes neural net configuration)
-	void saveToFile( std::string &filename );
+    //Constructor for loading parameters from file
+    NNParam(std::string &filename);
 
-	//Compute the theta value for an input feature vector and energy
-	//based on the current weight settings
-	double computeTheta( const FeatureVector &fv, int energy );
-	//Same, but keeps a record of the z and a values along the way (for forwards step in forwards-backwards algorithm)
-	double computeTheta( const FeatureVector &fv, int energy, azd_vals_t &z_values, azd_vals_t &a_values, bool already_sized = false );
+    //Initialisation options
+    void randomInit();
 
-	void computeDeltas( std::vector<azd_vals_t> &deltasA, std::vector<azd_vals_t> &deltasB, std::vector<azd_vals_t> &z_values, std::vector<azd_vals_t> &a_values, double rho_denom, int energy );
-	void computeUnweightedGradients(  std::vector<std::vector<double> > &unweighted_grads, std::set<unsigned int> &used_idxs, std::vector<const FeatureVector *> &fvs, std::vector<azd_vals_t> &deltasA, std::vector<azd_vals_t> &deltasB, std::vector<azd_vals_t> &a_values );
+    //Save parameters to file (non-sparse format, includes neural net configuration)
+    void saveToFile(std::string &filename);
 
-	unsigned int getTotalNumNodes() const { return total_nodes; };	//Only hidden and output nodes (not input nodes)
-	unsigned int getSecondLayerWeightOffset() const { return hlayer_num_nodes[0]*expected_num_input_features;};
-	void getBiasIndexes( std::vector<unsigned int> &bias_indexes );
+    //Compute the theta value for an input feature vector and energy
+    //based on the current weight settings
+    double computeTheta(const FeatureVector &fv, int energy);
+
+    //Same, but keeps a record of the z and a values along the way (for forwards step in forwards-backwards algorithm)
+    double computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_values, azd_vals_t &a_values,
+                        bool already_sized = false);
+
+    void
+    computeDeltas(std::vector<azd_vals_t> &deltasA, std::vector<azd_vals_t> &deltasB, std::vector<azd_vals_t> &z_values,
+                  std::vector<azd_vals_t> &a_values, double rho_denom, int energy);
+
+    void
+    computeUnweightedGradients(std::vector<std::vector<double> > &unweighted_grads, std::set<unsigned int> &used_idxs,
+                               std::vector<const FeatureVector *> &fvs, std::vector<azd_vals_t> &deltasA,
+                               std::vector<azd_vals_t> &deltasB, std::vector<azd_vals_t> &a_values);
+
+    unsigned int getTotalNumNodes() const { return total_nodes; };    //Only hidden and output nodes (not input nodes)
+    unsigned int getSecondLayerWeightOffset() const { return hlayer_num_nodes[0] * expected_num_input_features; };
+
+    void getBiasIndexes(std::vector<unsigned int> &bias_indexes);
 
 private:
-	std::vector<int> hlayer_num_nodes;
-	unsigned int total_nodes;
+    std::vector<int> hlayer_num_nodes;
+    unsigned int total_nodes;
 
-	//Activation functions and their derivatives (kept general in case we want to try other activation functions...)
-	std::vector<int>act_func_ids;
-	std::vector<double (*)(double)> act_funcs;
-	std::vector<double (*)(double)> deriv_funcs;
+    //Activation functions and their derivatives (kept general in case we want to try other activation functions...)
+    std::vector<int> act_func_ids;
+    std::vector<double (*)(double)> act_funcs;
+    std::vector<double (*)(double)> deriv_funcs;
 
-	//Linear Activation (usually used for the last layer)
-	static double linear_activation( double input ){ return input; };
-	static double linear_derivative( double input ){ return 1; };
+    //Linear Activation (usually used for the last layer)
+    static double linear_activation(double input) { return input; };
 
-	//ReLU Activation
-	static double relu_activation( double input ){ if( input > 0 ) return input; else return 0;};
-	static double relu_derivative( double input ){ if( input > 0 ) return 1; else return 0;};
-	static double neg_relu_activation( double input ){ if( input < 0 ) return input; else return 0;};	
-	static double neg_relu_derivative( double input ){ if( input < 0 ) return 1; else return 0;};
+    static double linear_derivative(double input) { return 1; };
 
-	//Function to configure activation functions used in each layer
-	void setActivationFunctionsFromIds();
+    //ReLU Activation
+    static double relu_activation(double input) { if (input > 0) return input; else return 0; };
 
-	azd_vals_t tmp_z_values, tmp_a_values;
+    static double relu_derivative(double input) { if (input > 0) return 1; else return 0; };
+
+    static double neg_relu_activation(double input) { if (input < 0) return input; else return 0; };
+
+    static double neg_relu_derivative(double input) { if (input < 0) return 1; else return 0; };
+
+    //Function to configure activation functions used in each layer
+    void setActivationFunctionsFromIds();
+
+    azd_vals_t tmp_z_values, tmp_a_values;
 
 };
 

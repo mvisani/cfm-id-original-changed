@@ -18,13 +18,13 @@ param.cpp.
 #include "FingerPrintFeature.h"
 
 // Features use fingerprint encode ion fragmentation
-class IonRootEncodingMorganD3  : public FingerPrintFeature {
+class IonRootEncodingMorganD3 : public FingerPrintFeature {
 public:
-  IonRootEncodingMorganD3() {
-    size = 1024;
-    name = "IonRootEncodingMorganD3";
-  };
+    IonRootEncodingMorganD3() {
+        size = 1024;
+        name = "IonRootEncodingMorganD3";
+    };
 
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };

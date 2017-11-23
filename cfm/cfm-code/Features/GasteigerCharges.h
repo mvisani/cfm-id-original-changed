@@ -16,17 +16,19 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "RootPathFeature.h"
 
 class GasteigerCharges : public RootPathFeature {
 public:
-  GasteigerCharges() {
-    size = 72;
-    name = "GasteigerCharges";
-  };
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    GasteigerCharges() {
+        size = 72;
+        name = "GasteigerCharges";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 
 private:
-  int discretizeGasteigerCharge(double gc) const;
+    int discretizeGasteigerCharge(double gc) const;
 };

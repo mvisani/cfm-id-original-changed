@@ -21,36 +21,39 @@
 #include <map>
 #include <string>
 
-class MspReadException: public std::exception{
+class MspReadException : public std::exception {
 
-	virtual const char* what() const throw(){
-		return "Could not read msp file.";
-	}
+    virtual const char *what() const throw() {
+        return "Could not read msp file.";
+    }
 };
 
-class MspIdException: public std::exception{
+class MspIdException : public std::exception {
 
-	virtual const char* what() const throw(){
-		return "Could not find id in msp file.";
-	}
+    virtual const char *what() const throw() {
+        return "Could not find id in msp file.";
+    }
 };
 
-class MspReader{
+class MspReader {
 public:
-	//Constructor
-	MspReader(){};
-	MspReader( const char *filename, const char *pre_id = "", bool normalize_and_sort = false, int quantise_dec_pl = -1){ readInMspFile( filename, pre_id, normalize_and_sort, quantise_dec_pl ); };
+    //Constructor
+    MspReader() {};
 
-	//Function to fetch a spectrum with a given id from the msp library
-	const std::vector<Spectrum> *fetchSpectrumForId( const char *id  );
-	void writeLibraryToMspFile( const char *filename, int ionization_mode = DEFAULT_IONIZATION_MODE ) const;
+    MspReader(const char *filename, const char *pre_id = "", bool normalize_and_sort = false,
+              int quantise_dec_pl = -1) { readInMspFile(filename, pre_id, normalize_and_sort, quantise_dec_pl); };
+
+    //Function to fetch a spectrum with a given id from the msp library
+    const std::vector<Spectrum> *fetchSpectrumForId(const char *id);
+
+    void writeLibraryToMspFile(const char *filename, int ionization_mode = DEFAULT_IONIZATION_MODE) const;
 
 private:
-	void readInMspFile( const char *filename, const char *pre_id, bool normalize_and_sort, int quantise_dec_pl);
+    void readInMspFile(const char *filename, const char *pre_id, bool normalize_and_sort, int quantise_dec_pl);
 
-	//Library to read all the spectra into - accessible by id
-	std::map< std::string, std::vector<Spectrum> > library;
-	std::string mspfilename;
+    //Library to read all the spectra into - accessible by id
+    std::map<std::string, std::vector<Spectrum> > library;
+    std::string mspfilename;
 };
 
 #endif // __MSP_READER_H__

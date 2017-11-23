@@ -14,10 +14,15 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "RootPathFeature.h"
 
 class IonRootPairs : public RootPathFeature {
 public:
-    IonRootPairs(){ size = 145; name = "IonRootPairs"; };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+    IonRootPairs() {
+        size = 145;
+        name = "IonRootPairs";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const;
 };

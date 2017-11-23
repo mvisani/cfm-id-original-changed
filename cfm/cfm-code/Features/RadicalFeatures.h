@@ -16,14 +16,16 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "../Feature.h"
 
 class RadicalFeatures : public Feature {
 public:
-  RadicalFeatures() {
-    size = 3;
-    name = "RadicalFeatures";
-  };
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    RadicalFeatures() {
+        size = 3;
+        name = "RadicalFeatures";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };

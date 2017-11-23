@@ -15,10 +15,15 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "RootAtomFeature.h"
 
 class IonRootAtom : public RootAtomFeature {
 public:
-	IonRootAtom(){ size = 13; name = "IonRootAtom";  };
-	void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+    IonRootAtom() {
+        size = 13;
+        name = "IonRootAtom";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const;
 };

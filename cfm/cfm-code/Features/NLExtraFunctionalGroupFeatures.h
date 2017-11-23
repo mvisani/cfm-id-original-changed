@@ -16,14 +16,16 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "FunctionalGroupFeature.h"
 
 class NLExtraFunctionalGroupFeatures : public FunctionalGroupFeature {
 public:
-  NLExtraFunctionalGroupFeatures() {
-    size = (NUM_EXTRA_FGRPS + 1) * 2;
-    name = "NLExtraFunctionalGroupFeatures";
-  };
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    NLExtraFunctionalGroupFeatures() {
+        size = (NUM_EXTRA_FGRPS + 1) * 2;
+        name = "NLExtraFunctionalGroupFeatures";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };

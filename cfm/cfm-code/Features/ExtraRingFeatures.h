@@ -16,11 +16,16 @@
 #########################################################################*/
 
 #pragma once
+
 #include "../Feature.h"
 #include "FeatureHelper.h"
 
 class ExtraRingFeatures : public Feature {
 public:
-    ExtraRingFeatures(){ size = 3; name = "ExtraRingFeatures";  };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+    ExtraRingFeatures() {
+        size = 3;
+        name = "ExtraRingFeatures";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const;
 };

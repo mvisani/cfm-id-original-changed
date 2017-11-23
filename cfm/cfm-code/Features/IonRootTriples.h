@@ -16,14 +16,16 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "RootPathFeature.h"
 
 class IonRootTriples : public RootPathFeature {
 public:
-  IonRootTriples() {
-    size = 865;
-    name = "IonRootTriples";
-  };
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    IonRootTriples() {
+        size = 865;
+        name = "IonRootTriples";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };

@@ -15,10 +15,15 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "NeighbourMMFFFeature.h"
 
 class IonNeighbourMMFFAtomType : public NeighbourMMFFFeature {
 public:
-    IonNeighbourMMFFAtomType(){ size = 101; name = "IonNeighbourMMFFAtomType";  };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+    IonNeighbourMMFFAtomType() {
+        size = 101;
+        name = "IonNeighbourMMFFAtomType";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const;
 };

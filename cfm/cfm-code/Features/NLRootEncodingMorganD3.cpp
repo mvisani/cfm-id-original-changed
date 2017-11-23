@@ -17,14 +17,14 @@ param.cpp.
 #########################################################################*/
 #include "NLRootEncodingMorganD3.h"
 
-void NLRootEncodingMorganD3 ::compute(FeatureVector &fv, const RootedROMolPtr *NL,
-                              const RootedROMolPtr *nl) const {
-  int ring_break;
-  nl->mol.get()->getProp("IsRingBreak", ring_break);
+void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+                                     const RootedROMolPtr *nl) const {
+    int ring_break;
+    nl->mol.get()->getProp("IsRingBreak", ring_break);
 
-  unsigned int path_range = 3;
-  unsigned int finger_print_size = 512;
-  unsigned int morgan_radius  = 2;
-  
-  addMorganFingerPrint(fv, NL, finger_print_size, path_range, ring_break, morgan_radius);
+    unsigned int path_range = 3;
+    unsigned int finger_print_size = 512;
+    unsigned int morgan_radius = 2;
+
+    addMorganFingerPrint(fv, NL, finger_print_size, path_range, ring_break, morgan_radius);
 }

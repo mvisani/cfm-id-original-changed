@@ -20,11 +20,11 @@ param.cpp.
 // Features use fingerprint encode ion fragmentation
 class NLRootEncodingD4Long : public FingerPrintFeature {
 public:
-  NLRootEncodingD4Long() {
-    size = 2048;
-    name = "NLRootEncodingD4Long";
-  };
+    NLRootEncodingD4Long() {
+        size = 2048;
+        name = "NLRootEncodingD4Long";
+    };
 
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };

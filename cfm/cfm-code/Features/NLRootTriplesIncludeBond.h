@@ -16,14 +16,16 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "RootPathFeature.h"
 
 class NLRootTriplesIncludeBond : public RootPathFeature {
 public:
-  NLRootTriplesIncludeBond() {
-    size = 10585;
-    name = "NLRootTriplesIncludeBond";
-  };
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    NLRootTriplesIncludeBond() {
+        size = 10585;
+        name = "NLRootTriplesIncludeBond";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };

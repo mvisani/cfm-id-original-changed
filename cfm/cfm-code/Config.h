@@ -62,7 +62,7 @@ static const double DEFAULT_EM_CONVERGE_THRESH = 0.001;
 static const int DEFAULT_CONVERGE_COUNT_THRESH = 1;
 
 //Which IPFP-like algorithm to run during E-step
-static const int DEFAULT_IPFP_ALGORITHM = 2;	//IPFP_WITH_OSC_ADJUST
+static const int DEFAULT_IPFP_ALGORITHM = 2;    //IPFP_WITH_OSC_ADJUST
 
 //Threshold for testing convergence of the IPFP algorithm
 static const double DEFAULT_IPFP_CONVERGE_THRESH = 0.005;
@@ -90,8 +90,8 @@ static const int POSITIVE_EI_IONIZATION_MODE = 3;
 
 static const int DEFAULT_IONIZATION_MODE = POSITIVE_ESI_IONIZATION_MODE;
 static const int DEFAULT_INCLUDE_ISOTOPES = 0;
-static const double DEFAULT_ISOTOPE_THRESH = 1.0;	//On a normalized scale where the highest peak has height 100.0
-static const int DEFAULT_INCLUDE_H_LOSSES = 0;		//For backwards compatibility with old ESI-MS/MS models
+static const double DEFAULT_ISOTOPE_THRESH = 1.0;    //On a normalized scale where the highest peak has height 100.0
+static const int DEFAULT_INCLUDE_H_LOSSES = 0;        //For backwards compatibility with old ESI-MS/MS models
 static const int DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY = 0;
 
 static const int PARAM_FULL_ZERO_INIT = 1;
@@ -113,8 +113,8 @@ static const int MGF_OUTPUT_MODE = 2;
 //Maximum additional electron pairs to either side during fragmentation
 static const int MAX_E_MOVE = 4;
 
-static const int LINEAR_THETA_FUNCTION = 1; 
-static const int NEURAL_NET_THETA_FUNCTION = 2; 
+static const int LINEAR_THETA_FUNCTION = 1;
+static const int NEURAL_NET_THETA_FUNCTION = 2;
 static const int DEFAULT_THETA_FUNCTION = LINEAR_THETA_FUNCTION;
 
 static const int LINEAR_NN_ACTIVATION_FUNCTION = 0;
@@ -131,75 +131,78 @@ static const int UNIFORM_OBS_FUNCTION = 2;
 static const int DEFAULT_OBS_FUNCTION = NORMAL_OBS_FUNCTION;
 
 //Timeout settings
-static const int DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS = -1;	//-1 is no timeout.
+static const int DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS = -1;    //-1 is no timeout.
 
 //Configuration
-struct config_t{
-	
-	//Fragment Graph Configuration
-	int fg_depth;
-	int allow_frag_detours;
-	int do_prelim_bfs;
-	int max_ring_breaks;
-	int include_h_losses;
-	int include_precursor_h_losses_only;
+struct config_t {
 
-	int use_single_energy_cfm;	//Use Single Energy CFM (rather than Combined Energy)
-	int ionization_mode;
-	int include_isotopes;
-	double isotope_thresh;
+    //Fragment Graph Configuration
+    int fg_depth;
+    int allow_frag_detours;
+    int do_prelim_bfs;
+    int max_ring_breaks;
+    int include_h_losses;
+    int include_precursor_h_losses_only;
 
-	//Model Level Configuration
-	unsigned int model_depth; //Total Depth
-	std::vector<int> spectrum_depths;
-	std::vector<double> spectrum_weights;
-	double abs_mass_tol;
-	double ppm_mass_tol;
-	double intermediate_weights;
-	std::vector<int> map_d_to_energy;	//Derived parameter
-	std::vector<int> dv_spectrum_depths;	//Either a direct copy, or interpolated values.
-	std::vector<int> dv_spectrum_indexes;	//Index of each spectrum in the list of spectra in MolData	
-	std::vector<double> dv_spectrum_weights;
-	int obs_function;	//Function used for the observation function
+    int use_single_energy_cfm;    //Use Single Energy CFM (rather than Combined Energy)
+    int ionization_mode;
+    int include_isotopes;
+    double isotope_thresh;
 
-	//Theta function Configuration (Linear or Neural Net)
-	int theta_function;
-	//Neural Net Configuration
-	std::vector<int> theta_nn_hlayer_num_nodes;
-	std::vector<int> theta_nn_layer_act_func_ids;
+    //Model Level Configuration
+    unsigned int model_depth; //Total Depth
+    std::vector<int> spectrum_depths;
+    std::vector<double> spectrum_weights;
+    double abs_mass_tol;
+    double ppm_mass_tol;
+    double intermediate_weights;
+    std::vector<int> map_d_to_energy;    //Derived parameter
+    std::vector<int> dv_spectrum_depths;    //Either a direct copy, or interpolated values.
+    std::vector<int> dv_spectrum_indexes;    //Index of each spectrum in the list of spectra in MolData
+    std::vector<double> dv_spectrum_weights;
+    int obs_function;    //Function used for the observation function
 
-	//IPFP Configuration
-	int ipfp_algorithm;	//0 = IPFP, 1 = GEMA, 2 = IPFP_WITH_OSC_ADJUST
-	double ipfp_converge_thresh;
-	double osc_ipfp_converge_thresh;
+    //Theta function Configuration (Linear or Neural Net)
+    int theta_function;
+    //Neural Net Configuration
+    std::vector<int> theta_nn_hlayer_num_nodes;
+    std::vector<int> theta_nn_layer_act_func_ids;
 
-	//EM Configuration
-	double em_converge_thresh;
-	int num_em_restarts;
-	int use_lower_energy_params_for_init;
-	int em_init_type;
+    //IPFP Configuration
+    int ipfp_algorithm;    //0 = IPFP, 1 = GEMA, 2 = IPFP_WITH_OSC_ADJUST
+    double ipfp_converge_thresh;
+    double osc_ipfp_converge_thresh;
 
-	//Gradient Ascent Configuration
-	double lambda;	//Regularization constant
-	int use_lbfgs_for_ga;
-	int converge_count_thresh;
-	double ga_converge_thresh;
-	double line_search_alpha;
-	double line_search_beta;
-	double starting_step_size;
-	int max_search_count;
-	int update_bias_first;
-	int ga_minibatch_nth_size;
-	int ga_max_iterations;
-	int ga_momentum;
+    //EM Configuration
+    double em_converge_thresh;
+    int num_em_restarts;
+    int use_lower_energy_params_for_init;
+    int em_init_type;
 
-	int fragraph_compute_timeout_in_secs;
+    //Gradient Ascent Configuration
+    double lambda;    //Regularization constant
+    int use_lbfgs_for_ga;
+    int converge_count_thresh;
+    double ga_converge_thresh;
+    double line_search_alpha;
+    double line_search_beta;
+    double starting_step_size;
+    int max_search_count;
+    int update_bias_first;
+    int ga_minibatch_nth_size;
+    int ga_max_iterations;
+    int ga_momentum;
+
+    int fragraph_compute_timeout_in_secs;
 
 };
 
-void initDefaultConfig( config_t &cfg );
-void initConfig( config_t &cfg, std::string &filename, bool report_all = false );
-void initDerivedConfig( config_t &cfg, int energy = -1);
-void initSingleEnergyConfig( config_t &se_cfg, config_t &cfg, int energy );
+void initDefaultConfig(config_t &cfg);
+
+void initConfig(config_t &cfg, std::string &filename, bool report_all = false);
+
+void initDerivedConfig(config_t &cfg, int energy = -1);
+
+void initSingleEnergyConfig(config_t &se_cfg, config_t &cfg, int energy);
 
 #endif // __CONFIG_H__

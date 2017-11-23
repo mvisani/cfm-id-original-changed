@@ -16,14 +16,16 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "FunctionalGroupFeature.h"
 
 class BreakFuncitonalGroupFeature : public FunctionalGroupFeature {
 public:
-  BreakFuncitonalGroupFeature() {
-    size = size = (NUM_FGRPS + 1) * 2;
-    name = "BreakFuncitonalGroupFeature";
-  };
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    BreakFuncitonalGroupFeature() {
+        size = size = (NUM_FGRPS + 1) * 2;
+        name = "BreakFuncitonalGroupFeature";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };

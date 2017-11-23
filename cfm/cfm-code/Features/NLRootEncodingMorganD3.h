@@ -18,13 +18,13 @@ param.cpp.
 #include "FingerPrintFeature.h"
 
 // Features use fingerprint encode NL fragmentatNL
-class NLRootEncodingMorganD3  : public FingerPrintFeature {
+class NLRootEncodingMorganD3 : public FingerPrintFeature {
 public:
-  NLRootEncodingMorganD3() {
-    size = 1024;
-    name = "NLRootEncodingMorganD3";
-  };
+    NLRootEncodingMorganD3() {
+        size = 1024;
+        name = "NLRootEncodingMorganD3";
+    };
 
-  void compute(FeatureVector &fv, const RootedROMolPtr *NL,
-               const RootedROMolPtr *nl) const;
+    void compute(FeatureVector &fv, const RootedROMolPtr *NL,
+                 const RootedROMolPtr *nl) const;
 };

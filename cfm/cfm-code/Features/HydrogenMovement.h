@@ -15,10 +15,15 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "../Feature.h"
 
 class HydrogenMovement : public Feature {
 public:
-    HydrogenMovement(){ size = 10; name = "HydrogenMovement"; };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl )  const;
+    HydrogenMovement() {
+        size = 10;
+        name = "HydrogenMovement";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const;
 };

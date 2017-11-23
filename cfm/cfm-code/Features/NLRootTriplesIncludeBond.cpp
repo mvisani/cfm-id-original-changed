@@ -21,10 +21,10 @@ void NLRootTriplesIncludeBond::compute(FeatureVector &fv,
                                        const RootedROMolPtr *ion,
                                        const RootedROMolPtr *nl) const {
 
-  int ring_break;
-  const int path_len = 3;
-  nl->mol.get()->getProp("IsRingBreak", ring_break);
-  std::vector<path_t> paths;
-  computeRootPaths(paths, ion, path_len, ring_break, true);
-  addRootFeaturesWithBond(fv, paths, ring_break, path_len);
+    int ring_break;
+    const int path_len = 3;
+    nl->mol.get()->getProp("IsRingBreak", ring_break);
+    std::vector<path_t> paths;
+    computeRootPaths(paths, ion, path_len, ring_break, true);
+    addRootFeaturesWithBond(fv, paths, ring_break, path_len);
 }

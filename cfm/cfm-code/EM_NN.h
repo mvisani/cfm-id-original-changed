@@ -27,22 +27,27 @@
 
 class EM_NN : public EM {
 public:
-	//Constructor
-	//Note: To include the group in the status filename, include _GRP_ in the name
-	EM_NN(config_t *a_cfg, FeatureCalculator *an_fc, std::string &a_status_filename, std::string initial_params_filename = "");
+    //Constructor
+    //Note: To include the group in the status filename, include _GRP_ in the name
+    EM_NN(config_t *a_cfg, FeatureCalculator *an_fc, std::string &a_status_filename,
+          std::string initial_params_filename = "");
 
-	//This is public so the test can access it....there must be a better way?
-	double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft, bool record_used_idxs, std::set<unsigned int> &used_idxs );
-	double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);	
-	double addRegularizers( double *grads );
+    //This is public so the test can access it....there must be a better way?
+    double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
+                                        bool record_used_idxs, std::set<unsigned int> &used_idxs);
 
-	void writeParamsToFile( std::string &filename );
+    double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
+
+    double addRegularizers(double *grads);
+
+    void writeParamsToFile(std::string &filename);
 
 private:
-	//The current parameters
-	boost::shared_ptr<NNParam> nn_param; //EM::param will also be set to point to this location.
-	void initParams();
-	void computeThetas( MolData *moldata );
+    //The current parameters
+    boost::shared_ptr<NNParam> nn_param; //EM::param will also be set to point to this location.
+    void initParams();
+
+    void computeThetas(MolData *moldata);
 
 };
 

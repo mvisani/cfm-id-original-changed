@@ -17,14 +17,14 @@ param.cpp.
 #########################################################################*/
 #include "IonRootEncodingMorganD3.h"
 
-void IonRootEncodingMorganD3 ::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                              const RootedROMolPtr *nl) const {
-  int ring_break;
-  nl->mol.get()->getProp("IsRingBreak", ring_break);
+void IonRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                                      const RootedROMolPtr *nl) const {
+    int ring_break;
+    nl->mol.get()->getProp("IsRingBreak", ring_break);
 
-  unsigned int path_range = 3;
-  unsigned int finger_print_size = 512;
-  unsigned int morgan_radius  = 2;
-  
-  addMorganFingerPrint(fv, ion, finger_print_size, path_range, ring_break, morgan_radius);
+    unsigned int path_range = 3;
+    unsigned int finger_print_size = 512;
+    unsigned int morgan_radius = 2;
+
+    addMorganFingerPrint(fv, ion, finger_print_size, path_range, ring_break, morgan_radius);
 }

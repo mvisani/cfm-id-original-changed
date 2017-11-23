@@ -15,10 +15,15 @@
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "FunctionalGroupFeature.h"
 
 class IonFunctionalGroupRootOnlyFeatures : public FunctionalGroupFeature {
 public:
-    IonFunctionalGroupRootOnlyFeatures(){ size = NUM_FGRPS+1; name = "IonFunctionalGroupRootOnlyFeatures";  };
-    void compute( FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl ) const;
+    IonFunctionalGroupRootOnlyFeatures() {
+        size = NUM_FGRPS + 1;
+        name = "IonFunctionalGroupRootOnlyFeatures";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const;
 };

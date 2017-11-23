@@ -16,14 +16,16 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "../Feature.h"
 
 class QuadraticFeatures : public Feature {
 public:
-  QuadraticFeatures() {
-    size = 0;
-    name = "QuadraticFeatures";
-  };
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    QuadraticFeatures() {
+        size = 0;
+        name = "QuadraticFeatures";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };

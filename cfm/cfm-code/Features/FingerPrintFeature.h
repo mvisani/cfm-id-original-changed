@@ -16,6 +16,7 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "../Feature.h"
 
 #include <unordered_set>
@@ -25,55 +26,58 @@ param.cpp.
 class FingerPrintFeature : public Feature {
 protected:
 
-  // function to get part of Mol from given root
-  // and all atom within given range
-  void getRemoveAtomIdxOfRange(const romol_ptr_t mol, const RDKit::Atom *atom,
-                               const RDKit::Atom *prev_atom,
-                               std::vector<unsigned int> &remove_atom_ids,
-                               std::unordered_set<unsigned int> &visited,
-                               int range) const;
+    // function to get part of Mol from given root
+    // and all atom within given range
+    void getRemoveAtomIdxOfRange(const romol_ptr_t mol, const RDKit::Atom *atom,
+                                 const RDKit::Atom *prev_atom,
+                                 std::vector<unsigned int> &remove_atom_ids,
+                                 std::unordered_set<unsigned int> &visited,
+                                 int range) const;
 
-  // remove atoms from mol in given list
-  void removeAtomInTheList(RDKit::RWMol &mol,
-                           std::vector<unsigned int> &remove_atom_ids) const;
+    // remove atoms from mol in given list
+    void removeAtomInTheList(RDKit::RWMol &mol,
+                             std::vector<unsigned int> &remove_atom_ids) const;
 
-  // replace bond type with orig bond type
-  void replaceWithOrigBondType(RDKit::RWMol &mol) const;
+    // replace bond type with orig bond type
+    void replaceWithOrigBondType(RDKit::RWMol &mol) const;
 
-  void addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
-                            const unsigned int finger_print_size,
-                            const unsigned int path_range, const int ring_break,
-                            const unsigned int finger_print_min_path,
-                            const unsigned int finger_print_max_path) const;
-  
-  void addMorganFingerPrint(FeatureVector &fv, 
-                            const RootedROMolPtr *mol,
-                            const unsigned int finger_print_size,
-                            const unsigned int path_range, 
-                            const int ring_break,
-                            const int radius) const;
+    void addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
+                             const unsigned int finger_print_size,
+                             const unsigned int path_range, const int ring_break,
+                             const unsigned int finger_print_min_path,
+                             const unsigned int finger_print_max_path) const;
+
+    void addMorganFingerPrint(FeatureVector &fv,
+                              const RootedROMolPtr *mol,
+                              const unsigned int finger_print_size,
+                              const unsigned int path_range,
+                              const int ring_break,
+                              const int radius) const;
 
 
-  void addAdjacentMatrixRepesentationFeature(FeatureVector &fv, 
-                                              const RootedROMolPtr *mol,
-                                              const unsigned int path_range,
-                                              const unsigned int num_atom,
-                                              const int ring_break) const;                                       
+    void addAdjacentMatrixRepesentationFeature(FeatureVector &fv,
+                                               const RootedROMolPtr *mol,
+                                               const unsigned int path_range,
+                                               const unsigned int num_atom,
+                                               const int ring_break) const;
+
 private:
-  void getAtomsWithRange(int range);
-  void getAtomVisitOrder(const romol_ptr_t mol, const RDKit::Atom *atom, 
-  const RDKit::Atom *prev_atom, int range, std::vector<unsigned int> &visited, const std::map<unsigned int, std::string> &sorting_labels) const;
+    void getAtomsWithRange(int range);
 
-  std::string getSortingLabels(
-    const romol_ptr_t mol, const RDKit::Atom *atom,
-    const RDKit::Atom *prev_atom,  int range,
-    std::unordered_set<unsigned int> & visited,
-    std::map<unsigned int, std::string> &sorting_labels) const;
-  
-    void addAdjacentMatrixRepesentation(FeatureVector &fv, 
-                                              const RootedROMolPtr *mol,
-                                              const RDKit::Atom *root,
-                                              const unsigned int path_range,
-                                              const unsigned int num_atom) const;
+    void getAtomVisitOrder(const romol_ptr_t mol, const RDKit::Atom *atom,
+                           const RDKit::Atom *prev_atom, int range, std::vector<unsigned int> &visited,
+                           const std::map<unsigned int, std::string> &sorting_labels) const;
+
+    std::string getSortingLabels(
+            const romol_ptr_t mol, const RDKit::Atom *atom,
+            const RDKit::Atom *prev_atom, int range,
+            std::unordered_set<unsigned int> &visited,
+            std::map<unsigned int, std::string> &sorting_labels) const;
+
+    void addAdjacentMatrixRepesentation(FeatureVector &fv,
+                                        const RootedROMolPtr *mol,
+                                        const RDKit::Atom *root,
+                                        const unsigned int path_range,
+                                        const unsigned int num_atom) const;
 
 };

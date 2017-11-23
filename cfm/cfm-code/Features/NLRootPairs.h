@@ -17,14 +17,16 @@ param.cpp.
 #########################################################################*/
 // Features use fingerprint encode Neutral Loss
 #pragma once
+
 #include "RootPathFeature.h"
 
 class NLRootPairs : public RootPathFeature {
 public:
-  NLRootPairs() {
-    size = 145;
-    name = "NLRootPairs";
-  };
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    NLRootPairs() {
+        size = 145;
+        name = "NLRootPairs";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };

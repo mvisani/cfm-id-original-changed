@@ -16,14 +16,16 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #pragma once
+
 #include "RootAtomFeature.h"
 
 class NLRootAtom : public RootAtomFeature {
 public:
-  NLRootAtom() {
-    size = 13;
-    name = "NLRootAtom";
-  };
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    NLRootAtom() {
+        size = 13;
+        name = "NLRootAtom";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };

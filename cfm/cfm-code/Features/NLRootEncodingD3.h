@@ -21,11 +21,11 @@ param.cpp.
 class NLRootEncodingD3 : public FingerPrintFeature {
 
 public:
-  NLRootEncodingD3() {
-    size = 1024;
-    name = "NLRootEncodingD3";
-  };
+    NLRootEncodingD3() {
+        size = 1024;
+        name = "NLRootEncodingD3";
+    };
 
-  void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-               const RootedROMolPtr *nl) const;
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
 };
