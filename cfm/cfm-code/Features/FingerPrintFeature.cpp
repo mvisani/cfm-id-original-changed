@@ -262,7 +262,7 @@ void FingerPrintFeature::getAtomVisitOrder(
         std::vector<unsigned int> &visited,
         const std::map<unsigned int, std::string> &sorting_labels) const {
     
-    std::cout << range << std::endl;
+    // std::cout << range << std::endl;
     if (atom == nullptr
         || range == 0
         || std::find(visited.begin(), visited.end(), atom->getIdx()) != visited.end()) {
@@ -271,8 +271,8 @@ void FingerPrintFeature::getAtomVisitOrder(
 
     visited.push_back(atom->getIdx());
 
-    // if range > 0 , visit child, NOTE: we only have sorting lab before range 0
-    if(range > 0)
+    // if range > 1 , visit child, NOTE: we only have sorting lab before range 0
+    if(range - 1 > 0)
     {
         // create a map to visit child
         // use multimap since we can have duplicated labels
@@ -325,12 +325,12 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
     std::vector<unsigned int> visit_order;
     getAtomVisitOrder(mol->mol, root, nullptr, path_range, visit_order, sorting_labels);
 
-    std::cout << "getAtomVisitOrder" << std::endl;
+    /*std::cout << "getAtomVisitOrder" << std::endl;
     for(auto i: visit_order)
     {
         std::cout << i << " ";
     }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 
     std::map<unsigned int, int> visit_order_map;
 
