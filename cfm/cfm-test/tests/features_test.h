@@ -141,10 +141,10 @@ public:
   void runTest();
 };
 
-/*class FeaturesTestFingerPrint : public Test {
+class FeaturesTestFingerPrint : public Test {
 public:
   FeaturesTestFingerPrint();
   void runTest();
-};*/
+};
 
 #endif // __FEATURE_TEST_H__

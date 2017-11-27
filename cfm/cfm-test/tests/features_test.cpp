@@ -1427,9 +1427,29 @@ FeaturesTestFingerPrint::FeaturesTestFingerPrint(){
 
 void FeaturesTestFingerPrint::runTest(){
 
-
 	bool pass = true;
-	//std::string smiles_Metlin_21361 = "O=C(NC(CCC(N)=O)C(O)=O)C(C)NC(=O)C(N)CC(C)C";
+
+    std::vector<std::string> fnames;
+    fnames.push_back("NLRootMatrixFP");
+    FeatureCalculator *fc = new FeatureCalculator( fnames );
+
+    // test case #1
+    // init a mol ptr
+    RDKit::Atom *null_atom = nullptr;
+
+    romol_ptr_t ion = createMolPtr("C");
+    initMolProps(ion);
+    RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
+
+    romol_ptr_t nl = createMolPtr("N");
+    initMolProps(nl);
+    RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
+    nl.get()->setProp("IsRingBreak",0);
+
+    FeatureVector *fv = fc->computeFV(&rtd_ion, &rtd_nl);
+
+    delete fv;
+    delete fc;
 
 	passed = pass;
 };
