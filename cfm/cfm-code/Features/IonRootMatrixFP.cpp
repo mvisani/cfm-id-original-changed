@@ -1,9 +1,9 @@
 /*#########################################################################
-# Mass Spec PredictNL and IdentificatNL of Metabolites
+# Mass Spec PredictNL and Identification of Metabolites
 #
 # IonRootMatrixFP.cpp
 #
-# DescriptNL: 	Classes for communicating data (e.g. parameters, partial
+# Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
 param.cpp.
 #
@@ -17,14 +17,13 @@ param.cpp.
 #########################################################################*/
 #include "IonRootMatrixFP.h"
 
-void IonRootMatrixFP::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+void IonRootMatrixFP::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                      const RootedROMolPtr *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
-    /*unsigned int path_range = 3;
-    unsigned int finger_print_size = 512;
-    unsigned int morgan_radius = 2;
+    unsigned int path_range = 3;
+    unsigned int num_atoms = 10;
 
-    addMorganFingerPrint(fv, NL, finger_print_size, path_range, ring_break, morgan_radius);*/
+    addAdjacentMatrixRepesentationFeature(fv, ion, path_range, num_atoms, ring_break);
 }

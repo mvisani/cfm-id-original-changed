@@ -310,6 +310,11 @@ const std::vector<std::string> &Feature::OKSymbolsLess() {
     return x;
 }
 
+unsigned int Feature::GetSizeOfOKSymbolsLess() const
+{
+    return OKSymbolsLess().size();
+}
+
 void Feature::replaceUncommonWithX(std::string &symbol) const {
 
     // Replace uncommon symbols with X

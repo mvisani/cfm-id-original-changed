@@ -196,7 +196,6 @@ void FeatureHelper::labelAtomsWithLonePairs(RDKit::RWMol *rwmol) {
 }
 
 int FeatureHelper::getBondTypeAsInt(RDKit::Bond *bond) {
-    int bondType = 0;
     if (bond->getIsAromatic()) {
         return 4;
     } else if (bond->getIsConjugated()) {

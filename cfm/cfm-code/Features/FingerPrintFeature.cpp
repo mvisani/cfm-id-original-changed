@@ -300,24 +300,13 @@ list of degrees per node
 
 */
 
-void FingerPrintFeature::addAdjacentMatrixRepesentation(FeatureVector &fv,
-                                                        const RootedROMolPtr *mol,
-                                                        const RDKit::Atom *root,
-                                                        const unsigned int path_range,
-                                                        const unsigned int num_atom) const {
+void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
+                                                         const RootedROMolPtr *mol,
+                                                         const RDKit::Atom *root,
+                                                         const unsigned int path_range,
+                                                         const unsigned int num_atom) const {
 
     RDKit::ROMol &nl_ref = *(mol->mol.get());
-
-    // Get list of atom we need to remove
-    //std::vector<unsigned int> remove_atom_ids;
-
-    //getRemoveAtomIdxOfRange(mol->mol, root, nullptr, remove_atom_ids,
-    //                       visited, path_range);
-
-    // Get Mol Object and remove atoms
-    // RDKit::RWMol part;
-    // part.insertMol(*(mol->mol.get()));
-    // removeAtomInTheList(part, remove_atom_ids);
 
     // Get labels for find visit order
     std::unordered_set<unsigned int> visited;
@@ -335,7 +324,7 @@ void FingerPrintFeature::addAdjacentMatrixRepesentation(FeatureVector &fv,
         visit_order_map[visit_order[i]] = i;
     }
 
-    int ajcent_matrix[num_atom][num_atom] = {{0}};
+    int adjacency_matrix[num_atom][num_atom] = {{0}};
 
     for (auto bi = mol->mol->beginBonds(); bi != mol->mol->endBonds(); ++bi) {
         // for each bond
@@ -346,30 +335,39 @@ void FingerPrintFeature::addAdjacentMatrixRepesentation(FeatureVector &fv,
         // if atoms in the list
         if (visit_order_map.find(beginIdx) != visit_order_map.end()
             && visit_order_map.find(endIdx) != visit_order_map.end()) {
-            ajcent_matrix[visit_order_map[beginIdx]][visit_order_map[endIdx]] = bond_type;
-            ajcent_matrix[visit_order_map[endIdx]][visit_order_map[beginIdx]] = bond_type;
+            adjacency_matrix[visit_order_map[beginIdx]][visit_order_map[endIdx]] = bond_type;
+            adjacency_matrix[visit_order_map[endIdx]][visit_order_map[beginIdx]] = bond_type;
         }
     }
 
-    // we only need half of matrix miuns diagonal
+    // first bit indicate if there is a bond
+    // rest 5 for each bond_type, one hot encoding
+
+    const unsigned int num_bits_per_bond = 6;
+    // we only need half of matrix exclude diagonal
     // so i start from 1 not 0
     for (int i = 1; i < num_atom; ++i) {
         for (int j = i + 1; j < num_atom; ++j) {
-            int temp_feature[5] = {0};
-            if (ajcent_matrix[i][j] > 0) {
+            int temp_feature[num_bits_per_bond] = {0};
+            // check if bond exits/defined
+            if (adjacency_matrix[i][j] > 0) {
                 // first bit indicate if there is a bond
                 temp_feature[0] = 1;
                 // one hot encoding bond type
-                temp_feature[ajcent_matrix[i][j]] = 1;
+                // since adjacency_matrix[i][j] > 0, bondtype 0 does not make sense
+                int bond_type = adjacency_matrix[i][j] > 5 ? 5 :  adjacency_matrix[i][j];
+                temp_feature[bond_type] = 1;
             }
 
             // TODO Change to C++11 array
-            fv.addFeatures(temp_feature, 5);
+            fv.addFeatures(temp_feature, num_bits_per_bond);
         }
     }
 
+    // add atoms information into FP
+    const unsigned  int num_atom_types = GetSizeOfOKSymbolsLess();
     for (int i = 0; i < num_atom; ++i) {
-        int atom_type_feature[5] = {0};
+        int atom_type_feature[num_atom_types] = {0};
         int atom_degree_feature[5] = {0};
         if (i < visit_order.size()) {
             int atom_idx = visit_order[i];
@@ -381,14 +379,14 @@ void FingerPrintFeature::addAdjacentMatrixRepesentation(FeatureVector &fv,
             atom_degree_feature[degree] = 1;
         }
         // TODO Change to C++11 array
-        fv.addFeatures(atom_type_feature, 5);
+        fv.addFeatures(atom_type_feature, num_atom_types);
         fv.addFeatures(atom_degree_feature, 5);
     }
 }
 
 
 // for all the samples we have max atoms with a 3 atom group is 10
-// for all the samples we have max atoms with a 3 atom group is 16
+// for all the samples we have max atoms with a 5 atom group is 16
 // therefore  we need 50 features for arcs
 void FingerPrintFeature::addAdjacentMatrixRepesentationFeature(FeatureVector &fv,
                                                                const RootedROMolPtr *mol,
@@ -396,11 +394,12 @@ void FingerPrintFeature::addAdjacentMatrixRepesentationFeature(FeatureVector &fv
                                                                const unsigned int num_atom,
                                                                const int ring_break) const {
 
-    addAdjacentMatrixRepesentation(fv, mol, mol->root, path_range, num_atom);
+    addAdjacentMatrixRepresentation(fv, mol, mol->root, path_range, num_atom);
     if (ring_break > 0) {
-        addAdjacentMatrixRepesentation(fv, mol, mol->other_root, path_range, num_atom);
+        addAdjacentMatrixRepresentation(fv, mol, mol->other_root, path_range, num_atom);
     } else {
-        unsigned int feature_size = num_atom * (num_atom - 1) / 2 * 5 + num_atom * 10;
+        //TODO: Get ride of this magic numbers
+        unsigned int feature_size = num_atom * (num_atom - 1) / 2 * 6 + num_atom * 11;
         double empty_feature[feature_size] = {0};
         fv.addFeatures(empty_feature, feature_size);
     }

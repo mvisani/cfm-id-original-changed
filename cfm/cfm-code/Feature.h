@@ -117,6 +117,8 @@ protected:
     void replaceUncommonWithX(std::string &symbol) const;
 
     int getSymbolsLessIndex(const std::string &symbol) const;
+
+    unsigned int GetSizeOfOKSymbolsLess() const;
 };
 
 // Class to compute a feature vector

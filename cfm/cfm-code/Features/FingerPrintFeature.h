@@ -74,10 +74,10 @@ private:
             std::unordered_set<unsigned int> &visited,
             std::map<unsigned int, std::string> &sorting_labels) const;
 
-    void addAdjacentMatrixRepesentation(FeatureVector &fv,
-                                        const RootedROMolPtr *mol,
-                                        const RDKit::Atom *root,
-                                        const unsigned int path_range,
-                                        const unsigned int num_atom) const;
+    void addAdjacentMatrixRepresentation(FeatureVector &fv,
+                                         const RootedROMolPtr *mol,
+                                         const RDKit::Atom *root,
+                                         const unsigned int path_range,
+                                         const unsigned int num_atom) const;
 
 };

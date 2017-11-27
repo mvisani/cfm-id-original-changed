@@ -61,7 +61,8 @@ public:
                         fc->includesFeature("NLNeighbourMMFFAtomType");
 
         exec_flags[3] = fc->includesFeature("BrokenOrigBondType") ||
-                        fc->includesFeature("NeighbourOrigBondTypes") ||
+                        fc->includesFeature("NeighbourOrigBondTypes");
+                        /*||
                         fc->includesFeature("IonRootEncodingD3") ||
                         fc->includesFeature("NLRootEncodingD3") ||
                         fc->includesFeature("NLRootEncodingD4") ||
@@ -71,7 +72,7 @@ public:
                         fc->includesFeature("NLRootEncodingMorganD3") ||
                         fc->includesFeature("IonRootEncodingMorganD3") ||
                         fc->includesFeature("NLRootEncodingMorganD3Long") ||
-                        fc->includesFeature("IonRootEncodingMorganD3Long");
+                        fc->includesFeature("IonRootEncodingMorganD3Long");*/
 
         exec_flags[4] = fc->includesFeature("IonFunctionalGroupFeatures") ||
                         fc->includesFeature("NLFunctionalGroupFeatures") ||

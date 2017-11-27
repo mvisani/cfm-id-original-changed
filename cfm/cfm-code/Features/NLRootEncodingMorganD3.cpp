@@ -1,9 +1,9 @@
 /*#########################################################################
-# Mass Spec PredictNL and IdentificatNL of Metabolites
+# Mass Spec PredictNL and Identification of Metabolites
 #
 # NLRootEncodingD3.cpp
 #
-# DescriptNL: 	Classes for communicating data (e.g. parameters, partial
+# Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
 param.cpp.
 #

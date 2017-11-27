@@ -16,7 +16,7 @@ param.cpp.
 #########################################################################*/
 #include "NLRootEncodingD4.h"
 
-void NLRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *ion,
+void NLRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *NL,
                                const RootedROMolPtr *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
@@ -26,5 +26,5 @@ void NLRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *ion,
     unsigned int path_range = 4;
     unsigned finger_print_size = 512;
 
-    addRDKitFingerPrint(fv, ion, finger_print_size, path_range, ring_break, min_path, max_path);
+    addRDKitFingerPrint(fv, NL, finger_print_size, path_range, ring_break, min_path, max_path);
 }

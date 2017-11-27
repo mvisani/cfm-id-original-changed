@@ -1,9 +1,9 @@
 /*#########################################################################
-# Mass Spec PredictNL and IdentificatNL of Metabolites
+# Mass Spec PredictNL and Identification of Metabolites
 #
 # NLRootMatrixFP.h
 #
-# DescriptNL: 	Classes for communicating data (e.g. parameters, partial
+# Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
 param.cpp.
 #
@@ -17,11 +17,11 @@ param.cpp.
 #########################################################################*/
 #include "FingerPrintFeature.h"
 
-// Features use fingerprint encode NL fragmentatNL
+// Features use fingerprint encode NL fragmenta
 class NLRootMatrixFP : public FingerPrintFeature {
 public:
     NLRootMatrixFP() {
-        size = 1024;
+        size = 760;
         name = "NLRootMatrixFP";
     };
 
