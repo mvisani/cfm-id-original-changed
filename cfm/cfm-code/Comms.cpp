@@ -20,6 +20,7 @@
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/set.hpp>
 
 Comms::Comms() {
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);

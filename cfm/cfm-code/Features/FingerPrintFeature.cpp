@@ -273,7 +273,7 @@ void FingerPrintFeature::getAtomVisitOrder(
     std::multimap<std::string, RDKit::Atom *> child_visit_order;
 
     // get all the neighbors and insert into a multimap
-    // use map to do sorting 
+    // use map to do sorting
     std::vector<RDKit::Atom *> childs;
     for (auto itp = mol.get()->getAtomNeighbors(atom); itp.first != itp.second;
          ++itp.first) {
