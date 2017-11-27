@@ -59,6 +59,24 @@ void Test::runTest(){
 	//Do nothing: placeholder function
 }
 
+void runTests(boost::ptr_vector<Test> &tests, std::string test_name)
+{
+	for( auto it = tests.begin(); it != tests.end(); ++it ){
+		if(it->name == test_name)
+		{
+			std::cout << it->description << "..." << std::endl;
+			it->run();
+			if( it->excpt_occurred ){ 
+				std::cout << "EXCEPTION" << std::endl;
+			}else if( it->passed ){ 
+				std::cout << "PASS" << std::endl;
+			}
+			else{ 
+				std::cout << "FAIL" << std::endl;
+			}
+		}
+	}
+}
 void runTests(boost::ptr_vector<Test> &tests){
 
 	int num_passed = 0;
@@ -68,7 +86,7 @@ void runTests(boost::ptr_vector<Test> &tests){
 
 	boost::ptr_vector<Test>::iterator it = tests.begin();
 	for( ; it != tests.end(); ++it ){
-		std::cout << it->description << "...";
+		std::cout << it->description << "..." << std::endl;
 		it->run();
 		if( it->excpt_occurred ){ 
 			num_exceptions++;
@@ -177,6 +195,7 @@ int main(int argc, char *argv[])
 		tests.push_back( new EMTestSingleEnergySelfProduction() );
 		tests.push_back( new EMTestSingleEnergyIsotopeSelfProduction() );
 		tests.push_back( new EMTestNNSingleEnergySelfProduction() );
+		tests.push_back( new FeaturesTestFingerPrint());
 		//tests.push_back( new EMTestLBFGSvsOriginalGradientAscent() );
 	}
 	if( mpi_nump > 2 ){
@@ -188,7 +207,15 @@ int main(int argc, char *argv[])
 		tests.push_back( new EMTestMultiProcessorLBFGS() );
 	}
 
-	runTests( tests );
+	// run one specific test
+	if (argc == 2)
+	{
+		runTests( tests ,  argv[1]);
+	}
+	else
+	{
+		runTests( tests );
+	}
 
 	MPI_Finalize();
 

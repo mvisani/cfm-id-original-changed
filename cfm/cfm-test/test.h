@@ -28,6 +28,7 @@ public:
 	bool passed;
 	bool excpt_occurred;
 	std::string description;
+	std::string name;
 	virtual ~Test(){}
 };
 

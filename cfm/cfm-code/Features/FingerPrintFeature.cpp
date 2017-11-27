@@ -207,6 +207,7 @@ std::string FingerPrintFeature::getSortingLabels(
         const RDKit::Atom *prev_atom, int range,
         std::unordered_set<unsigned int> &visited,
         std::map<unsigned int, std::string> &sorting_labels) const {
+
     if (atom == nullptr
         || range == 0
         || visited.find(atom->getIdx()) != visited.end()) {
@@ -260,33 +261,40 @@ void FingerPrintFeature::getAtomVisitOrder(
         const RDKit::Atom *prev_atom, int range,
         std::vector<unsigned int> &visited,
         const std::map<unsigned int, std::string> &sorting_labels) const {
-
+    
+    std::cout << range << std::endl;
     if (atom == nullptr
         || range == 0
         || std::find(visited.begin(), visited.end(), atom->getIdx()) != visited.end()) {
         return;
     }
+
     visited.push_back(atom->getIdx());
 
-    // create a map to visit child
-    // use multimap since we can have duplicated labels
-    std::multimap<std::string, RDKit::Atom *> child_visit_order;
+    // if range > 0 , visit child, NOTE: we only have sorting lab before range 0
+    if(range > 0)
+    {
+        // create a map to visit child
+        // use multimap since we can have duplicated labels
+        std::multimap<std::string, RDKit::Atom *> child_visit_order;
 
-    // get all the neighbors and insert into a multimap
-    // use map to do sorting
-    std::vector<RDKit::Atom *> childs;
-    for (auto itp = mol.get()->getAtomNeighbors(atom); itp.first != itp.second;
-         ++itp.first) {
-        RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
-        if (nbr_atom != prev_atom) {
-            std::string sorting_key = sorting_labels.find(nbr_atom->getIdx())->second;
-            child_visit_order.insert(std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
+        // get all the neighbors and insert into a multimap
+        // use map to do sorting
+        std::vector<RDKit::Atom *> childs;
+        for (auto itp = mol.get()->getAtomNeighbors(atom); itp.first != itp.second;
+            ++itp.first) {
+            RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
+            if (nbr_atom != prev_atom) {
+                std::string sorting_key = sorting_labels.find(nbr_atom->getIdx())->second;
+                child_visit_order.insert(std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
+            }
+        }
+
+        for (auto child = child_visit_order.begin(); child != child_visit_order.end(); ++child) {
+            getAtomVisitOrder(mol, child->second, atom, range - 1, visited, sorting_labels);
         }
     }
 
-    for (auto child = child_visit_order.begin(); child != child_visit_order.end(); ++child) {
-        getAtomVisitOrder(mol, child->second, atom, range - 1, visited, sorting_labels);
-    }
 }
 
 /*
@@ -317,6 +325,12 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
     std::vector<unsigned int> visit_order;
     getAtomVisitOrder(mol->mol, root, nullptr, path_range, visit_order, sorting_labels);
 
+    std::cout << "getAtomVisitOrder" << std::endl;
+    for(auto i: visit_order)
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
 
     std::map<unsigned int, int> visit_order_map;
 
@@ -324,7 +338,16 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
         visit_order_map[visit_order[i]] = i;
     }
 
-    int adjacency_matrix[num_atom][num_atom] = {{0}};
+    int adjacency_matrix[num_atom][num_atom];
+
+    // two array init, {} style init does not always work 
+    for (int i = 0; i < num_atom; ++i) {
+        for (int j = 0; j < num_atom; ++j) {
+            adjacency_matrix[i][j] = 0;
+            //std::cout << i << " " << j << " " << adjacency_matrix[i][j] << " ";
+        }
+        //std::cout << std::endl;
+    }
 
     for (auto bi = mol->mol->beginBonds(); bi != mol->mol->endBonds(); ++bi) {
         // for each bond
@@ -340,16 +363,27 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
         }
     }
 
+    // Debug
+    // two array init, {} style init does not always work 
+    for (int i = 0; i < num_atom; ++i) {
+        for (int j = 0; j < num_atom; ++j) {
+            //adjacency_matrix[i][j] = 0;
+            std::cout << adjacency_matrix[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
     // first bit indicate if there is a bond
     // rest 5 for each bond_type, one hot encoding
-
     const unsigned int num_bits_per_bond = 6;
     // we only need half of matrix exclude diagonal
     // so i start from 1 not 0
-    for (int i = 1; i < num_atom; ++i) {
+    int temp = 0 ;
+    for (int i = 0; i < num_atom; ++i) {
         for (int j = i + 1; j < num_atom; ++j) {
             int temp_feature[num_bits_per_bond] = {0};
             // check if bond exits/defined
+            std::cout << adjacency_matrix[i][j]  << " ";
             if (adjacency_matrix[i][j] > 0) {
                 // first bit indicate if there is a bond
                 temp_feature[0] = 1;
@@ -358,12 +392,14 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
                 int bond_type = adjacency_matrix[i][j] > 5 ? 5 :  adjacency_matrix[i][j];
                 temp_feature[bond_type] = 1;
             }
-
             // TODO Change to C++11 array
+            temp ++;
             fv.addFeatures(temp_feature, num_bits_per_bond);
         }
+        std::cout << std::endl;
     }
 
+    fv.printDebugInfo();
     // add atoms information into FP
     const unsigned  int num_atom_types = GetSizeOfOKSymbolsLess();
     for (int i = 0; i < num_atom; ++i) {

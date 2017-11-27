@@ -88,6 +88,7 @@ public:
 
     unsigned int getNumSetFeatures() const { return fv.size(); };
 
+    void printDebugInfo() const;
 private:
     std::vector<feature_t> fv;
     unsigned int fv_idx;

@@ -287,6 +287,7 @@ void FeaturesTestRootPairs::runTest(){
 }
 
 FeaturesTestRootTriples::FeaturesTestRootTriples(){
+	name = "FeaturesTestRootTriples";
 	description = "Test IonRootTriples and NLRootTriples feature";
 }
 
@@ -389,6 +390,7 @@ void FeaturesTestRootTriples::runTest(){
 }
 
 FeaturesTestGasteigerCharges::FeaturesTestGasteigerCharges(){
+	name = "FeaturesTestGasteigerCharges";
 	description = "Test Gasteiger Charges feature";
 }
 
@@ -460,6 +462,7 @@ void FeaturesTestGasteigerCharges::runTest(){
 }
 
 FeaturesTestHydrogenMovement::FeaturesTestHydrogenMovement(){
+	name = "FeaturesTestHydrogenMovement";
 	description = "Test Hydrogen Movement feature";
 }
 
@@ -563,6 +566,7 @@ void FeaturesTestHydrogenMovement::runTest(){
 }
 
 FeaturesTestFunctionalGroups::FeaturesTestFunctionalGroups(){
+	name = "FeaturesTestFunctionalGroups";
 	description = "Test Functional Groups features";
 }
 
@@ -607,6 +611,7 @@ void FeaturesTestFunctionalGroups::runTest(){
 }
 
 FeaturesTestExtraFunctionalGroups::FeaturesTestExtraFunctionalGroups(){
+	name = "FeaturesTestExtraFunctionalGroups";
 	description = "Test Extra Functional Groups features";
 }
 
@@ -649,6 +654,7 @@ void FeaturesTestExtraFunctionalGroups::runTest(){
 
 
 FeaturesTestFunctionalGroupsRootOnly::FeaturesTestFunctionalGroupsRootOnly(){
+	name = "FeaturesTestFunctionalGroupsRootOnly";
 	description = "Test Functional Groups root only features";
 }
 
@@ -690,6 +696,7 @@ void FeaturesTestFunctionalGroupsRootOnly::runTest(){
 
 
 FeaturesTestRadicalFeatures::FeaturesTestRadicalFeatures(){
+	name = "FeaturesTestRadicalFeatures";
 	description = "Test Radical features";
 }
 
@@ -762,6 +769,7 @@ void FeaturesTestRadicalFeatures::runTest(){
 }
 
 FeaturesTestRingFeatures::FeaturesTestRingFeatures(){
+	name = "FeaturesTestRingFeatures";
 	description = "Test Ring features";
 }
 
@@ -824,6 +832,7 @@ void FeaturesTestRingFeatures::runTest(){
 }
 
 FeaturesTestExtraRingFeatures::FeaturesTestExtraRingFeatures(){
+	name = "FeaturesTestExtraRingFeatures";
 	description = "Test Extra Ring features";
 }
 
@@ -897,6 +906,7 @@ void FeaturesTestExtraRingFeatures::runTest(){
 
 
 FeaturesTestRootMMFFAtomType::FeaturesTestRootMMFFAtomType(){
+	name = "FeaturesTestRootMMFFAtomType";
 	description = "Test root MMFF Atom Type features";
 }
 
@@ -934,6 +944,7 @@ void FeaturesTestRootMMFFAtomType::runTest(){
 }
 
 FeaturesTestNeighbourMMFFAtomType::FeaturesTestNeighbourMMFFAtomType(){
+	name = "FeaturesTestNeighbourMMFFAtomType";
 	description = "Test neighbour MMFF Atom Type features";
 }
 
@@ -971,6 +982,7 @@ void FeaturesTestNeighbourMMFFAtomType::runTest(){
 }
 
 FeaturesTestBrokenOrigBondType::FeaturesTestBrokenOrigBondType(){
+	name = "FeaturesTestBrokenOrigBondType";
 	description = "Test orig broken bond type features";
 }
 
@@ -1024,6 +1036,7 @@ void FeaturesTestBrokenOrigBondType::runTest(){
 }
 
 FeaturesTestNeighbourOrigBondType::FeaturesTestNeighbourOrigBondType(){
+	name = "FeaturesTestNeighbourOrigBondType";
 	description = "Test neighbour orig bond type features";
 }
 
@@ -1080,6 +1093,7 @@ void FeaturesTestNeighbourOrigBondType::runTest(){
 }
 
 FeaturesTestRootAtom::FeaturesTestRootAtom(){
+	name = "FeaturesTestRootAtom";
 	description = "Test root atom features";
 }
 
@@ -1152,6 +1166,7 @@ void FeaturesTestRootAtom::runTest(){
 }
 
 FeaturesTestIonicFeatures::FeaturesTestIonicFeatures(){
+	name = "FeaturesTestIonicFeatures";
 	description = "Test ionic fragment features";
 }
 
@@ -1243,6 +1258,7 @@ void FeaturesTestIonicFeatures::runTest(){
 }
 
 FeaturesTestQuadraticFeatures::FeaturesTestQuadraticFeatures(){
+	name = "FeaturesTestQuadraticFeatures";
 	description = "Test quadratic features";
 }
 
@@ -1299,6 +1315,7 @@ void FeaturesTestQuadraticFeatures::runTest(){
 
 
 FeaturesTestLength::FeaturesTestLength(){
+	name = "FeaturesTestLength";
 	description = "Test length of features";
 }
 
@@ -1345,6 +1362,7 @@ void FeaturesTestLength::runTest(){
 }
 
 FeaturesTestMetlinExample::FeaturesTestMetlinExample(){
+	name = "FeaturesTestMetlinExample";
 	description = "Test Metlin Example Features";
 }
 
@@ -1422,6 +1440,7 @@ void FeaturesTestMetlinExample::runTest(){
 }
 
 FeaturesTestFingerPrint::FeaturesTestFingerPrint(){
+	name = "FeaturesTestFingerPrint";
 	description = "Test FingerPrint Features";
 }
 
@@ -1437,7 +1456,7 @@ void FeaturesTestFingerPrint::runTest(){
     // init a mol ptr
     RDKit::Atom *null_atom = nullptr;
 
-    romol_ptr_t ion = createMolPtr("C");
+    romol_ptr_t ion = createMolPtr("C=C-C-C");
     initMolProps(ion);
     RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
 
@@ -1447,6 +1466,7 @@ void FeaturesTestFingerPrint::runTest(){
     nl.get()->setProp("IsRingBreak",0);
 
     FeatureVector *fv = fc->computeFV(&rtd_ion, &rtd_nl);
+	fv->printDebugInfo();
 
     delete fv;
     delete fc;
