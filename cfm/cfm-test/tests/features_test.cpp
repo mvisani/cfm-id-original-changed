@@ -1420,3 +1420,17 @@ void FeaturesTestMetlinExample::runTest(){
 
 	passed = pass;
 }
+
+FeaturesTestFingerPrint::FeaturesTestFingerPrint(){
+	description = "Test FingerPrint Features";
+}
+
+void FeaturesTestFingerPrint::runTest(){
+
+
+	bool pass = true;
+	//std::string smiles_Metlin_21361 = "O=C(NC(CCC(N)=O)C(O)=O)C(C)NC(=O)C(N)CC(C)C";
+
+	passed = pass;
+};
+

@@ -17,7 +17,7 @@ param.cpp.
 #########################################################################*/
 #include "FingerPrintFeature.h"
 
-// Features use fingerprint encode NL fragmenta
+// Features use fingerprint encode NL fragmentation
 class NLRootMatrixFP : public FingerPrintFeature {
 public:
     NLRootMatrixFP() {
