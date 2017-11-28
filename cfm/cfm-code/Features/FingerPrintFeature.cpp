@@ -211,7 +211,6 @@ std::string FingerPrintFeature::getSortingLabels(
         std::map<unsigned int, std::string> &sorting_labels) const {
 
     if (atom == nullptr
-        || range == 0
         || visited.find(atom->getIdx()) != visited.end()) {
         return "";
     }
@@ -290,10 +289,9 @@ void FingerPrintFeature::getAtomVisitOrderDFS(
         }
 
         for (auto child = child_visit_order.begin(); child != child_visit_order.end(); ++child) {
-            getAtomVisitOrderBFS(mol, child->second, atom, range - 1, visited, sorting_labels);
+            getAtomVisitOrderDFS(mol, child->second, atom, range - 1, visited, sorting_labels);
         }
     }
-
 }
 
 //Method to get atom visited order
@@ -303,36 +301,46 @@ void FingerPrintFeature::getAtomVisitOrderBFS(
         std::vector<unsigned int> &visited,
         const std::map<unsigned int, std::string> &sorting_labels) const {
     
+    //maybe a struct is a better idea
+    // but this is a one off
     std::queue<const RDKit::Atom *> atom_queue;
+    std::queue<int> distance_queue;
     atom_queue.push(atom);
-    while(!atom_queue.empty())
+    distance_queue.push(0);
+
+    while(!atom_queue.empty() && !distance_queue.empty() )
     {
         const RDKit::Atom * curr = atom_queue.front();
+        int curr_distance = distance_queue.front();
         atom_queue.pop();
-        
+        distance_queue.pop();
+
         visited.push_back(curr->getIdx());
 
-        // use multimap since we can have duplicated labels
-        std::multimap<std::string, RDKit::Atom *> child_visit_order;
+        if(curr_distance < range)
+        {
+            // use multimap since we can have duplicated labels
+            std::multimap<std::string, RDKit::Atom *> child_visit_order;
         
-        for (auto itp = mol.get()->getAtomNeighbors(curr); itp.first != itp.second;
-            ++itp.first) {
-            RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
-            // if we have not visit this node before
-            // and this node is in the visit list 
-            if (nbr_atom != prev_atom 
-                && sorting_labels.find(nbr_atom->getIdx()) != sorting_labels.end()
-                && std::find(visited.begin(),visited.end(), nbr_atom->getIdx()) == visited.end()) 
-            {
-                std::string sorting_key = sorting_labels.find(nbr_atom->getIdx())->second;
-                child_visit_order.insert(std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
+            for (auto itp = mol.get()->getAtomNeighbors(curr); itp.first != itp.second;
+                ++itp.first) {
+                RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
+                // if we have not visit this node before
+                // and this node is in the visit list 
+                if (nbr_atom != prev_atom 
+                    && sorting_labels.find(nbr_atom->getIdx()) != sorting_labels.end()
+                    && std::find(visited.begin(),visited.end(), nbr_atom->getIdx()) == visited.end()) 
+                {
+                    std::string sorting_key = sorting_labels.find(nbr_atom->getIdx())->second;
+                    child_visit_order.insert(std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
+                }
+            }
+
+            for (auto child = child_visit_order.begin(); child != child_visit_order.end(); ++child) {
+                atom_queue.push(child->second);
+                distance_queue.push(curr_distance + 1);
             }
         }
-
-        for (auto child = child_visit_order.begin(); child != child_visit_order.end(); ++child) {
-            atom_queue.push(child->second);
-        }
-        std::cout << atom_queue.size() << std::endl;
     }
 }
 
