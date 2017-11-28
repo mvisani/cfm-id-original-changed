@@ -24,6 +24,8 @@ param.cpp.
 #include <GraphMol/Fingerprints/MorganFingerprints.h>
 #include <GraphMol/MolOps.h>
 
+#include <queue>
+
 void FingerPrintFeature::getRemoveAtomIdxOfRange(
         const romol_ptr_t mol, const RDKit::Atom *atom,
         const RDKit::Atom *prev_atom, std::vector<unsigned int> &remove_atom_ids,
@@ -256,22 +258,21 @@ std::string FingerPrintFeature::getSortingLabels(
 }
 
 //Method to get atom visited order
-void FingerPrintFeature::getAtomVisitOrder(
+void FingerPrintFeature::getAtomVisitOrderDFS(
         const romol_ptr_t mol, const RDKit::Atom *atom,
         const RDKit::Atom *prev_atom, int range,
         std::vector<unsigned int> &visited,
         const std::map<unsigned int, std::string> &sorting_labels) const {
     
-    // std::cout << range << std::endl;
     if (atom == nullptr
         || range == 0
-        || std::find(visited.begin(), visited.end(), atom->getIdx()) != visited.end()) {
+        || std::find(visited.begin(),visited.end(),atom->getIdx()) != visited.end()) {
         return;
     }
 
     visited.push_back(atom->getIdx());
 
-    // if range > 1 , visit child, NOTE: we only have sorting lab before range 0
+    // if range > 0 , visit child, NOTE: we only have sorting lab before range 0
     if(range - 1 > 0)
     {
         // create a map to visit child
@@ -279,8 +280,6 @@ void FingerPrintFeature::getAtomVisitOrder(
         std::multimap<std::string, RDKit::Atom *> child_visit_order;
 
         // get all the neighbors and insert into a multimap
-        // use map to do sorting
-        std::vector<RDKit::Atom *> childs;
         for (auto itp = mol.get()->getAtomNeighbors(atom); itp.first != itp.second;
             ++itp.first) {
             RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
@@ -291,11 +290,52 @@ void FingerPrintFeature::getAtomVisitOrder(
         }
 
         for (auto child = child_visit_order.begin(); child != child_visit_order.end(); ++child) {
-            getAtomVisitOrder(mol, child->second, atom, range - 1, visited, sorting_labels);
+            getAtomVisitOrderBFS(mol, child->second, atom, range - 1, visited, sorting_labels);
         }
     }
 
 }
+
+//Method to get atom visited order
+void FingerPrintFeature::getAtomVisitOrderBFS(
+        const romol_ptr_t mol, const RDKit::Atom *atom,
+        const RDKit::Atom *prev_atom, int range,
+        std::vector<unsigned int> &visited,
+        const std::map<unsigned int, std::string> &sorting_labels) const {
+    
+    std::queue<const RDKit::Atom *> atom_queue;
+    atom_queue.push(atom);
+    while(!atom_queue.empty())
+    {
+        const RDKit::Atom * curr = atom_queue.front();
+        atom_queue.pop();
+        
+        visited.push_back(curr->getIdx());
+
+        // use multimap since we can have duplicated labels
+        std::multimap<std::string, RDKit::Atom *> child_visit_order;
+        
+        for (auto itp = mol.get()->getAtomNeighbors(curr); itp.first != itp.second;
+            ++itp.first) {
+            RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
+            // if we have not visit this node before
+            // and this node is in the visit list 
+            if (nbr_atom != prev_atom 
+                && sorting_labels.find(nbr_atom->getIdx()) != sorting_labels.end()
+                && std::find(visited.begin(),visited.end(), nbr_atom->getIdx()) == visited.end()) 
+            {
+                std::string sorting_key = sorting_labels.find(nbr_atom->getIdx())->second;
+                child_visit_order.insert(std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
+            }
+        }
+
+        for (auto child = child_visit_order.begin(); child != child_visit_order.end(); ++child) {
+            atom_queue.push(child->second);
+        }
+        std::cout << atom_queue.size() << std::endl;
+    }
+}
+
 
 /*
 flatten: ajcent matrix[]
@@ -323,14 +363,14 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
 
     // Get visit order
     std::vector<unsigned int> visit_order;
-    getAtomVisitOrder(mol->mol, root, nullptr, path_range, visit_order, sorting_labels);
+    getAtomVisitOrderBFS(mol->mol, root, nullptr, path_range, visit_order, sorting_labels);
 
-    /*std::cout << "getAtomVisitOrder" << std::endl;
+    std::cout << "getAtomVisitOrder" << std::endl;
     for(auto i: visit_order)
     {
         std::cout << i << " ";
     }
-    std::cout << std::endl;*/
+    std::cout << std::endl;
 
     std::map<unsigned int, int> visit_order_map;
 

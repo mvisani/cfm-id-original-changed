@@ -1456,7 +1456,10 @@ void FeaturesTestFingerPrint::runTest(){
     // init a mol ptr
     RDKit::Atom *null_atom = nullptr;
 
-    romol_ptr_t ion = createMolPtr("C=C-C-C");
+	//Rings
+	//C1CCCCC1
+	//C1=CC=CC=C1
+    romol_ptr_t ion = createMolPtr("C1=CC=CC=C1");
     initMolProps(ion);
     RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
 
