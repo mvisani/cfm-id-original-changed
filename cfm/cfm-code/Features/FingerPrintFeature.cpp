@@ -50,9 +50,9 @@ void FingerPrintFeature::getRemoveAtomIdxOfRange(
     }
 
     // get all the neighbors
-    for (auto itp = mol.get()->getAtomNeighbors(atom); itp.first != itp.second;
+    for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second;
          ++itp.first) {
-        RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
+        RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
         if (nbr_atom != prev_atom) {
             getRemoveAtomIdxOfRange(mol, nbr_atom, atom, remove_atom_ids, visited,
                                     range - 1);
@@ -95,7 +95,7 @@ void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
                                              const unsigned int finger_print_min_path,
                                              const unsigned int finger_print_max_path) const {
 
-    RDKit::ROMol &nl_ref = *(mol->mol.get());
+    RDKit::ROMol &nl_ref = *(mol->mol);
     // Get list of atom we need to remove
     std::vector<unsigned int> remove_atom_ids;
     std::unordered_set<unsigned int> visited;
@@ -104,7 +104,7 @@ void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
 
     // Get Mol Object and remove atoms
     RDKit::RWMol part;
-    part.insertMol(*(mol->mol.get()));
+    part.insertMol(*(mol->mol));
     removeAtomInTheList(part, remove_atom_ids);
     RDKit::MolOps::sanitizeMol(part);
 
@@ -126,7 +126,7 @@ void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
 
         // Get Mol Object and remove atoms
         RDKit::RWMol other_part;
-        other_part.insertMol(*(mol->mol.get()));
+        other_part.insertMol(*(mol->mol));
         this->removeAtomInTheList(other_part, remove_atom_ids);
 
         // we don't want to part to be santilized
@@ -154,7 +154,7 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
                                               const int ring_break,
                                               const int radius) const {
 
-    RDKit::ROMol &nl_ref = *(mol->mol.get());
+    RDKit::ROMol &nl_ref = *(mol->mol);
     // Get list of atom we need to remove
     std::vector<unsigned int> remove_atom_ids;
     std::unordered_set<unsigned int> visited;
@@ -163,7 +163,7 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
 
     // Get Mol Object and remove atoms
     RDKit::RWMol part;
-    part.insertMol(*(mol->mol.get()));
+    part.insertMol(*(mol->mol));
     removeAtomInTheList(part, remove_atom_ids);
 
     // replace bond with OrigBondType
@@ -184,7 +184,7 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
 
         // Get Mol Object and remove atoms
         RDKit::RWMol other_part;
-        other_part.insertMol(*(mol->mol.get()));
+        other_part.insertMol(*(mol->mol));
         this->removeAtomInTheList(other_part, remove_atom_ids);
 
         // we don't want to part to be santilized
@@ -219,9 +219,9 @@ std::string FingerPrintFeature::getSortingLabels(
 
     // get all the neighbors
     std::vector<std::string> children_keys;
-    for (auto itp = mol.get()->getAtomNeighbors(atom); itp.first != itp.second;
+    for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second;
          ++itp.first) {
-        RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
+        RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
         if (nbr_atom != prev_atom) {
             std::string child_key = "";
             child_key = getSortingLabels(mol, nbr_atom, atom, range - 1, visited, sorting_labels);
@@ -236,7 +236,7 @@ std::string FingerPrintFeature::getSortingLabels(
         std::sort(children_keys.begin(), children_keys.end());
         // add bond type
         int bond_int = FeatureHelper::getBondTypeAsInt(
-                mol.get()->getBondBetweenAtoms(prev_atom->getIdx(), atom->getIdx()));
+                mol->getBondBetweenAtoms(prev_atom->getIdx(), atom->getIdx()));
         atom_key += std::to_string(bond_int);
 
         // add atom symbol:
@@ -256,22 +256,22 @@ std::string FingerPrintFeature::getSortingLabels(
     return atom_key;
 }
 
-std::string FingerPrintFeature::getSortinglabel(
+std::string FingerPrintFeature::getSortingLabel(
     const romol_ptr_t mol, const RDKit::Atom *atom,
-    const RDKit::Atom *parent_atom, bool include_child = true) const {
+    const RDKit::Atom *parent_atom, bool include_child = true) const 
 {
     std::string atom_key = "";
 
     std::vector<std::string> children_keys;
     if(include_child)
     {
-        for (auto itp = mol.get()->getAtomNeighbors(atom); itp.first != itp.second; +itp.first) 
+        for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second; ++itp.first) 
         {
-            RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
+            RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
             if (nbr_atom != parent_atom) 
             {
                 std::string child_key = "";
-                child_key = getSortingLabels(mol, nbr_atom, atom, false);
+                child_key = getSortingLabel(mol, nbr_atom, atom, false);
                 children_keys.push_back(child_key);
             }
         }
@@ -282,7 +282,7 @@ std::string FingerPrintFeature::getSortinglabel(
     std::sort(children_keys.begin(), children_keys.end());
     // add bond type
     int bond_int = FeatureHelper::getBondTypeAsInt(
-        mol.get()->getBondBetweenAtoms(parent_atom->getIdx(), atom->getIdx()));
+        mol->getBondBetweenAtoms(parent_atom->getIdx(), atom->getIdx()));
     atom_key += std::to_string(bond_int);
 
     std::string symbol_str = atom->getSymbol();
@@ -297,50 +297,11 @@ std::string FingerPrintFeature::getSortinglabel(
     return atom_key;
 }
 
-//Method to get atom visited order
-/*
-void FingerPrintFeature::getAtomVisitOrderDFS(
-        const romol_ptr_t mol, const RDKit::Atom *atom,
-        const RDKit::Atom *prev_atom, int range,
-        std::vector<unsigned int> &visited) const {
-    
-    if (atom == nullptr
-        || range == 0
-        || std::find(visited.begin(),visited.end(),atom->getIdx()) != visited.end()) {
-        return;
-    }
-
-    visited.push_back(atom->getIdx());
-
-    // if range > 0 , visit child, NOTE: we only have sorting lab before range 0
-    if(range - 1 > 0)
-    {
-        // create a map to visit child
-        // use multimap since we can have duplicated labels
-        std::multimap<std::string, RDKit::Atom *> child_visit_order;
-
-        // get all the neighbors and insert into a multimap
-        for (auto itp = mol.get()->getAtomNeighbors(atom); itp.first != itp.second;
-            ++itp.first) {
-            RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
-            if (nbr_atom != prev_atom) {
-                std::string sorting_key = getSortinglabel(mol->mol, nbr_atom, curr);
-                child_visit_order.insert(std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
-            }
-        }
-
-        for (auto child = child_visit_order.begin(); child != child_visit_order.end(); ++child) {
-            getAtomVisitOrderDFS(mol, child->second, atom, range - 1, visited, sorting_labels);
-        }
-    }
-}*/
-
 //Method to get atom visited order via BFS
 
 void FingerPrintFeature::getAtomVisitOrderBFS(
         const romol_ptr_t mol, const RDKit::Atom *root, int range,
-        std::vector<unsigned int> &visit_order,
-        const std::map<unsigned int, std::string> &sorting_labels) const {
+        std::vector<unsigned int> &visit_order) const {
     
     //maybe a struct is a better idea
     // but this is a one off
@@ -369,22 +330,24 @@ void FingerPrintFeature::getAtomVisitOrderBFS(
         if(curr_distance < range)
         {
             // use multimap since we can have duplicated labels
-            std::multimap<std::string, RDKit::Atom *> child_visit_order;
+            std::multimap<std::string, const RDKit::Atom *> child_visit_order;
         
-            for (auto itp = mol.get()->getAtomNeighbors(curr); itp.first != itp.second;
-                ++itp.first) {
-                RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
+            for (auto itp = mol->getAtomNeighbors(curr); itp.first != itp.second;
+                ++itp.first) 
+                {
+                RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
                 // if we have not visit this node before
                 // and this node is in the visit list 
                 if (nbr_atom != curr) 
                 {
-                    std::string sorting_key = getSortinglabel(mol->mol, nbr_atom, curr);
+                    std::string sorting_key = getSortingLabel(mol, nbr_atom, curr);
                     child_visit_order.insert(std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
                 }
             }
 
-            for (auto child = child_visit_order.begin(); child != child_visit_order.end(); ++child) {
-                atom_queue.push(child->second);
+            for (auto child : child_visit_order) 
+            {
+                atom_queue.push(child.second);
                 distance_queue.push(curr_distance + 1);
             }
         }
@@ -409,7 +372,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
                                                          const unsigned int path_range,
                                                          const unsigned int num_atom) const {
 
-    RDKit::ROMol &nl_ref = *(mol->mol.get());
+    RDKit::ROMol &nl_ref = *(mol->mol);
 
     // Get labels for find visit order
     std::unordered_set<unsigned int> visited;
