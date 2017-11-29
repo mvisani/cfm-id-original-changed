@@ -119,6 +119,8 @@ void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
         fv.addFeature((*fingerPrint)[i]);
     }
 
+    delete fingerPrint;
+
     if (ring_break) {
         remove_atom_ids.clear();
         getRemoveAtomIdxOfRange(mol->mol, mol->other_root, nullptr, remove_atom_ids,
@@ -140,6 +142,9 @@ void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
         for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
             fv.addFeature((*fingerPrint)[i]);
         }
+
+        delete fingerPrint;
+
     } else {
         for (unsigned int i = 0; i < finger_print_size; ++i) {
             fv.addFeature(0);
@@ -177,6 +182,9 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
         fv.addFeature((*fingerPrint)[i]);
     }
 
+    delete fingerPrint;
+
+
     if (ring_break) {
         remove_atom_ids.clear();
         getRemoveAtomIdxOfRange(mol->mol, mol->other_root, nullptr, remove_atom_ids,
@@ -197,6 +205,9 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
         for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
             fv.addFeature((*fingerPrint)[i]);
         }
+
+        delete fingerPrint;
+
     } else {
         for (unsigned int i = 0; i < finger_print_size; ++i) {
             fv.addFeature(0);
@@ -257,19 +268,15 @@ std::string FingerPrintFeature::getSortingLabels(
 }
 
 std::string FingerPrintFeature::getSortingLabel(
-    const romol_ptr_t mol, const RDKit::Atom *atom,
-    const RDKit::Atom *parent_atom, bool include_child = true) const 
-{
+        const romol_ptr_t mol, const RDKit::Atom *atom,
+        const RDKit::Atom *parent_atom, bool include_child = true) const {
     std::string atom_key = "";
 
     std::vector<std::string> children_keys;
-    if(include_child)
-    {
-        for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second; ++itp.first) 
-        {
+    if (include_child) {
+        for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second; ++itp.first) {
             RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
-            if (nbr_atom != parent_atom) 
-            {
+            if (nbr_atom != parent_atom) {
                 std::string child_key = "";
                 child_key = getSortingLabel(mol, nbr_atom, atom, false);
                 children_keys.push_back(child_key);
@@ -278,11 +285,10 @@ std::string FingerPrintFeature::getSortingLabel(
     }
 
 
-
     std::sort(children_keys.begin(), children_keys.end());
     // add bond type
     int bond_int = FeatureHelper::getBondTypeAsInt(
-        mol->getBondBetweenAtoms(parent_atom->getIdx(), atom->getIdx()));
+            mol->getBondBetweenAtoms(parent_atom->getIdx(), atom->getIdx()));
     atom_key += std::to_string(bond_int);
 
     std::string symbol_str = atom->getSymbol();
@@ -302,7 +308,7 @@ std::string FingerPrintFeature::getSortingLabel(
 void FingerPrintFeature::getAtomVisitOrderBFS(
         const romol_ptr_t mol, const RDKit::Atom *root, int range,
         std::vector<unsigned int> &visit_order) const {
-    
+
     //maybe a struct is a better idea
     // but this is a one off
     std::queue<const RDKit::Atom *> atom_queue;
@@ -312,41 +318,35 @@ void FingerPrintFeature::getAtomVisitOrderBFS(
 
     std::unordered_set<unsigned int> visited;
 
-    while(!atom_queue.empty() && !distance_queue.empty() )
-    {
-        const RDKit::Atom * curr = atom_queue.front();
+    while (!atom_queue.empty() && !distance_queue.empty()) {
+        const RDKit::Atom *curr = atom_queue.front();
         int curr_distance = distance_queue.front();
         atom_queue.pop();
         distance_queue.pop();
 
         // if I have see this before 
-        if(std::find(visit_order.begin(),visit_order.end(), curr->getIdx()) 
-            != visit_order.end())
-        {
+        if (std::find(visit_order.begin(), visit_order.end(), curr->getIdx())
+            != visit_order.end()) {
             continue;
         }
         visit_order.push_back(curr->getIdx());
 
-        if(curr_distance < range)
-        {
+        if (curr_distance < range) {
             // use multimap since we can have duplicated labels
             std::multimap<std::string, const RDKit::Atom *> child_visit_order;
-        
+
             for (auto itp = mol->getAtomNeighbors(curr); itp.first != itp.second;
-                ++itp.first) 
-                {
+                 ++itp.first) {
                 RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
                 // if we have not visit this node before
                 // and this node is in the visit list 
-                if (nbr_atom != curr) 
-                {
+                if (nbr_atom != curr) {
                     std::string sorting_key = getSortingLabel(mol, nbr_atom, curr);
                     child_visit_order.insert(std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
                 }
             }
 
-            for (auto child : child_visit_order) 
-            {
+            for (auto child : child_visit_order) {
                 atom_queue.push(child.second);
                 distance_queue.push(curr_distance + 1);
             }
@@ -384,8 +384,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
     getAtomVisitOrderBFS(mol->mol, root, path_range, visit_order);
 
     std::cout << "getAtomVisitOrder" << std::endl;
-    for(auto i: visit_order)
-    {
+    for (auto i: visit_order) {
         std::cout << i << " ";
     }
     std::cout << std::endl;
@@ -436,22 +435,22 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
     const unsigned int num_bits_per_bond = 6;
     // we only need half of matrix exclude diagonal
     // so i start from 1 not 0
-    int temp = 0 ;
+    int temp = 0;
     for (int i = 0; i < num_atom; ++i) {
         for (int j = i + 1; j < num_atom; ++j) {
             int temp_feature[num_bits_per_bond] = {0};
             // check if bond exits/defined
-            std::cout << adjacency_matrix[i][j]  << " ";
+            std::cout << adjacency_matrix[i][j] << " ";
             if (adjacency_matrix[i][j] > 0) {
                 // first bit indicate if there is a bond
                 temp_feature[0] = 1;
                 // one hot encoding bond type
                 // since adjacency_matrix[i][j] > 0, bondtype 0 does not make sense
-                int bond_type = adjacency_matrix[i][j] > 5 ? 5 :  adjacency_matrix[i][j];
+                int bond_type = adjacency_matrix[i][j] > 5 ? 5 : adjacency_matrix[i][j];
                 temp_feature[bond_type] = 1;
             }
             // TODO Change to C++11 array
-            temp ++;
+            temp++;
             fv.addFeatures(temp_feature, num_bits_per_bond);
         }
         std::cout << std::endl;
@@ -459,7 +458,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
 
     fv.printDebugInfo();
     // add atoms information into FP
-    const unsigned  int num_atom_types = GetSizeOfOKSymbolsLess();
+    const unsigned int num_atom_types = GetSizeOfOKSymbolsLess();
     for (int i = 0; i < num_atom; ++i) {
         int atom_type_feature[num_atom_types] = {0};
         int atom_degree_feature[5] = {0};

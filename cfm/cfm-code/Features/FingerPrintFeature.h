@@ -65,16 +65,16 @@ private:
     void getAtomsWithRange(int range);
 
     void getAtomVisitOrderDFS(const romol_ptr_t mol, const RDKit::Atom *atom,
-                           const RDKit::Atom *prev_atom, int range, 
-                           std::vector<unsigned int> &visited) const;
-    
+                              const RDKit::Atom *prev_atom, int range,
+                              std::vector<unsigned int> &visited) const;
+
     void getAtomVisitOrderBFS(
-        const romol_ptr_t mol, const RDKit::Atom *root, int range,
-        std::vector<unsigned int> &visit_order) const;
-    
+            const romol_ptr_t mol, const RDKit::Atom *root, int range,
+            std::vector<unsigned int> &visit_order) const;
+
     std::string getSortingLabel(
-        const romol_ptr_t mol, const RDKit::Atom *atom,
-        const RDKit::Atom *parent_atom, bool include_child) const;
+            const romol_ptr_t mol, const RDKit::Atom *atom,
+            const RDKit::Atom *parent_atom, bool include_child) const;
 
     std::string getSortingLabels(
             const romol_ptr_t mol, const RDKit::Atom *atom,
