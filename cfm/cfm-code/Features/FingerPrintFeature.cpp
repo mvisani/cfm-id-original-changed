@@ -27,35 +27,39 @@ param.cpp.
 #include <queue>
 
 void FingerPrintFeature::getRemoveAtomIdxOfRange(
-        const romol_ptr_t mol, const RDKit::Atom *atom,
-        const RDKit::Atom *prev_atom, std::vector<unsigned int> &remove_atom_ids,
-        std::unordered_set<unsigned int> &visited, int range) const {
+        const romol_ptr_t mol, const RDKit::Atom *root,
+        std::vector<unsigned int> &remove_atom_ids,
+        int range) const {
 
-    if (atom == nullptr) {
-        return;
-    }
+    std::queue<const RDKit::Atom *> atom_queue;
+    std::queue<int> distance_queue;
+    atom_queue.push(root);
+    distance_queue.push(0);
 
-    if (visited.find(atom->getIdx()) != visited.end()) {
-        return;
-    }
+    std::unordered_set<unsigned int> visited;
 
-    visited.insert(atom->getIdx());
+    while (!atom_queue.empty() && !distance_queue.empty()) {
+        const RDKit::Atom *curr = atom_queue.front();
+        int curr_distance = distance_queue.front();
+        atom_queue.pop();
+        distance_queue.pop();
 
-    // if range <= 0 , that means this atom is out of range
-    // thus we need remove it
-    // also we does not care Hs
-    if (range <= 0 ||
-        atom->getSymbol() == "H") {
-        remove_atom_ids.push_back(atom->getIdx());
-    }
+        // if range <= 0 , that means this atom is out of range
+        // thus we need remove it
+        // also we does not care Hs
+        if (range <= 0 ||
+            curr->getSymbol() == "H") {
+            remove_atom_ids.push_back(curr->getIdx());
+        }
 
-    // get all the neighbors
-    for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second;
+
+        for (auto itp = mol->getAtomNeighbors(curr); itp.first != itp.second;
          ++itp.first) {
-        RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
-        if (nbr_atom != prev_atom) {
-            getRemoveAtomIdxOfRange(mol, nbr_atom, atom, remove_atom_ids, visited,
-                                    range - 1);
+            RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
+            if (nbr_atom != curr) {
+                atom_queue.push(nbr_atom);
+                distance_queue.push(curr_distance + 1);
+            }
         }
     }
 }
@@ -96,12 +100,10 @@ void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
                                              const unsigned int finger_print_min_path,
                                              const unsigned int finger_print_max_path) const {
 
-    RDKit::ROMol &nl_ref = *(mol->mol);
     // Get list of atom we need to remove
     std::vector<unsigned int> remove_atom_ids;
-    std::unordered_set<unsigned int> visited;
-    getRemoveAtomIdxOfRange(mol->mol, mol->root, nullptr, remove_atom_ids,
-                            visited, path_range);
+    
+    getRemoveAtomIdxOfRange(mol->mol, root, remove_atom_ids, path_range);
 
     // Get Mol Object and remove atoms
     RDKit::RWMol part;
@@ -155,8 +157,7 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
     // Get list of atom we need to remove
     std::vector<unsigned int> remove_atom_ids;
     std::unordered_set<unsigned int> visited;
-    getRemoveAtomIdxOfRange(mol->mol, root, nullptr, remove_atom_ids,
-                            visited, path_range);
+    getRemoveAtomIdxOfRange(mol->mol, root, remove_atom_ids, path_range);
 
     // Get Mol Object and remove atoms
     RDKit::RWMol part;
@@ -351,8 +352,6 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
                                                          const RDKit::Atom *root,
                                                          const unsigned int path_range,
                                                          const unsigned int num_atom) const {
-
-    RDKit::ROMol &nl_ref = *(mol->mol);
 
     // Get labels for find visit order
     std::unordered_set<unsigned int> visited;
