@@ -26,6 +26,6 @@ void NLRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *NL,
     unsigned int path_range = 3;
     unsigned int finger_print_size = 512;
 
-    addRDKitFingerPrint(fv, NL, finger_print_size, path_range, ring_break, min_path, max_path);
+    addRDKitFingerPrintFeatures(fv, NL, finger_print_size, path_range, ring_break, min_path, max_path);
 
 }

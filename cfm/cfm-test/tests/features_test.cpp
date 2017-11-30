@@ -1450,6 +1450,7 @@ void FeaturesTestFingerPrint::runTest(){
 
     std::vector<std::string> fnames;
     fnames.push_back("NLRootMatrixFP");
+	fnames.push_back("NLRootEncodingD4");
     FeatureCalculator *fc = new FeatureCalculator( fnames );
 
     // test case #1
@@ -1469,7 +1470,7 @@ void FeaturesTestFingerPrint::runTest(){
     nl.get()->setProp("IsRingBreak",0);
 
     FeatureVector *fv = fc->computeFV(&rtd_ion, &rtd_nl);
-	fv->printDebugInfo();
+	// fv->printDebugInfo();
 
     delete fv;
     delete fc;

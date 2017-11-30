@@ -26,5 +26,5 @@ void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *NL
     unsigned int finger_print_size = 512;
     unsigned int morgan_radius = 2;
 
-    addMorganFingerPrint(fv, NL, finger_print_size, path_range, ring_break, morgan_radius);
+    addMorganFingerPrintFeatures(fv, NL, finger_print_size, path_range, ring_break, morgan_radius);
 }

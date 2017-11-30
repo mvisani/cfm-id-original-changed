@@ -90,8 +90,9 @@ void FingerPrintFeature::replaceWithOrigBondType(RDKit::RWMol &rwmol) const {
 }
 
 void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
+                                             const RDKit::Atom *root,
                                              const unsigned int finger_print_size,
-                                             const unsigned int path_range, const int ring_break,
+                                             const unsigned int path_range,
                                              const unsigned int finger_print_min_path,
                                              const unsigned int finger_print_max_path) const {
 
@@ -106,7 +107,9 @@ void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
     RDKit::RWMol part;
     part.insertMol(*(mol->mol));
     removeAtomInTheList(part, remove_atom_ids);
-    RDKit::MolOps::sanitizeMol(part);
+
+    // DO NOT sanitize mol because if we have a part of ring this going to break
+    // RDKit::MolOps::sanitizeMol(part);
 
     // replace bond with OrigBondType
     // replaceWithOrigBondType(part);
@@ -120,50 +123,38 @@ void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
     }
 
     delete fingerPrint;
+}
+
+
+void FingerPrintFeature::addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                     const unsigned int finger_print_size,
+                                                     const unsigned int path_range, const int ring_break,
+                                                     const unsigned int finger_print_min_path,
+                                                     const unsigned int finger_print_max_path) const {
+
+    addRDKitFingerPrint(fv, mol, mol->root, finger_print_size, path_range, finger_print_min_path,
+                        finger_print_max_path);
 
     if (ring_break) {
-        remove_atom_ids.clear();
-        getRemoveAtomIdxOfRange(mol->mol, mol->other_root, nullptr, remove_atom_ids,
-                                visited, path_range);
-
-        // Get Mol Object and remove atoms
-        RDKit::RWMol other_part;
-        other_part.insertMol(*(mol->mol));
-        this->removeAtomInTheList(other_part, remove_atom_ids);
-
-        // we don't want to part to be santilized
-        // because if we are taking part of ring
-        RDKit::MolOps::sanitizeMol(part);
-
-        ExplicitBitVect *fingerPrint =
-                RDKit::RDKFingerprintMol(other_part, finger_print_min_path,
-                                         finger_print_max_path, finger_print_size);
-
-        for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
-            fv.addFeature((*fingerPrint)[i]);
-        }
-
-        delete fingerPrint;
-
+        addRDKitFingerPrint(fv, mol, mol->other_root, finger_print_size, path_range, finger_print_min_path,
+                            finger_print_max_path);
     } else {
-        for (unsigned int i = 0; i < finger_print_size; ++i) {
-            fv.addFeature(0);
-        }
+        double empty_feature[finger_print_size] = {0};
+        fv.addFeatures(empty_feature, finger_print_size);
     }
 }
 
 void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
                                               const RootedROMolPtr *mol,
-                                              const unsigned int finger_print_size,
+                                              const RDKit::Atom *root,
                                               const unsigned int path_range,
-                                              const int ring_break,
+                                              const unsigned int finger_print_size,
                                               const int radius) const {
 
-    RDKit::ROMol &nl_ref = *(mol->mol);
     // Get list of atom we need to remove
     std::vector<unsigned int> remove_atom_ids;
     std::unordered_set<unsigned int> visited;
-    getRemoveAtomIdxOfRange(mol->mol, mol->root, nullptr, remove_atom_ids,
+    getRemoveAtomIdxOfRange(mol->mol, root, nullptr, remove_atom_ids,
                             visited, path_range);
 
     // Get Mol Object and remove atoms
@@ -183,35 +174,22 @@ void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
     }
 
     delete fingerPrint;
+}
 
+void FingerPrintFeature::addMorganFingerPrintFeatures(FeatureVector &fv,
+                                                      const RootedROMolPtr *mol,
+                                                      const unsigned int finger_print_size,
+                                                      const unsigned int path_range,
+                                                      const int ring_break,
+                                                      const int radius) const {
+
+    addMorganFingerPrint(fv, mol, mol->root, finger_print_size, path_range, radius);
 
     if (ring_break) {
-        remove_atom_ids.clear();
-        getRemoveAtomIdxOfRange(mol->mol, mol->other_root, nullptr, remove_atom_ids,
-                                visited, path_range);
-
-        // Get Mol Object and remove atoms
-        RDKit::RWMol other_part;
-        other_part.insertMol(*(mol->mol));
-        this->removeAtomInTheList(other_part, remove_atom_ids);
-
-        // we don't want to part to be santilized
-        // because if we are taking part of ring
-        // RDKit::MolOps::sanitizeMol(part);
-
-        ExplicitBitVect *fingerPrint =
-                RDKit::MorganFingerprints::getFingerprintAsBitVect(other_part, radius, finger_print_size);
-
-        for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
-            fv.addFeature((*fingerPrint)[i]);
-        }
-
-        delete fingerPrint;
-
+        addMorganFingerPrint(fv, mol, mol->other_root, finger_print_size, path_range, radius);
     } else {
-        for (unsigned int i = 0; i < finger_print_size; ++i) {
-            fv.addFeature(0);
-        }
+        double empty_feature[finger_print_size] = {0};
+        fv.addFeatures(empty_feature, finger_print_size);
     }
 }
 
@@ -383,11 +361,11 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
     std::vector<unsigned int> visit_order;
     getAtomVisitOrderBFS(mol->mol, root, path_range, visit_order);
 
-    std::cout << "getAtomVisitOrder" << std::endl;
+    /*std::cout << "getAtomVisitOrder" << std::endl;
     for (auto i: visit_order) {
         std::cout << i << " ";
     }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 
     std::map<unsigned int, int> visit_order_map;
 
@@ -422,14 +400,15 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
 
     // Debug
     // two array init, {} style init does not always work 
-    for (int i = 0; i < num_atom; ++i) {
+    /*for (int i = 0; i < num_atom; ++i) {
         for (int j = 0; j < num_atom; ++j) {
             //adjacency_matrix[i][j] = 0;
             std::cout << adjacency_matrix[i][j] << " ";
         }
         std::cout << std::endl;
     }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
+
     // first bit indicate if there is a bond
     // rest 5 for each bond_type, one hot encoding
     const unsigned int num_bits_per_bond = 6;
@@ -440,7 +419,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
         for (int j = i + 1; j < num_atom; ++j) {
             int temp_feature[num_bits_per_bond] = {0};
             // check if bond exits/defined
-            std::cout << adjacency_matrix[i][j] << " ";
+            // std::cout << adjacency_matrix[i][j] << " ";
             if (adjacency_matrix[i][j] > 0) {
                 // first bit indicate if there is a bond
                 temp_feature[0] = 1;
@@ -453,10 +432,10 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
             temp++;
             fv.addFeatures(temp_feature, num_bits_per_bond);
         }
-        std::cout << std::endl;
+        // std::cout << std::endl;
     }
 
-    fv.printDebugInfo();
+    // fv.printDebugInfo();
     // add atoms information into FP
     const unsigned int num_atom_types = GetSizeOfOKSymbolsLess();
     for (int i = 0; i < num_atom; ++i) {

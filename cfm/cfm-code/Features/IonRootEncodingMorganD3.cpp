@@ -26,5 +26,5 @@ void IonRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *i
     unsigned int finger_print_size = 512;
     unsigned int morgan_radius = 2;
 
-    addMorganFingerPrint(fv, ion, finger_print_size, path_range, ring_break, morgan_radius);
+    addMorganFingerPrintFeatures(fv, ion, finger_print_size, path_range, ring_break, morgan_radius);
 }
