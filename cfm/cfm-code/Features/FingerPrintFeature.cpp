@@ -139,8 +139,9 @@ void FingerPrintFeature::addRDKitFingerPrintFeatures(FeatureVector &fv, const Ro
         addRDKitFingerPrint(fv, mol, mol->other_root, finger_print_size, path_range, finger_print_min_path,
                             finger_print_max_path);
     } else {
-        double empty_feature[finger_print_size] = {0};
-        fv.addFeatures(empty_feature, finger_print_size);
+        for (int i = 0; i < finger_print_size; ++i) {
+            fv.addFeature(0.0);
+        }
     }
 }
 
@@ -188,8 +189,9 @@ void FingerPrintFeature::addMorganFingerPrintFeatures(FeatureVector &fv,
     if (ring_break) {
         addMorganFingerPrint(fv, mol, mol->other_root, finger_print_size, path_range, radius);
     } else {
-        double empty_feature[finger_print_size] = {0};
-        fv.addFeatures(empty_feature, finger_print_size);
+        for (int i = 0; i < finger_print_size; ++i) {
+            fv.addFeature(0.0);
+        }
     }
 }
 
@@ -302,7 +304,7 @@ void FingerPrintFeature::getAtomVisitOrderBFS(
         atom_queue.pop();
         distance_queue.pop();
 
-        // if I have see this before 
+        // if I have see this before
         if (std::find(visit_order.begin(), visit_order.end(), curr->getIdx())
             != visit_order.end()) {
             continue;
@@ -317,7 +319,7 @@ void FingerPrintFeature::getAtomVisitOrderBFS(
                  ++itp.first) {
                 RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
                 // if we have not visit this node before
-                // and this node is in the visit list 
+                // and this node is in the visit list
                 if (nbr_atom != curr) {
                     std::string sorting_key = getSortingLabel(mol, nbr_atom, curr);
                     child_visit_order.insert(std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
@@ -375,7 +377,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
 
     int adjacency_matrix[num_atom][num_atom];
 
-    // two array init, {} style init does not always work 
+    // two array init, {} style init does not always work
     for (int i = 0; i < num_atom; ++i) {
         for (int j = 0; j < num_atom; ++j) {
             adjacency_matrix[i][j] = 0;
@@ -399,7 +401,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
     }
 
     // Debug
-    // two array init, {} style init does not always work 
+    // two array init, {} style init does not always work
     /*for (int i = 0; i < num_atom; ++i) {
         for (int j = 0; j < num_atom; ++j) {
             //adjacency_matrix[i][j] = 0;
@@ -437,9 +439,10 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
 
     // fv.printDebugInfo();
     // add atoms information into FP
-    const unsigned int num_atom_types = GetSizeOfOKSymbolsLess();
+    // TODO FIX THOSE MAGIC NUMBERS
+
     for (int i = 0; i < num_atom; ++i) {
-        int atom_type_feature[num_atom_types] = {0};
+        int atom_type_feature[6] = {0};
         int atom_degree_feature[5] = {0};
         if (i < visit_order.size()) {
             int atom_idx = visit_order[i];
@@ -451,7 +454,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
             atom_degree_feature[degree] = 1;
         }
         // TODO Change to C++11 array
-        fv.addFeatures(atom_type_feature, num_atom_types);
+        fv.addFeatures(atom_type_feature, 6);
         fv.addFeatures(atom_degree_feature, 5);
     }
 }
@@ -472,7 +475,8 @@ void FingerPrintFeature::addAdjacentMatrixRepesentationFeature(FeatureVector &fv
     } else {
         //TODO: Get ride of this magic numbers
         unsigned int feature_size = num_atom * (num_atom - 1) / 2 * 6 + num_atom * 11;
-        double empty_feature[feature_size] = {0};
-        fv.addFeatures(empty_feature, feature_size);
+        for (int i = 0; i < feature_size; ++i) {
+            fv.addFeature(0.0);
+        }
     }
 }
