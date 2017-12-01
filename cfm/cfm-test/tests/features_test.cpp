@@ -1449,8 +1449,8 @@ void FeaturesTestFingerPrint::runTest(){
 	bool pass = true;
 
     std::vector<std::string> fnames;
-    fnames.push_back("NLRootMatrixFP");
-	fnames.push_back("NLRootEncodingD4");
+    //fnames.push_back("NLRootMatrixFP");
+	fnames.push_back("NLRootEncodingD3");
     FeatureCalculator *fc = new FeatureCalculator( fnames );
 
     // test case #1
@@ -1460,7 +1460,7 @@ void FeaturesTestFingerPrint::runTest(){
 	//Rings
 	//C1CCCCC1
 	//C1=CC=CC=C1
-    romol_ptr_t ion = createMolPtr("C1=CC=CC=C1");
+    romol_ptr_t ion = createMolPtr("CCCCCCCCCC");
     initMolProps(ion);
     RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
 
@@ -1470,7 +1470,7 @@ void FeaturesTestFingerPrint::runTest(){
     nl.get()->setProp("IsRingBreak",0);
 
     FeatureVector *fv = fc->computeFV(&rtd_ion, &rtd_nl);
-	// fv->printDebugInfo();
+	//fv->printDebugInfo();
 
     delete fv;
     delete fc;

@@ -26,10 +26,10 @@ param.cpp.
 
 #include <queue>
 
-void FingerPrintFeature::getRemoveAtomIdxOfRange(
+void FingerPrintFeature::getRemoveAtomIdx(
         const romol_ptr_t mol, const RDKit::Atom *root,
         std::vector<unsigned int> &remove_atom_ids,
-        int range) const {
+        int distance) const {
 
     std::queue<const RDKit::Atom *> atom_queue;
     std::queue<int> distance_queue;
@@ -43,25 +43,31 @@ void FingerPrintFeature::getRemoveAtomIdxOfRange(
         int curr_distance = distance_queue.front();
         atom_queue.pop();
         distance_queue.pop();
+        //std::cerr << curr->getIdx() << std::endl;
+        // tracking cycles
+        visited.insert(curr->getIdx());
 
-        // if range <= 0 , that means this atom is out of range
         // thus we need remove it
         // also we does not care Hs
-        if (range <= 0 ||
+        if (distance < curr_distance ||
             curr->getSymbol() == "H") {
             remove_atom_ids.push_back(curr->getIdx());
         }
 
-
         for (auto itp = mol->getAtomNeighbors(curr); itp.first != itp.second;
          ++itp.first) {
             const RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
-            if (nbr_atom != curr) {
+            // if not parrent and I have not visit before
+            if (visited.find(nbr_atom->getIdx()) == visited.end()) {
                 atom_queue.push(nbr_atom);
                 distance_queue.push(curr_distance + 1);
             }
         }
     }
+
+    /*for(auto i : remove_atom_ids)
+        std::cerr << i << " ";
+    std::cerr << std::endl;*/
 }
 
 void FingerPrintFeature::removeAtomInTheList(
@@ -96,14 +102,14 @@ void FingerPrintFeature::replaceWithOrigBondType(RDKit::RWMol &rwmol) const {
 void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
                                              const RDKit::Atom *root,
                                              const unsigned int finger_print_size,
-                                             const unsigned int path_range,
+                                             const unsigned int max_nbr_distance,
                                              const unsigned int finger_print_min_path,
                                              const unsigned int finger_print_max_path) const {
 
     // Get list of atom we need to remove
     std::vector<unsigned int> remove_atom_ids;
-    
-    getRemoveAtomIdxOfRange(mol->mol, root, remove_atom_ids, path_range);
+
+    getRemoveAtomIdx(mol->mol, root, remove_atom_ids, max_nbr_distance);
 
     // Get Mol Object and remove atoms
     RDKit::RWMol part;
@@ -130,15 +136,15 @@ void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
 
 void FingerPrintFeature::addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
                                                      const unsigned int finger_print_size,
-                                                     const unsigned int path_range, const int ring_break,
+                                                     const unsigned int max_nbr_distance, const int ring_break,
                                                      const unsigned int finger_print_min_path,
                                                      const unsigned int finger_print_max_path) const {
 
-    addRDKitFingerPrint(fv, mol, mol->root, finger_print_size, path_range, finger_print_min_path,
+    addRDKitFingerPrint(fv, mol, mol->root, finger_print_size, max_nbr_distance, finger_print_min_path,
                         finger_print_max_path);
 
     if (ring_break) {
-        addRDKitFingerPrint(fv, mol, mol->other_root, finger_print_size, path_range, finger_print_min_path,
+        addRDKitFingerPrint(fv, mol, mol->other_root, finger_print_size, max_nbr_distance, finger_print_min_path,
                             finger_print_max_path);
     } else {
         for (int i = 0; i < finger_print_size; ++i) {
@@ -150,14 +156,14 @@ void FingerPrintFeature::addRDKitFingerPrintFeatures(FeatureVector &fv, const Ro
 void FingerPrintFeature::addMorganFingerPrint(FeatureVector &fv,
                                               const RootedROMolPtr *mol,
                                               const RDKit::Atom *root,
-                                              const unsigned int path_range,
+                                              const unsigned int max_nbr_distance,
                                               const unsigned int finger_print_size,
                                               const int radius) const {
 
     // Get list of atom we need to remove
     std::vector<unsigned int> remove_atom_ids;
     std::unordered_set<unsigned int> visited;
-    getRemoveAtomIdxOfRange(mol->mol, root, remove_atom_ids, path_range);
+    getRemoveAtomIdx(mol->mol, root, remove_atom_ids, max_nbr_distance);
 
     // Get Mol Object and remove atoms
     RDKit::RWMol part;
@@ -350,12 +356,12 @@ list of degrees per node
 void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
                                                          const RootedROMolPtr *mol,
                                                          const RDKit::Atom *root,
-                                                         const unsigned int path_range,
+                                                         const unsigned int max_nbr_distance,
                                                          const unsigned int num_atom) const {
 
     // Get visit order
     std::vector<unsigned int> visit_order;
-    getAtomVisitOrderBFS(mol->mol, root, path_range, visit_order);
+    getAtomVisitOrderBFS(mol->mol, root, max_nbr_distance, visit_order);
 
     std::map<unsigned int, int> visit_order_map;
 
@@ -396,14 +402,14 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
 
     // Debug
     // two array init, {} style init does not always work
-    /*for (int i = 0; i < num_atom; ++i) {
+    for (int i = 0; i < num_atom; ++i) {
         for (int j = 0; j < num_atom; ++j) {
             //adjacency_matrix[i][j] = 0;
             std::cout << adjacency_matrix[i][j] << " ";
         }
         std::cout << std::endl;
     }
-    std::cout << std::endl;*/
+    std::cout << std::endl;
 
     // first bit indicate if there is a bond
     // rest 5 for each bond_type, one hot encoding
@@ -465,13 +471,13 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
 // therefore  we need 50 features for arcs
 void FingerPrintFeature::addAdjacentMatrixRepesentationFeature(FeatureVector &fv,
                                                                const RootedROMolPtr *mol,
-                                                               const unsigned int path_range,
+                                                               const unsigned int max_nbr_distance,
                                                                const unsigned int num_atom,
                                                                const int ring_break) const {
 
-    addAdjacentMatrixRepresentation(fv, mol, mol->root, path_range, num_atom);
+    addAdjacentMatrixRepresentation(fv, mol, mol->root, max_nbr_distance, num_atom);
     if (ring_break > 0) {
-        addAdjacentMatrixRepresentation(fv, mol, mol->other_root, path_range, num_atom);
+        addAdjacentMatrixRepresentation(fv, mol, mol->other_root, max_nbr_distance, num_atom);
     } else {
         //TODO: Get ride of this magic numbers
         unsigned int feature_size = num_atom * (num_atom - 1) / 2 * 6 + num_atom * 11;

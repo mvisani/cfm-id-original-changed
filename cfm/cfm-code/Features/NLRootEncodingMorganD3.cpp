@@ -22,9 +22,9 @@ void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *NL
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
-    unsigned int path_range = 3;
+    unsigned int distance_to_root = 2;
     unsigned int finger_print_size = 512;
     unsigned int morgan_radius = 2;
 
-    addMorganFingerPrintFeatures(fv, NL, finger_print_size, path_range, ring_break, morgan_radius);
+    addMorganFingerPrintFeatures(fv, NL, finger_print_size, distance_to_root, ring_break, morgan_radius);
 }
