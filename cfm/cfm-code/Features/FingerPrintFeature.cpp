@@ -400,16 +400,12 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv,
         }
     }
 
-    // Debug
     // two array init, {} style init does not always work
     for (int i = 0; i < num_atom; ++i) {
         for (int j = 0; j < num_atom; ++j) {
-            //adjacency_matrix[i][j] = 0;
-            std::cout << adjacency_matrix[i][j] << " ";
+            adjacency_matrix[i][j] = 0;
         }
-        std::cout << std::endl;
     }
-    std::cout << std::endl;
 
     // first bit indicate if there is a bond
     // rest 5 for each bond_type, one hot encoding
