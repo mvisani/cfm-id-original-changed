@@ -38,13 +38,19 @@ void FingerPrintFeature::getRemoveAtomIdx(
 
     std::unordered_set<unsigned int> visited;
 
+
     while (!atom_queue.empty() && !distance_queue.empty()) {
         const RDKit::Atom *curr = atom_queue.front();
         int curr_distance = distance_queue.front();
         atom_queue.pop();
         distance_queue.pop();
-        //std::cerr << curr->getIdx() << std::endl;
+
         // tracking cycles
+        if(visited.find(curr->getIdx()) != visited.end())
+        {
+            continue;
+        }
+
         visited.insert(curr->getIdx());
 
         // thus we need remove it
@@ -58,16 +64,12 @@ void FingerPrintFeature::getRemoveAtomIdx(
          ++itp.first) {
             const RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
             // if not parrent and I have not visit before
-            if (visited.find(nbr_atom->getIdx()) == visited.end()) {
+            if (curr != nbr_atom) {
                 atom_queue.push(nbr_atom);
                 distance_queue.push(curr_distance + 1);
             }
         }
     }
-
-    /*for(auto i : remove_atom_ids)
-        std::cerr << i << " ";
-    std::cerr << std::endl;*/
 }
 
 void FingerPrintFeature::removeAtomInTheList(
