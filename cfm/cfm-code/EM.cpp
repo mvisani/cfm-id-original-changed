@@ -114,6 +114,11 @@ double EM::run(std::vector<MolData> &data, int group, std::string &out_param_fil
         int num_converged = 0, num_nonconverged = 0;
         int tot_numc = 0, total_numnonc = 0;
         before = time(NULL);
+        
+        std::string estep_start_msg =
+                "Starting E-step Processing ";
+        if (comm->isMaster()) writeStatus(estep_start_msg.c_str());
+        comm->printToMasterOnly(estep_start_msg.c_str());
 
         //Do the inference part (E-step)
         itdata = data.begin();
@@ -174,6 +179,12 @@ double EM::run(std::vector<MolData> &data, int group, std::string &out_param_fil
 
         MPI_Barrier(MPI_COMM_WORLD);    //All threads wait for master
         //Find a new set of parameters to maximize the expected log likelihood (M-step)
+        
+        std::string mstep_start_msg =
+                "Starting M-step param update ";
+        if (comm->isMaster()) writeStatus(mstep_start_msg.c_str());
+        comm->printToMasterOnly(mstep_start_msg.c_str());
+
         before = time(NULL);
         if (cfg->use_lbfgs_for_ga)
             Q = updateParametersLBFGS(data, suft);
