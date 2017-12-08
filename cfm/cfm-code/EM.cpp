@@ -122,8 +122,9 @@ double EM::run(std::vector<MolData> &data, int group, std::string &out_param_fil
 
         //Do the inference part (E-step)
         itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-
+        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) 
+        {
+            
             if (!itdata->hasComputedGraph()) continue;    //If we couldn't compute it's graph for some reason..
             if (itdata->hasEmptySpectrum()) {
                 std::cout << "Warning: No peaks with explanatory fragment found for " << itdata->getId()
@@ -346,60 +347,66 @@ static int lbfgs_progress(void *instance, const lbfgsfloatval_t *x, const lbfgsf
 }
 
 
-double EM::updateParametersLBFGS(std::vector<MolData> &data, suft_counts_t &suft) {
+double EM::updateParametersLBFGS( std::vector<MolData> &data, suft_counts_t &suft ){
 
-    int ret = 0;
-    double Q = 0.0;
-    lbfgs_parameter_t lparam;
+	int ret = 0;
+	double Q = 0.0;
+	lbfgs_parameter_t lparam;
     lbfgs_parameter_init(&lparam);
-    lparam.delta = cfg->ga_converge_thresh;
-    lparam.past = 1;
-    lparam.max_iterations = cfg->ga_max_iterations;
+	lparam.delta = cfg->ga_converge_thresh;
+	lparam.past = 1;
+	lparam.max_iterations = cfg->ga_max_iterations;
 
-    //Initial Q and gradient calculation (to determine used indexes - if we already have them don't bother)
-    if (comm->used_idxs.size() == 0) {
-        std::vector<double> grads(param->getNumWeights(), 0.0);
-        std::vector<MolData>::iterator itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() != validation_group)
+	//Initial Q and gradient calculation (to determine used indexes - if we already have them don't bother)
+	if( comm->used_idxs.size() == 0 ){
+		std::vector<double> grads(param->getNumWeights(), 0.0);
+		std::vector<MolData>::iterator itdata = data.begin();
+		for( int molidx = 0; itdata != data.end(); ++itdata, molidx++ ){
+			if( itdata->getGroup() != validation_group )
+            {
                 Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs);
-        }
+            }
+            if( molidx % 10 == 0)
+            {
+                std::cout << "Compute And Accumulate Gradient: " <<  molidx  << "mols" << std::endl;
+            }
+		}
 
-        //Collect the used_idxs from all the processors into the MASTER
-        comm->setMasterUsedIdxs();
+		//Collect the used_idxs from all the processors into the MASTER
+		comm->setMasterUsedIdxs();
 
-        //Copy the used parameters into the LBFGS array
-        if (comm->isMaster()) zeroUnusedParams();
-    }
+		//Copy the used parameters into the LBFGS array 
+		if( comm->isMaster() ) zeroUnusedParams();
+	}
 
-    int N = 0;
-    if (comm->isMaster()) N = ((MasterComms *) comm)->master_used_idxs.size();
-    N = comm->broadcastNumUsed(N);
-    if (N > 0.1 * param->getNumWeights()) sparse_params = false;
-    lbfgsfloatval_t *x = convertCurrentParamsToLBFGS(N);
-    if (!sparse_params) N = param->getNumWeights();
+	int N = 0;
+	if( comm->isMaster() ) N = ((MasterComms *)comm)->master_used_idxs.size();
+	N = comm->broadcastNumUsed( N );
+	if( N > 0.1*param->getNumWeights() ) sparse_params = false;
+	lbfgsfloatval_t *x = convertCurrentParamsToLBFGS(N);
+	if( !sparse_params ) N = param->getNumWeights();
 
-    //Select molecules to include in gradient mini-batch (will select a new set at each LBFGS iteration, but for every evaluation).
-    tmp_minibatch_flags.resize(data.size());
-    std::vector<MolData>::iterator itdata = data.begin();
-    for (int molidx = 0; itdata != data.end(); ++itdata, molidx++)
-        tmp_minibatch_flags[molidx] = (itdata->getGroup() != validation_group); //Don't include validation molecules
-    if (cfg->ga_minibatch_nth_size > 1) selectMiniBatch(tmp_minibatch_flags);
+	//Select molecules to include in gradient mini-batch (will select a new set at each LBFGS iteration, but for every evaluation).
+	tmp_minibatch_flags.resize(data.size());
+	std::vector<MolData>::iterator itdata = data.begin();
+	for( int molidx = 0; itdata != data.end(); ++itdata, molidx++ )
+		tmp_minibatch_flags[molidx] = ( itdata->getGroup() != validation_group ); //Don't include validation molecules
+	if( cfg->ga_minibatch_nth_size > 1 ) selectMiniBatch(tmp_minibatch_flags);
 
-    //Run LBFGS
-    tmp_moldata_ptr_lbfgs = &data;
-    tmp_suft_ptr_lbfgs = &suft;
-    lbfgsfloatval_t fx;
-    ret = lbfgs(N, x, &fx, lbfgs_evaluate, lbfgs_progress, this, &lparam);
+	//Run LBFGS
+	tmp_moldata_ptr_lbfgs = &data;
+	tmp_suft_ptr_lbfgs = &suft;
+	lbfgsfloatval_t fx;
+	ret = lbfgs(N, x, &fx, lbfgs_evaluate, lbfgs_progress, this, &lparam);
 
-    //Master converts and broadcasts final param weights and Q to all
-    copyLBFGSToParams(x);
-    if (sparse_params) lbfgs_free(x);
-    Q = -fx;
-    comm->broadcastParams(param.get());
-    Q = comm->broadcastQ(Q);
-
-    return (Q);
+	//Master converts and broadcasts final param weights and Q to all
+	copyLBFGSToParams(x);
+	if( sparse_params ) lbfgs_free(x);
+	Q = -fx;
+	comm->broadcastParams( param.get() );
+	Q = comm->broadcastQ( Q );
+	
+	return( Q );
 
 }
 
