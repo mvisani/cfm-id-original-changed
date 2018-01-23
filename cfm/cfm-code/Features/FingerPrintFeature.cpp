@@ -346,7 +346,7 @@ void FingerPrintFeature::getAtomVisitOrderBFS(
 /*
 flatten: ajcent matrix[]
 first bit - if there is a bond
-follwing 4 bits hot for type
+follwing 4 bits one  hot for type
 
 list of atom per node
 
@@ -449,8 +449,13 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
       int atom_feature = getSymbolsLessIndex(symbol);
       atom_type_feature[atom_feature] = 1;
 
-      // add degree info
+      // add first order degree info
       int degree = mol->mol->getAtomWithIdx(atom_idx)->getDegree();
+      degree = degree > num_max_degree ? num_max_degree : degree;
+      atom_degree_feature[degree] = 1;
+
+      // add second order degree info
+      int second_order_degree = mol->mol->getAtomWithIdx(atom_idx)->getDegree();
       degree = degree > num_max_degree ? num_max_degree : degree;
       atom_degree_feature[degree] = 1;
     }
