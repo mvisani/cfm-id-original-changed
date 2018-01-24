@@ -240,7 +240,7 @@ std::string FingerPrintFeature::getSortingLabels(
     // and replace uncommon with X later
     // replace symbol here or use true symbol
     std::string symbol_str = atom->getSymbol();
-    replaceUncommonWithX(symbol_str);
+    // replaceUncommonWithX(symbol_str);
     atom_key += symbol_str;
 
     // get child atom keys str
@@ -349,7 +349,7 @@ void FingerPrintFeature::getAtomVisitOrderBFS(
 /*
 flatten: ajcent matrix[]
 first bit - if there is a bond
-follwing 4 bits hot for type
+follwing 4 bits one  hot for type
 
 list of atom per node
 
@@ -446,16 +446,23 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
 
     if (i < visit_order.size()) {
       int atom_idx = visit_order[i];
-      std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
-
+      
       // add atom types
+      std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
+      replaceUncommonWithX(symbol);
       int atom_feature = getSymbolsLessIndex(symbol);
       atom_type_feature[atom_feature] = 1;
 
-      // add degree info
+      // add first order degree info
       int degree = mol->mol->getAtomWithIdx(atom_idx)->getDegree();
       degree = degree > num_max_degree ? num_max_degree : degree;
       atom_degree_feature[degree] = 1;
+
+      // add second order degree info
+      /*int second_order_;p[
+      degree = mol->mol->getAtomWithIdx(atom_idx)->getDegree();
+      degree = degree > num_max_degree ? num_max_degree : degree;
+      atom_degree_feature[degree] = 1;*/
     }
 
     // TODO Change to C++11 array
