@@ -237,7 +237,7 @@ std::string FingerPrintFeature::getSortingLabels(
     // TODO: figure out which way is better
     // replace symbol here or use true symbol
     std::string symbol_str = atom->getSymbol();
-    replaceUncommonWithX(symbol_str);
+    // replaceUncommonWithX(symbol_str);
     atom_key += symbol_str;
 
     // get child atom keys str
@@ -281,7 +281,7 @@ std::string FingerPrintFeature::getSortingLabel(
   atom_key += std::to_string(bond_int);
 
   std::string symbol_str = atom->getSymbol();
-  replaceUncommonWithX(symbol_str);
+  // replaceUncommonWithX(symbol_str);
   atom_key += symbol_str;
 
   // get child atom keys str
@@ -443,9 +443,10 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
 
     if (i < visit_order.size()) {
       int atom_idx = visit_order[i];
-      std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
-
+      
       // add atom types
+      std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
+      replaceUncommonWithX(symbol);
       int atom_feature = getSymbolsLessIndex(symbol);
       atom_type_feature[atom_feature] = 1;
 
@@ -455,9 +456,10 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
       atom_degree_feature[degree] = 1;
 
       // add second order degree info
-      int second_order_degree = mol->mol->getAtomWithIdx(atom_idx)->getDegree();
+      /*int second_order_;p[
+      degree = mol->mol->getAtomWithIdx(atom_idx)->getDegree();
       degree = degree > num_max_degree ? num_max_degree : degree;
-      atom_degree_feature[degree] = 1;
+      atom_degree_feature[degree] = 1;*/
     }
 
     // TODO Change to C++11 array
