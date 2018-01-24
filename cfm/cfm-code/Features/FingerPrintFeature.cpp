@@ -198,6 +198,7 @@ void FingerPrintFeature::addMorganFingerPrintFeatures(
   }
 }
 
+// For now we only use max range of 4
 std::string FingerPrintFeature::getSortingLabels(
     const romol_ptr_t mol, const RDKit::Atom *atom,
     const RDKit::Atom *prev_atom, int range,
@@ -235,6 +236,8 @@ std::string FingerPrintFeature::getSortingLabels(
 
     // add atom symbol:
     // TODO: figure out which way is better
+    // Maybe it is a better idea to use true symbol here
+    // and replace uncommon with X later
     // replace symbol here or use true symbol
     std::string symbol_str = atom->getSymbol();
     replaceUncommonWithX(symbol_str);
@@ -281,7 +284,7 @@ std::string FingerPrintFeature::getSortingLabel(
   atom_key += std::to_string(bond_int);
 
   std::string symbol_str = atom->getSymbol();
-  replaceUncommonWithX(symbol_str);
+  // replaceUncommonWithX(symbol_str);
   atom_key += symbol_str;
 
   // get child atom keys str
