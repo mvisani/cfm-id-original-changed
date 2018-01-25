@@ -65,22 +65,20 @@ private:
   //                          std::vector<unsigned int> &visited) const;
   enum Bfs_Stop_Logic { RANGE_ONLY = 0, SIZE_ONLY, RANGE_OR_SIZE };
 
-  void
-  getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit::Atom *root,
-                       const std::map<unsigned int, std::string> &sorting_labels,
-                           std::vector<unsigned int> &visit_order,
-                       int range, int size, Bfs_Stop_Logic stop_logic) const;
+  void getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit::Atom *root,
+                            std::vector<unsigned int> &visit_order, int range,
+                            int size, Bfs_Stop_Logic stop_logic) const;
 
-  /*std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
-                              const RDKit::Atom *parent_atom,
-                              bool include_child) const;*/
+  std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
+                              const RDKit::Atom *parent_atom, int depth) const;
 
+  /*
   std::string
   getSortingLabels(const romol_ptr_t mol, const RDKit::Atom *atom,
                    const RDKit::Atom *prev_atom, int range,
                    std::unordered_set<unsigned int> &visited,
                    std::map<unsigned int, std::string> &sorting_labels) const;
-
+  */
   /*void addMorganFingerPrint(FeatureVector &fv,
                             const RootedROMolPtr *mol,
                             const RDKit::Atom *root,

@@ -198,7 +198,7 @@ void FingerPrintFeature::addMorganFingerPrintFeatures(
   }
 }
 
-// For now we only use max range of 4
+/*
 std::string FingerPrintFeature::getSortingLabels(
     const romol_ptr_t mol, const RDKit::Atom *atom,
     const RDKit::Atom *prev_atom, int range,
@@ -250,28 +250,27 @@ std::string FingerPrintFeature::getSortingLabels(
     for (auto child_key : children_keys) {
       children_atom_key += child_key;
     }
-    /*if (children_atom_key != "") {
-      children_atom_key = "|" + children_atom_key;
-    }*/
     sorting_labels.insert(std::pair<unsigned int, std::string>(
         atom->getIdx(), atom_key + children_atom_key));
   }
   return atom_key;
 }
-/*
-std::string FingerPrintFeature::getSortingLabel(
-    const romol_ptr_t mol, const RDKit::Atom *atom,
-    const RDKit::Atom *parent_atom, bool include_child = true) const {
+*/
+
+std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol,
+                                                const RDKit::Atom *atom,
+                                                const RDKit::Atom *parent_atom,
+                                                int depth = 1) const {
 
   std::string atom_key;
   std::vector<std::string> children_keys;
-  if (include_child) {
+  if (depth > 0) {
     for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second;
          ++itp.first) {
       RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
       if (nbr_atom != parent_atom) {
         std::string child_key;
-        child_key = getSortingLabel(mol, nbr_atom, atom, false);
+        child_key = getSortingLabel(mol, nbr_atom, atom, depth - 1);
         children_keys.push_back(child_key);
       }
     }
@@ -285,6 +284,8 @@ std::string FingerPrintFeature::getSortingLabel(
 
   std::string symbol_str = atom->getSymbol();
   // replaceUncommonWithX(symbol_str);
+  if (symbol_str.size() == 1)
+    symbol_str += " ";
   atom_key += symbol_str;
 
   // get child atom keys str
@@ -294,12 +295,10 @@ std::string FingerPrintFeature::getSortingLabel(
   }
   return atom_key;
 }
-*/
 
 // Method to get atom visited order via BFS
 void FingerPrintFeature::getAtomVisitOrderBFS(
     const romol_ptr_t mol, const RDKit::Atom *root,
-    const std::map<unsigned int, std::string> &sorting_labels,
     std::vector<unsigned int> &visit_order, int range, int size,
     Bfs_Stop_Logic stop_logic) const {
 
@@ -338,8 +337,8 @@ void FingerPrintFeature::getAtomVisitOrderBFS(
         // if we have not visit this node before
         // and this node is in the visit list
         if (nbr_atom != curr) {
-          // std::string sorting_key = getSortingLabel(mol, nbr_atom, curr);
-          std::string sorting_key = sorting_labels.at(nbr_atom->getIdx());
+          std::string sorting_key = getSortingLabel(mol, nbr_atom, curr);
+          // std::string sorting_key = sorting_labels.at(nbr_atom->getIdx());
           child_visit_order.insert(
               std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
         }
@@ -369,14 +368,15 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
     const unsigned int max_nbr_distance, const unsigned int num_atom) const {
 
   // Get sorting labels
-  std::unordered_set<unsigned int> visited;
-  std::map<unsigned int, std::string> sorting_labels;
-  getSortingLabels(mol->mol, root, nullptr, num_atom, visited, sorting_labels);
+  // std::unordered_set<unsigned int> visited;
+  // std::map<unsigned int, std::string> sorting_labels;
+  // getSortingLabels(mol->mol, root, nullptr, num_atom, visited,
+  // sorting_labels);
 
   // Get visit order
   std::vector<unsigned int> visit_order;
-  getAtomVisitOrderBFS(mol->mol, root, sorting_labels, visit_order,
-                       max_nbr_distance, num_atom, RANGE_ONLY);
+  getAtomVisitOrderBFS(mol->mol, root, visit_order, max_nbr_distance, num_atom,
+                       SIZE_ONLY);
 
   std::map<unsigned int, int> visit_order_map;
 
