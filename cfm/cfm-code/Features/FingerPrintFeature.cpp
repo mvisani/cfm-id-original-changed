@@ -384,24 +384,12 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
     visit_order_map[visit_order[i]] = i;
   }
 
-  /*std::cout << "getAtomVisitOrder" << std::endl;
-  for (auto i: visit_order) {
-      std::cout << i << " ";
-  }
-  std::cout << std::endl;*/
+  std::vector<std::vector<int>> adjacency_matrix(num_atom,
+                                                 std::vector<int>(num_atom, 0));
 
-  // 16 by 16 is large enough
-  int adjacency_matrix[16][16] = {{0}};
-
-  // two array init, {} style init does not always work
-  for (int i = 0; i < num_atom; ++i) {
-    for (int j = 0; j < num_atom; ++j) {
-      adjacency_matrix[i][j] = 0;
-    }
-  }
-
+  // add bound type
   for (auto bi = mol->mol->beginBonds(); bi != mol->mol->endBonds(); ++bi) {
-    // for each bond
+    // for each bond find two atoms
     unsigned int beginIdx = (*bi)->getBeginAtomIdx();
     unsigned int endIdx = (*bi)->getEndAtomIdx();
     int bond_type = FeatureHelper::getBondTypeAsInt(*bi);
@@ -413,13 +401,6 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
           bond_type;
       adjacency_matrix[visit_order_map[endIdx]][visit_order_map[beginIdx]] =
           bond_type;
-    }
-  }
-
-  // two array init, {} style init does not always work
-  for (int i = 0; i < num_atom; ++i) {
-    for (int j = 0; j < num_atom; ++j) {
-      adjacency_matrix[i][j] = 0;
     }
   }
 
