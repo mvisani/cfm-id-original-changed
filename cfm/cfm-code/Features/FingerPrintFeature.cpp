@@ -322,7 +322,10 @@ void FingerPrintFeature::getAtomVisitOrderBFS(
         visit_order.end()) {
       continue;
     }
-    visit_order.push_back(curr->getIdx());
+
+    if (visit_order.size() < size) {
+      visit_order.push_back(curr->getIdx());
+    }
 
     if ((curr_distance < range && RANGE_ONLY == stop_logic) ||
         (visit_order.size() < size && SIZE_ONLY == stop_logic) ||
@@ -380,10 +383,12 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
 
   std::map<unsigned int, int> visit_order_map;
 
-  for (int i = 0; i < visit_order.size(); ++i) {
+  // make sure we only get num_atom amount of atoms
+  for (int i = 0; i < visit_order.size() && i < num_atom; ++i) {
     visit_order_map[visit_order[i]] = i;
   }
 
+  // init a 2D vector to store matrix
   std::vector<std::vector<int>> adjacency_matrix(num_atom,
                                                  std::vector<int>(num_atom, 0));
 
