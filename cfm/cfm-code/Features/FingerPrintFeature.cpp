@@ -383,7 +383,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
 
   std::map<unsigned int, int> visit_order_map;
 
-  // make sure we only get num_atom amount of atoms
+  // make sure we only get num_atom amount of atoms, this is extra check, first check is done in the getAtomVisitOrderBFS
   for (int i = 0; i < visit_order.size() && i < num_atom; ++i) {
     visit_order_map[visit_order[i]] = i;
   }
@@ -473,10 +473,10 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
 // for all the samples we have max atoms with a 3 atom group is 10
 // for all the samples we have max atoms with a 5 atom group is 16
 // therefore  we need 50 features for arcs
-void FingerPrintFeature::addAdjacentMatrixRepesentationFeature(
-    FeatureVector &fv, const RootedROMolPtr *mol,
-    const unsigned int max_nbr_distance, const unsigned int num_atom,
-    const int ring_break) const {
+void FingerPrintFeature::addAdjacentMatrixRepresentationFeature(
+        FeatureVector &fv, const RootedROMolPtr *mol,
+        const unsigned int max_nbr_distance, const unsigned int num_atom,
+        const int ring_break) const {
 
   addAdjacentMatrixRepresentation(fv, mol, mol->root, max_nbr_distance,
                                   num_atom);

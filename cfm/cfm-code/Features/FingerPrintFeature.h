@@ -52,10 +52,10 @@ protected:
                                     const int ring_break,
                                     const int radius) const;
 
-  void addAdjacentMatrixRepesentationFeature(
-      FeatureVector &fv, const RootedROMolPtr *mol,
-      const unsigned int max_nbr_distance, const unsigned int num_atom,
-      const int ring_break) const;
+  void addAdjacentMatrixRepresentationFeature(
+          FeatureVector &fv, const RootedROMolPtr *mol,
+          const unsigned int max_nbr_distance, const unsigned int num_atom,
+          const int ring_break) const;
 
 private:
   // void getAtomsWithRange(int range);

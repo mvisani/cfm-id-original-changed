@@ -25,5 +25,5 @@ void IonRootMatrixFP::compute(FeatureVector &fv, const RootedROMolPtr *ion,
     unsigned int distance_to_root = 2;
     unsigned int num_atoms = 10;
 
-    addAdjacentMatrixRepesentationFeature(fv, ion, distance_to_root, num_atoms, ring_break);
+    addAdjacentMatrixRepresentationFeature(fv, ion, distance_to_root, num_atoms, ring_break);
 }
