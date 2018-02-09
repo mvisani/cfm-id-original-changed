@@ -21,7 +21,7 @@ param.cpp.
 class NLRootMatrixFP : public FingerPrintFeature {
 public:
     NLRootMatrixFP() {
-        size = 380;
+        size = 760;
         name = "NLRootMatrixFP";
     };
 

@@ -478,7 +478,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentationFeature(
     } else {
         // TODO: Get ride of this magic numbers
         unsigned int feature_size = num_atom * 11;
-        if (include_adjacency_matrix) {
+        if (true == include_adjacency_matrix) {
             feature_size += num_atom * (num_atom - 1) / 2 * 6;
         }
         for (int i = 0; i < feature_size; ++i) {
