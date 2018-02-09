@@ -427,9 +427,9 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
     // fv.printDebugInfo();
     // add atoms information into FP
     // TODO FIX THOSE MAGIC NUMBERS
+    const unsigned int num_max_degree = 4;
 
     const unsigned int num_atom_types = 6;
-    const unsigned int num_max_degree = 4;
     const unsigned int num_degree_feature_size = 5;
     for (int i = 0; i < num_atom; ++i) {
         int atom_type_feature[num_degree_feature_size] = {0};
