@@ -99,7 +99,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "line_search_alpha") cfg.line_search_alpha = (double) value;
         else if (name == "line_search_beta") cfg.line_search_beta = (double) value;
         else if (name == "starting_step_size") cfg.starting_step_size = (double) value;
-        else if (name == "decay_rate") cfg.decay_rate = (double) valye;
+        else if (name == "decay_rate") cfg.decay_rate = (double) value;
         else if (name == "max_search_count") cfg.max_search_count = (int) value;
         else if (name == "fg_depth") cfg.fg_depth = (int) value;
         else if (name == "allow_frag_detours") cfg.allow_frag_detours = (int) value;
