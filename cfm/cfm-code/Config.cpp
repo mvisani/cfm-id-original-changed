@@ -35,6 +35,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.line_search_alpha = DEFAULT_LINE_SEARCH_ALPHA;
     cfg.line_search_beta = DEFAULT_LINE_SEARCH_BETA;
     cfg.starting_step_size = 1.0;
+    cfg.decay_rate = 0.0;
     cfg.max_search_count = DEFAULT_MAX_SEARCH_COUNT;
     cfg.spectrum_depths.clear();
     cfg.spectrum_weights.clear();
@@ -79,7 +80,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
         getline(ifs, line);
         if (line.size() < 3) continue;    //in case of empty line
-
+        if (line[0] = '#') continue; // in case comments in config
         std::stringstream ss1(line);
         ss1 >> name >> value;
 
@@ -98,6 +99,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "line_search_alpha") cfg.line_search_alpha = (double) value;
         else if (name == "line_search_beta") cfg.line_search_beta = (double) value;
         else if (name == "starting_step_size") cfg.starting_step_size = (double) value;
+        else if (name == "decay_rate") cfg.decay_rate = (double) valye;
         else if (name == "max_search_count") cfg.max_search_count = (int) value;
         else if (name == "fg_depth") cfg.fg_depth = (int) value;
         else if (name == "allow_frag_detours") cfg.allow_frag_detours = (int) value;

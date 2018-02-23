@@ -533,11 +533,17 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data, suf
     N = comm->broadcastNumUsed(N);
 
     int iter = 0;
-    double learn_mult = 1.0;
+    //double learn_mult = 1.0;
+    //double decay = 0.01;
     while (iter++ < cfg->ga_max_iterations && fabs((Q - prev_Q) / Q) >= cfg->ga_converge_thresh) {
 
-        if (Q < prev_Q && iter > 1) learn_mult = learn_mult * 0.5;
-        double learn_rate = cfg->starting_step_size * learn_mult / (1 + 0.01 * iter);
+        //if (Q < prev_Q && iter > 1) 
+        //    learn_mult = learn_mult * 0.5;
+        // lr = self.lr * (1. / (1. + self.decay * self.iterations))
+        // double learn_rate = cfg->starting_step_size * learn_mult / (1 + 0.01 * iter);
+
+        double learn_rate = cfg->starting_step_size / (1 + cfg->decay * iter);
+
 
         if (iter > 1) prev_Q = Q;
 

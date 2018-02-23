@@ -187,6 +187,7 @@ struct config_t {
     double line_search_alpha;
     double line_search_beta;
     double starting_step_size;
+    double decay_rate;
     int max_search_count;
     int update_bias_first;
     int ga_minibatch_nth_size;
