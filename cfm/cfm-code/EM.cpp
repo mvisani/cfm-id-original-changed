@@ -116,7 +116,7 @@ double EM::run(std::vector<MolData> &data, int group, std::string &out_param_fil
         before = time(NULL);
         
         std::string estep_start_msg =
-                "Starting E-step Processing ";
+                "----- Starting E-step Processing -----";
         if (comm->isMaster()) writeStatus(estep_start_msg.c_str());
         comm->printToMasterOnly(estep_start_msg.c_str());
 
@@ -140,7 +140,7 @@ double EM::run(std::vector<MolData> &data, int group, std::string &out_param_fil
             computeThetas(moldata);
             moldata->computeTransitionProbabilities();
 
-            //Apply the peak evidencee, compute the beliefs and record the sufficient statistics
+            //Apply the peak evidence, compute the beliefs and record the sufficient statistics
             if (cfg->use_single_energy_cfm) {
                 beliefs_t beliefs;
                 Inference infer(moldata, cfg);
@@ -182,8 +182,9 @@ double EM::run(std::vector<MolData> &data, int group, std::string &out_param_fil
         //Find a new set of parameters to maximize the expected log likelihood (M-step)
         
         std::string mstep_start_msg =
-                "Starting M-step param update ";
-        if (comm->isMaster()) writeStatus(mstep_start_msg.c_str());
+                "----- Starting M-step param update -----";
+        if (comm->isMaster())
+            writeStatus(mstep_start_msg.c_str());
         comm->printToMasterOnly(mstep_start_msg.c_str());
 
         before = time(NULL);
@@ -191,6 +192,7 @@ double EM::run(std::vector<MolData> &data, int group, std::string &out_param_fil
             Q = updateParametersLBFGS(data, suft);
         else
             Q = updateParametersSimpleGradientDescent(data, suft);
+
         after = time(NULL);
         std::string param_update_time_msg =
                 "Completed M-step param update: Time Elapsed = " + boost::lexical_cast<std::string>(after - before) +
@@ -368,7 +370,9 @@ double EM::updateParametersLBFGS( std::vector<MolData> &data, suft_counts_t &suf
             }
             if( molidx % 10 == 0)
             {
-                std::cout << "Compute And Accumulate Gradient: " <<  molidx  << "mols" << std::endl;
+                std::string msg = "Compute And Accumulate Gradient: " + std::to_string(molidx) + " mols";
+                comm->printToMasterOnly(msg.c_str());
+                //std::cout << "Compute And Accumulate Gradient: " <<  molidx  << " mols" << std::endl;
             }
 		}
 
@@ -391,12 +395,17 @@ double EM::updateParametersLBFGS( std::vector<MolData> &data, suft_counts_t &suf
 	std::vector<MolData>::iterator itdata = data.begin();
 	for( int molidx = 0; itdata != data.end(); ++itdata, molidx++ )
 		tmp_minibatch_flags[molidx] = ( itdata->getGroup() != validation_group ); //Don't include validation molecules
-	if( cfg->ga_minibatch_nth_size > 1 ) selectMiniBatch(tmp_minibatch_flags);
+	if( cfg->ga_minibatch_nth_size > 1 )
+    {
+        comm->printToMasterOnly("Selecting MiniBatch for LBFGS");
+        selectMiniBatch(tmp_minibatch_flags);
+    }
 
 	//Run LBFGS
 	tmp_moldata_ptr_lbfgs = &data;
 	tmp_suft_ptr_lbfgs = &suft;
 	lbfgsfloatval_t fx;
+    comm->printToMasterOnly("Running LBFGS...");
 	ret = lbfgs(N, x, &fx, lbfgs_evaluate, lbfgs_progress, this, &lparam);
 
 	//Master converts and broadcasts final param weights and Q to all
@@ -775,7 +784,7 @@ void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
         if (initialized_minibatch_flags[i]) idxs[count++] = i;
     idxs.resize(count);
     std::random_shuffle(idxs.begin(), idxs.end());
-    int num_minibatch_mols = (num_mols + cfg->ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;
+    int num_minibatch_mols = (num_mols + cfg-> ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;
     for (int i = num_minibatch_mols; i < idxs.size(); i++)
         initialized_minibatch_flags[idxs[i]] = 0;
 
