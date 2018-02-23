@@ -551,7 +551,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data, suf
         // lr = self.lr * (1. / (1. + self.decay * self.iterations))
         // double learn_rate = cfg->starting_step_size * learn_mult / (1 + 0.01 * iter);
 
-        double learn_rate = cfg->starting_step_size / (1 + cfg->decay * iter);
+        double learn_rate = cfg->starting_step_size / (1 + cfg->decay_rate * iter);
 
 
         if (iter > 1) prev_Q = Q;
