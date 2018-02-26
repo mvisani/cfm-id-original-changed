@@ -10,7 +10,7 @@
 set ( SRC_FILES  main.cpp )
                                            
 add_executable ( cfm-feature-calculator ${SRC_FILES} )
-target_link_libraries ( cfm-train cfm-code ${REQUIRED_LIBS} )
+target_link_libraries ( cfm-feature-calculator cfm-code ${REQUIRED_LIBS} )
 
 install ( TARGETS cfm-feature-calculator 
           DESTINATION ${CFM_OUTPUT_DIR} )
