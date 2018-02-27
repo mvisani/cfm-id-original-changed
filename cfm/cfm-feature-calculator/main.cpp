@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
 
   if (mpi_rank == MASTER) {
     // Create the tmp_data directory if it doesn't exist
-    if (!boost::filesystem::exists("tmp_data"))
+    /*if (!boost::filesystem::exists("tmp_data"))
       boost::filesystem::create_directory("tmp_data");
     if (!boost::filesystem::exists("tmp_data/enumerated_output"))
       boost::filesystem::create_directory("tmp_data/enumerated_output");
@@ -89,16 +89,18 @@ int main(int argc, char *argv[]) {
       boost::filesystem::create_directory("tmp_data/fv_fragment_graphs");
     // Delete the status file if it already exists
     if (boost::filesystem::exists(status_filename))
-      boost::filesystem::remove_all(status_filename);
+      boost::filesystem::remove_all(status_filename);*/
   }
   MPI_Barrier(MPI_COMM_WORLD);
 
+  // Init feature calculator
   if (mpi_rank == MASTER)
     std::cout << "Initialising Feature Calculator..";
   FeatureCalculator fc(feature_filename);
   if (mpi_rank == MASTER)
     std::cout << "Done" << std::endl;
 
+  // Init config file
   if (mpi_rank == MASTER)
     std::cout << "Initialising Parameter Configuration..";
   config_t cfg;
@@ -106,6 +108,7 @@ int main(int argc, char *argv[]) {
   if (mpi_rank == MASTER)
     std::cout << "Done" << std::endl;
 
+  // Read Mols from file
   if (mpi_rank == MASTER)
     std::cout << "Parsing input file...";
   std::vector<MolData> data;
@@ -118,36 +121,23 @@ int main(int argc, char *argv[]) {
   before_fg = time(NULL);
   if (mpi_rank == MASTER)
     std::cout << "Computing fragmentation graphs and features..";
+
   std::vector<MolData>::iterator mit = data.begin();
   int success_count = 0, except_count = 0;
   for (; mit != data.end(); ++mit) {
     try {
-      // If we're not training, only load the ones we'll be testing
-      if (mit->getId() == next_id) {
-        mit->readInFVFragmentGraphFromStream(*fv_ifs);
-        unsigned int id_size;
-        fv_ifs->read(reinterpret_cast<char *>(&id_size), sizeof(id_size));
-        if (!fv_ifs->eof()) {
-          next_id.resize(id_size);
-          fv_ifs->read(&next_id[0], id_size);
-        } else
-          next_id = "NULL_ID";
-
-      } else {
-        time_t before, after;
-        before = time(NULL);
-        mit->computeFragmentGraphAndReplaceMolsWithFVs(&fc);
-        std::ofstream eout;
-        eout.open(status_filename.c_str(),
-                  std::fstream::out | std::fstream::app);
-        after = time(NULL);
-        eout << mit->getId() << "Done. Time Elaspsed = " << (after - before)
-             << " Seconds";
-        eout << " :Num Frag = " << mit->getFragmentGraph()->getNumFragments();
-        eout << " :Num Trans = " << mit->getFragmentGraph()->getNumTransitions()
-             << std::endl;
-        eout.close();
-      }
+      time_t before, after;
+      before = time(NULL);
+      mit->computeFragmentGraphAndReplaceMolsWithFVs(&fc);
+      std::ofstream eout;
+      eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
+      after = time(NULL);
+      eout << mit->getId() << "Done. Time Elaspsed = " << (after - before)
+           << " Seconds";
+      eout << " :Num Frag = " << mit->getFragmentGraph()->getNumFragments();
+      eout << " :Num Trans = " << mit->getFragmentGraph()->getNumTransitions()
+           << std::endl;
+      eout.close();
       success_count++;
     } catch (std::exception e) {
       std::ofstream eout;
@@ -162,57 +152,17 @@ int main(int argc, char *argv[]) {
       eout.close();
     }
   }
-
-  // Fragment Graph Computation (or load from file)
-  time_t before_fg, after_fg;
-  before_fg = time(NULL);
+  MPI_Barrier(MPI_COMM_WORLD);
+  after_fg = time(NULL);
   if (mpi_rank == MASTER)
-    std::cout << "Computing fragmentation graphs and features..";
-  std::vector<MolData>::iterator mit = data.begin();
-  int success_count = 0, except_count = 0;
-  for (; mit != data.end(); ++mit) {
-    try {
-      // If we're not training, only load the ones we'll be testing
-      time_t before, after;
-      before = time(NULL);
-      mit->computeFragmentGraphAndReplaceMolsWithFVs(&fc);
-      std::ofstream eout;
-      eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
-      after = time(NULL);
-      eout << mit->getId() << "Done. Time Elaspsed = " << (after - before)
-           << " Seconds";
-      eout << " :Num Frag = " << mit->getFragmentGraph()->getNumFragments();
-      eout << " :Num Trans = " << mit->getFragmentGraph()->getNumTransitions()
-           << std::endl;
-      eout.close();
-      unsigned int id_size = mit->getId().size();
-      success_count++;
-    }
-  }
-  catch (std::exception e) {
-    std::ofstream eout;
-    eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
-    eout << "Exception occurred computing fragment graph for " << mit->getId()
-         << std::endl;
-    eout << mit->getSmilesOrInchi() << std::endl;
-    eout << e.what() << std::endl << std::endl;
-    except_count++;
-    eout << except_count << " exceptions, from " << except_count + success_count
-         << " total" << std::endl;
-    eout.close();
-  }
-}
-MPI_Barrier(MPI_COMM_WORLD);
-after_fg = time(NULL);
-if (mpi_rank == MASTER)
-  std::cout << "Done" << std::endl;
-std::cout << mpi_rank << ": " << success_count << " successfully computed. "
-          << except_count << " exceptions." << std::endl;
-if (mpi_rank == MASTER)
-  std::cout << "Total Fragmentation Graph Computation Time Elaspsed = "
-            << (after_fg - before_fg) << " Seconds";
+    std::cout << "Done" << std::endl;
+  std::cout << mpi_rank << ": " << success_count << " successfully computed. "
+            << except_count << " exceptions." << std::endl;
+  if (mpi_rank == MASTER)
+    std::cout << "Total Fragmentation Graph Computation Time Elaspsed = "
+              << (after_fg - before_fg) << " Seconds";
 
-return (0);
+  return (0);
 }
 
 void parseInputFile(std::vector<MolData> &data, std::string &input_filename,
