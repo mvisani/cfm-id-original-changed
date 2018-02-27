@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
             << except_count << " exceptions." << std::endl;
   if (mpi_rank == MASTER)
     std::cout << "Total Fragmentation Graph Computation Time Elaspsed = "
-              << (after_fg - before_fg) << " Seconds";
+              << (after_fg - before_fg) << " Seconds" << std::endl;
 
   return (0);
 }

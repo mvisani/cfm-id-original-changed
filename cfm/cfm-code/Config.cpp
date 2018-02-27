@@ -191,7 +191,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (cfg.use_lbfgs_for_ga) std::cout << "Using LBFGS package for gradient ascent" << std::endl;
         else {
             std::cout << "Using simple gradient ascent implementation" << std::endl;
-            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " and momentum " << cfg.ga_momentum
+            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
+                      << " decay rate " << cfg.decay_rate
                       << std::endl;
         }
         std::cout << "Using GA max iterations " << cfg.ga_max_iterations << std::endl;
