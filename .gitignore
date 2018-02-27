@@ -16,3 +16,5 @@ cfm/data/
 data_set/
 
 jobs/
+
+cfm/cmake-build-release/

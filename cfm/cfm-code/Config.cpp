@@ -80,7 +80,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
         getline(ifs, line);
         if (line.size() < 3) continue;    //in case of empty line
-        if (line[0] = '#') continue; // in case comments in config
+        if ('#' == line[0]) continue; // in case comments in config
         std::stringstream ss1(line);
         ss1 >> name >> value;
 
