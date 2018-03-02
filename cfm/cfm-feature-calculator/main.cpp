@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
 
     MPI_File output_file;
     MPI_File_open(MPI_COMM_WORLD, save_filename.c_str(),
-                  MPI_MODE_CREATE|MPI_MODE_WRONLY,
+                  MPI_MODE_CREATE | MPI_MODE_WRONLY,
                   MPI_INFO_NULL, &output_file);
 
     int success_count = 0, except_count = 0;
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
         std::string smiles_or_inchi;
         int group;
         ss >> id >> smiles_or_inchi >> group;
-        MolData *mol = new MolData(id,smiles_or_inchi,group, &cfg);
+        MolData *mol = new MolData(id, smiles_or_inchi, group, &cfg);
 
         try {
             time_t before, after;
@@ -184,7 +184,7 @@ void parseInputFile(std::vector<std::string> &data, std::string &input_filename,
     if (ifs.good()) {
         getline(ifs, line);
         num_mols = atoi(line.c_str());
-        if(mpi_rank == MASTER)
+        if (mpi_rank == MASTER)
             std::cout << "Reading " << num_mols << " mols" << std::endl;
     } else {
         std::cout << "Could not open input file " << input_filename << std::endl;
@@ -204,5 +204,5 @@ void parseInputFile(std::vector<std::string> &data, std::string &input_filename,
         if ((i % mpi_nump) == mpi_rank)
             data.push_back(line);
     }
-    std::cout << mpi_rank << ":Data Size: " << data.size()  << std::endl;
+    std::cout << mpi_rank << ":Data Size: " << data.size() << std::endl;
 }
