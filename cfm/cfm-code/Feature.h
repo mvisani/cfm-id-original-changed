@@ -38,25 +38,25 @@ typedef std::pair<std::string, std::string> symbol_pair_t;
 // Exception to throw when the input feature configuration file is invalid
 class InvalidConfigException : public std::exception {
 
-  virtual const char *what() const throw() {
-    return "Invalid Feature Configuration File";
-  }
+    virtual const char *what() const throw() {
+        return "Invalid Feature Configuration File";
+    }
 };
 
 class FeatureCalculationException : public std::exception {
 private:
-  std::string message_;
+    std::string message_;
 
 public:
-  FeatureCalculationException(const std::string &message) throw()
-      : message_(message){};
+    FeatureCalculationException(const std::string &message) throw()
+            : message_(message) {};
 
-  virtual const char *what() const throw() {
-    std::cout << "Error computing feature vector: " << message_ << std::endl;
-    return message_.c_str();
-  }
+    virtual const char *what() const throw() {
+        std::cout << "Error computing feature vector: " << message_ << std::endl;
+        return message_.c_str();
+    }
 
-  ~FeatureCalculationException() throw(){};
+    ~FeatureCalculationException() throw() {};
 };
 
 // Structure to hold a sparse computed feature vector
@@ -64,101 +64,104 @@ typedef unsigned int feature_t;
 
 class FeatureVector {
 public:
-  FeatureVector() { fv_idx = 0; };
+    FeatureVector() { fv_idx = 0; };
 
-  void addFeature(double value);
+    void addFeature(double value);
 
-  void addFeatureAtIdx(double value, unsigned int idx);
+    void addFeatureAtIdx(double value, unsigned int idx);
 
-  void addFeatures(double values[], int size);
+    void addFeatures(double values[], int size);
 
-  void addFeatures(int values[], int size);
+    void addFeatures(int values[], int size);
 
-  unsigned int getTotalLength() const { return fv_idx; };
+    unsigned int getTotalLength() const { return fv_idx; };
 
-  feature_t getFeature(int idx) const { return fv[idx]; };
+    feature_t getFeature(int idx) const { return fv[idx]; };
 
-  std::vector<feature_t>::const_iterator getFeatureBegin() const {
-    return fv.begin();
-  };
+    std::vector<feature_t>::const_iterator getFeatureBegin() const {
+        return fv.begin();
+    };
 
-  std::vector<feature_t>::const_iterator getFeatureEnd() const {
-    return fv.end();
-  };
+    std::vector<feature_t>::const_iterator getFeatureEnd() const {
+        return fv.end();
+    };
 
-  unsigned int getNumSetFeatures() const { return fv.size(); };
+    unsigned int getNumSetFeatures() const { return fv.size(); };
 
-  std::string toCSVString() const;
-  void printDebugInfo() const;
+    std::string toCSVString() const;
+
+    std::string toSparseCSVString() const;
+
+    void printDebugInfo() const;
 
 private:
-  std::vector<feature_t> fv;
-  unsigned int fv_idx;
+    std::vector<feature_t> fv;
+    unsigned int fv_idx;
 };
 
 // Base class to compute a feature - all features should inherit from this
 class Feature {
 
 public:
-  virtual void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                       const RootedROMolPtr *nl) const = 0;
+    virtual void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                         const RootedROMolPtr *nl) const = 0;
 
-  unsigned int getSize() const { return size; };
+    unsigned int getSize() const { return size; };
 
-  std::string getName() const { return name; };
+    std::string getName() const { return name; };
 
-  virtual ~Feature(){};
+    virtual ~Feature() {};
 
 protected:
-  unsigned int size;
-  std::string name;
+    unsigned int size;
+    std::string name;
 
-  static const std::vector<std::string> &OKsymbols();
+    static const std::vector<std::string> &OKsymbols();
 
-  static const std::vector<std::string> &OKSymbolsLess();
+    static const std::vector<std::string> &OKSymbolsLess();
 
-  void replaceUncommonWithX(std::string &symbol) const;
+    void replaceUncommonWithX(std::string &symbol) const;
 
-  int getSymbolsLessIndex(const std::string &symbol) const;
+    int getSymbolsLessIndex(const std::string &symbol) const;
 
-  unsigned int GetSizeOfOKSymbolsLess() const;
+    unsigned int GetSizeOfOKSymbolsLess() const;
 };
 
 // Class to compute a feature vector
 class FeatureCalculator {
 
 public:
-  // Constructor: Initialise the calculator using a config file listing features
-  FeatureCalculator(std::string &config_filename);
+    // Constructor: Initialise the calculator using a config file listing features
+    FeatureCalculator(std::string &config_filename);
 
-  // Constructor: Initialise the calculator using a list of feature names
-  FeatureCalculator(std::vector<std::string> &feature_list);
+    // Constructor: Initialise the calculator using a list of feature names
+    FeatureCalculator(std::vector<std::string> &feature_list);
 
-  // Compute the expected number of total features
-  unsigned int getNumFeatures();
+    // Compute the expected number of total features
+    unsigned int getNumFeatures();
 
-  // Retrieve the list of feature names being used
-  std::vector<std::string> getFeatureNames();
+    // Retrieve the list of feature names being used
+    std::vector<std::string> getFeatureNames();
 
-  // Retrieve a list of valid feature names (for testing)
-  static const std::vector<std::string> getValidFeatureNames();
+    // Retrieve a list of valid feature names (for testing)
+    static const std::vector<std::string> getValidFeatureNames();
 
-  // Compute the feature vector for the input ion and nl (with labeled Root
-  // atoms)
-  // - NB: responsibility of caller to delete.
-  FeatureVector *computeFV(const RootedROMolPtr *ion, const RootedROMolPtr *nl);
+    // Compute the feature vector for the input ion and nl (with labeled Root
+    // atoms)
+    // - NB: responsibility of caller to delete.
+    FeatureVector *computeFV(const RootedROMolPtr *ion, const RootedROMolPtr *nl);
 
-  bool includesFeature(const std::string &fname);
+    bool includesFeature(const std::string &fname);
 
 private:
-  // List of feature classes ready to be used
-  static const boost::ptr_vector<Feature> &featureCogs();
+    // List of feature classes ready to be used
+    static const boost::ptr_vector<Feature> &featureCogs();
 
-  // Indexes of feature classes that are selected for use
-  std::vector<int> used_feature_idxs;
+    // Indexes of feature classes that are selected for use
+    std::vector<int> used_feature_idxs;
 
-  // Helper function - Configure feature for use
-  void configureFeature(std::string &name);
+    // Helper function - Configure feature for use
+    void configureFeature(std::string &name);
 };
 
 #endif // __FEATURE_H__
