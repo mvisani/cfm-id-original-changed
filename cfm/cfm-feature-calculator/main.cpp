@@ -134,7 +134,8 @@ int main(int argc, char *argv[]) {
                  << std::endl;
             eout.close();
 
-            std::string molFeatureCsvStr = mol->getFVsAsCSVString();
+            //std::string molFeatureCsvStr = mol->getFVsAsCSVString();
+            std::string molFeatureCsvStr = mol->getFVsAsSparseCSVString();
             MPI_File_write_shared(output_file, molFeatureCsvStr.c_str(), molFeatureCsvStr.size(), MPI_CHAR, &status);
 
             success_count++;
