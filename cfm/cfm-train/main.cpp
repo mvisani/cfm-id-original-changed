@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 					std::ofstream eout;
 					eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
 					after = time( NULL );
-					eout << "ID: << " << mit->getId() << "is Done. Time Elaspsed = " << (after - before) << " Seconds ";
+					eout << "ID: " << mit->getId() << " is Done. Time Elaspsed = " << (after - before) << " Seconds ";
 					eout << " :Num Frag = " << mit->getFragmentGraph()->getNumFragments();
 					eout << " :Num Trans = " << mit->getFragmentGraph()->getNumTransitions() << std::endl; 
 					eout.close();
