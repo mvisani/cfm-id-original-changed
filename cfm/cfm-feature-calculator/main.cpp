@@ -76,7 +76,14 @@ int main(int argc, char *argv[]) {
         std::cout << "Initialising Feature Calculator..";
     FeatureCalculator fc(feature_filename);
     if (mpi_rank == MASTER)
+    {
+        for(auto featureName : fc.getFeatureNames())
+        {
+            std::cout << featureName << std::endl;
+        }
+        std::cout << "Total number of features: " << fc.getNumFeatures()  << std::endl;
         std::cout << "Done" << std::endl;
+    }
 
     // Init config file
     if (mpi_rank == MASTER)
