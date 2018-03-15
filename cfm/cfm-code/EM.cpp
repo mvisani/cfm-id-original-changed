@@ -625,10 +625,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
             learn_mult = learn_mult * 0.5;
 
         double learn_rate =
-                cfg->starting_step_size * learn_mult / (1 + cfg->decay_rate * iter);
-
-        /*double learn_rate =
-            cfg->starting_step_size / (1.0 + cfg->decay_rate * iter);*/
+                cfg->starting_step_size * learn_mult / (1.0 + cfg->decay_rate * iter);
 
         if (iter > 1)
             prev_Q = Q;
@@ -661,14 +658,14 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         Q = comm->broadcastQ(Q);
 
         if (comm->isMaster())
-            std::cout << iter << ": " << Q << " " << prev_Q << " " << learn_rate
+            std::cout << iter << ":  Q=" << Q << " prev_Q=" << prev_Q << " Learning_Rate= " << learn_rate
                       << std::endl;
 
         // Step the parameters
         if (comm->isMaster())
-            param->adjustWeightsByGrads(grads,
-                                        ((MasterComms *) comm)->master_used_idxs,
-                                        learn_rate, cfg->ga_momentum, prev_v);
+            param->adjustWeightsByGrads_Nesterov(grads,
+                                                 ((MasterComms *) comm)->master_used_idxs,
+                                                 learn_rate, cfg->ga_momentum, prev_v);
         comm->broadcastParams(param.get());
     }
 

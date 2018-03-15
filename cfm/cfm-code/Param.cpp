@@ -16,7 +16,7 @@
 #########################################################################*/
 
 #include "Param.h"
-
+#include <cfloat>
 //Constructor to initialise parameter weight size from a feature list
 Param::Param(std::vector<std::string> a_feature_list, int a_num_energy_levels) :
         feature_list(a_feature_list), num_energy_levels(a_num_energy_levels) {
@@ -140,8 +140,9 @@ double Param::computeTheta(const FeatureVector &fv, int energy) {
     return theta;
 }
 
-void Param::adjustWeightsByGrads(std::vector<double> &grads, std::set<unsigned int> &used_idxs, double learning_rate,
-                                 double momentum, std::vector<double> &prev_v) {
+void Param::adjustWeightsByGrads_Nesterov(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
+                                          double learning_rate,
+                                          double momentum, std::vector<double> &prev_v) {
 
     std::set<unsigned int>::iterator it = used_idxs.begin();
     for (; it != used_idxs.end(); ++it) {
@@ -151,6 +152,20 @@ void Param::adjustWeightsByGrads(std::vector<double> &grads, std::set<unsigned i
     }
 }
 
+void Param::adjustWeightsByGrads_Adam(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
+                                      double learning_rate,
+                                      double &beta1, double &beta2, int &t,
+                                      std::vector<double> &first_moment_vector,
+                                      std::vector<double> &second_moment_vector) {
+    t += 1;
+    for (auto & used_idx: used_idxs) {
+        first_moment_vector[used_idx] = first_moment_vector[used_idx] * beta1 + ( 1.0 - beta2) * grads[used_idx];
+        second_moment_vector[used_idx] = beta2 * second_moment_vector[used_idx] + ( 1.0 - beta1) *  grads[used_idx] * grads[used_idx];
+        double m_hat = first_moment_vector[used_idx]/( 1.0 - pow(beta1, t));
+        double v_hat = second_moment_vector[used_idx]/( 1.0 - pow(beta2, t));
+        weights[used_idx] += learning_rate * m_hat / (sqrt(v_hat) + DBL_EPSILON);
+    }
+}
 
 void Param::saveToFile(std::string &filename) {
 

@@ -62,8 +62,14 @@ public:
     //on the current weight settings
     virtual double computeTheta(const FeatureVector &fv, int energy);
 
-    void adjustWeightsByGrads(std::vector<double> &grads, std::set<unsigned int> &used_idxs, double learning_rate,
-                              double momentum, std::vector<double> &prev_v);
+    // Update Weight use Momentum + Nesterov
+    void adjustWeightsByGrads_Nesterov(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
+                                       double learning_rate,
+                                       double momentum, std::vector<double> &prev_v);
+    // Update Weight use ADAM
+    void adjustWeightsByGrads_Adam(std::vector<double> &grads, std::set<unsigned int> &used_idxs, double learning_rate,
+                                   double &beta1, double &beta2, int &t,
+                                   std::vector<double> &first_moment_vector, std::vector<double> &second_moment_vector);
 
     //Set the value of a weight
     void setWeightAtIdx(double value, int index) { weights[index] = value; };
