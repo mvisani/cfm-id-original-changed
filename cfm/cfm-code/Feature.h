@@ -24,6 +24,8 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+//#include <boost/numeric/ublas/vector_sparse.hpp>
+//#include <boost/numeric/ublas/io.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -60,9 +62,10 @@ public:
 };
 
 // Structure to hold a sparse computed feature vector
-typedef unsigned int feature_t;
+typedef unsigned int feature_idx_t;
+typedef double feature_value_t;
 
-class FeatureVector {
+class FeatureVector{
 public:
     FeatureVector() { fv_idx = 0; };
 
@@ -76,26 +79,30 @@ public:
 
     unsigned int getTotalLength() const { return fv_idx; };
 
-    feature_t getFeature(int idx) const { return fv[idx]; };
+    feature_value_t getFeature(feature_idx_t idx) const;
 
-    std::vector<feature_t>::const_iterator getFeatureBegin() const {
-        return fv.begin();
+    // Ugly API for Unit Test
+    // Just don't want to rewrite all test cases
+    feature_idx_t getFeatureForUnitTestOnly(int idx) const;
+
+    std::map<feature_idx_t,double>::const_iterator getFeatureBegin() const {
+        return mapped_fv.begin();
     };
 
-    std::vector<feature_t>::const_iterator getFeatureEnd() const {
-        return fv.end();
+    std::map<feature_idx_t,double>::const_iterator getFeatureEnd() const {
+        return mapped_fv.end();
     };
 
-    unsigned int getNumSetFeatures() const { return fv.size(); };
+    unsigned long getNumSetFeatures() const { return mapped_fv.size(); };
 
     std::string toCSVString() const;
 
-    std::string toSparseCSVString() const;
+    std::string toSparseCSVString(bool isBinary = true) const;
 
     void printDebugInfo() const;
 
 private:
-    std::vector<feature_t> fv;
+    std::map<feature_idx_t, feature_value_t> mapped_fv;
     unsigned int fv_idx;
 };
 

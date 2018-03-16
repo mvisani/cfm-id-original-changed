@@ -246,18 +246,33 @@ bool FeatureCalculator::includesFeature(const std::string &fname) {
     return false;
 }
 
+double FeatureVector::getFeature(feature_idx_t idx) const {
+    feature_value_t value = 0;
+    if(mapped_fv.find(idx) != mapped_fv.end()) {
+        value = mapped_fv.at(idx);
+    }
+    return value;
+}
+
+feature_idx_t FeatureVector::getFeatureForUnitTestOnly(int idx) const {
+    std::vector<feature_idx_t> indices;
+    for(auto & fv_it: mapped_fv)
+        indices.push_back(fv_it.first);
+    std::sort(indices.begin(),indices.end());
+    return indices[idx];
+}
+
 void FeatureVector::addFeature(double value) {
+    fv_idx++;
     if (value != 0.0)
-        fv.push_back(fv_idx++);
-    else
-        fv_idx++;
+        mapped_fv[fv_idx] = value;
 }
 
 void FeatureVector::addFeatureAtIdx(double value, unsigned int idx) {
     if (fv_idx <= idx)
         fv_idx = idx + 1;
     if (value != 0.0)
-        fv.push_back(idx);
+        mapped_fv[fv_idx] = value;
 }
 
 void FeatureVector::addFeatures(double values[], int size) {
@@ -272,27 +287,15 @@ void FeatureVector::addFeatures(int values[], int size) {
     }
 }
 
-// create a CSV string
-std::string FeatureVector::toCSVString() const {
+// create a Sparse CSV string
+std::string FeatureVector::toSparseCSVString(bool isBinary) const {
     std::string csv_str = "";
-    for (int i = 0; i < fv_idx; ++i) {
-        if (std::find(fv.begin(), fv.end(), i) != fv.end()) {
-            csv_str += "1";
-        } else {
-            csv_str += "0";
-        }
-        if (i < fv_idx - 1) {
-            csv_str += ",";
-        }
-    }
-    return csv_str;
-}
-
-std::string FeatureVector::toSparseCSVString() const {
-    std::string csv_str = "";
-    for (int i = 0; i < fv.size(); ++i) {
-        csv_str += std::to_string(fv[i]);
-        if (i < fv.size() - 1) {
+    for( auto & mapped_feature : mapped_fv)
+    {
+        csv_str += std::to_string(mapped_feature.first);
+        csv_str += ",";
+        if(false == isBinary) {
+            csv_str += std::to_string(mapped_feature.second);
             csv_str += ",";
         }
     }
@@ -303,9 +306,10 @@ std::string FeatureVector::toSparseCSVString() const {
 // print debug info
 void FeatureVector::printDebugInfo() const {
     std::cout << "fv_idx : " << fv_idx << std::endl;
-    std::cout << "fv_vector_size: " << fv.size() << std::endl;
-    for (int i = 0; i < fv.size(); i++) {
-        std::cout << fv[i] << " ";
+    std::cout << "fv_vector_size: " << mapped_fv.size() << std::endl;
+    for( auto & mapped_feature : mapped_fv)
+    {
+        std::cout << mapped_feature.first << ": " << mapped_feature.second << ", ";
     }
     std::cout << std::endl;
 }

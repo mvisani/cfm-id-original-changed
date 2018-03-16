@@ -100,7 +100,7 @@ void FeaturesTestBreakAtomPair::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 3 ){
+		if( fv->getFeatureForUnitTestOnly(3) != 1 ){
 			std::cout << "Unexpected value for non-ring C-N root pair" << std::endl;
 			pass = false;			
 		}
@@ -121,7 +121,7 @@ void FeaturesTestBreakAtomPair::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 61 ){
+		if( fv->getFeatureForUnitTestOnly(61) != 1 ){
 			std::cout << "Unexpected value for non-ring X-C root pair" << std::endl;
 			pass = false;			
 		}
@@ -143,7 +143,7 @@ void FeaturesTestBreakAtomPair::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 4 ){
+		if( fv->getFeatureForUnitTestOnly(4) != 1 ){
 			std::cout << "Unexpected value for ring double C-N root pair" << std::endl;
 			pass = false;			
 		}
@@ -165,11 +165,11 @@ void FeaturesTestBreakAtomPair::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 4 ){
+		if( fv->getFeatureForUnitTestOnly(4) != 1 ){
 			std::cout << "Unexpected value for ring C-N, X-X root pair" << std::endl;
 			pass = false;			
 		}
-		if( fv->getFeature(2) != 72 ){
+		if( fv->getFeatureForUnitTestOnly(72) != 1 ){
 			std::cout << "Unexpected value for ring C-N, X-X root pair" << std::endl;
 			pass = false;			
 		}
@@ -206,9 +206,9 @@ void FeaturesTestRootPairs::runTest(){
 	} 
 	else{
 		bool ok = true;
-		if( fv->getFeature(1) != 6 ) ok = false;
-		if( fv->getFeature(2) != 7 ) ok = false;
-		if( fv->getFeature(3) != 22 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(6) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(7) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(22) != 1.0 ) ok = false;
 		if(!ok){
 			std::cout << "Unexpected value for non-ring C-N,C-N,C-X" << std::endl;
 			pass = false;			
@@ -228,8 +228,8 @@ void FeaturesTestRootPairs::runTest(){
 	} 
 	else{
 		bool ok = true;
-		if( fv->getFeature(1) != 126 ) ok = false;	
-		if( fv->getFeature(2) != 142 ) ok = false;	
+		if( fv->getFeatureForUnitTestOnly(126) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(142) != 2.0  ) ok = false;
 		if(!ok){
 			std::cout << "Unexpected value for non-ring X-X,X-N" << std::endl;
 			pass = false;			
@@ -250,11 +250,11 @@ void FeaturesTestRootPairs::runTest(){
 	} 
 	else{
 		bool ok = true;
-		if( fv->getFeature(1) != 8 ) ok = false;
-		if( fv->getFeature(2) != 9 ) ok = false;
-		if( fv->getFeature(3) != 24 ) ok = false;
-		if( fv->getFeature(4) != 128 ) ok = false;	
-		if( fv->getFeature(5) != 144 ) ok = false;	
+		if( fv->getFeatureForUnitTestOnly(8) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(9) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(24) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(128) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(144) != 1.0 ) ok = false;
 		if(!ok){
 			std::cout << "Unexpected value for ring C-N,C-N,X-X,C-X,X-N" << std::endl;
 			pass = false;			
@@ -274,7 +274,7 @@ void FeaturesTestRootPairs::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 1 ){ 
+		if( fv->getFeatureForUnitTestOnly(1) != 1 ){ 
 			std::cout << "Missing feature flagging no pairs" << std::endl;
 			pass = false;
 		}
@@ -314,9 +314,9 @@ void FeaturesTestRootTriples::runTest(){
 	} 
 	else{
 		bool ok = true;
-		if( fv->getFeature(1) != 6 ) ok = false;
-		if( fv->getFeature(2) != 7 ) ok = false;
-		if( fv->getFeature(3) != 122 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(6) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(7) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(122) != 1.0 ) ok = false;
 		if(!ok){
 			std::cout << "Unexpected value for non-ring C-C-N,C-C-N,C-X-C" << std::endl;
 			pass = false;			
@@ -335,7 +335,7 @@ void FeaturesTestRootTriples::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 286 ){
+		if( fv->getFeatureForUnitTestOnly(286) != 1.0  ){
 			std::cout << "Unexpected value for non-ring N-X-X" << std::endl;
 			pass = false;			
 		}
@@ -357,10 +357,10 @@ void FeaturesTestRootTriples::runTest(){
 	} 
 	else{
 		bool ok = true;
-		if( fv->getFeature(1) != 8 ) ok = false;
-		if( fv->getFeature(2) != 9 ) ok = false;
-		if( fv->getFeature(3) != 124 ) ok = false;
-		if( fv->getFeature(4) != 288 ) ok = false;	
+		if( fv->getFeatureForUnitTestOnly(8) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(9) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(124) != 1.0 ) ok = false;
+		if( fv->getFeatureForUnitTestOnly(288) != 1.0 ) ok = false;
 		if(!ok){
 			std::cout << "Unexpected value for non-ring C-C-N,C-C-N,C-X-C,N-X-X" << std::endl;
 			pass = false;			
@@ -379,7 +379,7 @@ void FeaturesTestRootTriples::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 1 ){ 
+		if( fv->getFeatureForUnitTestOnly(1) != 1.0 ){
 			std::cout << "Missing feature flagging no triples" << std::endl;
 			pass = false;
 		}
@@ -419,8 +419,8 @@ void FeaturesTestGasteigerCharges::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 9 ){		
-			std::cout << "Unexpected value for ion gasteiger charge (non-ring) " << fv->getFeature(1) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(9) != 1.0 ){
+			std::cout << "Unexpected value for ion gasteiger charge (non-ring) " << fv->getFeatureForUnitTestOnly(1) << std::endl;
 			pass = false;
 		}
 	}
@@ -446,12 +446,12 @@ void FeaturesTestGasteigerCharges::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 54 ){		
-			std::cout << "Unexpected value for ion gasteiger charge ring " << fv->getFeature(1) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(54) != 1.0 ){
+			std::cout << "Unexpected value for ion gasteiger charge ring " << fv->getFeatureForUnitTestOnly(1) << std::endl;
 			pass = false;
 		}
-		if( fv->getFeature(2) != 56 ){		
-			std::cout << "Unexpected value for nl gasteiger charge ring " << fv->getFeature(2) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(56) != 1.0 ){
+			std::cout << "Unexpected value for nl gasteiger charge ring " << fv->getFeatureForUnitTestOnly(2) << std::endl;
 			pass = false;
 		}
 	}
@@ -490,8 +490,8 @@ void FeaturesTestHydrogenMovement::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 8 ){		
-			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(8) != 1.0 ){
+			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeatureForUnitTestOnly(1) << std::endl;
 			pass = false;
 		}
 	}
@@ -506,8 +506,8 @@ void FeaturesTestHydrogenMovement::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 4 ){		
-			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(4) != 1.0 ){
+			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeatureForUnitTestOnly(1) << std::endl;
 			pass = false;
 		}
 	}
@@ -522,8 +522,8 @@ void FeaturesTestHydrogenMovement::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 5 ){		
-			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(5) != 1.0 ){
+			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeatureForUnitTestOnly(1) << std::endl;
 			pass = false;
 		}
 	}
@@ -538,8 +538,8 @@ void FeaturesTestHydrogenMovement::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 10 ){		
-			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(10) != 1.0 ){
+			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeatureForUnitTestOnly(1) << std::endl;
 			pass = false;
 		}
 	}
@@ -554,8 +554,8 @@ void FeaturesTestHydrogenMovement::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 10 ){		
-			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(10) != 1.0 ){
+			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeatureForUnitTestOnly(1) << std::endl;
 			pass = false;
 		}
 	}
@@ -594,14 +594,14 @@ void FeaturesTestFunctionalGroups::runTest(){
 		pass = false;	
 	}
 	else{
-		if( fv->getFeature(1) != 8 ||		//Ion: 7,9 and 86 are at the root atom
-			fv->getFeature(2) != 10 ||
-			fv->getFeature(3) != 87 ||
-			fv->getFeature(4) != 163 ||		//Ion: 0,10,87 and 114 are one away
-			fv->getFeature(5) != 173 ||
-			fv->getFeature(6) != 246 ||
-			fv->getFeature(7) != 270 ||
-			fv->getFeature(8) != 486 ){		//No functional group on NL side
+		if( fv->getFeatureForUnitTestOnly(8) != 1.0 ||		//Ion: 7,9 and 86 are at the root atom
+			fv->getFeatureForUnitTestOnly(10) != 1.0 ||
+			fv->getFeatureForUnitTestOnly(87) != 1.0 ||
+			fv->getFeatureForUnitTestOnly(163) != 1.0 ||		//Ion: 0,10,87 and 114 are one away
+			fv->getFeatureForUnitTestOnly(173) != 173 ||
+			fv->getFeatureForUnitTestOnly(246) != 246 ||
+			fv->getFeatureForUnitTestOnly(270) != 270 ||
+			fv->getFeatureForUnitTestOnly(486) != 486 ){		//No functional group on NL side
 			std::cout << "Unexpected Functional Group features" << std::endl;
 			pass = false;
 		}
@@ -639,11 +639,11 @@ void FeaturesTestExtraFunctionalGroups::runTest(){
 		pass = false;	
 	}
 	else{
-		if( fv->getFeature(1) != 3 ||
-			fv->getFeature(2) != 15 ||
-			fv->getFeature(3) != 30 ||
-			fv->getFeature(4) != 35 ||		
-			fv->getFeature(5) != 45  ){		
+		if( fv->getFeatureForUnitTestOnly(1) != 3 ||
+			fv->getFeatureForUnitTestOnly(2) != 15 ||
+			fv->getFeatureForUnitTestOnly(3) != 30 ||
+			fv->getFeatureForUnitTestOnly(4) != 35 ||
+			fv->getFeatureForUnitTestOnly(5) != 45  ){
 			std::cout << "Unexpected Extra Functional Group features" << std::endl;
 			pass = false;
 		}
@@ -682,10 +682,10 @@ void FeaturesTestFunctionalGroupsRootOnly::runTest(){
 		pass = false;	
 	}
 	else{
-		if( fv->getFeature(1) != 8 ||		//Ion: 7,9 and 86 are at the root atom
-			fv->getFeature(2) != 10 ||
-			fv->getFeature(3) != 87 ||
-			fv->getFeature(4) != 324 ){		//No functional group on NL side
+		if( fv->getFeatureForUnitTestOnly(1) != 8 ||		//Ion: 7,9 and 86 are at the root atom
+			fv->getFeatureForUnitTestOnly(2) != 10 ||
+			fv->getFeatureForUnitTestOnly(3) != 87 ||
+			fv->getFeatureForUnitTestOnly(4) != 324 ){		//No functional group on NL side
 			std::cout << "Unexpected Functional Group features" << std::endl;
 			pass = false;
 		}
@@ -719,7 +719,7 @@ void FeaturesTestRadicalFeatures::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 1 ){		
+		if( fv->getFeatureForUnitTestOnly(1) != 1 ){		
 			std::cout << "Unexpected features for ion radical specification " << std::endl;
 			pass = false;
 		}
@@ -738,7 +738,7 @@ void FeaturesTestRadicalFeatures::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 2 ){		
+		if( fv->getFeatureForUnitTestOnly(1) != 2 ){
 			std::cout << "Unexpected features for nl radical specification " << std::endl;
 			pass = false;
 		}
@@ -757,7 +757,7 @@ void FeaturesTestRadicalFeatures::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 3 ){		
+		if( fv->getFeatureForUnitTestOnly(1) != 3 ){
 			std::cout << "Unexpected features for non-radical specification " << std::endl;
 			pass = false;
 		}
@@ -797,7 +797,7 @@ void FeaturesTestRingFeatures::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 2 || fv->getFeature(2) != 3 || fv->getFeature(3) != 6 || fv->getFeature(4) != 11 ){		
+		if( fv->getFeatureForUnitTestOnly(1) != 2 || fv->getFeatureForUnitTestOnly(2) != 3 || fv->getFeatureForUnitTestOnly(3) != 6 || fv->getFeatureForUnitTestOnly(4) != 11 ){
 			std::cout << "Unexpected features for ring break 1,1,3,6 " << std::endl;
 			pass = false;
 		}
@@ -820,7 +820,7 @@ void FeaturesTestRingFeatures::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 1 || fv->getFeature(2) != 6 || fv->getFeature(3) != 12 ){		
+		if( fv->getFeatureForUnitTestOnly(1) != 1 || fv->getFeatureForUnitTestOnly(2) != 6 || fv->getFeatureForUnitTestOnly(3) != 12 ){
 			std::cout << "Unexpected features for ring break 0,0,3,7 " << std::endl;
 			pass = false;
 		}
@@ -860,7 +860,7 @@ void FeaturesTestExtraRingFeatures::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 1 || fv->getFeature(2) != 2 || fv->getFeature(3) != 3 ){		
+		if( fv->getFeatureForUnitTestOnly(1) != 1 || fv->getFeatureForUnitTestOnly(2) != 2 || fv->getFeatureForUnitTestOnly(3) != 3 ){
 			std::cout << "Unexpected extra ring features " << std::endl;
 			pass = false;
 		}
@@ -880,7 +880,7 @@ void FeaturesTestExtraRingFeatures::runTest(){
 		pass = false;		
 	} 
 	else{
-		if( fv->getFeature(1) != 1 || fv->getFeature(2) != 3 ){		
+		if( fv->getFeatureForUnitTestOnly(1) != 1 || fv->getFeatureForUnitTestOnly(2) != 3 ){
 			std::cout << "Unexpected extra ring features " << std::endl;
 			pass = false;
 		}
@@ -934,7 +934,7 @@ void FeaturesTestRootMMFFAtomType::runTest(){
 		pass = false;	
 	}
 	else{
-		if( fv->getFeature(1) != 6 || fv->getFeature(2) != 103 ){		
+		if( fv->getFeatureForUnitTestOnly(1) != 6 || fv->getFeatureForUnitTestOnly(2) != 103 ){
 			std::cout << "Unexpected MMFF atom types: expecting 6,103" << std::endl;
 			pass = false;
 		}
@@ -972,7 +972,7 @@ void FeaturesTestNeighbourMMFFAtomType::runTest(){
 		pass = false;	
 	}
 	else{
-		if( fv->getFeature(1) != 101 || fv->getFeature(2) != 102 || fv->getFeature(3) != 108  ){		
+		if( fv->getFeatureForUnitTestOnly(1) != 101 || fv->getFeatureForUnitTestOnly(2) != 102 || fv->getFeatureForUnitTestOnly(3) != 108  ){
 			std::cout << "Unexpected MMFF atom types: expecting 101, 102, 108" << std::endl;
 			pass = false;
 		}
@@ -1024,8 +1024,8 @@ void FeaturesTestBrokenOrigBondType::runTest(){
 			pass = false;	
 		}
 		else{
-			if( fv->getFeature(1) != testit->second ){		
-				std::cout << "Unexpected broken bond type: expecting " << testit->second << " but found " << fv->getFeature(1) << std::endl;
+			if( fv->getFeatureForUnitTestOnly(1) != testit->second ){
+				std::cout << "Unexpected broken bond type: expecting " << testit->second << " but found " << fv->getFeatureForUnitTestOnly(1) << std::endl;
 				pass = false;
 			}
 		}
@@ -1079,8 +1079,8 @@ void FeaturesTestNeighbourOrigBondType::runTest(){
 		else{
 			std::vector<int>::iterator it = testit->second.begin();
 			for( int idx = 1; it != testit->second.end(); ++it, idx++ ){
-				if( fv->getFeature(idx) != *it ){		
-					std::cout << "Unexpected feature in neighbour bond type: expecting " << *it << " but found " << fv->getFeature(idx) << std::endl;
+				if( fv->getFeatureForUnitTestOnly(idx) != *it ){
+					std::cout << "Unexpected feature in neighbour bond type: expecting " << *it << " but found " << fv->getFeatureForUnitTestOnly(idx) << std::endl;
 					pass = false;
 				}
 			}
@@ -1149,12 +1149,12 @@ void FeaturesTestRootAtom::runTest(){
 			pass = false;	
 		}
 		else{
-			if( fv->getFeature(1) != testit->second.first + 1  ){				//Ion
-				std::cout << "Unexpected Ion Root Atom Feature: expecting " << testit->second.first + 1 << " but found " << fv->getFeature(1) << std::endl;
+			if( fv->getFeatureForUnitTestOnly(1) != testit->second.first + 1  ){				//Ion
+				std::cout << "Unexpected Ion Root Atom Feature: expecting " << testit->second.first + 1 << " but found " << fv->getFeatureForUnitTestOnly(1) << std::endl;
 				pass = false;
 			}
-			if( fv->getFeature(2) != (testit->second.second + 13 + 1)){	//NL
-				std::cout << "Unexpected NL Root Atom Feature: expecting " << (testit->second.second + 13 + 1)<< " but found " << fv->getFeature(2) << std::endl;
+			if( fv->getFeatureForUnitTestOnly(2) != (testit->second.second + 13 + 1)){	//NL
+				std::cout << "Unexpected NL Root Atom Feature: expecting " << (testit->second.second + 13 + 1)<< " but found " << fv->getFeatureForUnitTestOnly(2) << std::endl;
 				pass = false;			
 			}
 		}
@@ -1243,8 +1243,8 @@ void FeaturesTestIonicFeatures::runTest(){
 		else{
 			std::vector<int>::iterator it = testit->expected_output.begin();
 			for( int idx = 1; it != testit->expected_output.end(); ++it, idx++ ){
-				if( fv->getFeature(idx) != *it ){	
-					std::cout << "Unexpected Ionic Feature at idx " << idx << ": expecting " << *it << " but found " << fv->getFeature(idx) << std::endl;
+				if( fv->getFeatureForUnitTestOnly(idx) != *it ){	
+					std::cout << "Unexpected Ionic Feature at idx " << idx << ": expecting " << *it << " but found " << fv->getFeatureForUnitTestOnly(idx) << std::endl;
 					pass = false;
 				}
 			}
@@ -1289,12 +1289,12 @@ void FeaturesTestQuadraticFeatures::runTest(){
 		pass = false;	
 	}
 	else{
-		if( fv->getFeature(0) != 0 || fv->getFeature(1) != 3 || fv->getFeature(2) != 80 ){
+		if( fv->getFeatureForUnitTestOnly(0) != 0 || fv->getFeatureForUnitTestOnly(1) != 3 || fv->getFeatureForUnitTestOnly(2) != 80 ){
 			std::cout << "Unexpected singular features" << std::endl;
 			pass = false;				
 		}
-		if( fv->getFeature(3) != 3166 ){
-			std::cout << "Unexpected quadratic feature:" << fv->getFeature(3) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(3) != 3166 ){
+			std::cout << "Unexpected quadratic feature:" << fv->getFeatureForUnitTestOnly(3) << std::endl;
 			pass = false;				
 		}
 	}
@@ -1390,48 +1390,48 @@ void FeaturesTestMetlinExample::runTest(){
 		pass = false;
 	}
 	else{
-		if( fv->getFeature(0) != 0 ){ 
-			std::cout << "Bias error: " << fv->getFeature(0) <<std::endl;
+		if( fv->getFeatureForUnitTestOnly(0) != 0 ){ 
+			std::cout << "Bias error: " << fv->getFeatureForUnitTestOnly(0) <<std::endl;
 			pass = false;
 		}
-		if( fv->getFeature(1) != 5 ){ 
-			std::cout << "Incorrect BreakAtomPair: " << fv->getFeature(1) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(1) != 5 ){ 
+			std::cout << "Incorrect BreakAtomPair: " << fv->getFeatureForUnitTestOnly(1) << std::endl;
 			pass = false;
 		}
-		if( fv->getFeature(2) != 98 ){
-			std::cout << "Incorrect Gasteiger: " << fv->getFeature(2) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(2) != 98 ){
+			std::cout << "Incorrect Gasteiger: " << fv->getFeatureForUnitTestOnly(2) << std::endl;
 			pass = false;
 		}
-		if( fv->getFeature(3) != 148 ){
-			std::cout << "Incorrect HMovement: " << fv->getFeature(3)<< std::endl;
+		if( fv->getFeatureForUnitTestOnly(3) != 148 ){
+			std::cout << "Incorrect HMovement: " << fv->getFeatureForUnitTestOnly(3)<< std::endl;
 			pass = false;
 		}
-		if( fv->getFeature(4) != 156){
-			std::cout << "Incorrect IonRootPair C-C: " << fv->getFeature(4) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(4) != 156){
+			std::cout << "Incorrect IonRootPair C-C: " << fv->getFeatureForUnitTestOnly(4) << std::endl;
 			pass = false;
 		}
-		if( fv->getFeature(5) != 160 ){
-			std::cout << "Incorrect IonRootPair C-N: " << fv->getFeature(5) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(5) != 160 ){
+			std::cout << "Incorrect IonRootPair C-N: " << fv->getFeatureForUnitTestOnly(5) << std::endl;
 			pass = false;
 		}
-		if( fv->getFeature(6) != 301 ){
-			std::cout << "Incorrect IonRootTriple C-C-C: " << fv->getFeature(6) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(6) != 301 ){
+			std::cout << "Incorrect IonRootTriple C-C-C: " << fv->getFeatureForUnitTestOnly(6) << std::endl;
 			pass = false;
 		}
-		if( fv->getFeature(7) != 305 ){
-			std::cout << "Incorrect IonRootTriple C-C-N: " << fv->getFeature(7) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(7) != 305 ){
+			std::cout << "Incorrect IonRootTriple C-C-N: " << fv->getFeatureForUnitTestOnly(7) << std::endl;
 			pass = false;
 		}
-		if( fv->getFeature(8) != 325 ){
-			std::cout << "Incorrect IonRootTriple C-N-C: " << fv->getFeature(8)<< std::endl;
+		if( fv->getFeatureForUnitTestOnly(8) != 325 ){
+			std::cout << "Incorrect IonRootTriple C-N-C: " << fv->getFeatureForUnitTestOnly(8)<< std::endl;
 			pass = false;
 		}
-		if( fv->getFeature(9) != 1165 ){
-			std::cout << "Incorrect NLRootPair (None): " << fv->getFeature(9) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(9) != 1165 ){
+			std::cout << "Incorrect NLRootPair (None): " << fv->getFeatureForUnitTestOnly(9) << std::endl;
 			pass = false;
 		}
-		if( fv->getFeature(10) != 1310 ){
-			std::cout << "Incorrect NLRootTriple (None): " << fv->getFeature(10) << std::endl;
+		if( fv->getFeatureForUnitTestOnly(10) != 1310 ){
+			std::cout << "Incorrect NLRootTriple (None): " << fv->getFeatureForUnitTestOnly(10) << std::endl;
 			pass = false;
 		}
 	}

@@ -22,16 +22,15 @@ void QuadraticFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                 const RootedROMolPtr *nl) const {
     // Compute quadratic feature indexes for all existing features
     int n = fv.getTotalLength();
-    std::vector<feature_t>::const_iterator it1, it2;
     std::vector<int> quadratic_indexes;
-    for (it1 = fv.getFeatureBegin() + 1; it1 != fv.getFeatureEnd(); ++it1) {
+    for (auto it1 = std::next(fv.getFeatureBegin()); it1 != fv.getFeatureEnd(); ++it1) {
         // Due to symmetry and not wanting to include square features,
         // or bias features, only the lower left triangle of the
         // feature x feature matrix is included (minus bias row/col)
         //- the offset gives the index for the first used feature in each row.
-        int offset = n + (*it1 - 2) * (*it1 - 1) / 2;
-        for (it2 = fv.getFeatureBegin() + 1; it2 != it1; ++it2)
-            quadratic_indexes.push_back(offset + *it2 - 1);
+        int offset = n + (it1->first - 2) * (it1->first - 1) / 2;
+        for (auto it2 =std::next(fv.getFeatureBegin()); it2 != it1; ++it2)
+            quadratic_indexes.push_back(offset + it2->first - 1);
     }
     // Add the features
     // Note: modifying the feature vector in the above loop causes problems...
