@@ -663,7 +663,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
         // Step the parameters
         if (comm->isMaster())
-            param->adjustWeightsByGrads_Nesterov(grads,
+            param->adjustWeightsByGrads_Momentum(grads,
                                                  ((MasterComms *) comm)->master_used_idxs,
                                                  learn_rate, cfg->ga_momentum, prev_v);
         comm->broadcastParams(param.get());
@@ -759,8 +759,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             // Accumulate the last term of each transition and the
             // persistence (i = j) terms of the gradient and Q
             std::map<unsigned int, double>::iterator sit = sum_terms.begin();
-            double nu =
-                    (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
+            double nu =  (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
             for (; sit != sum_terms.end(); ++sit) {
                 *(grads + sit->first + grad_offset) -= (nu_sum + nu) * sit->second;
                 if (record_used_idxs)

@@ -16,7 +16,7 @@
 #########################################################################*/
 
 #include "Param.h"
-#include <cfloat>
+
 //Constructor to initialise parameter weight size from a feature list
 Param::Param(std::vector<std::string> a_feature_list, int a_num_energy_levels) :
         feature_list(a_feature_list), num_energy_levels(a_num_energy_levels) {
@@ -140,7 +140,7 @@ double Param::computeTheta(const FeatureVector &fv, int energy) {
     return theta;
 }
 
-void Param::adjustWeightsByGrads_Nesterov(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
+void Param::adjustWeightsByGrads_Momentum(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
                                           double learning_rate,
                                           double momentum, std::vector<double> &prev_v) {
 
@@ -152,17 +152,50 @@ void Param::adjustWeightsByGrads_Nesterov(std::vector<double> &grads, std::set<u
     }
 }
 
+void Param::adjustWeightsByGrads_Adadelta(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
+                                          double learning_rate,
+                                          double decay_rate, std::vector<double> &mean_squared_gradients,
+                                          std::vector<double> &mean_squared_delta_x) {
+
+    double eps = DBL_EPSILON;
+    // TODO: MAKE SURE THIS WORKS
+    // TODO: should I use plus instead of minus
+    for (auto &used_idx: used_idxs) {
+        // Accumulate Gradient
+        mean_squared_gradients[used_idx] =
+                decay_rate * mean_squared_gradients[used_idx] + (1 - decay_rate) * grads[used_idx] * grads[used_idx];
+        // Compute Update
+        double rms_gradients = sqrt(mean_squared_gradients[used_idx] + eps);
+        double rms_delta_x = sqrt(mean_squared_delta_x[used_idx] + eps);
+        double deta_x = -rms_gradients / rms_delta_x * grads[used_idx];
+        // Accumulate Updates
+        mean_squared_delta_x[used_idx] =
+                decay_rate * mean_squared_delta_x[used_idx] + (1 - decay_rate) * grads[used_idx] * grads[used_idx];
+
+        // Update weights
+        // NOTE: we are doing gradient ascent
+        weights[used_idx] -= deta_x;
+    }
+}
+
 void Param::adjustWeightsByGrads_Adam(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
                                       double learning_rate,
                                       double &beta1, double &beta2, int &t,
                                       std::vector<double> &first_moment_vector,
                                       std::vector<double> &second_moment_vector) {
     t += 1;
-    for (auto & used_idx: used_idxs) {
-        first_moment_vector[used_idx] = first_moment_vector[used_idx] * beta1 + ( 1.0 - beta2) * grads[used_idx];
-        second_moment_vector[used_idx] = beta2 * second_moment_vector[used_idx] + ( 1.0 - beta1) *  grads[used_idx] * grads[used_idx];
-        double m_hat = first_moment_vector[used_idx]/( 1.0 - pow(beta1, t));
-        double v_hat = second_moment_vector[used_idx]/( 1.0 - pow(beta2, t));
+    for (auto &used_idx: used_idxs) {
+        // update biased first moment estimate
+        first_moment_vector[used_idx] = first_moment_vector[used_idx] * beta1 + (1.0 - beta2) * grads[used_idx];
+        // update biased second raw moment estimate
+        second_moment_vector[used_idx] =
+                beta2 * second_moment_vector[used_idx] + (1.0 - beta1) * grads[used_idx] * grads[used_idx];
+        // compute bias-corrected first  moment estimate
+        double m_hat = first_moment_vector[used_idx] / (1.0 - pow(beta1, t));
+        // compute bias-corrected second  moment estimate
+        double v_hat = second_moment_vector[used_idx] / (1.0 - pow(beta2, t));
+        // Update weights
+        // NOTE: we are doing gradient ascent
         weights[used_idx] += learning_rate * m_hat / (sqrt(v_hat) + DBL_EPSILON);
     }
 }

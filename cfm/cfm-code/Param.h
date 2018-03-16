@@ -62,11 +62,24 @@ public:
     //on the current weight settings
     virtual double computeTheta(const FeatureVector &fv, int energy);
 
-    // Update Weight use Momentum + Nesterov
-    void adjustWeightsByGrads_Nesterov(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
+    // Update Weight use Momentum
+    void adjustWeightsByGrads_Momentum(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
                                        double learning_rate,
                                        double momentum, std::vector<double> &prev_v);
-    // Update Weight use ADAM
+
+    // Update Weight use Nesterov accelerated gradient
+    /* Have not figure out how to get this work yet
+    void adjustWeightsByGrads_Nesterov(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
+                                       double learning_rate,
+                                       double momentum, std::vector<double> &prev_v);*/
+
+    // Update Weight use Adadelta
+    void
+    adjustWeightsByGrads_Adadelta(std::vector<double> &grads, std::set<unsigned int> &used_idxs, double learning_rate,
+                                  double decay_rate, std::vector<double> &mean_squared_gradients,
+                                  std::vector<double> &mean_squared_delta_x);
+
+    // Update Weight use Adam
     void adjustWeightsByGrads_Adam(std::vector<double> &grads, std::set<unsigned int> &used_idxs, double learning_rate,
                                    double &beta1, double &beta2, int &t,
                                    std::vector<double> &first_moment_vector, std::vector<double> &second_moment_vector);
