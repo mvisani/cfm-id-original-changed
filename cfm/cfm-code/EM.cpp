@@ -207,7 +207,7 @@ double EM::run(std::vector<MolData> &data, int group,
         comm->printToMasterOnly(mstep_start_msg.c_str());
 
         before = time(NULL);
-        if (cfg->use_lbfgs_for_ga)
+        if (cfg->ga_method == USE_LBFGS_FOR_GA)
             Q = updateParametersLBFGS(data, suft);
         else
             Q = updateParametersSimpleGradientDescent(data, suft);
