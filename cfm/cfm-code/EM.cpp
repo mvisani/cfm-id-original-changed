@@ -595,6 +595,9 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     std::vector<double> grads(param->getNumWeights(), 0.0);
     std::vector<double> prev_v(param->getNumWeights(), 0.0);
 
+    std::vector<double> first_moment_vector(param->getNumWeights(), 0.0);
+    std::vector<double> second_moment_vector(param->getNumWeights(), 0.0);
+
     // Initial Q and gradient calculation (to determine used indexes)
     if (comm->used_idxs.size() == 0) {
         std::vector<MolData>::iterator itdata = data.begin();
@@ -662,10 +665,28 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
                       << std::endl;
 
         // Step the parameters
-        if (comm->isMaster())
-            param->adjustWeightsByGrads_Nesterov(grads,
+        if (comm->isMaster()) {
+            if(cfg->ga_method == USE_MOMENTUM_FOR_GA)
+            {
+                param->adjustWeightsByGrads_Momentum(grads,
+                                                     ((MasterComms *) comm)->master_used_idxs,
+                                                     learn_rate, cfg->ga_momentum, prev_v);
+            }
+            else if(cfg->ga_method == USE_ADAM_FOR_GA)
+            {
+                param->adjustWeightsByGrads_Adam(grads,
                                                  ((MasterComms *) comm)->master_used_idxs,
-                                                 learn_rate, cfg->ga_momentum, prev_v);
+                                                 learn_rate, cfg->ga_adam_beta1, cfg->ga_adam_beta2,
+                                                 iter,first_moment_vector,second_moment_vector);
+
+            }
+            else if(cfg->ga_method == USE_ADADELTA_FOR_GA)
+            {
+
+            }
+
+        }
+
         comm->broadcastParams(param.get());
     }
 

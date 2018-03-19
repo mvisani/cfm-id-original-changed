@@ -140,7 +140,7 @@ double Param::computeTheta(const FeatureVector &fv, int energy) {
     return theta;
 }
 
-void Param::adjustWeightsByGrads_Nesterov(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
+void Param::adjustWeightsByGrads_Momentum(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
                                           double learning_rate,
                                           double momentum, std::vector<double> &prev_v) {
 
@@ -154,10 +154,10 @@ void Param::adjustWeightsByGrads_Nesterov(std::vector<double> &grads, std::set<u
 
 void Param::adjustWeightsByGrads_Adam(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
                                       double learning_rate,
-                                      double &beta1, double &beta2, int &t,
+                                      double &beta1, double &beta2,const int &t,
                                       std::vector<double> &first_moment_vector,
                                       std::vector<double> &second_moment_vector) {
-    t += 1;
+    //TODO: double check t is 0 based or 1 based
     for (auto & used_idx: used_idxs) {
         first_moment_vector[used_idx] = first_moment_vector[used_idx] * beta1 + ( 1.0 - beta2) * grads[used_idx];
         second_moment_vector[used_idx] = beta2 * second_moment_vector[used_idx] + ( 1.0 - beta1) *  grads[used_idx] * grads[used_idx];

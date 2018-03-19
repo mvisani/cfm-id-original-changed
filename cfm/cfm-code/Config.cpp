@@ -25,6 +25,7 @@ void initDefaultConfig(config_t &cfg) {
 
     cfg.lambda = DEFAULT_LAMBDA;
     cfg.use_lbfgs_for_ga = DEFAULT_USE_LBFGS_FOR_GA;
+    cfg.ga_method = USE_LBFGS_FOR_GA;
     cfg.converge_count_thresh = DEFAULT_CONVERGE_COUNT_THRESH;
     cfg.em_converge_thresh = DEFAULT_EM_CONVERGE_THRESH;
     cfg.ga_converge_thresh = DEFAULT_GA_CONVERGE_THRESH;
@@ -59,6 +60,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_minibatch_nth_size = DEFAULT_GA_MINIBATCH_NTH_SIZE;
     cfg.ga_max_iterations = DEFAULT_GA_MAX_ITERATIONS;
     cfg.ga_momentum = DEFAULT_GA_MOMENTUM;
+    cfg.ga_adam_beta1 = DEFAULT_ADAM_BETA1;
+    cfg.ga_adam_beta2 = DEFAULT_ADAM_BETA2;
     cfg.obs_function = DEFAULT_OBS_FUNCTION;
     cfg.include_h_losses = DEFAULT_INCLUDE_H_LOSSES;
     cfg.include_precursor_h_losses_only = DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY;
@@ -112,6 +115,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "include_isotopes") cfg.include_isotopes = (int) value;
         else if (name == "isotope_thresh") cfg.isotope_thresh = (double) value;
         else if (name == "use_lbfgs_for_ga") cfg.use_lbfgs_for_ga = (int) value;
+        else if (name == "ga_method") cfg.ga_method = (int) value;
         else if (name == "em_init_type") cfg.em_init_type = (int) value;
         else if (name == "use_lower_energy_params_for_init") cfg.use_lower_energy_params_for_init = (int) value;
         else if (name == "theta_function") cfg.theta_function = (int) value;
@@ -188,9 +192,30 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
         std::cout << "Using EM Convergence Threshold " << cfg.em_converge_thresh << std::endl;
         std::cout << "Using Lambda " << cfg.lambda << std::endl;
-        if (cfg.use_lbfgs_for_ga) std::cout << "Using LBFGS package for gradient ascent" << std::endl;
+        /*if (cfg.use_lbfgs_for_ga) std::cout << "Using LBFGS package for gradient ascent" << std::endl;
         else {
             std::cout << "Using simple gradient ascent implementation" << std::endl;
+            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
+                      << " decay rate " << cfg.decay_rate
+                      << std::endl;
+        }*/
+        if(USE_LBFGS_FOR_GA == cfg.ga_method)
+            std::cout << "Using LBFGS package for gradient ascent" << std::endl;
+        else if(USE_MOMENTUM_FOR_GA == cfg.ga_method ) {
+            std::cout << "Using simple gradient ascent implementation" << std::endl;
+            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
+                      << " decay rate " << cfg.decay_rate
+                      << std::endl;
+        }
+        else if(USE_ADADELTA_FOR_GA == cfg.ga_method) {
+            std::cout << "Using AdaDelta implementation" << std::endl;
+            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
+                      << " decay rate " << cfg.decay_rate
+                      << std::endl;
+        }
+
+        else if(USE_ADAM_FOR_GA == cfg.ga_method) {
+            std::cout << "Using ADAM implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
                       << " decay rate " << cfg.decay_rate
                       << std::endl;

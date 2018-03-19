@@ -45,11 +45,21 @@ static const double DEFAULT_LAMBDA = 0.01;
 //Use LBFGS package to do gradient ascent
 static const int DEFAULT_USE_LBFGS_FOR_GA = 1;
 
+static const int USE_LBFGS_FOR_GA = 1;
+static const int USE_MOMENTUM_FOR_GA = 2;
+static const int USE_ADAM_FOR_GA = 3;
+static const int USE_ADADELTA_FOR_GA = 4;
+
 //Step Size used in Gradient Ascent
 static const double DEFAULT_STEP_SIZE = 0.001;
 
 //Momentum term used in Gradient Ascent
 static const double DEFAULT_MOMENTUM_ALPHA = 0.1;
+
+//ADAM
+static const double DEFAULT_ADAM_BETA1 = 0.9;
+static const double DEFAULT_ADAM_BETA2 = 0.99;
+
 
 //Whether or not gradient ascent should be stochastic
 static const int DEFAULT_STOCHASTIC_GA = 0;
@@ -125,7 +135,6 @@ static const double DEFAULT_GA_MOMENTUM = 0.0;
 static const int DEFAULT_GA_MINIBATCH_NTH_SIZE = 1;
 static const int DEFAULT_GA_MAX_ITERATIONS = 20;
 
-
 static const int NORMAL_OBS_FUNCTION = 1;
 static const int UNIFORM_OBS_FUNCTION = 2;
 static const int DEFAULT_OBS_FUNCTION = NORMAL_OBS_FUNCTION;
@@ -182,12 +191,19 @@ struct config_t {
     //Gradient Ascent Configuration
     double lambda;    //Regularization constant
     int use_lbfgs_for_ga;
+    int ga_method;
     int converge_count_thresh;
     double ga_converge_thresh;
     double line_search_alpha;
     double line_search_beta;
+    // For GA
     double starting_step_size;
     double decay_rate;
+    // For ADAM
+    double ga_adam_beta1;
+    double ga_adam_beta2;
+    double ga_eps;
+
     int max_search_count;
     int update_bias_first;
     int ga_minibatch_nth_size;
