@@ -626,14 +626,19 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
     int iter = 0;
     double learn_mult = 1.0;
+
     while (iter++ < cfg->ga_max_iterations &&
            fabs((Q - prev_Q) / Q) >= cfg->ga_converge_thresh) {
 
         if (Q < prev_Q && iter > 1)
             learn_mult = learn_mult * 0.5;
 
-        double learn_rate =
-                cfg->starting_step_size * learn_mult / (1.0 + cfg->decay_rate * iter);
+        double  learn_rate = cfg->starting_step_size * learn_mult;
+        // Only use decay rate here when we are using USE_MOMENTUM_FOR_GA
+        // ADAM and AdaDelta should should not use decay rate outside
+        if(cfg->ga_method == USE_MOMENTUM_FOR_GA) {
+            learn_rate /= (1.0 + cfg->decay_rate * iter);
+        }
 
         if (iter > 1)
             prev_Q = Q;

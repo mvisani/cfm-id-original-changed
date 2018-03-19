@@ -213,15 +213,15 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         }
         else if(USE_ADADELTA_FOR_GA == cfg.ga_method) {
             std::cout << "Using AdaDelta implementation" << std::endl;
-            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
-                      << " decay rate " << cfg.decay_rate
+            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " decay rate " << cfg.decay_rate
+                      <<  " eps " << cfg.ga_eps
                       << std::endl;
         }
 
         else if(USE_ADAM_FOR_GA == cfg.ga_method) {
             std::cout << "Using ADAM implementation" << std::endl;
-            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
-                      << " decay rate " << cfg.decay_rate
+            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " beta1  " << cfg.ga_adam_beta1
+                      << " beta2 " << cfg.ga_adam_beta2 << " eps " << cfg.ga_eps
                       << std::endl;
         }
         std::cout << "Using GA max iterations " << cfg.ga_max_iterations << std::endl;
