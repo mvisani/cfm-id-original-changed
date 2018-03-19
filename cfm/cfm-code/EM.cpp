@@ -595,8 +595,13 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     std::vector<double> grads(param->getNumWeights(), 0.0);
     std::vector<double> prev_v(param->getNumWeights(), 0.0);
 
+    // for adam
     std::vector<double> first_moment_vector(param->getNumWeights(), 0.0);
     std::vector<double> second_moment_vector(param->getNumWeights(), 0.0);
+
+    // for adaDelta
+    std::vector<double> mean_squared_gradients(param->getNumWeights(), 0.0);
+    std::vector<double> mean_squared_delta_x(param->getNumWeights(), 0.0);
 
     // Initial Q and gradient calculation (to determine used indexes)
     if (comm->used_idxs.size() == 0) {
@@ -676,13 +681,24 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
             {
                 param->adjustWeightsByGrads_Adam(grads,
                                                  ((MasterComms *) comm)->master_used_idxs,
-                                                 learn_rate, cfg->ga_adam_beta1, cfg->ga_adam_beta2,
-                                                 iter,first_moment_vector,second_moment_vector);
+                                                 learn_rate,
+                                                 cfg->ga_adam_beta1,
+                                                 cfg->ga_adam_beta2,
+                                                 cfg->ga_eps,
+                                                 iter,
+                                                 first_moment_vector,
+                                                 second_moment_vector);
 
             }
             else if(cfg->ga_method == USE_ADADELTA_FOR_GA)
             {
-
+                param->adjustWeightsByGrads_Adadelta(grads,
+                                                     ((MasterComms *) comm)->master_used_idxs,
+                                                     learn_rate,
+                                                     cfg->decay_rate,
+                                                     cfg->ga_eps,
+                                                     mean_squared_gradients,
+                                                     mean_squared_delta_x);
             }
 
         }

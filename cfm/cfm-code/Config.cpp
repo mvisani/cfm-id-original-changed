@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <cfloat>
 
 void initDefaultConfig(config_t &cfg) {
 
@@ -62,6 +63,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_momentum = DEFAULT_GA_MOMENTUM;
     cfg.ga_adam_beta1 = DEFAULT_ADAM_BETA1;
     cfg.ga_adam_beta2 = DEFAULT_ADAM_BETA2;
+    cfg.ga_eps = DBL_EPSILON;
     cfg.obs_function = DEFAULT_OBS_FUNCTION;
     cfg.include_h_losses = DEFAULT_INCLUDE_H_LOSSES;
     cfg.include_precursor_h_losses_only = DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY;
