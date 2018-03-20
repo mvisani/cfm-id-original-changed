@@ -168,7 +168,8 @@ void Param::adjustWeightsByGrads_Adam(std::vector<double> &grads,
         first_moment_vector[used_idx] = first_moment_vector[used_idx] * beta1 + ( 1.0 - beta1) * grads[used_idx];
         // Update biased second raw moment estimate
         // v_t = beta_2 * v_{t-1} + ( 1 - beta_2 ) * g_t^2
-        second_moment_vector[used_idx] = beta2 * second_moment_vector[used_idx] + ( 1.0 - beta2) *  grads[used_idx] * grads[used_idx];
+        second_moment_vector[used_idx] = beta2 * second_moment_vector[used_idx]
+                                         + ( 1.0 - beta2) *  grads[used_idx] * grads[used_idx];
         // Compute bias-corrected first moment estimate
         // hat_m_t = m_t / ( 1 - beta_1 ^ t)
         double m_hat = first_moment_vector[used_idx]/( 1.0 - pow(beta1, iteration_count));
@@ -193,19 +194,25 @@ void Param::adjustWeightsByGrads_Adadelta(std::vector<double> &grads,
     // TODO: should I use plus instead of minus
     for (auto &used_idx: used_idxs) {
         // Accumulate Gradient
+        // E[g^2]_t = decay_rate * E[g^2]_{t-1} + ( 1 - decay_rate ) * grads_t^2
         mean_squared_gradients[used_idx] =
                 decay_rate * mean_squared_gradients[used_idx] + (1 - decay_rate) * grads[used_idx] * grads[used_idx];
         // Compute Update
-        double rms_gradients = sqrt(mean_squared_gradients[used_idx] + eps);
+        // RMS[Delta_x]_{t-1} = sqrt(E[Delta_x^2]_{t-1} + eps)
+        // NOTE mean_squared_delta_x has not update yet
         double rms_delta_x = sqrt(mean_squared_delta_x[used_idx] + eps);
-        double deta_x = -rms_gradients / rms_delta_x * grads[used_idx];
+        // RMS[g]_t = sqrt(E[g^2]_t + eps)
+        double rms_gradients = sqrt(mean_squared_gradients[used_idx] + eps);
+        // -RMS[Delta_x]_{t-1}/ RMS[g]_t * g_t
+        double detla_x = -rms_delta_x/ rms_gradients * grads[used_idx];
         // Accumulate Updates
+        // E[Delta_x^2]_t  = decay_rate * E[Delta_x^2]_{t-1} + ( 1 - decay_rate ) * Delta_x_t^2
         mean_squared_delta_x[used_idx] =
-                decay_rate * mean_squared_delta_x[used_idx] + (1 - decay_rate) * grads[used_idx] * grads[used_idx];
+                decay_rate * mean_squared_delta_x[used_idx] + (1 - decay_rate) * detla_x * detla_x;
 
         // Update weights
         // NOTE: we are doing gradient ascent
-        weights[used_idx] -= deta_x;
+        weights[used_idx] -= detla_x;
     }
 }
 
