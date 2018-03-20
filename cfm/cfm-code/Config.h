@@ -60,6 +60,8 @@ static const double DEFAULT_MOMENTUM_ALPHA = 0.1;
 static const double DEFAULT_ADAM_BETA1 = 0.9;
 static const double DEFAULT_ADAM_BETA2 = 0.99;
 
+// EPS
+static const  double DEFAULT_EPS = 1e-9;
 
 //Whether or not gradient ascent should be stochastic
 static const int DEFAULT_STOCHASTIC_GA = 0;
