@@ -637,7 +637,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         // Only use decay rate here when we are using USE_MOMENTUM_FOR_GA
         // ADAM and AdaDelta should should not use decay rate outside
         if(cfg->ga_method == USE_MOMENTUM_FOR_GA) {
-            learn_rate /= (1.0 + cfg->decay_rate * iter);
+            learn_rate /= (1.0 + cfg->decay_rate * (iter-1));
         }
 
         if (iter > 1)

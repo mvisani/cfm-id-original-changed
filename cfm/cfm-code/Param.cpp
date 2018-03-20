@@ -161,15 +161,12 @@ void Param::adjustWeightsByGrads_Adam(std::vector<double> &grads,
                                       const int & iteration_count,
                                       std::vector<double> &first_moment_vector,
                                       std::vector<double> &second_moment_vector) {
-    //NOTE t is 0 based in the paper
-    //and increased by 1 as the first thing for every update
-    //reason is that 1.0 - pow(beta1,0) is zero
-    int t = t + 1;
+
     for (auto & used_idx: used_idxs) {
         first_moment_vector[used_idx] = first_moment_vector[used_idx] * beta1 + ( 1.0 - beta2) * grads[used_idx];
         second_moment_vector[used_idx] = beta2 * second_moment_vector[used_idx] + ( 1.0 - beta1) *  grads[used_idx] * grads[used_idx];
-        double m_hat = first_moment_vector[used_idx]/( 1.0 - pow(beta1, t));
-        double v_hat = second_moment_vector[used_idx]/( 1.0 - pow(beta2, t));
+        double m_hat = first_moment_vector[used_idx]/( 1.0 - pow(beta1, iteration_count));
+        double v_hat = second_moment_vector[used_idx]/( 1.0 - pow(beta2, iteration_count));
         weights[used_idx] += learning_rate * m_hat / (sqrt(v_hat) + eps);
     }
 }
