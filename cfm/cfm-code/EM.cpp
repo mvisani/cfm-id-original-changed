@@ -207,7 +207,7 @@ double EM::run(std::vector<MolData> &data, int group,
         comm->printToMasterOnly(mstep_start_msg.c_str());
 
         before = time(NULL);
-        if (cfg->use_lbfgs_for_ga)
+        if (cfg->ga_method == USE_LBFGS_FOR_GA)
             Q = updateParametersLBFGS(data, suft);
         else
             Q = updateParametersSimpleGradientDescent(data, suft);
@@ -595,6 +595,14 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     std::vector<double> grads(param->getNumWeights(), 0.0);
     std::vector<double> prev_v(param->getNumWeights(), 0.0);
 
+    // for adam
+    std::vector<double> first_moment_vector(param->getNumWeights(), 0.0);
+    std::vector<double> second_moment_vector(param->getNumWeights(), 0.0);
+
+    // for adaDelta
+    std::vector<double> mean_squared_gradients(param->getNumWeights(), 0.0);
+    std::vector<double> mean_squared_delta_x(param->getNumWeights(), 0.0);
+
     // Initial Q and gradient calculation (to determine used indexes)
     if (comm->used_idxs.size() == 0) {
         std::vector<MolData>::iterator itdata = data.begin();
@@ -618,14 +626,19 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
     int iter = 0;
     double learn_mult = 1.0;
+
     while (iter++ < cfg->ga_max_iterations &&
            fabs((Q - prev_Q) / Q) >= cfg->ga_converge_thresh) {
 
         if (Q < prev_Q && iter > 1)
             learn_mult = learn_mult * 0.5;
 
-        double learn_rate =
-                cfg->starting_step_size * learn_mult / (1.0 + cfg->decay_rate * iter);
+        double  learn_rate = cfg->starting_step_size * learn_mult;
+        // Only use decay rate here when we are using USE_MOMENTUM_FOR_GA
+        // ADAM and AdaDelta should should not use decay rate outside
+        if(cfg->ga_method == USE_MOMENTUM_FOR_GA) {
+            learn_rate /= (1.0 + cfg->decay_rate * iter);
+        }
 
         if (iter > 1)
             prev_Q = Q;
@@ -662,10 +675,39 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
                       << std::endl;
 
         // Step the parameters
-        if (comm->isMaster())
-            param->adjustWeightsByGrads_Momentum(grads,
+        if (comm->isMaster()) {
+            if(cfg->ga_method == USE_MOMENTUM_FOR_GA)
+            {
+                param->adjustWeightsByGrads_Momentum(grads,
+                                                     ((MasterComms *) comm)->master_used_idxs,
+                                                     learn_rate, cfg->ga_momentum, prev_v);
+            }
+            else if(cfg->ga_method == USE_ADAM_FOR_GA)
+            {
+                param->adjustWeightsByGrads_Adam(grads,
                                                  ((MasterComms *) comm)->master_used_idxs,
-                                                 learn_rate, cfg->ga_momentum, prev_v);
+                                                 learn_rate,
+                                                 cfg->ga_adam_beta1,
+                                                 cfg->ga_adam_beta2,
+                                                 cfg->ga_eps,
+                                                 iter,
+                                                 first_moment_vector,
+                                                 second_moment_vector);
+
+            }
+            else if(cfg->ga_method == USE_ADADELTA_FOR_GA)
+            {
+                param->adjustWeightsByGrads_Adadelta(grads,
+                                                     ((MasterComms *) comm)->master_used_idxs,
+                                                     learn_rate,
+                                                     cfg->decay_rate,
+                                                     cfg->ga_eps,
+                                                     mean_squared_gradients,
+                                                     mean_squared_delta_x);
+            }
+
+        }
+
         comm->broadcastParams(param.get());
     }
 

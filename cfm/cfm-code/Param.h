@@ -62,27 +62,30 @@ public:
     //on the current weight settings
     virtual double computeTheta(const FeatureVector &fv, int energy);
 
-    // Update Weight use Momentum
-    void adjustWeightsByGrads_Momentum(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
+    // Update Weight use Momentum + Nesterov
+    void adjustWeightsByGrads_Momentum(std::vector<double> &grads,
+                                       std::set<unsigned int> &used_idxs,
                                        double learning_rate,
                                        double momentum, std::vector<double> &prev_v);
+    // Update Weight use ADAM
+    void adjustWeightsByGrads_Adam(std::vector<double> &grads,
+                                   std::set<unsigned int> &used_idxs,
+                                   const double & learning_rate,
+                                   const double & beta1,
+                                   const double & beta2,
+                                   const double & eps,
+                                   const int & iteration_count,
+                                   std::vector<double> &first_moment_vector,
+                                   std::vector<double> &second_moment_vector);
 
-    // Update Weight use Nesterov accelerated gradient
-    /* Have not figure out how to get this work yet
-    void adjustWeightsByGrads_Nesterov(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
-                                       double learning_rate,
-                                       double momentum, std::vector<double> &prev_v);*/
-
-    // Update Weight use Adadelta
-    void
-    adjustWeightsByGrads_Adadelta(std::vector<double> &grads, std::set<unsigned int> &used_idxs, double learning_rate,
-                                  double decay_rate, std::vector<double> &mean_squared_gradients,
-                                  std::vector<double> &mean_squared_delta_x);
-
-    // Update Weight use Adam
-    void adjustWeightsByGrads_Adam(std::vector<double> &grads, std::set<unsigned int> &used_idxs, double learning_rate,
-                                   double &beta1, double &beta2, int &t,
-                                   std::vector<double> &first_moment_vector, std::vector<double> &second_moment_vector);
+    // Update Weight use AdaDelta
+    void adjustWeightsByGrads_Adadelta(std::vector<double> &grads,
+                                       std::set<unsigned int> &used_idxs,
+                                       const double & learning_rate,
+                                       const double & decay_rate,
+                                       const double & eps,
+                                       std::vector<double> &mean_squared_gradients,
+                                       std::vector<double> &mean_squared_delta_x);
 
     //Set the value of a weight
     void setWeightAtIdx(double value, int index) { weights[index] = value; };

@@ -152,12 +152,36 @@ void Param::adjustWeightsByGrads_Momentum(std::vector<double> &grads, std::set<u
     }
 }
 
-void Param::adjustWeightsByGrads_Adadelta(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
-                                          double learning_rate,
-                                          double decay_rate, std::vector<double> &mean_squared_gradients,
+void Param::adjustWeightsByGrads_Adam(std::vector<double> &grads,
+                                      std::set<unsigned int> &used_idxs,
+                                      const double & learning_rate,
+                                      const double & beta1,
+                                      const double & beta2,
+                                      const double & eps,
+                                      const int & iteration_count,
+                                      std::vector<double> &first_moment_vector,
+                                      std::vector<double> &second_moment_vector) {
+    //NOTE t is 0 based in the paper
+    //and increased by 1 as the first thing for every update
+    //reason is that 1.0 - pow(beta1,0) is zero
+    int t = t + 1;
+    for (auto & used_idx: used_idxs) {
+        first_moment_vector[used_idx] = first_moment_vector[used_idx] * beta1 + ( 1.0 - beta2) * grads[used_idx];
+        second_moment_vector[used_idx] = beta2 * second_moment_vector[used_idx] + ( 1.0 - beta1) *  grads[used_idx] * grads[used_idx];
+        double m_hat = first_moment_vector[used_idx]/( 1.0 - pow(beta1, t));
+        double v_hat = second_moment_vector[used_idx]/( 1.0 - pow(beta2, t));
+        weights[used_idx] += learning_rate * m_hat / (sqrt(v_hat) + eps);
+    }
+}
+
+void Param::adjustWeightsByGrads_Adadelta(std::vector<double> &grads,
+                                          std::set<unsigned int> &used_idxs,
+                                          const double & learning_rate,
+                                          const double & decay_rate,
+                                          const double & eps,
+                                          std::vector<double> &mean_squared_gradients,
                                           std::vector<double> &mean_squared_delta_x) {
 
-    double eps = DBL_EPSILON;
     // TODO: MAKE SURE THIS WORKS
     // TODO: should I use plus instead of minus
     for (auto &used_idx: used_idxs) {
@@ -175,28 +199,6 @@ void Param::adjustWeightsByGrads_Adadelta(std::vector<double> &grads, std::set<u
         // Update weights
         // NOTE: we are doing gradient ascent
         weights[used_idx] -= deta_x;
-    }
-}
-
-void Param::adjustWeightsByGrads_Adam(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
-                                      double learning_rate,
-                                      double &beta1, double &beta2, int &t,
-                                      std::vector<double> &first_moment_vector,
-                                      std::vector<double> &second_moment_vector) {
-    t += 1;
-    for (auto &used_idx: used_idxs) {
-        // update biased first moment estimate
-        first_moment_vector[used_idx] = first_moment_vector[used_idx] * beta1 + (1.0 - beta2) * grads[used_idx];
-        // update biased second raw moment estimate
-        second_moment_vector[used_idx] =
-                beta2 * second_moment_vector[used_idx] + (1.0 - beta1) * grads[used_idx] * grads[used_idx];
-        // compute bias-corrected first  moment estimate
-        double m_hat = first_moment_vector[used_idx] / (1.0 - pow(beta1, t));
-        // compute bias-corrected second  moment estimate
-        double v_hat = second_moment_vector[used_idx] / (1.0 - pow(beta2, t));
-        // Update weights
-        // NOTE: we are doing gradient ascent
-        weights[used_idx] += learning_rate * m_hat / (sqrt(v_hat) + DBL_EPSILON);
     }
 }
 
