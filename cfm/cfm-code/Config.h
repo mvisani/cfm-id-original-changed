@@ -58,10 +58,14 @@ static const double DEFAULT_MOMENTUM_ALPHA = 0.1;
 
 //ADAM
 static const double DEFAULT_ADAM_BETA1 = 0.9;
-static const double DEFAULT_ADAM_BETA2 = 0.99;
+static const double DEFAULT_ADAM_BETA2 = 0.999;
+
+//AdaDelta
+static const double DEFAULT_ADADELTA_LEARNING_RATE = 1.0;
+static const double DEFAULT_ADADELTA_RHO = 0.95;
 
 // EPS
-static const  double DEFAULT_EPS = 1e-9;
+static const  double DEFAULT_EPS = 1e-8;
 
 //Whether or not gradient ascent should be stochastic
 static const int DEFAULT_STOCHASTIC_GA = 0;
@@ -133,7 +137,7 @@ static const int LINEAR_NN_ACTIVATION_FUNCTION = 0;
 static const int RELU_NN_ACTIVATION_FUNCTION = 1;
 static const int DEFAULT_NN_ACTIVATION_FUNCTION = RELU_NN_ACTIVATION_FUNCTION;
 
-static const double DEFAULT_GA_MOMENTUM = 0.0;
+static const double DEFAULT_GA_MOMENTUM = 0.9;
 static const int DEFAULT_GA_MINIBATCH_NTH_SIZE = 1;
 static const int DEFAULT_GA_MAX_ITERATIONS = 20;
 
@@ -198,13 +202,16 @@ struct config_t {
     double ga_converge_thresh;
     double line_search_alpha;
     double line_search_beta;
-    // For GA
+
+    // For GA and AdaDelta
     double starting_step_size;
     double decay_rate;
     // For ADAM
     double ga_adam_beta1;
     double ga_adam_beta2;
     double ga_eps;
+    ;
+
 
     int max_search_count;
     int update_bias_first;

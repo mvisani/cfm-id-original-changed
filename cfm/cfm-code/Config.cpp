@@ -126,8 +126,9 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_minibatch_nth_size") cfg.ga_minibatch_nth_size = (int) value;
         else if (name == "ga_max_iterations") cfg.ga_max_iterations = (int) value;
         else if (name == "ga_momentum") cfg.ga_momentum = (double) value;
-        else if(name == "ga_adam_beta1") cfg.ga_adam_beta1 = (double) value;
-        else if(name == "ga_adam_beta2") cfg.ga_adam_beta2 = (double) value;
+        else if (name == "ga_adam_beta1") cfg.ga_adam_beta1 = (double) value;
+        else if (name == "ga_adam_beta2") cfg.ga_adam_beta2 = (double) value;
+        else if (name == "ga_eps") cfg.ga_eps == (double) value;
         else if (name == "obs_function") cfg.obs_function = (int) value;
         else if (name == "include_h_losses") cfg.include_h_losses = (int) value;
         else if (name == "include_precursor_h_losses_only") cfg.include_precursor_h_losses_only = (int) value;
