@@ -590,7 +590,7 @@ void EM::progressLBFGS(const lbfgsfloatval_t *x, const lbfgsfloatval_t *g,
 double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
                                                  suft_counts_t &suft) {
 
-    double Q = 0.0, prev_Q = -100000.0;
+    double Q = 0.0, prev_Q = DBL_MIN;
 
     std::vector<double> grads(param->getNumWeights(), 0.0);
     std::vector<double> prev_v(param->getNumWeights(), 0.0);

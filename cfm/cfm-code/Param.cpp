@@ -191,7 +191,6 @@ void Param::adjustWeightsByGrads_Adadelta(std::vector<double> &grads,
                                           std::vector<double> &mean_squared_delta_x) {
 
     // TODO: MAKE SURE THIS WORKS
-    // TODO: should I use plus instead of minus
     for (auto &used_idx: used_idxs) {
         // Accumulate Gradient
         // E[g^2]_t = decay_rate * E[g^2]_{t-1} + ( 1 - decay_rate ) * grads_t^2
