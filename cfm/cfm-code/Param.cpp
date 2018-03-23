@@ -213,9 +213,13 @@ void Param::adjustWeightsByGrads_AMSgrad(std::vector<double> &grads,
         // keep track of v_hat which is the max of v_t some far
         second_moment_max_vector[used_idx] = v_hat;
 
+        // Compute bias-corrected first moment estimate
+        // hat_m_t = m_t / ( 1 - beta_1 ^ t)
+        double m_hat = m_t/( 1.0 - std::pow(beta_1, iteration_count));
+
         // Update parameters
         // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
-        weights[used_idx] += learning_rate * m_t / (sqrt(v_hat) + eps);
+        weights[used_idx] += learning_rate * m_hat / (sqrt(v_hat) + eps);
     }
 }
 
