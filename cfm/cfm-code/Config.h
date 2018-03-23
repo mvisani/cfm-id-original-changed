@@ -45,10 +45,27 @@ static const double DEFAULT_LAMBDA = 0.01;
 //Use LBFGS package to do gradient ascent
 static const int DEFAULT_USE_LBFGS_FOR_GA = 1;
 
+// GA methods
 static const int USE_LBFGS_FOR_GA = 1;
 static const int USE_MOMENTUM_FOR_GA = 2;
 static const int USE_ADAM_FOR_GA = 3;
 static const int USE_ADADELTA_FOR_GA = 4;
+static const int USE_AMSGRAD_FOR_GA = 5;
+
+// LR Decay methods
+static const int USE_NO_DECAY = 0;
+static const int USE_DEFAULT_DECAY = 1;
+static const int USE_EXP_DECAY = 2;
+static const int USE_STEP_DECAY = 3;
+
+// Decay
+static const double DEFAULT_DECAY_RATE = 0.0;
+static const double DEFAULT_EXP_DECAY_K = 0.1;
+static const double DEFAULT_STEP_DECAY_DROP = 0.5;
+static const double DEFAULT_STEP_DECAY_EPOCHS_DROP = 10;
+
+// Learning Rate
+static const double DEFAULT_LEARNING_RATE = 1.0;
 
 //Step Size used in Gradient Ascent
 static const double DEFAULT_STEP_SIZE = 0.001;
@@ -57,8 +74,8 @@ static const double DEFAULT_STEP_SIZE = 0.001;
 static const double DEFAULT_MOMENTUM_ALPHA = 0.1;
 
 //ADAM
-static const double DEFAULT_ADAM_BETA1 = 0.9;
-static const double DEFAULT_ADAM_BETA2 = 0.999;
+static const double DEFAULT_ADAM_BETA_1 = 0.9;
+static const double DEFAULT_ADAM_BETA_2 = 0.999;
 
 //AdaDelta
 static const double DEFAULT_ADADELTA_LEARNING_RATE = 1.0;
@@ -198,26 +215,31 @@ struct config_t {
     double lambda;    //Regularization constant
     int use_lbfgs_for_ga;
     int ga_method;
+    int ga_decay_method;
     int converge_count_thresh;
     double ga_converge_thresh;
     double line_search_alpha;
     double line_search_beta;
 
-    // For GA and AdaDelta
+    // For GA
     double starting_step_size;
     double decay_rate;
+    double exp_decay_k;
+    double step_decay_drop;
+    double step_decay_epochs_drop;
+    // For Momentum
+    double ga_momentum;
     // For ADAM
-    double ga_adam_beta1;
-    double ga_adam_beta2;
+    double ga_adam_beta_1;
+    double ga_adam_beta_2;
     double ga_eps;
-    ;
-
+    // For adadelta
+    double ga_adadelta_rho;
 
     int max_search_count;
     int update_bias_first;
     int ga_minibatch_nth_size;
     int ga_max_iterations;
-    int ga_momentum;
 
     int fragraph_compute_timeout_in_secs;
 

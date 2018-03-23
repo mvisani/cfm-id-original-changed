@@ -36,8 +36,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.num_em_restarts = DEFAULT_NUM_EM_RESTARTS;
     cfg.line_search_alpha = DEFAULT_LINE_SEARCH_ALPHA;
     cfg.line_search_beta = DEFAULT_LINE_SEARCH_BETA;
-    cfg.starting_step_size = 1.0;
-    cfg.decay_rate = 0.0;
+    cfg.starting_step_size = DEFAULT_LEARNING_RATE;
+    cfg.decay_rate = DEFAULT_DECAY_RATE;
     cfg.max_search_count = DEFAULT_MAX_SEARCH_COUNT;
     cfg.spectrum_depths.clear();
     cfg.spectrum_weights.clear();
@@ -61,9 +61,14 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_minibatch_nth_size = DEFAULT_GA_MINIBATCH_NTH_SIZE;
     cfg.ga_max_iterations = DEFAULT_GA_MAX_ITERATIONS;
     cfg.ga_momentum = DEFAULT_GA_MOMENTUM;
-    cfg.ga_adam_beta1 = DEFAULT_ADAM_BETA1;
-    cfg.ga_adam_beta2 = DEFAULT_ADAM_BETA2;
+    cfg.ga_adam_beta_1 = DEFAULT_ADAM_BETA_1;
+    cfg.ga_adam_beta_2 = DEFAULT_ADAM_BETA_2;
     cfg.ga_eps = DEFAULT_EPS;
+    cfg.ga_adadelta_rho = DEFAULT_ADADELTA_RHO;
+    cfg.ga_decay_method = USE_DEFAULT_DECAY;
+    cfg.exp_decay_k = DEFAULT_EXP_DECAY_K;
+    cfg.step_decay_drop = DEFAULT_STEP_DECAY_DROP;
+    cfg.step_decay_epochs_drop = DEFAULT_STEP_DECAY_EPOCHS_DROP;
     cfg.obs_function = DEFAULT_OBS_FUNCTION;
     cfg.include_h_losses = DEFAULT_INCLUDE_H_LOSSES;
     cfg.include_precursor_h_losses_only = DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY;
@@ -126,9 +131,14 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_minibatch_nth_size") cfg.ga_minibatch_nth_size = (int) value;
         else if (name == "ga_max_iterations") cfg.ga_max_iterations = (int) value;
         else if (name == "ga_momentum") cfg.ga_momentum = (double) value;
-        else if (name == "ga_adam_beta1") cfg.ga_adam_beta1 = (double) value;
-        else if (name == "ga_adam_beta2") cfg.ga_adam_beta2 = (double) value;
-        else if (name == "ga_eps") cfg.ga_eps == (double) value;
+        else if (name == "ga_adam_beta_1") cfg.ga_adam_beta_1 = (double) value;
+        else if (name == "ga_adam_beta_2") cfg.ga_adam_beta_2 = (double) value;
+        else if (name == "ga_eps") cfg.ga_eps = (double) value;
+        else if (name == "ga_adadelta_rho") cfg.ga_adadelta_rho = (double)value;
+        else if (name == "ga_decay_method") cfg.ga_decay_method = (int)value;
+        else if (name == "exp_decay_k") cfg.exp_decay_k = (double)value;
+        else if (name == "step_decay_drop") cfg.step_decay_drop = (double)value;
+        else if (name == "step_decay_epochs_drop") cfg.step_decay_epochs_drop = (double)value;
         else if (name == "obs_function") cfg.obs_function = (int) value;
         else if (name == "include_h_losses") cfg.include_h_losses = (int) value;
         else if (name == "include_precursor_h_losses_only") cfg.include_precursor_h_losses_only = (int) value;
@@ -218,17 +228,35 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                       <<  " eps " << cfg.ga_eps
                       << std::endl;
         }
-
-        else if(USE_ADAM_FOR_GA == cfg.ga_method) {
-            std::cout << "Using ADAM implementation" << std::endl;
-            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " beta1  " << cfg.ga_adam_beta1
-                      << " beta2 " << cfg.ga_adam_beta2 << " eps " << cfg.ga_eps
+        else if(USE_ADAM_FOR_GA == cfg.ga_method || USE_AMSGRAD_FOR_GA == cfg.ga_method) {
+            if (USE_ADAM_FOR_GA == cfg.ga_method)
+                std::cout << "Using ADAM implementation" << std::endl;
+            else if( USE_AMSGRAD_FOR_GA == cfg.ga_method)
+                std::cout << "Using AMSGRAD implementation" << std::endl;
+            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " beta1  " << cfg.ga_adam_beta_1
+                      << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_eps
                       << std::endl;
         }
+
         std::cout << "Using GA max iterations " << cfg.ga_max_iterations << std::endl;
         std::cout << "Using GA Convergence Threshold " << cfg.ga_converge_thresh << std::endl;
         std::cout << "Using GA mini batch taking 1 in " << cfg.ga_minibatch_nth_size << " of processor data"
                   << std::endl;
+        switch (cfg.ga_decay_method)
+        {
+            case USE_DEFAULT_DECAY:
+                std::cout << "Using Time Based Learning Rate Decay Method. decay rate" << cfg.decay_rate << std::endl;
+                break;
+            case USE_EXP_DECAY:
+                std::cout << "Using Exponential Learning Rate Decay Method. k" << cfg.exp_decay_k <<  std::endl;
+            case USE_STEP_DECAY:
+                std::cout << "Using Step Decay Learning Rate Method. drop " << cfg.step_decay_drop << " epochs drop: "
+                          << cfg.step_decay_epochs_drop << std::endl;
+            case USE_NO_DECAY:
+            default:
+                std::cout << "NOT Using Decay Method" << std::endl;
+        }
+
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
         if (cfg.allow_frag_detours) std::cout << "Allowing fragmentation detours " << std::endl;
         else {

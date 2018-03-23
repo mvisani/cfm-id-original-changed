@@ -155,8 +155,8 @@ void Param::adjustWeightsByGrads_Momentum(std::vector<double> &grads, std::set<u
 void Param::adjustWeightsByGrads_Adam(std::vector<double> &grads,
                                       std::set<unsigned int> &used_idxs,
                                       const double & learning_rate,
-                                      const double & beta1,
-                                      const double & beta2,
+                                      const double & beta_1,
+                                      const double & beta_2,
                                       const double & eps,
                                       const int & iteration_count,
                                       std::vector<double> &first_moment_vector,
@@ -165,20 +165,57 @@ void Param::adjustWeightsByGrads_Adam(std::vector<double> &grads,
     for (auto & used_idx: used_idxs) {
         // Update biased first moment estimate
         // m_t = beta_1 * m_{t-1} + ( 1 - beta_1 ) * g_t
-        first_moment_vector[used_idx] = first_moment_vector[used_idx] * beta1 + ( 1.0 - beta1) * grads[used_idx];
+        double m_t = first_moment_vector[used_idx] * beta_1 + ( 1.0 - beta_1) * grads[used_idx];
+        first_moment_vector[used_idx] = m_t;
+
         // Update biased second raw moment estimate
         // v_t = beta_2 * v_{t-1} + ( 1 - beta_2 ) * g_t^2
-        second_moment_vector[used_idx] = beta2 * second_moment_vector[used_idx]
-                                         + ( 1.0 - beta2) *  grads[used_idx] * grads[used_idx];
+        double v_t =  beta_2 * second_moment_vector[used_idx]
+                      + ( 1.0 - beta_2) *  std::pow(grads[used_idx] ,2);
+        second_moment_vector[used_idx] = v_t;
+
         // Compute bias-corrected first moment estimate
         // hat_m_t = m_t / ( 1 - beta_1 ^ t)
-        double m_hat = first_moment_vector[used_idx]/( 1.0 - pow(beta1, iteration_count));
+        double m_hat = m_t/( 1.0 - std::pow(beta_1, iteration_count));
         // Compute bias-corrected second raw moment estimate
         // hat_v_t = v_t / ( 1 - beta_2 ^ t)
-        double v_hat = second_moment_vector[used_idx]/( 1.0 - pow(beta2, iteration_count));
+        double v_hat = v_t/( 1.0 - std::pow(beta_2, iteration_count));
         // Update parameters
         // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
         weights[used_idx] += learning_rate * m_hat / (sqrt(v_hat) + eps);
+    }
+}
+
+void Param::adjustWeightsByGrads_AMSgrad(std::vector<double> &grads,
+                                          std::set<unsigned int> &used_idxs,
+                                          const double & learning_rate,
+                                          const double & beta_1,
+                                          const double & beta_2,
+                                          const double & eps,
+                                          const int & iteration_count,
+                                          std::vector<double> &first_moment_vector,
+                                          std::vector<double> &second_moment_vector,
+                                          std::vector<double> &second_moment_max_vector) {
+
+    for (auto & used_idx: used_idxs) {
+        // Update biased first moment estimate
+        // m_t = beta_1 * m_{t-1} + ( 1 - beta_1 ) * g_t
+        double m_t = first_moment_vector[used_idx] * beta_1 + ( 1.0 - beta_1) * grads[used_idx];
+        first_moment_vector[used_idx] = m_t;
+
+        // Update biased second raw moment estimate
+        // v_t = beta_2 * v_{t-1} + ( 1 - beta_2 ) * g_t^2
+        double v_t =  beta_2 * second_moment_vector[used_idx]
+                      + ( 1.0 - beta_2) *  std::pow(grads[used_idx] ,2);
+        second_moment_vector[used_idx] = v_t;
+
+        double v_hat = std::max(v_t, second_moment_max_vector[used_idx]);
+        // keep track of v_hat which is the max of v_t some far
+        second_moment_max_vector[used_idx] = v_hat;
+
+        // Update parameters
+        // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
+        weights[used_idx] += learning_rate * m_t / (sqrt(v_hat) + eps);
     }
 }
 

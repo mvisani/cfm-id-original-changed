@@ -104,7 +104,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
     // EM
     iter = 0;
-    double Q, prevQ = -10000000.0;
+    double Q, prevQ = -DBL_MAX;
     int count_no_progress = 0;
     while (iter < MAX_EM_ITERATIONS) {
 
@@ -597,9 +597,10 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     std::vector<double> grads(param->getNumWeights(), 0.0);
     std::vector<double> prev_v(param->getNumWeights(), 0.0);
 
-    // for adam
+    // for adam and AMSgrad
     std::vector<double> first_moment_vector(param->getNumWeights(), 0.0);
     std::vector<double> second_moment_vector(param->getNumWeights(), 0.0);
+    std::vector<double> second_moment_max_vector(param->getNumWeights(), 0.0);
 
     // for adaDelta
     std::vector<double> mean_squared_gradients(param->getNumWeights(), 0.0);
@@ -635,12 +636,14 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         if (Q < prev_Q && iter > 1)
             learn_mult = learn_mult * 0.5;
 
-        double  learn_rate = cfg->starting_step_size * learn_mult;
-        // Only use decay rate here when we are using USE_MOMENTUM_FOR_GA
-        // ADAM and AdaDelta should should not use decay rate outside
-        if(cfg->ga_method == USE_MOMENTUM_FOR_GA) {
-            learn_rate /= (1.0 + cfg->decay_rate * (iter-1));
-        }
+        // adjust learning rate
+        double learn_rate = cfg->starting_step_size * learn_mult;
+        if(USE_DEFAULT_DECAY == cfg->ga_decay_method)
+            learn_rate *= 1.0 / (1.0 + cfg->decay_rate * (iter-1));
+        else if(USE_EXP_DECAY == cfg->ga_decay_method)
+            learn_rate *= std::exp(-cfg->exp_decay_k * iter);
+        else if(USE_STEP_DECAY == cfg->ga_decay_method)
+            learn_rate *= std::pow(cfg->step_decay_drop,std::floor(iter/cfg->step_decay_epochs_drop));
 
         if (iter > 1)
             prev_Q = Q;
@@ -678,38 +681,51 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
         // Step the parameters
         if (comm->isMaster()) {
-            if(cfg->ga_method == USE_MOMENTUM_FOR_GA)
+            switch( cfg->ga_method )
             {
-                param->adjustWeightsByGrads_Momentum(grads,
-                                                     ((MasterComms *) comm)->master_used_idxs,
-                                                     learn_rate, cfg->ga_momentum, prev_v);
-            }
-            else if(cfg->ga_method == USE_ADAM_FOR_GA)
-            {
-                param->adjustWeightsByGrads_Adam(grads,
-                                                 ((MasterComms *) comm)->master_used_idxs,
-                                                 learn_rate,
-                                                 cfg->ga_adam_beta1,
-                                                 cfg->ga_adam_beta2,
-                                                 cfg->ga_eps,
-                                                 iter,
-                                                 first_moment_vector,
-                                                 second_moment_vector);
-
-            }
-            else if(cfg->ga_method == USE_ADADELTA_FOR_GA)
-            {
-                param->adjustWeightsByGrads_Adadelta(grads,
+                case USE_MOMENTUM_FOR_GA:
+                    param->adjustWeightsByGrads_Momentum(grads,
+                                                         ((MasterComms *) comm)->master_used_idxs,
+                                                         learn_rate, cfg->ga_momentum, prev_v);
+                    break;
+                case USE_ADAM_FOR_GA:
+                    param->adjustWeightsByGrads_Adam(grads,
                                                      ((MasterComms *) comm)->master_used_idxs,
                                                      learn_rate,
-                                                     cfg->decay_rate,
+                                                     cfg->ga_adam_beta_1,
+                                                     cfg->ga_adam_beta_2,
                                                      cfg->ga_eps,
-                                                     mean_squared_gradients,
-                                                     mean_squared_delta_x);
+                                                     iter,
+                                                     first_moment_vector,
+                                                     second_moment_vector);
+                    break;
+                case USE_AMSGRAD_FOR_GA:
+                    param->adjustWeightsByGrads_AMSgrad(grads,
+                                                        ((MasterComms *) comm)->master_used_idxs,
+                                                        learn_rate,
+                                                        cfg->ga_adam_beta_1,
+                                                        cfg->ga_adam_beta_2,
+                                                        cfg->ga_eps,
+                                                        iter,
+                                                        first_moment_vector,
+                                                        second_moment_vector,
+                                                        second_moment_max_vector);
+                    break;
+                case USE_ADADELTA_FOR_GA:
+                    param->adjustWeightsByGrads_Adadelta(grads,
+                                                         ((MasterComms *) comm)->master_used_idxs,
+                                                         learn_rate,
+                                                         cfg->ga_adadelta_rho,
+                                                         cfg->ga_eps,
+                                                         mean_squared_gradients,
+                                                         mean_squared_delta_x);
+                    break;
+                default:
+                    param->adjustWeightsByGrads_Momentum(grads,
+                                                         ((MasterComms *) comm)->master_used_idxs,
+                                                         learn_rate, cfg->ga_momentum, prev_v);
             }
-
         }
-
         comm->broadcastParams(param.get());
     }
 
