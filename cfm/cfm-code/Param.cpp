@@ -180,6 +180,7 @@ void Param::adjustWeightsByGrads_Adam(std::vector<double> &grads,
         // Compute bias-corrected second raw moment estimate
         // hat_v_t = v_t / ( 1 - beta_2 ^ t)
         double v_hat = v_t/( 1.0 - std::pow(beta_2, iteration_count));
+
         // Update parameters
         // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
         weights[used_idx] += learning_rate * m_hat / (sqrt(v_hat) + eps);
@@ -216,10 +217,13 @@ void Param::adjustWeightsByGrads_AMSgrad(std::vector<double> &grads,
         // Compute bias-corrected first moment estimate
         // hat_m_t = m_t / ( 1 - beta_1 ^ t)
         double m_hat = m_t/( 1.0 - std::pow(beta_1, iteration_count));
+        // Compute bias-corrected second raw moment estimate
+        // hat_v_t = v_t / ( 1 - beta_2 ^ t)
+        v_hat = v_t/( 1.0 - std::pow(beta_2, iteration_count));
 
         // Update parameters
         // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
-        weights[used_idx] += learning_rate * m_hat / (sqrt(v_hat) + eps);
+        weights[used_idx] += learning_rate *  m_hat / (sqrt(v_hat) + eps);
     }
 }
 
