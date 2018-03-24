@@ -232,7 +232,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             if (USE_ADAM_FOR_GA == cfg.ga_method)
                 std::cout << "Using ADAM implementation" << std::endl;
             else if( USE_AMSGRAD_FOR_GA == cfg.ga_method)
-                std::cout << "Using AMSGRAD implementation" << std::endl;
+                std::cout << "Using AMSgrad implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " beta1  " << cfg.ga_adam_beta_1
                       << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_eps
                       << std::endl;
