@@ -104,7 +104,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
     // EM
     iter = 0;
-    double Q, prevQ = -10000000;
+    double Q, prevQ = -DBL_MAX;
     int count_no_progress = 0;
     while (iter < MAX_EM_ITERATIONS) {
 
