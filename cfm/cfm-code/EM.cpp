@@ -771,59 +771,59 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
     // Compute the gradients
     std::vector<unsigned int>::iterator eit = energies.begin();
-    for (; eit != energies.end(); ++eit) {
+    for (auto eit = energies.begin(); eit != energies.end(); ++eit) {
         energy = *eit;
 
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         // Iterate over from_id (i)
-        tmap_t::const_iterator it = fg->getFromIdTMap()->begin();
-        for (int from_idx = 0; it != fg->getFromIdTMap()->end(); ++it, from_idx++) {
+        auto fg_map_it = fg->getFromIdTMap()->begin();
+        for (int from_idx = 0; fg_map_it != fg->getFromIdTMap()->end(); ++fg_map_it, from_idx++) {
 
             // Calculate the denominator of the sum terms
             double denom = 1.0;
-            std::vector<int>::const_iterator itt = it->begin();
-            for (; itt != it->end(); ++itt)
+            auto itt = fg_map_it->begin();
+            for (; itt != fg_map_it->end(); ++itt)
                 denom += exp(moldata.getThetaForIdx(energy, *itt));
 
             // Complete the innermost sum terms	(sum over j')
             std::map<unsigned int, double> sum_terms;
-            for (itt = it->begin(); itt != it->end(); ++itt) {
+            for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
                 const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
-                std::vector<feature_t>::const_iterator fvit = fv->getFeatureBegin();
-                for (; fvit != fv->getFeatureEnd(); ++fvit) {
+
+                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                    auto fv_idx = fv_it->first;
                     double val = exp(moldata.getThetaForIdx(energy, *itt)) / denom;
-                    if (sum_terms.find(*fvit) != sum_terms.end())
-                        sum_terms[*fvit] += val;
+                    if (sum_terms.find(fv_idx) != sum_terms.end())
+                        sum_terms[fv_idx] += val;
                     else
-                        sum_terms[*fvit] = val;
+                        sum_terms[fv_idx] = val;
                 }
             }
 
             // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
             double nu_sum = 0.0;
-            for (itt = it->begin(); itt != it->end(); ++itt) {
+            for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
                 double nu = (*suft_values)[*itt + suft_offset];
                 nu_sum += nu;
                 const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
-                std::vector<feature_t>::const_iterator fvit = fv->getFeatureBegin();
-                for (; fvit != fv->getFeatureEnd(); ++fvit) {
-                    *(grads + *fvit + grad_offset) += nu;
+                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                    auto fv_idx = fv_it->first;
+                    *(grads + fv_idx + grad_offset) += nu;
                     if (record_used_idxs)
-                        used_idxs.insert(*fvit + grad_offset);
+                        used_idxs.insert(fv_idx + grad_offset);
                 }
                 Q += nu * (moldata.getThetaForIdx(energy, *itt) - log(denom));
             }
 
             // Accumulate the last term of each transition and the
             // persistence (i = j) terms of the gradient and Q
-            std::map<unsigned int, double>::iterator sit = sum_terms.begin();
             double nu =  (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
-            for (; sit != sum_terms.end(); ++sit) {
-                *(grads + sit->first + grad_offset) -= (nu_sum + nu) * sit->second;
+            for (auto & sit: sum_terms) {
+                *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
                 if (record_used_idxs)
-                    used_idxs.insert(sit->first + grad_offset);
+                    used_idxs.insert(sit.first + grad_offset);
             }
             Q -= nu * log(denom);
         }

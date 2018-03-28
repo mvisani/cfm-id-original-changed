@@ -85,9 +85,8 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
     itlayer = hlayer_num_nodes.begin();
     for (int hnode = 0; hnode < (*itlayer); hnode++) {
         double z_val = 0.0;
-        std::vector<feature_t>::const_iterator it = fv.getFeatureBegin();
-        for (; it != fv.getFeatureEnd(); ++it)
-            z_val += *(wit + *it);
+        for (auto it = fv.getFeatureBegin(); it != fv.getFeatureEnd(); ++it)
+            z_val += *(wit + it->first);
         wit += len;
         *zit++ = z_val;
         *ait++ = (*itaf++)(z_val);
@@ -308,11 +307,10 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
     //Collect the used feature idxs (we'll need these for the first layer normalization)
     std::set<unsigned int> tmp_used_idxs;
     for (int idx = 0; idx < num_trans_from_id; idx++) {
-        std::vector<feature_t>::const_iterator fit = fvs[idx]->getFeatureBegin();
-        for (; fit != fvs[idx]->getFeatureEnd(); ++fit) {
-            tmp_used_idxs.insert(*fit);
+        for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
+            tmp_used_idxs.insert(fit->first);
             for (int hnode = 0; hnode < hlayer_num_nodes[0]; hnode++)
-                used_idxs.insert(hnode * feature_len + *fit);
+                used_idxs.insert(hnode * feature_len + fit->first);
         }
     }
 
@@ -322,12 +320,11 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
 
         //Compute the unnormalized terms, tracking the normalizers (persistence terms) as we go
         for (int idx = 0; idx < num_trans_from_id; idx++) {
-            std::vector<feature_t>::const_iterator fit = fvs[idx]->getFeatureBegin();
             double deltaA = *itAs[idx]++;
             double deltaB = *itBs[idx]++;
-            for (; fit != fvs[idx]->getFeatureEnd(); ++fit) {
-                *(itgrads[idx] + *fit) = deltaA;
-                *(normit + *fit) -= deltaB;
+            for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
+                *(itgrads[idx] + fit->first) = deltaA;
+                *(normit + fit->first) -= deltaB;
             }
         }
 

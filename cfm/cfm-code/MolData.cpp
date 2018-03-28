@@ -774,12 +774,12 @@ void MolData::quantiseMeasuredSpectra(int num_dec_places) {
 
 std::string MolData::getFVsAsCSVString() {
     std::string csv_str = "";
-    for (auto fv : fvs) {
+    /*for (auto fv : fvs) {
         if (csv_str != "") {
             csv_str += "\n";
         }
         csv_str += fv->toCSVString();
-    }
+    }*/
     return csv_str;
 }
 

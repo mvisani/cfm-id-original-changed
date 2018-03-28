@@ -415,10 +415,11 @@ void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isot
         unsigned int fv_len = fv->getTotalLength();
         out.write(reinterpret_cast<const char *>(&num_set), sizeof(num_set));
         out.write(reinterpret_cast<const char *>(&fv_len), sizeof(fv_len));
-        std::vector<feature_t>::const_iterator fvit = fv->getFeatureBegin();
-        for (; fvit != fv->getFeatureEnd(); ++fvit) {
-            unsigned int fidx = *fvit;
-            out.write(reinterpret_cast<const char *>(&fidx), sizeof(fidx));
+
+        // TODO: Need add support for none binary feature vector
+        for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+            unsigned int fv_idx = fv_it->first;
+            out.write(reinterpret_cast<const char *>(&fv_idx), sizeof(fv_idx));
         }
     }
 }
