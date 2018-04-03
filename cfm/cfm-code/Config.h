@@ -155,7 +155,9 @@ static const int RELU_NN_ACTIVATION_FUNCTION = 1;
 static const int DEFAULT_NN_ACTIVATION_FUNCTION = RELU_NN_ACTIVATION_FUNCTION;
 
 static const double DEFAULT_GA_MOMENTUM = 0.9;
+
 static const int DEFAULT_GA_MINIBATCH_NTH_SIZE = 1;
+static const int DEFAULT_GA_MINIBATCH_SIZE_PER_PROCESSOR = 0;
 static const int DEFAULT_GA_MAX_ITERATIONS = 20;
 
 static const int NORMAL_OBS_FUNCTION = 1;
@@ -236,9 +238,13 @@ struct config_t {
     // For adadelta
     double ga_adadelta_rho;
 
+
+    // TODO remove unused
     int max_search_count;
     int update_bias_first;
     int ga_minibatch_nth_size;
+
+    int ga_minibatch_size_per_processor;
     int ga_max_iterations;
 
     int fragraph_compute_timeout_in_secs;

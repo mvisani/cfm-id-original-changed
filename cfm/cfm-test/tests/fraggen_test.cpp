@@ -1377,11 +1377,12 @@ void FVFragGraphSaveAndLoadState::runTest(){
 				pass = false;
 				break;				
 			}
-			std::vector<feature_idx_t>::const_iterator fit1 = fv1->getFeatureBegin();
-			std::vector<feature_idx_t>::const_iterator fit2 = fv2->getFeatureBegin();
+			auto fit1 = fv1->getFeatureBegin();
+			auto fit2 = fv2->getFeatureBegin();
 			for(; fit1 != fv1->getFeatureEnd(); ++fit1, ++fit2 ){
 				if( *fit1 != *fit2 ){
-					std::cout << "Mismatch in feature vectors for transition at idx " << i << ": " << *fit1 << " vs " << *fit2 << std::endl;
+					std::cout << "Mismatch in feature vectors for transition at idx " << i << ": "
+																			   << fit1->first << " vs " << fit2->first << std::endl;
 					pass = false;
 					break;
 				}

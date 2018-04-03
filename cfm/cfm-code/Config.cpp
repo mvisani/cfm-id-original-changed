@@ -58,7 +58,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.do_prelim_bfs = DEFAULT_DO_PRELIM_BFS;
     cfg.max_ring_breaks = DEFAULT_MAX_RING_BREAKS;
     cfg.theta_function = DEFAULT_THETA_FUNCTION;
-    cfg.ga_minibatch_nth_size = DEFAULT_GA_MINIBATCH_NTH_SIZE;
+    //cfg.ga_minibatch_nth_size = DEFAULT_GA_MINIBATCH_NTH_SIZE;
+    cfg.ga_minibatch_size_per_processor = DEFAULT_GA_MINIBATCH_SIZE_PER_PROCESSOR;
     cfg.ga_max_iterations = DEFAULT_GA_MAX_ITERATIONS;
     cfg.ga_momentum = DEFAULT_GA_MOMENTUM;
     cfg.ga_adam_beta_1 = DEFAULT_ADAM_BETA_1;
@@ -129,6 +130,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "theta_nn_hlayer_num_nodes") cfg.theta_nn_hlayer_num_nodes.push_back((int) value);
         else if (name == "theta_nn_layer_act_func_ids") cfg.theta_nn_layer_act_func_ids.push_back((int) value);
         else if (name == "ga_minibatch_nth_size") cfg.ga_minibatch_nth_size = (int) value;
+        else if (name == "ga_minibatch_size_per_processor") cfg.ga_minibatch_size_per_processor = (int) value;
         else if (name == "ga_max_iterations") cfg.ga_max_iterations = (int) value;
         else if (name == "ga_momentum") cfg.ga_momentum = (double) value;
         else if (name == "ga_adam_beta_1") cfg.ga_adam_beta_1 = (double) value;
@@ -207,13 +209,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
         std::cout << "Using EM Convergence Threshold " << cfg.em_converge_thresh << std::endl;
         std::cout << "Using Lambda " << cfg.lambda << std::endl;
-        /*if (cfg.use_lbfgs_for_ga) std::cout << "Using LBFGS package for gradient ascent" << std::endl;
-        else {
-            std::cout << "Using simple gradient ascent implementation" << std::endl;
-            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
-                      << " decay rate " << cfg.decay_rate
-                      << std::endl;
-        }*/
+   
         if(USE_LBFGS_FOR_GA == cfg.ga_method)
             std::cout << "Using LBFGS package for gradient ascent" << std::endl;
         else if(USE_MOMENTUM_FOR_GA == cfg.ga_method ) {
@@ -240,7 +236,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
         std::cout << "Using GA max iterations " << cfg.ga_max_iterations << std::endl;
         std::cout << "Using GA Convergence Threshold " << cfg.ga_converge_thresh << std::endl;
-        std::cout << "Using GA mini batch taking 1 in " << cfg.ga_minibatch_nth_size << " of processor data"
+        std::cout << "(Will be removed)Using GA mini batch taking 1 in " << cfg.ga_minibatch_nth_size << " of processor data" << std::endl;
+        std::cout << "Using GA mini batch size per processor:  " << cfg.ga_minibatch_size_per_processor << " of processor data"
                   << std::endl;
         switch (cfg.ga_decay_method)
         {
