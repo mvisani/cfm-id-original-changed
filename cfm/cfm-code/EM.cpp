@@ -631,7 +631,9 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     int iter = 0;
     double learn_mult = 1.0;
 
-    while (iter++ < cfg->ga_max_iterations &&
+    int max_iteration = cfg->ga_max_iterations * cfg->ga_minibatch_nth_size;
+
+    while (iter++ < max_iteration &&
            fabs((Q - prev_Q) / Q) >= cfg->ga_converge_thresh) {
 
         if (Q < prev_Q && iter > 1)
