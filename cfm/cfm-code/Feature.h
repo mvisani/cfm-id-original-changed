@@ -33,7 +33,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 struct input_file_t;
@@ -88,11 +88,11 @@ public:
     // Just don't want to rewrite all test cases
     feature_idx_t getFeatureForUnitTestOnly(int idx) const;
 
-    std::unordered_map<feature_idx_t, feature_value_t>::const_iterator getFeatureBegin() const noexcept {
+    std::map<feature_idx_t, feature_value_t>::const_iterator getFeatureBegin() const noexcept {
         return mapped_fv.begin();
     };
 
-    std::unordered_map<feature_idx_t, feature_value_t>::const_iterator getFeatureEnd() const noexcept {
+    std::map<feature_idx_t, feature_value_t>::const_iterator getFeatureEnd() const noexcept {
         return mapped_fv.end();
     };
 
@@ -104,7 +104,7 @@ public:
 
     void applyPCA(std::vector<std::vector <double>> &mat);
 private:
-    std::unordered_map<feature_idx_t, feature_value_t> mapped_fv;
+    std::map<feature_idx_t, feature_value_t> mapped_fv;
     unsigned int fv_idx;
 };
 
