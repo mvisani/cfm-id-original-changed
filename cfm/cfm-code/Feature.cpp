@@ -237,7 +237,7 @@ FeatureVector *FeatureCalculator::computeFV(const RootedROMolPtr *ion,
 }
 
 bool FeatureCalculator::includesFeature(const std::string &fname) {
-    std::vector<int>::iterator it = used_feature_idxs.begin();
+    auto it = used_feature_idxs.begin();
     for (; it != used_feature_idxs.end(); ++it) {
         const Feature *cog = &(featureCogs()[*it]);
         if (cog->getName() == fname)
@@ -312,6 +312,18 @@ void FeatureVector::printDebugInfo() const {
         std::cout << mapped_feature.first << ": " << mapped_feature.second << ", ";
     }
     std::cout << std::endl;
+}
+
+void FeatureVector::applyPCA(std::vector<std::vector <double>> & mat)
+{
+    std::unordered_map<feature_idx_t ,feature_value_t > new_fv;
+
+    for( auto & mapped_feature : mapped_fv)
+    {
+        auto idx = mapped_feature.first;
+        auto value = mapped_feature.second;
+
+    }
 }
 
 // Helper functions for multiple features

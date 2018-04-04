@@ -88,23 +88,21 @@ public:
     // Just don't want to rewrite all test cases
     feature_idx_t getFeatureForUnitTestOnly(int idx) const;
 
-    std::unordered_map<feature_idx_t,double>::const_iterator getFeatureBegin() const {
+    std::unordered_map<feature_idx_t, feature_value_t>::const_iterator getFeatureBegin() const noexcept {
         return mapped_fv.begin();
     };
 
-    std::unordered_map<feature_idx_t,double>::const_iterator getFeatureEnd() const {
+    std::unordered_map<feature_idx_t, feature_value_t>::const_iterator getFeatureEnd() const noexcept {
         return mapped_fv.end();
     };
 
     unsigned long getNumSetFeatures() const { return mapped_fv.size(); };
 
-    std::string toCSVString() const;
-
     std::string toSparseCSVString(bool isBinary = true) const;
 
     void printDebugInfo() const;
 
-    void applyPCA();
+    void applyPCA(std::vector<std::vector <double>> &mat);
 private:
     std::unordered_map<feature_idx_t, feature_value_t> mapped_fv;
     unsigned int fv_idx;
