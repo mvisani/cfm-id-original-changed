@@ -135,7 +135,7 @@ double Param::computeTheta(const FeatureVector &fv, int energy) {
     //Compute theta
     int energy_offset = len * energy;
     for (auto fv_it = fv.getFeatureBegin(); fv_it != fv.getFeatureEnd(); ++fv_it)
-        theta += weights[fv_it->first + energy_offset];
+        theta += weights[fv_it->first + energy_offset] * fv_it->second;
     return theta;
 }
 
