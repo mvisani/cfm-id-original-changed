@@ -125,7 +125,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
         int num_converged = 0, num_nonconverged = 0;
         int tot_numc = 0, total_numnonc = 0;
-        before = time(NULL);
+        before = time(nullptr);
 
         std::string estep_start_msg = "----- Starting E-step Processing -----";
         if (comm->isMaster())
@@ -175,7 +175,7 @@ double EM::run(std::vector<MolData> &data, int group,
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait
-        after = time(NULL);
+        after = time(nullptr);
         if (!cfg->use_single_energy_cfm) {
             total_numnonc = comm->collectSumInMaster(num_nonconverged);
             tot_numc = comm->collectSumInMaster(num_converged);
@@ -206,13 +206,13 @@ double EM::run(std::vector<MolData> &data, int group,
             writeStatus(mstep_start_msg.c_str());
         comm->printToMasterOnly(mstep_start_msg.c_str());
 
-        before = time(NULL);
+        before = time(nullptr);
         if (cfg->ga_method == USE_LBFGS_FOR_GA)
             Q = updateParametersLBFGS(data, suft);
         else
             Q = updateParametersSimpleGradientDescent(data, suft);
 
-        after = time(NULL);
+        after = time(nullptr);
         std::string param_update_time_msg =
                 "Completed M-step param update: Time Elapsed = " +
                 boost::lexical_cast<std::string>(after - before) + " seconds";
@@ -226,7 +226,7 @@ double EM::run(std::vector<MolData> &data, int group,
             writeParamsToFile(out_param_filename);
         }
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
-        after = time(NULL);
+        after = time(nullptr);
         std::string debug_time_msg =
                 "Starting Q compute: Time Elapsed = " +
                 boost::lexical_cast<std::string>(after - before) + " seconds";
@@ -237,7 +237,6 @@ double EM::run(std::vector<MolData> &data, int group,
         // the mini-batch)
         if (cfg->ga_minibatch_nth_size > 1)
             Q = 0.0;
-        double valQ = 0.0;
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
         for (itdata = data.begin(); itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
@@ -250,14 +249,16 @@ double EM::run(std::vector<MolData> &data, int group,
                 numnonvalmols++;
         }
 
+
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
-        after = time(NULL);
+        after = time(nullptr);
         std::string debug_time_msg2 =
                 "Finished Q compute: Time Elapsed = " +
                 boost::lexical_cast<std::string>(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(debug_time_msg2.c_str());
 
+        double valQ = 0.0;
         valQ = comm->collectQInMaster(valQ);
         if (cfg->ga_minibatch_nth_size > 1) {
             Q = comm->collectQInMaster(Q);
@@ -470,7 +471,7 @@ lbfgsfloatval_t *EM::convertCurrentParamsToLBFGS(int N) {
     lbfgsfloatval_t *x;
     if (sparse_params) {
         x = lbfgs_malloc(N);
-        if (x == NULL) {
+        if (x == nullptr) {
             std::cout << "ERROR: Failed to allocate a memory block for variables."
                       << std::endl;
             throw EMComputationException();
@@ -770,7 +771,6 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
     }
 
     // Compute the gradients
-    std::vector<unsigned int>::iterator eit = energies.begin();
     for (auto eit = energies.begin(); eit != energies.end(); ++eit) {
         energy = *eit;
 

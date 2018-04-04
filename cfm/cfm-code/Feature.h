@@ -24,8 +24,11 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
-//#include <boost/numeric/ublas/vector_sparse.hpp>
-//#include <boost/numeric/ublas/io.hpp>
+
+/*
+#include <boost/numeric/ublas/vector_sparse.hpp>
+#include <boost/numeric/ublas/io.hpp>
+*/
 
 #include <fstream>
 #include <iostream>
@@ -65,7 +68,7 @@ public:
 typedef unsigned int feature_idx_t;
 typedef double feature_value_t;
 
-class FeatureVector{
+class FeatureVector {
 public:
     FeatureVector() { fv_idx = 0; };
 
@@ -85,11 +88,11 @@ public:
     // Just don't want to rewrite all test cases
     feature_idx_t getFeatureForUnitTestOnly(int idx) const;
 
-    std::map<feature_idx_t,double>::const_iterator getFeatureBegin() const {
+    std::unordered_map<feature_idx_t,double>::const_iterator getFeatureBegin() const {
         return mapped_fv.begin();
     };
 
-    std::map<feature_idx_t,double>::const_iterator getFeatureEnd() const {
+    std::unordered_map<feature_idx_t,double>::const_iterator getFeatureEnd() const {
         return mapped_fv.end();
     };
 
@@ -101,8 +104,9 @@ public:
 
     void printDebugInfo() const;
 
+    void applyPCA();
 private:
-    std::map<feature_idx_t, feature_value_t> mapped_fv;
+    std::unordered_map<feature_idx_t, feature_value_t> mapped_fv;
     unsigned int fv_idx;
 };
 
