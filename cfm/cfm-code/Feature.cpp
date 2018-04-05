@@ -263,9 +263,9 @@ feature_idx_t FeatureVector::getFeatureForUnitTestOnly(int idx) const {
 }
 
 void FeatureVector::addFeature(double value) {
-    fv_idx++;
     if (value != 0.0)
         mapped_fv[fv_idx] = value;
+    fv_idx += 1;
 }
 
 void FeatureVector::addFeatureAtIdx(double value, unsigned int idx) {
