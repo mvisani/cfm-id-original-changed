@@ -38,7 +38,7 @@ public:
 
     double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
 
-    double addRegularizers(double *grads);
+    double addRegularizersAndUpdateGradient(double *grads);
 
     void writeParamsToFile(std::string &filename);
 

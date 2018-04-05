@@ -128,7 +128,9 @@ protected:
     double updateParametersSimpleGradientDescent(std::vector<MolData> &data, suft_counts_t &suft);
 
     //Helper functions
-    virtual double addRegularizers(double *grads);
+    virtual double addRegularizersAndUpdateGradient(double *grads);
+    //function to add L1 term for Q
+    virtual double addRegularizers();
 
     void zeroUnusedParams();
 

@@ -220,7 +220,7 @@ double EM_NN::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 }
 
 
-double EM_NN::addRegularizers(double *grads) {
+double EM_NN::addRegularizersAndUpdateGradient(double *grads) {
 
     double Q = 0.0;
     std::set<unsigned int>::iterator it = ((MasterComms *) comm)->master_used_idxs.begin();

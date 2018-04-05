@@ -110,9 +110,9 @@ double EM::run(std::vector<MolData> &data, int group,
     while (iter < MAX_EM_ITERATIONS) {
 
         std::string iter_out_param_filename =
-                out_param_filename + "_" + std::to_string(iter);
+                out_param_filename + "_" + boost::lexical_cast<std::string>(iter);
 
-        std::string msg = "EM Iteration " + std::to_string(iter);
+        std::string msg = "EM Iteration " + boost::lexical_cast<std::string>(iter);
         if (comm->isMaster())
             writeStatus(msg.c_str());
         comm->printToMasterOnly(msg.c_str());
@@ -181,9 +181,9 @@ double EM::run(std::vector<MolData> &data, int group,
             total_numnonc = comm->collectSumInMaster(num_nonconverged);
             tot_numc = comm->collectSumInMaster(num_converged);
             std::string cvg_msg =
-                    "Num Converged: " + std::to_string(tot_numc);
+                    "Num Converged: " + boost::lexical_cast<std::string>(tot_numc);
             std::string noncvg_msg = "Num Non-Converged: " +
-                                     std::to_string(total_numnonc);
+                                     boost::lexical_cast<std::string>(total_numnonc);
             if (comm->isMaster()) {
                 writeStatus(cvg_msg.c_str());
                 writeStatus(noncvg_msg.c_str());
@@ -193,7 +193,7 @@ double EM::run(std::vector<MolData> &data, int group,
         }
         std::string estep_time_msg =
                 "Completed E-step processing: Time Elapsed = " +
-                std::to_string(after - before) + " seconds";
+                boost::lexical_cast<std::string>(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(estep_time_msg.c_str());
         comm->printToMasterOnly(estep_time_msg.c_str());
@@ -216,7 +216,7 @@ double EM::run(std::vector<MolData> &data, int group,
         after = time(nullptr);
         std::string param_update_time_msg =
                 "Completed M-step param update: Time Elapsed = " +
-                std::to_string(after - before) + " seconds";
+                boost::lexical_cast<std::string>(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(param_update_time_msg.c_str());
         comm->printToMasterOnly(param_update_time_msg.c_str());
@@ -230,7 +230,7 @@ double EM::run(std::vector<MolData> &data, int group,
         after = time(nullptr);
         std::string debug_time_msg =
                 "Starting Q compute: Time Elapsed = " +
-                std::to_string(after - before) + " seconds";
+                boost::lexical_cast<std::string>(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(debug_time_msg.c_str());
 
@@ -238,8 +238,10 @@ double EM::run(std::vector<MolData> &data, int group,
         double valQ = 0.0;
         // Compute the final Q (with all molecules, in case only some were used in
         // the mini-batch)
-        if (cfg->ga_minibatch_nth_size > 1)
-            Q = 0.0;
+        if (cfg->ga_minibatch_nth_size > 1) {
+            // compute regularizers first
+            Q = addRegularizers();
+        }
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
         for (itdata = data.begin(); itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
@@ -256,7 +258,7 @@ double EM::run(std::vector<MolData> &data, int group,
         after = time(nullptr);
         std::string debug_time_msg2 =
                 "Finished Q compute: Time Elapsed = " +
-                std::to_string(after - before) + " seconds";
+                boost::lexical_cast<std::string>(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(debug_time_msg2.c_str());
 
@@ -271,13 +273,13 @@ double EM::run(std::vector<MolData> &data, int group,
         // Check for convergence
         double Qratio = fabs((Q - prevQ) / Q);
         if (comm->isMaster()) {
-            std::string qdif_str = std::to_string(Qratio) + " " +
-                                   std::to_string(prevQ) + " ";
-            qdif_str += "Q=" + std::to_string(Q) +
-                        "ValidationQ=" + std::to_string(valQ) + " ";
+            std::string qdif_str = boost::lexical_cast<std::string>(Qratio) + " " +
+                                   boost::lexical_cast<std::string>(prevQ) + " ";
+            qdif_str += "Q=" + boost::lexical_cast<std::string>(Q) +
+                        "ValidationQ=" + boost::lexical_cast<std::string>(valQ) + " ";
             qdif_str +=
-                    "Q_avg=" + std::to_string(Q / numnonvalmols) +
-                    " ValidationQ_avg=" + std::to_string(valQ / numvalmols) + " ";
+                    "Q_avg=" + boost::lexical_cast<std::string>(Q / numnonvalmols) +
+                    " ValidationQ_avg=" + boost::lexical_cast<std::string>(valQ / numvalmols) + " ";
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
         }
@@ -290,7 +292,7 @@ double EM::run(std::vector<MolData> &data, int group,
         prevQ = Q;
         if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
             comm->printToMasterOnly(("EM Converged after " +
-                                     std::to_string(iter) +
+                                     boost::lexical_cast<std::string>(iter) +
                                      " iterations")
                                             .c_str());
             break;
@@ -300,7 +302,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
     if (iter >= MAX_EM_ITERATIONS)
         comm->printToMasterOnly(("Warning: EM did not converge after " +
-                                 std::to_string(iter) +
+                                 boost::lexical_cast<std::string>(iter) +
                                  " iterations.")
                                         .c_str());
 
@@ -411,7 +413,7 @@ double EM::updateParametersLBFGS(std::vector<MolData> &data,
             }
             if (molidx % 10 == 0) {
                 std::string msg = "Compute And Accumulate Gradient: " +
-                                  std::to_string(molidx) + " mols";
+                                  boost::lexical_cast<std::string>(molidx) + " mols";
                 comm->printToMasterOnly(msg.c_str());
                 // std::cout << "Compute And Accumulate Gradient: " <<  molidx  << "
                 // mols" << std::endl;
@@ -554,7 +556,7 @@ lbfgsfloatval_t EM::evaluateLBFGS(const lbfgsfloatval_t *x, lbfgsfloatval_t *g,
     }
 
     if (comm->isMaster())
-        Q += addRegularizers(grad_ptr);
+        Q += addRegularizersAndUpdateGradient(grad_ptr);
     comm->collectGradsInMaster(grad_ptr);
     Q = comm->collectQInMaster(Q);
     Q = comm->broadcastQ(Q);
@@ -571,8 +573,8 @@ void EM::progressLBFGS(const lbfgsfloatval_t *x, const lbfgsfloatval_t *g,
                        int n, int k, int ls) {
 
     if (comm->isMaster()) {
-        writeStatus(("LBFGS Iteration " + std::to_string(k) +
-                     ": fx = " + std::to_string(fx))
+        writeStatus(("LBFGS Iteration " + boost::lexical_cast<std::string>(k) +
+                     ": fx = " + boost::lexical_cast<std::string>(fx))
                             .c_str());
         std::cout << "LBFGS Iteration " << k << ": fx = " << fx << std::endl;
     }
@@ -612,18 +614,13 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     if (comm->used_idxs.size() == 0) {
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() != validation_group)
-            {
-                double Q_single = computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
+            if (itdata->getGroup() != validation_group) {
+                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
                                                                true, comm->used_idxs);
-                Q += Q_single;
-                double Q_single2 = computeQ(molidx,*itdata,suft);
-                if(Q_single != Q_single2)
-                    std::cout <<  Q_single << " " << Q_single2 << std::endl;
             }
         }
         if (comm->isMaster())
-            Q += addRegularizers(&grads[0]);
+            Q += addRegularizersAndUpdateGradient(&grads[0]);
         Q = comm->collectQInMaster(Q);
         Q = comm->broadcastQ(Q);
         comm->setMasterUsedIdxs();
@@ -661,12 +658,12 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         // Select molecules to include in gradient mini-batch.
         std::vector<int> minibatch_flags(data.size());
         auto itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++)
-            minibatch_flags[molidx] =
-                    (itdata->getGroup() !=
-                     validation_group); // Don't include validation molecules
-        if (cfg->ga_minibatch_nth_size > 1)
-        {
+        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
+            // Don't include validation molecules
+            minibatch_flags[molidx] = (itdata->getGroup() !=  validation_group);
+        }
+
+        if (cfg->ga_minibatch_nth_size > 1) {
             selectMiniBatch(minibatch_flags);
         }
 
@@ -681,8 +678,9 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
                                                   false, comm->used_idxs);
         }
         if (comm->isMaster())
-            Q += addRegularizers(&grads[0]);
+            Q += addRegularizersAndUpdateGradient(&grads[0]);
         comm->collectGradsInMaster(&grads[0]);
+
         Q = comm->collectQInMaster(Q);
         Q = comm->broadcastQ(Q);
 
@@ -899,11 +897,10 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
     return Q;
 }
 
-double EM::addRegularizers(double *grads) {
+double EM::addRegularizersAndUpdateGradient(double *grads) {
 
     double Q = 0.0;
-    std::set<unsigned int>::iterator it =
-            ((MasterComms *) comm)->master_used_idxs.begin();
+    auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
 
         double weight = param->getWeightAtIdx(*it);
@@ -920,6 +917,24 @@ double EM::addRegularizers(double *grads) {
         *(grads + energy * weights_per_energy) += cfg->lambda * bias;
     }
     return Q;
+}
+
+double EM::addRegularizers()
+{
+    double Q_Reg = 0.0;
+    for (auto it:((MasterComms *) comm)->master_used_idxs) {
+        double weight = param->getWeightAtIdx(it);
+        Q_Reg -= 0.5 * cfg->lambda * weight * weight;
+
+    }
+
+    // Remove the Bias terms (don't regularize the bias terms!)
+    unsigned int weights_per_energy = param->getNumWeightsPerEnergyLevel();
+    for (unsigned int energy = 0; energy < param->getNumEnergyLevels(); energy++) {
+        double bias = param->getWeightAtIdx(energy * weights_per_energy);
+        Q_Reg += 0.5 * cfg->lambda * bias * bias;
+    }
+    return Q_Reg;
 }
 
 void EM::zeroUnusedParams() {
