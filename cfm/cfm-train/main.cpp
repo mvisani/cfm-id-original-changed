@@ -62,6 +62,9 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	if(mpi_rank == MASTER)
+		std::cout << "[MPI INFO] Number of processors: " << mpi_nump << std::endl;
+	
     std::string input_filename = argv[1];	//List (one per line): id, smiles_or_inchi, group
 	std::string feature_filename = argv[2]; //List of features, line-spaced
 	std::string config_filename = argv[3];	//Parameter configuration
