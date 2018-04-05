@@ -653,18 +653,19 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
         // Select molecules to include in gradient mini-batch.
         std::vector<int> minibatch_flags(data.size());
-        std::vector<MolData>::iterator itdata = data.begin();
+        auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++)
             minibatch_flags[molidx] =
                     (itdata->getGroup() !=
                      validation_group); // Don't include validation molecules
         if (cfg->ga_minibatch_nth_size > 1)
+        {
             selectMiniBatch(minibatch_flags);
+        }
 
         // Compute Q and the gradient
-        std::vector<double>::iterator git = grads.begin();
-        for (; git != grads.end(); ++git)
-            *git = 0.0;
+
+        std:fill(grads.begin(),grads.end(),0.0);
         Q = 0.0;
         itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
@@ -937,7 +938,11 @@ void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
         if (initialized_minibatch_flags[i])
             idxs[count++] = i;
     idxs.resize(count);
-    std::random_shuffle(idxs.begin(), idxs.end());
+
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(idxs.begin(), idxs.end(), g);
+
     int num_minibatch_mols =
             (num_mols + cfg->ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;
     for (int i = num_minibatch_mols; i < idxs.size(); i++)
