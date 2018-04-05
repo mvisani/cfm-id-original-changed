@@ -211,7 +211,7 @@ double EM::run(std::vector<MolData> &data, int group,
         if (cfg->ga_method == USE_LBFGS_FOR_GA)
             Q = updateParametersLBFGS(data, suft);
         else
-            Q = updateParametersSimpleGradientDescent(data, suft, total_ga_iter);
+            Q = updateParametersSimpleGradientDescent(data, suft);
 
         after = time(nullptr);
         std::string param_update_time_msg =
@@ -590,7 +590,7 @@ void EM::progressLBFGS(const lbfgsfloatval_t *x, const lbfgsfloatval_t *g,
 }
 
 double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
-                                                 suft_counts_t &suft, int & total_ga_iter) {
+                                                 suft_counts_t &suft) {
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
@@ -643,11 +643,11 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         // adjust learning rate
         double learn_rate = cfg->starting_step_size * learn_mult;
         if(USE_DEFAULT_DECAY == cfg->ga_decay_method)
-            learn_rate *= 1.0 / (1.0 + cfg->decay_rate * (total_ga_iter + iter-1));
+            learn_rate *= 1.0 / (1.0 + cfg->decay_rate * (iter-1));
         else if(USE_EXP_DECAY == cfg->ga_decay_method)
-            learn_rate *= std::exp(-cfg->exp_decay_k * total_ga_iter + iter);
+            learn_rate *= std::exp(-cfg->exp_decay_k * iter);
         else if(USE_STEP_DECAY == cfg->ga_decay_method)
-            learn_rate *= std::pow(cfg->step_decay_drop,std::floor((total_ga_iter+iter)/cfg->step_decay_epochs_drop));
+            learn_rate *= std::pow(cfg->step_decay_drop,std::floor(iter/cfg->step_decay_epochs_drop));
 
         if (iter > 1)
             prev_Q = Q;
@@ -733,7 +733,6 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         }
         comm->broadcastParams(param.get());
     }
-    total_ga_iter += iter;
 
     if (comm->isMaster()) {
         if (iter == cfg->ga_max_iterations)

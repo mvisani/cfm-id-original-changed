@@ -125,7 +125,7 @@ protected:
     void copyGradsToLBFGS(lbfgsfloatval_t *g, std::vector<double> &grads, int n);
 
     //Simple gradient ascent
-    double updateParametersSimpleGradientDescent(std::vector<MolData> &data, suft_counts_t &suft, int & total_ga_iter);
+    double updateParametersSimpleGradientDescent(std::vector<MolData> &data, suft_counts_t &suft);
 
     //Helper functions
     virtual double addRegularizers(double *grads);

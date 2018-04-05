@@ -236,16 +236,16 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
         std::cout << "Using GA max iterations " << cfg.ga_max_iterations << std::endl;
         std::cout << "Using GA Convergence Threshold " << cfg.ga_converge_thresh << std::endl;
-        std::cout << "(Will be removed)Using GA mini batch taking 1 in " << cfg.ga_minibatch_nth_size << " of processor data" << std::endl;
-        std::cout << "Using GA mini batch size per processor:  " << cfg.ga_minibatch_size_per_processor << " of processor data"
-                  << std::endl;
+        std::cout << "Using GA mini batch taking 1 in " << cfg.ga_minibatch_nth_size << " of processor data" << std::endl;
+        //std::cout << "Using GA mini batch size per processor:  " << cfg.ga_minibatch_size_per_processor << " of processor data"
+        //          << std::endl;
         switch (cfg.ga_decay_method)
         {
             case USE_DEFAULT_DECAY:
-                std::cout << "Using Time Based Learning Rate Decay Method. decay rate" << cfg.decay_rate << std::endl;
+                std::cout << "Using Time Based Learning Rate Decay Method. decay rate " << cfg.decay_rate << std::endl;
                 break;
             case USE_EXP_DECAY:
-                std::cout << "Using Exponential Learning Rate Decay Method. k" << cfg.exp_decay_k <<  std::endl;
+                std::cout << "Using Exponential Learning Rate Decay Method. k " << cfg.exp_decay_k <<  std::endl;
                 break;
             case USE_STEP_DECAY:
                 std::cout << "Using Step Decay Learning Rate Method. drop " << cfg.step_decay_drop << " epochs drop: "
