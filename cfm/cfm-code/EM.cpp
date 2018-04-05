@@ -613,8 +613,14 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group)
-                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
-                                                  true, comm->used_idxs);
+            {
+                double Q_single = computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
+                                                               true, comm->used_idxs);
+                Q += Q_single;
+                double Q_single2 = computeQ(molidx,*itdata,suft);
+                if(Q_single != Q_single2)
+                    std::cout <<  Q_single << " " << Q_single2 << std::endl;
+            }
         }
         if (comm->isMaster())
             Q += addRegularizers(&grads[0]);
