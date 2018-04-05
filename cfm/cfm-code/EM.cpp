@@ -110,9 +110,9 @@ double EM::run(std::vector<MolData> &data, int group,
     while (iter < MAX_EM_ITERATIONS) {
 
         std::string iter_out_param_filename =
-                out_param_filename + "_" + boost::lexical_cast<std::string>(iter);
+                out_param_filename + "_" + std::to_string(iter);
 
-        std::string msg = "EM Iteration " + boost::lexical_cast<std::string>(iter);
+        std::string msg = "EM Iteration " + std::to_string(iter);
         if (comm->isMaster())
             writeStatus(msg.c_str());
         comm->printToMasterOnly(msg.c_str());
@@ -181,9 +181,9 @@ double EM::run(std::vector<MolData> &data, int group,
             total_numnonc = comm->collectSumInMaster(num_nonconverged);
             tot_numc = comm->collectSumInMaster(num_converged);
             std::string cvg_msg =
-                    "Num Converged: " + boost::lexical_cast<std::string>(tot_numc);
+                    "Num Converged: " + std::to_string(tot_numc);
             std::string noncvg_msg = "Num Non-Converged: " +
-                                     boost::lexical_cast<std::string>(total_numnonc);
+                                     std::to_string(total_numnonc);
             if (comm->isMaster()) {
                 writeStatus(cvg_msg.c_str());
                 writeStatus(noncvg_msg.c_str());
@@ -193,7 +193,7 @@ double EM::run(std::vector<MolData> &data, int group,
         }
         std::string estep_time_msg =
                 "Completed E-step processing: Time Elapsed = " +
-                boost::lexical_cast<std::string>(after - before) + " seconds";
+                std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(estep_time_msg.c_str());
         comm->printToMasterOnly(estep_time_msg.c_str());
@@ -216,7 +216,7 @@ double EM::run(std::vector<MolData> &data, int group,
         after = time(nullptr);
         std::string param_update_time_msg =
                 "Completed M-step param update: Time Elapsed = " +
-                boost::lexical_cast<std::string>(after - before) + " seconds";
+                std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(param_update_time_msg.c_str());
         comm->printToMasterOnly(param_update_time_msg.c_str());
@@ -230,10 +230,12 @@ double EM::run(std::vector<MolData> &data, int group,
         after = time(nullptr);
         std::string debug_time_msg =
                 "Starting Q compute: Time Elapsed = " +
-                boost::lexical_cast<std::string>(after - before) + " seconds";
+                std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(debug_time_msg.c_str());
 
+        // validation Q value
+        double valQ = 0.0;
         // Compute the final Q (with all molecules, in case only some were used in
         // the mini-batch)
         if (cfg->ga_minibatch_nth_size > 1)
@@ -241,7 +243,7 @@ double EM::run(std::vector<MolData> &data, int group,
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
         for (itdata = data.begin(); itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
-                // valQ += computeQ( molidx, *itdata, suft );
+                //valQ += computeQ( molidx, *itdata, suft );
                 numvalmols++;
             } else if (cfg->ga_minibatch_nth_size > 1) {
                 Q += computeQ(molidx, *itdata, suft);
@@ -250,16 +252,14 @@ double EM::run(std::vector<MolData> &data, int group,
                 numnonvalmols++;
         }
 
-
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
         after = time(nullptr);
         std::string debug_time_msg2 =
                 "Finished Q compute: Time Elapsed = " +
-                boost::lexical_cast<std::string>(after - before) + " seconds";
+                std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(debug_time_msg2.c_str());
 
-        double valQ = 0.0;
         valQ = comm->collectQInMaster(valQ);
         if (cfg->ga_minibatch_nth_size > 1) {
             Q = comm->collectQInMaster(Q);
@@ -271,13 +271,13 @@ double EM::run(std::vector<MolData> &data, int group,
         // Check for convergence
         double Qratio = fabs((Q - prevQ) / Q);
         if (comm->isMaster()) {
-            std::string qdif_str = boost::lexical_cast<std::string>(Qratio) + " " +
-                                   boost::lexical_cast<std::string>(prevQ) + " ";
-            qdif_str += "Q=" + boost::lexical_cast<std::string>(Q) +
-                        " ValQ=" + boost::lexical_cast<std::string>(valQ) + " ";
+            std::string qdif_str = std::to_string(Qratio) + " " +
+                                   std::to_string(prevQ) + " ";
+            qdif_str += "Q=" + std::to_string(Q) +
+                        "ValidationQ=" + std::to_string(valQ) + " ";
             qdif_str +=
-                    "Qn=" + boost::lexical_cast<std::string>(Q / numnonvalmols) +
-                    " ValQn=" + boost::lexical_cast<std::string>(valQ / numvalmols) + " ";
+                    "Q_avg=" + std::to_string(Q / numnonvalmols) +
+                    " ValidationQ_avg=" + std::to_string(valQ / numvalmols) + " ";
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
         }
@@ -290,7 +290,7 @@ double EM::run(std::vector<MolData> &data, int group,
         prevQ = Q;
         if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
             comm->printToMasterOnly(("EM Converged after " +
-                                     boost::lexical_cast<std::string>(iter) +
+                                     std::to_string(iter) +
                                      " iterations")
                                             .c_str());
             break;
@@ -300,7 +300,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
     if (iter >= MAX_EM_ITERATIONS)
         comm->printToMasterOnly(("Warning: EM did not converge after " +
-                                 boost::lexical_cast<std::string>(iter) +
+                                 std::to_string(iter) +
                                  " iterations.")
                                         .c_str());
 
@@ -571,8 +571,8 @@ void EM::progressLBFGS(const lbfgsfloatval_t *x, const lbfgsfloatval_t *g,
                        int n, int k, int ls) {
 
     if (comm->isMaster()) {
-        writeStatus(("LBFGS Iteration " + boost::lexical_cast<std::string>(k) +
-                     ": fx = " + boost::lexical_cast<std::string>(fx))
+        writeStatus(("LBFGS Iteration " + std::to_string(k) +
+                     ": fx = " + std::to_string(fx))
                             .c_str());
         std::cout << "LBFGS Iteration " << k << ": fx = " << fx << std::endl;
     }
@@ -775,8 +775,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
     }
 
     // Compute the gradients
-    for (auto eit = energies.begin(); eit != energies.end(); ++eit) {
-        energy = *eit;
+    for (auto eit : energies) {
+        energy = eit;
 
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
@@ -862,25 +862,23 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
         prev_energy = energy;
     }
 
-    std::vector<unsigned int>::iterator eit = energies.begin();
-    for (; eit != energies.end(); ++eit) {
-        energy = *eit;
+    for (auto eit : energies) {
+        energy = eit;
 
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         // Iterate over from_id (i)
-        tmap_t::const_iterator it = fg->getFromIdTMap()->begin();
+        auto it = fg->getFromIdTMap()->begin();
         for (int from_idx = 0; it != fg->getFromIdTMap()->end(); ++it, from_idx++) {
 
             // Calculate the denominator of the sum terms
             double denom = 1.0;
-            std::vector<int>::const_iterator itt = it->begin();
-            for (; itt != it->end(); ++itt)
+            for (auto itt = it->begin(); itt != it->end(); ++itt)
                 denom += exp(moldata.getThetaForIdx(energy, *itt));
 
             // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
             double nu_sum = 0.0;
-            for (itt = it->begin(); itt != it->end(); ++itt) {
+            for (auto itt = it->begin(); itt != it->end(); ++itt) {
                 double nu = (*suft_values)[*itt + suft_offset];
                 Q += nu * (moldata.getThetaForIdx(energy, *itt) - log(denom));
             }
