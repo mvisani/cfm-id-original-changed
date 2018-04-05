@@ -609,7 +609,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
     // Initial Q and gradient calculation (to determine used indexes)
     if (comm->used_idxs.size() == 0) {
-        std::vector<MolData>::iterator itdata = data.begin();
+        auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group)
                 Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
@@ -636,8 +636,8 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     while (iter++ < max_iteration &&
            fabs((Q - prev_Q) / Q) >= cfg->ga_converge_thresh) {
 
-        if (Q < prev_Q && iter > 1)
-            learn_mult = learn_mult * 0.5;
+        /*if (Q < prev_Q && iter > 1)
+            learn_mult = learn_mult * 0.5;*/
 
         // adjust learning rate
         double learn_rate = cfg->starting_step_size * learn_mult;
