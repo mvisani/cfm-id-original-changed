@@ -273,10 +273,10 @@ double EM::run(std::vector<MolData> &data, int group,
         // Check for convergence
         double Qratio = fabs((Q - prevQ) / Q);
         if (comm->isMaster()) {
-            std::string qdif_str = boost::lexical_cast<std::string>(Qratio) + " " +
-                                   boost::lexical_cast<std::string>(prevQ) + " ";
+            std::string qdif_str = "Q_ratio= " + boost::lexical_cast<std::string>(Qratio) + " prev_Q" +
+                                   boost::lexical_cast<std::string>(prevQ) + "\n";
             qdif_str += "Q=" + boost::lexical_cast<std::string>(Q) +
-                        "ValidationQ=" + boost::lexical_cast<std::string>(valQ) + " ";
+                        " ValidationQ=" + boost::lexical_cast<std::string>(valQ) + " ";
             qdif_str +=
                     "Q_avg=" + boost::lexical_cast<std::string>(Q / numnonvalmols) +
                     " ValidationQ_avg=" + boost::lexical_cast<std::string>(valQ / numvalmols) + " ";
