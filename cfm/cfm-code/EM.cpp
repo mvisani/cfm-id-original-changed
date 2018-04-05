@@ -734,7 +734,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         comm->broadcastParams(param.get());
     }
     total_ga_iter += iter;
-    
+
     if (comm->isMaster()) {
         if (iter == cfg->ga_max_iterations)
             std::cout << "Gradient ascent did not converge" << std::endl;

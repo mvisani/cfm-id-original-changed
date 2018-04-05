@@ -246,9 +246,11 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                 break;
             case USE_EXP_DECAY:
                 std::cout << "Using Exponential Learning Rate Decay Method. k" << cfg.exp_decay_k <<  std::endl;
+                break;
             case USE_STEP_DECAY:
                 std::cout << "Using Step Decay Learning Rate Method. drop " << cfg.step_decay_drop << " epochs drop: "
                           << cfg.step_decay_epochs_drop << std::endl;
+                break;
             case USE_NO_DECAY:
             default:
                 std::cout << "NOT Using Decay Method" << std::endl;
