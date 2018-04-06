@@ -284,7 +284,7 @@ double EM::run(std::vector<MolData> &data, int group,
             comm->printToMasterOnly(qdif_str.c_str());
         }
 
-        if (Qratio < 1e-15)
+        if (Qratio < 1e-15 || prevQ > Q)
             count_no_progress += 1;
         else
             count_no_progress = 0;

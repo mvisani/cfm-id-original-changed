@@ -246,25 +246,13 @@ bool FeatureCalculator::includesFeature(const std::string &fname) {
     return false;
 }
 
-double FeatureVector::getFeature(feature_idx_t idx) const {
-    feature_value_t value = 0;
-    if(mapped_fv.find(idx) != mapped_fv.end()) {
-        value = mapped_fv.at(idx);
-    }
-    return value;
-}
-
-feature_idx_t FeatureVector::getFeatureForUnitTestOnly(int idx) const {
-    std::vector<feature_idx_t> indices;
-    for(auto & fv_it: mapped_fv)
-        indices.push_back(fv_it.first);
-    std::sort(indices.begin(),indices.end());
-    return indices[idx];
+feature_idx_t FeatureVector::getFeatureIdxForUnitTestOnly(int idx) const {
+    return mapped_fv[idx].first;
 }
 
 void FeatureVector::addFeature(double value) {
     if (value != 0.0)
-        mapped_fv[fv_idx] = value;
+        mapped_fv.push_back(std::pair<feature_idx_t, feature_value_t>(fv_idx,value));
     fv_idx += 1;
 }
 
@@ -272,7 +260,7 @@ void FeatureVector::addFeatureAtIdx(double value, unsigned int idx) {
     if (fv_idx <= idx)
         fv_idx = idx + 1;
     if (value != 0.0)
-        mapped_fv[fv_idx] = value;
+        mapped_fv.push_back(std::pair<feature_idx_t, feature_value_t>(fv_idx,value));
 }
 
 void FeatureVector::addFeatures(double values[], int size) {

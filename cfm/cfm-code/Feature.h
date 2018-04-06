@@ -82,17 +82,15 @@ public:
 
     unsigned int getTotalLength() const { return fv_idx; };
 
-    feature_value_t getFeature(feature_idx_t idx) const;
-
     // Ugly API for Unit Test
     // Just don't want to rewrite all test cases
-    feature_idx_t getFeatureForUnitTestOnly(int idx) const;
+    feature_idx_t getFeatureIdxForUnitTestOnly(int idx) const;
 
-    std::map<feature_idx_t, feature_value_t>::const_iterator getFeatureBegin() const noexcept {
+    std::vector<std::pair<feature_idx_t, feature_value_t>>::const_iterator getFeatureBegin() const noexcept {
         return mapped_fv.begin();
     };
 
-    std::map<feature_idx_t, feature_value_t>::const_iterator getFeatureEnd() const noexcept {
+    std::vector<std::pair<feature_idx_t, feature_value_t>>::const_iterator getFeatureEnd() const noexcept {
         return mapped_fv.end();
     };
 
@@ -104,7 +102,7 @@ public:
 
     void applyPCA(std::vector<std::vector <double>> &mat);
 private:
-    std::map<feature_idx_t, feature_value_t> mapped_fv;
+    std::vector<std::pair<feature_idx_t, feature_value_t>> mapped_fv;
     unsigned int fv_idx;
 };
 
