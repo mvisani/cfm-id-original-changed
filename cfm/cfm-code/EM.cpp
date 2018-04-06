@@ -239,8 +239,7 @@ double EM::run(std::vector<MolData> &data, int group,
         // Compute the final Q (with all molecules, in case only some were used in
         // the mini-batch)
         if (cfg->ga_minibatch_nth_size > 1) {
-            // compute regularizers first
-            Q = addRegularizers();
+            Q = 0;
         }
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
         for (itdata = data.begin(); itdata != data.end(); ++itdata, molidx++) {
@@ -264,6 +263,8 @@ double EM::run(std::vector<MolData> &data, int group,
 
         valQ = comm->collectQInMaster(valQ);
         if (cfg->ga_minibatch_nth_size > 1) {
+            if(comm->isMaster())
+                Q += addRegularizers();
             Q = comm->collectQInMaster(Q);
             Q = comm->broadcastQ(Q);
         }
