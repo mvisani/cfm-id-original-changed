@@ -222,10 +222,10 @@ double EM::run(std::vector<MolData> &data, int group,
         comm->printToMasterOnly(param_update_time_msg.c_str());
 
         // Write the params
-        if (comm->isMaster()) {
+        /*if (comm->isMaster()) {
             writeParamsToFile(iter_out_param_filename);
             writeParamsToFile(out_param_filename);
-        }
+        }*/
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
         after = time(nullptr);
         std::string debug_time_msg =
@@ -274,7 +274,7 @@ double EM::run(std::vector<MolData> &data, int group,
         // Check for convergence
         double Qratio = fabs((Q - prevQ) / Q);
         if (comm->isMaster()) {
-            std::string qdif_str = "Q_ratio= " + boost::lexical_cast<std::string>(Qratio) + " prev_Q" +
+            std::string qdif_str = "Q_ratio= " + boost::lexical_cast<std::string>(Qratio) + " prev_Q=" +
                                    boost::lexical_cast<std::string>(prevQ) + "\n";
             qdif_str += "Q=" + boost::lexical_cast<std::string>(Q) +
                         " ValidationQ=" + boost::lexical_cast<std::string>(valQ) + " ";
@@ -285,10 +285,20 @@ double EM::run(std::vector<MolData> &data, int group,
             comm->printToMasterOnly(qdif_str.c_str());
         }
 
-        if (Qratio < 1e-15 || prevQ > Q)
+        if (Qratio < 1e-15 || prevQ > Q){
             count_no_progress += 1;
-        else
+        }
+        else {
             count_no_progress = 0;
+            // Write the params
+            if (comm->isMaster()) {
+                std::string progress_str = "Found Better Q, Write to File";
+                comm->printToMasterOnly(progress_str.c_str());
+                writeParamsToFile(iter_out_param_filename);
+                writeParamsToFile(out_param_filename);
+            }
+        }
+
 
         prevQ = Q;
         if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
