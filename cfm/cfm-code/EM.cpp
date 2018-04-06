@@ -635,13 +635,14 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     int iter = 0;
     double learn_mult = 1.0;
 
-    int max_iteration = cfg->ga_max_iterations * cfg->ga_minibatch_nth_size;
+    //TODO maybe I should force iteration time such time ga covers all data points
+    int max_iteration = cfg->ga_max_iterations;
 
     while (iter++ < max_iteration &&
            fabs((Q - prev_Q) / Q) >= cfg->ga_converge_thresh) {
 
-        /*if (Q < prev_Q && iter > 1)
-            learn_mult = learn_mult * 0.5;*/
+        if (Q < prev_Q && iter > 1 && cfg->ga_method == USE_MOMENTUM_FOR_GA)
+            learn_mult = learn_mult * 0.5;
 
         // adjust learning rate
         double learn_rate = cfg->starting_step_size * learn_mult;
