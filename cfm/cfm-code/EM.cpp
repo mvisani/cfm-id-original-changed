@@ -104,7 +104,10 @@ double EM::run(std::vector<MolData> &data, int group,
 
     // EM
     iter = 0;
-    double Q, prevQ = -DBL_MAX;
+    double Q = 0.0;
+    double prevQ = -DBL_MAX;
+    double bestQ = -DBL_MAX;
+
     int count_no_progress = 0;
     int total_ga_iter = 0;
     while (iter < MAX_EM_ITERATIONS) {
@@ -263,7 +266,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
         valQ = comm->collectQInMaster(valQ);
         if (cfg->ga_minibatch_nth_size > 1) {
-            if(comm->isMaster())
+            if (comm->isMaster())
                 Q += addRegularizers();
             Q = comm->collectQInMaster(Q);
             Q = comm->broadcastQ(Q);
@@ -285,21 +288,27 @@ double EM::run(std::vector<MolData> &data, int group,
             comm->printToMasterOnly(qdif_str.c_str());
         }
 
-        if (Qratio < 1e-15 || prevQ > Q){
+        // check if make any progress yet
+        if (Qratio < 1e-15 || prevQ > Q) {
             count_no_progress += 1;
-        }
-        else {
+        } else {
             count_no_progress = 0;
+        }
+
+        // write param to file if current Q is better
+        if (Q > bestQ) {
+            bestQ = Q;
             // Write the params
             if (comm->isMaster()) {
-                std::string progress_str = "Found Better Q, Write to File";
+                std::string progress_str = "Found Better Q: "
+                                           +  boost::lexical_cast<std::string>(bestQ)  +  " Write to File";
                 comm->printToMasterOnly(progress_str.c_str());
                 writeParamsToFile(iter_out_param_filename);
                 writeParamsToFile(out_param_filename);
             }
         }
 
-
+        // check if EM meet halt flag
         prevQ = Q;
         if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
             comm->printToMasterOnly(("EM Converged after " +
@@ -317,7 +326,7 @@ double EM::run(std::vector<MolData> &data, int group,
                                  " iterations.")
                                         .c_str());
 
-    return Q;
+    return bestQ;
 }
 
 void EM::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
@@ -627,7 +636,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group) {
                 Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
-                                                               true, comm->used_idxs);
+                                                  true, comm->used_idxs);
             }
         }
         if (comm->isMaster())
@@ -657,12 +666,12 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
         // adjust learning rate
         double learn_rate = cfg->starting_step_size * learn_mult;
-        if(USE_DEFAULT_DECAY == cfg->ga_decay_method)
-            learn_rate *= 1.0 / (1.0 + cfg->decay_rate * (iter-1));
-        else if(USE_EXP_DECAY == cfg->ga_decay_method)
+        if (USE_DEFAULT_DECAY == cfg->ga_decay_method)
+            learn_rate *= 1.0 / (1.0 + cfg->decay_rate * (iter - 1));
+        else if (USE_EXP_DECAY == cfg->ga_decay_method)
             learn_rate *= std::exp(-cfg->exp_decay_k * iter);
-        else if(USE_STEP_DECAY == cfg->ga_decay_method)
-            learn_rate *= std::pow(cfg->step_decay_drop,std::floor(iter/cfg->step_decay_epochs_drop));
+        else if (USE_STEP_DECAY == cfg->ga_decay_method)
+            learn_rate *= std::pow(cfg->step_decay_drop, std::floor(iter / cfg->step_decay_epochs_drop));
 
         if (iter > 1)
             prev_Q = Q;
@@ -672,7 +681,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             // Don't include validation molecules
-            minibatch_flags[molidx] = (itdata->getGroup() !=  validation_group);
+            minibatch_flags[molidx] = (itdata->getGroup() != validation_group);
         }
 
         if (cfg->ga_minibatch_nth_size > 1) {
@@ -681,7 +690,8 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
         // Compute Q and the gradient
 
-        std:fill(grads.begin(),grads.end(),0.0);
+        std:
+        fill(grads.begin(), grads.end(), 0.0);
         Q = 0.0;
         itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
@@ -702,8 +712,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
         // Step the parameters
         if (comm->isMaster()) {
-            switch( cfg->ga_method )
-            {
+            switch (cfg->ga_method) {
                 case USE_MOMENTUM_FOR_GA:
                     param->adjustWeightsByGrads_Momentum(grads,
                                                          ((MasterComms *) comm)->master_used_idxs,
@@ -839,8 +848,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
             // Accumulate the last term of each transition and the
             // persistence (i = j) terms of the gradient and Q
-            double nu =  (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
-            for (auto & sit: sum_terms) {
+            double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
+            for (auto &sit: sum_terms) {
                 *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
                 if (record_used_idxs)
                     used_idxs.insert(sit.first + grad_offset);
@@ -931,8 +940,7 @@ double EM::addRegularizersAndUpdateGradient(double *grads) {
     return Q;
 }
 
-double EM::addRegularizers()
-{
+double EM::addRegularizers() {
     double Q_Reg = 0.0;
     for (auto it:((MasterComms *) comm)->master_used_idxs) {
         double weight = param->getWeightAtIdx(it);
