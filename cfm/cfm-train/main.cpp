@@ -344,7 +344,7 @@ trainCombinedEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalcul
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
     //Run EM multiple times with random restarts, taking the final one with the best Q
-    double prev_Q = -1000000000;
+    double prev_Q = -DBL_MAX;
     for (int repeat = start_repeat; repeat < cfg.num_em_restarts; repeat++) {
         EM *em;
         std::string repeat_filename = param_filename + boost::lexical_cast<std::string>(repeat);
@@ -385,7 +385,7 @@ trainSingleEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalculat
 
         if (energy >= start_energy && !no_train) {
             //Run EM multiple times with random restarts, taking the final one with the best Q
-            double prev_Q = -1000000000;
+            double prev_Q = -DBL_MAX;
             if (energy > start_energy) start_repeat = 0;
             if (start_repeat > 0) { //Too messy to compute previous best Q...just print a warning
                 std::cout
