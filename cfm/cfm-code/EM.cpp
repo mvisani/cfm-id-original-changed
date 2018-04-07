@@ -796,6 +796,9 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         prev_energy = energy;
     }
 
+    std::default_random_engine generator;
+    std::uniform_real_distribution<double> uniform_dist(0, 1.0);
+
     // Compute the gradients
     for (auto eit : energies) {
         energy = eit;
@@ -805,16 +808,17 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
         // Iterate over from_id (i)
         auto fg_map_it = fg->getFromIdTMap()->begin();
+
         for (int from_idx = 0; fg_map_it != fg->getFromIdTMap()->end(); ++fg_map_it, from_idx++) {
 
             // if random samples
             // there is chance
-            std::default_random_engine generator;
-            std::uniform_real_distribution<double> uniform_dist(0, 1.0);
             double token = uniform_dist(generator);
+            std::cout << token << std::endl;
             if(token < (1.0 - cfg->random_sampling_threshold)) {
                 continue;
             }
+
             // Calculate the denominator of the sum terms
             double denom = 1.0;
             auto itt = fg_map_it->begin();
