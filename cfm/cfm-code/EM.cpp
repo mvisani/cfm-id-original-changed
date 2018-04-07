@@ -803,7 +803,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
     }
 
 
-    int spiked = 0;
+
     // Compute the gradients
     for (auto eit : energies) {
         energy = eit;
@@ -811,9 +811,9 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
+        int spiked = 0;
         // Iterate over from_id (i)
         auto fg_map_it = fg->getFromIdTMap()->begin();
-
         for (int from_idx = 0; fg_map_it != fg->getFromIdTMap()->end(); ++fg_map_it, from_idx++) {
 
             // if random samples
@@ -869,9 +869,9 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             }
             Q -= nu * log(denom);
 
-            if(comm->isMaster())
-                std::cout << "Total: " << fg->getFromIdTMap()->size() << "skiped " << spiked << std::endl;
         }
+        if(comm->isMaster())
+            std::cout << "Total: " << fg->getFromIdTMap()->size() << "skiped " << spiked << std::endl;
     }
 
     return Q;
