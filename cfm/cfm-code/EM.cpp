@@ -797,9 +797,9 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         prev_energy = energy;
     }
 
-    std::default_random_engine generator;
+    std::mt19937 generator;
     std::uniform_real_distribution<double> uniform_dist(0, 1.0);
-
+    int spiked = 0;
     // Compute the gradients
     for (auto eit : energies) {
         energy = eit;
@@ -816,6 +816,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             // there is chance
             double token = uniform_dist(generator);
             if(token < (1.0 - cfg->random_sampling_threshold)) {
+                spiked ++;
                 continue;
             }
 
@@ -866,6 +867,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             Q -= nu * log(denom);
         }
     }
+    if(comm->isMaster())
+        std::cout << "skiped " << spiked << std::endl;
     return Q;
 }
 
