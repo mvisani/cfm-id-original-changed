@@ -26,7 +26,7 @@
 // Init static members
 std::random_device   EM::m_rd;
 std::mt19937         EM::m_rng(EM::m_rd());
-std::uniform_real_distribution<double> m_uniform_dist(0, 1.0);
+std::uniform_real_distribution<double> EM::m_uniform_dist(0, 1.0);
 
 EM::EM(config_t *a_cfg, FeatureCalculator *an_fc,
        std::string &a_status_filename, std::string initial_params_filename) {

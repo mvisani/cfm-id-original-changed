@@ -144,7 +144,7 @@ protected:
 
     static std::random_device   m_rd;
     static std::mt19937         m_rng;
-    static std::uniform_real_distribution<double> m_uniform_dist;//(0, 1.0);
+    static std::uniform_real_distribution<double> m_uniform_dist;
 };
 
 #endif // __EM_TRAIN_H__
