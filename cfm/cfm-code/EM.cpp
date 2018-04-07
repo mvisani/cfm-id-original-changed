@@ -225,10 +225,6 @@ double EM::run(std::vector<MolData> &data, int group,
         comm->printToMasterOnly(param_update_time_msg.c_str());
 
         // Write the params
-        /*if (comm->isMaster()) {
-            writeParamsToFile(iter_out_param_filename);
-            writeParamsToFile(out_param_filename);
-        }*/
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
         after = time(nullptr);
         std::string debug_time_msg =
@@ -266,8 +262,9 @@ double EM::run(std::vector<MolData> &data, int group,
 
         valQ = comm->collectQInMaster(valQ);
         if (cfg->ga_minibatch_nth_size > 1) {
-            if (comm->isMaster())
+            if (comm->isMaster()){
                 Q += addRegularizers();
+            }
             Q = comm->collectQInMaster(Q);
             Q = comm->broadcastQ(Q);
         }
@@ -810,6 +807,14 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         auto fg_map_it = fg->getFromIdTMap()->begin();
         for (int from_idx = 0; fg_map_it != fg->getFromIdTMap()->end(); ++fg_map_it, from_idx++) {
 
+            // if random samples
+            // there is chance
+            std::default_random_engine generator;
+            std::uniform_real_distribution<double> uniform_dist(0, 1.0);
+            double token = uniform_dist(generator);
+            if(token < (1.0 - cfg->random_sampling_threshold)) {
+                continue;
+            }
             // Calculate the denominator of the sum terms
             double denom = 1.0;
             auto itt = fg_map_it->begin();

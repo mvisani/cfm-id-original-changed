@@ -58,8 +58,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.do_prelim_bfs = DEFAULT_DO_PRELIM_BFS;
     cfg.max_ring_breaks = DEFAULT_MAX_RING_BREAKS;
     cfg.theta_function = DEFAULT_THETA_FUNCTION;
-    //cfg.ga_minibatch_nth_size = DEFAULT_GA_MINIBATCH_NTH_SIZE;
-    cfg.ga_minibatch_size_per_processor = DEFAULT_GA_MINIBATCH_SIZE_PER_PROCESSOR;
+    cfg.ga_minibatch_nth_size = DEFAULT_GA_MINIBATCH_NTH_SIZE;
     cfg.ga_max_iterations = DEFAULT_GA_MAX_ITERATIONS;
     cfg.ga_momentum = DEFAULT_GA_MOMENTUM;
     cfg.ga_adam_beta_1 = DEFAULT_ADAM_BETA_1;
@@ -74,6 +73,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.include_h_losses = DEFAULT_INCLUDE_H_LOSSES;
     cfg.include_precursor_h_losses_only = DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY;
     cfg.fragraph_compute_timeout_in_secs = DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS;
+    cfg.random_sampling_threshold = DEFAULT_RANDOM_SAMPLE_THRESHOLD;
 }
 
 
@@ -130,7 +130,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "theta_nn_hlayer_num_nodes") cfg.theta_nn_hlayer_num_nodes.push_back((int) value);
         else if (name == "theta_nn_layer_act_func_ids") cfg.theta_nn_layer_act_func_ids.push_back((int) value);
         else if (name == "ga_minibatch_nth_size") cfg.ga_minibatch_nth_size = (int) value;
-        else if (name == "ga_minibatch_size_per_processor") cfg.ga_minibatch_size_per_processor = (int) value;
         else if (name == "ga_max_iterations") cfg.ga_max_iterations = (int) value;
         else if (name == "ga_momentum") cfg.ga_momentum = (double) value;
         else if (name == "ga_adam_beta_1") cfg.ga_adam_beta_1 = (double) value;
@@ -145,6 +144,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "include_h_losses") cfg.include_h_losses = (int) value;
         else if (name == "include_precursor_h_losses_only") cfg.include_precursor_h_losses_only = (int) value;
         else if (name == "fragraph_compute_timeout_in_secs") cfg.fragraph_compute_timeout_in_secs = (int) value;
+        else if (name == "random_sampling_threshold") cfg.random_sampling_threshold = value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -237,8 +237,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         std::cout << "Using GA max iterations " << cfg.ga_max_iterations << std::endl;
         std::cout << "Using GA Convergence Threshold " << cfg.ga_converge_thresh << std::endl;
         std::cout << "Using GA mini batch taking 1 in " << cfg.ga_minibatch_nth_size << " of processor data" << std::endl;
-        //std::cout << "Using GA mini batch size per processor:  " << cfg.ga_minibatch_size_per_processor << " of processor data"
-        //          << std::endl;
+
         switch (cfg.ga_decay_method)
         {
             case USE_DEFAULT_DECAY:
@@ -256,8 +255,11 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                 std::cout << "NOT Using Decay Method" << std::endl;
         }
 
+        std::cout << "Using Random Sampling with threshold: " << cfg.random_sampling_threshold << std::endl;
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
-        if (cfg.allow_frag_detours) std::cout << "Allowing fragmentation detours " << std::endl;
+        if (cfg.allow_frag_detours) {
+            std::cout << "Allowing fragmentation detours " << std::endl;
+        }
         else {
             std::cout << "Disallowing fragmentation detours ";
             if (cfg.do_prelim_bfs) std::cout << "with preliminary breadth-first search" << std::endl;

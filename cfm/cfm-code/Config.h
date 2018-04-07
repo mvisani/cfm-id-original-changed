@@ -156,8 +156,7 @@ static const int DEFAULT_NN_ACTIVATION_FUNCTION = RELU_NN_ACTIVATION_FUNCTION;
 
 static const double DEFAULT_GA_MOMENTUM = 0.9;
 
-static const int DEFAULT_GA_MINIBATCH_NTH_SIZE = 1;
-static const int DEFAULT_GA_MINIBATCH_SIZE_PER_PROCESSOR = 0;
+static const int DEFAULT_GA_MINIBATCH_NTH_SIZE = 0;
 static const int DEFAULT_GA_MAX_ITERATIONS = 20;
 
 static const int NORMAL_OBS_FUNCTION = 1;
@@ -166,6 +165,9 @@ static const int DEFAULT_OBS_FUNCTION = NORMAL_OBS_FUNCTION;
 
 //Timeout settings
 static const int DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS = -1;    //-1 is no timeout.
+
+//Random Sample settings
+static const double DEFAULT_RANDOM_SAMPLE_THRESHOLD = 1.0;
 
 //Configuration
 struct config_t {
@@ -225,6 +227,9 @@ struct config_t {
 
     // For GA
     double starting_step_size;
+    int ga_max_iterations;
+
+    // Decay
     double decay_rate;
     double exp_decay_k;
     double step_decay_drop;
@@ -238,14 +243,12 @@ struct config_t {
     // For adadelta
     double ga_adadelta_rho;
 
-
-    // TODO remove unused
     int max_search_count;
     int update_bias_first;
     int ga_minibatch_nth_size;
 
-    int ga_minibatch_size_per_processor;
-    int ga_max_iterations;
+    // For random sampling
+    double random_sampling_threshold;
 
     int fragraph_compute_timeout_in_secs;
 
