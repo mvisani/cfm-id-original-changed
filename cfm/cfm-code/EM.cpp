@@ -792,6 +792,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
     for (unsigned int d = 0; d < cfg->model_depth; d++) {
         energy = cfg->map_d_to_energy[d];
         if (energy != prev_energy)
+        if (energy != prev_energy)
             energies.push_back(energy);
         prev_energy = energy;
     }
@@ -814,7 +815,6 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             // if random samples
             // there is chance
             double token = uniform_dist(generator);
-            std::cout << token << std::endl;
             if(token < (1.0 - cfg->random_sampling_threshold)) {
                 continue;
             }
