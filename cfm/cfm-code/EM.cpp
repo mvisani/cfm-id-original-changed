@@ -868,10 +868,12 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                     used_idxs.insert(sit.first + grad_offset);
             }
             Q -= nu * log(denom);
+
+            if(comm->isMaster())
+                std::cout << "Total: " << fg->getFromIdTMap()->size() << "skiped " << spiked << std::endl;
         }
     }
-    if(comm->isMaster())
-        std::cout << "skiped " << spiked << std::endl;
+
     return Q;
 }
 
