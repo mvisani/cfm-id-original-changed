@@ -23,6 +23,11 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
+// Init static members
+std::random_device   EM::m_rd;
+std::mt19937         EM::m_rng(EM::m_rd());
+std::uniform_real_distribution<double> m_uniform_dist(0, 1.0);
+
 EM::EM(config_t *a_cfg, FeatureCalculator *an_fc,
        std::string &a_status_filename, std::string initial_params_filename) {
     cfg = a_cfg;
@@ -797,8 +802,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         prev_energy = energy;
     }
 
-    std::mt19937 generator;
-    std::uniform_real_distribution<double> uniform_dist(0, 1.0);
+
     int spiked = 0;
     // Compute the gradients
     for (auto eit : energies) {
@@ -813,8 +817,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         for (int from_idx = 0; fg_map_it != fg->getFromIdTMap()->end(); ++fg_map_it, from_idx++) {
 
             // if random samples
-            // there is chance
-            double token = uniform_dist(generator);
+            double token = m_uniform_dist(m_rng);
             if(token < (1.0 - cfg->random_sampling_threshold)) {
                 spiked ++;
                 continue;
@@ -991,9 +994,8 @@ void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
             idxs[count++] = i;
     idxs.resize(count);
 
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(idxs.begin(), idxs.end(), g);
+
+    std::shuffle(idxs.begin(), idxs.end(), m_rng);
 
     int num_minibatch_mols =
             (num_mols + cfg->ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;

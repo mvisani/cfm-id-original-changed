@@ -141,6 +141,10 @@ protected:
 
     int validation_group;
     bool sparse_params;
+
+    static std::random_device   m_rd;
+    static std::mt19937         m_rng;
+    static std::uniform_real_distribution<double> m_uniform_dist;//(0, 1.0);
 };
 
 #endif // __EM_TRAIN_H__
