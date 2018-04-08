@@ -24,7 +24,7 @@
 #include <boost/filesystem.hpp>
 
 // Init static members
-std::random_device   EM::m_rd;
+std::random_device   EM::m_rd; 
 std::mt19937         EM::m_rng(EM::m_rd());
 std::uniform_real_distribution<double> EM::m_uniform_dist(0, 1.0);
 
@@ -811,7 +811,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
-        int spiked = 0;
+        // int spiked = 0;
         // Iterate over from_id (i)
         auto fg_map_it = fg->getFromIdTMap()->begin();
         for (int from_idx = 0; fg_map_it != fg->getFromIdTMap()->end(); ++fg_map_it, from_idx++) {
@@ -819,7 +819,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             // if random samples
             double token = m_uniform_dist(m_rng);
             if(token < (1.0 - cfg->random_sampling_threshold)) {
-                spiked ++;
+                //spiked ++;
                 continue;
             }
 
@@ -870,8 +870,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             Q -= nu * log(denom);
 
         }
-        if(comm->isMaster())
-            std::cout << "Total: " << fg->getFromIdTMap()->size() << "skiped " << spiked << std::endl;
+        /*if(comm->isMaster())
+            std::cout << "Total: " << fg->getFromIdTMap()->size() << "skiped " << spiked << std::endl;*/
     }
 
     return Q;
