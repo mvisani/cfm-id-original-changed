@@ -814,15 +814,15 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
-        // int spiked = 0;
+        int skipped = 0;
         // Iterate over from_id (i)
         auto fg_map_it = fg->getFromIdTMap()->begin();
         for (int from_idx = 0; fg_map_it != fg->getFromIdTMap()->end(); ++fg_map_it, from_idx++) {
 
             // if random samples
             double token = m_uniform_dist(m_rng);
-            bool skip_update = token < (1.0 - cfg->random_sampling_threshold);
-
+            bool skip_update = (token < (1.0 - cfg->random_sampling_threshold));
+            skipped += skip_update;
 
             // Calculate the denominator of the sum terms
             double denom = 1.0;
@@ -832,7 +832,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
             // Complete the innermost sum terms	(sum over j')
             std::map<unsigned int, double> sum_terms;
-            if (!skip_update) {
+            if ((!skip_update) || record_used_idxs) {
                 for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
                     const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
 
@@ -852,7 +852,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             double nu_sum = 0.0;
             for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
                 double nu = (*suft_values)[*itt + suft_offset];
-                if (!skip_update) {
+                if ((!skip_update) || record_used_idxs) {
                     nu_sum += nu;
                     const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
@@ -868,7 +868,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             // Accumulate the last term of each transition and the
             // persistence (i = j) terms of the gradient and Q
             double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
-            if (!skip_update) {
+            if ((!skip_update) || record_used_idxs) {
                 for (auto &sit: sum_terms) {
                     *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
                     if (record_used_idxs)
@@ -876,8 +876,9 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                 }
             }
             Q -= nu * log(denom);
-
         }
+        if(comm->isMaster())
+            std::cout << fg_map_it->size() <<  " skipped" << skipped << std::endl;
     }
 
     return Q;
