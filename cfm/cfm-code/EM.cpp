@@ -24,7 +24,7 @@
 #include <boost/filesystem.hpp>
 
 // Init static members
-std::random_device   EM::m_rd; 
+std::random_device   EM::m_rd;
 std::mt19937         EM::m_rng(EM::m_rd());
 std::uniform_real_distribution<double> EM::m_uniform_dist(0, 1.0);
 
@@ -244,13 +244,16 @@ double EM::run(std::vector<MolData> &data, int group,
         // the mini-batch)
         if (cfg->ga_minibatch_nth_size > 1) {
             Q = 0;
+            if (comm->isMaster())
+                std::cout << "Using minibatch, compute the final Q" << std::endl;
         }
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
         for (itdata = data.begin(); itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
                 //valQ += computeQ( molidx, *itdata, suft );
                 numvalmols++;
-            } else if (cfg->ga_minibatch_nth_size > 1) {
+            }
+            else if (cfg->ga_minibatch_nth_size > 1) {
                 Q += computeQ(molidx, *itdata, suft);
                 numnonvalmols++;
             } else
@@ -267,7 +270,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
         valQ = comm->collectQInMaster(valQ);
         if (cfg->ga_minibatch_nth_size > 1) {
-            if (comm->isMaster()){
+            if (comm->isMaster()) {
                 Q += addRegularizers();
             }
             Q = comm->collectQInMaster(Q);
@@ -303,7 +306,7 @@ double EM::run(std::vector<MolData> &data, int group,
             // Write the params
             if (comm->isMaster()) {
                 std::string progress_str = "Found Better Q: "
-                                           +  boost::lexical_cast<std::string>(bestQ)  +  " Write to File";
+                                           + boost::lexical_cast<std::string>(bestQ) + " Write to File";
                 comm->printToMasterOnly(progress_str.c_str());
                 writeParamsToFile(iter_out_param_filename);
                 writeParamsToFile(out_param_filename);
@@ -797,8 +800,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
     for (unsigned int d = 0; d < cfg->model_depth; d++) {
         energy = cfg->map_d_to_energy[d];
         if (energy != prev_energy)
-        if (energy != prev_energy)
-            energies.push_back(energy);
+            if (energy != prev_energy)
+                energies.push_back(energy);
         prev_energy = energy;
     }
 
@@ -818,10 +821,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
             // if random samples
             double token = m_uniform_dist(m_rng);
-            if(token < (1.0 - cfg->random_sampling_threshold)) {
-                //spiked ++;
-                continue;
-            }
+            bool skip_update = token < (1.0 - cfg->random_sampling_threshold);
+
 
             // Calculate the denominator of the sum terms
             double denom = 1.0;
@@ -831,30 +832,35 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
             // Complete the innermost sum terms	(sum over j')
             std::map<unsigned int, double> sum_terms;
-            for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
-                const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
+            if (!skip_update) {
+                for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
+                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
 
-                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                    auto fv_idx = fv_it->first;
-                    double val = exp(moldata.getThetaForIdx(energy, *itt)) / denom;
-                    if (sum_terms.find(fv_idx) != sum_terms.end())
-                        sum_terms[fv_idx] += val;
-                    else
-                        sum_terms[fv_idx] = val;
+                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                        auto fv_idx = fv_it->first;
+                        double val = exp(moldata.getThetaForIdx(energy, *itt)) / denom;
+                        if (sum_terms.find(fv_idx) != sum_terms.end())
+                            sum_terms[fv_idx] += val;
+                        else
+                            sum_terms[fv_idx] = val;
+                    }
                 }
             }
+
 
             // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
             double nu_sum = 0.0;
             for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
                 double nu = (*suft_values)[*itt + suft_offset];
-                nu_sum += nu;
-                const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
-                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                    auto fv_idx = fv_it->first;
-                    *(grads + fv_idx + grad_offset) += nu;
-                    if (record_used_idxs)
-                        used_idxs.insert(fv_idx + grad_offset);
+                if (!skip_update) {
+                    nu_sum += nu;
+                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
+                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                        auto fv_idx = fv_it->first;
+                        *(grads + fv_idx + grad_offset) += nu;
+                        if (record_used_idxs)
+                            used_idxs.insert(fv_idx + grad_offset);
+                    }
                 }
                 Q += nu * (moldata.getThetaForIdx(energy, *itt) - log(denom));
             }
@@ -862,16 +868,16 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             // Accumulate the last term of each transition and the
             // persistence (i = j) terms of the gradient and Q
             double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
-            for (auto &sit: sum_terms) {
-                *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
-                if (record_used_idxs)
-                    used_idxs.insert(sit.first + grad_offset);
+            if (!skip_update) {
+                for (auto &sit: sum_terms) {
+                    *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
+                    if (record_used_idxs)
+                        used_idxs.insert(sit.first + grad_offset);
+                }
             }
             Q -= nu * log(denom);
 
         }
-        /*if(comm->isMaster())
-            std::cout << "Total: " << fg->getFromIdTMap()->size() << "skiped " << spiked << std::endl;*/
     }
 
     return Q;
@@ -915,14 +921,14 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
             // Calculate the denominator of the sum terms
             double denom = 1.0;
-            for (auto itt = it->begin(); itt != it->end(); ++itt)
-                denom += exp(moldata.getThetaForIdx(energy, *itt));
+            for (auto itt : *it)
+                denom += exp(moldata.getThetaForIdx(energy, itt));
 
             // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
             double nu_sum = 0.0;
-            for (auto itt = it->begin(); itt != it->end(); ++itt) {
-                double nu = (*suft_values)[*itt + suft_offset];
-                Q += nu * (moldata.getThetaForIdx(energy, *itt) - log(denom));
+            for (auto itt : *it) {
+                double nu = (*suft_values)[itt + suft_offset];
+                Q += nu * (moldata.getThetaForIdx(energy, itt) - log(denom));
             }
 
             // Accumulate the last term of each transition and the

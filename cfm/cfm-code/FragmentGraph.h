@@ -289,6 +289,9 @@ protected:
     // Find the id for an existing transition that matches the input ids
     // or -1 in the case where no such transition is found
     int findMatchingTransition(int from_id, int to_id);
+
+    // Tree pruning
+    
 };
 
 class EvidenceFragmentGraph : public FragmentGraph {
