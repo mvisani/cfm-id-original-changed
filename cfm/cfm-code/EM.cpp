@@ -662,9 +662,10 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
     //TODO maybe I should force iteration time such time ga covers all data points
     int max_iteration = cfg->ga_max_iterations;
-
-    while (iter++ < max_iteration &&
-           fabs((Q - prev_Q) / Q) >= cfg->ga_converge_thresh) {
+    int no_progress_count = 0;
+    while (iter++ < max_iteration
+            && fabs((Q - prev_Q) / Q) >= cfg->ga_converge_thresh
+            && no_progress_count < 3) {
 
         if (Q < prev_Q && iter > 1 && cfg->ga_method == USE_MOMENTUM_FOR_GA)
             learn_mult = learn_mult * 0.5;
@@ -695,8 +696,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
         // Compute Q and the gradient
 
-        std:
-        fill(grads.begin(), grads.end(), 0.0);
+        std::fill(grads.begin(), grads.end(), 0.0);
         Q = 0.0;
         itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
@@ -762,6 +762,13 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
             }
         }
         comm->broadcastParams(param.get());
+        if(Q < prev_Q){
+            no_progress_count ++;
+        }
+        else{
+            no_progress_count = 0;
+        }
+
     }
 
     if (comm->isMaster()) {
