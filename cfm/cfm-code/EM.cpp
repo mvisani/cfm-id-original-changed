@@ -717,9 +717,6 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         if (comm->isMaster())
             std::cout << iter << ":  Q=" << Q << " prevQ=" << prevQ << " Learning_Rate= " << learn_rate
                       << std::endl;
-        if (Q < bestQ) {
-            bestQ = Q;
-        }
 
         // Step the parameters
         if (comm->isMaster()) {
@@ -772,6 +769,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
             no_progress_count ++;
         }
         else{
+            bestQ = Q;
             no_progress_count = 0;
         }
 
