@@ -252,8 +252,7 @@ double EM::run(std::vector<MolData> &data, int group,
             if (itdata->getGroup() == validation_group) {
                 //valQ += computeQ( molidx, *itdata, suft );
                 numvalmols++;
-            }
-            else if (cfg->ga_minibatch_nth_size > 1) {
+            } else if (cfg->ga_minibatch_nth_size > 1) {
                 Q += computeQ(molidx, *itdata, suft);
                 numnonvalmols++;
             } else
@@ -281,9 +280,13 @@ double EM::run(std::vector<MolData> &data, int group,
 
         // Check for convergence
         double Qratio = fabs((Q - prevQ) / Q);
+        double bestQRatio = (Q - bestQ) / Q;
         if (comm->isMaster()) {
             std::string qdif_str = "Q_ratio= " + boost::lexical_cast<std::string>(Qratio) + " prev_Q=" +
                                    boost::lexical_cast<std::string>(prevQ) + "\n";
+            qdif_str = "Best_Q_ratio= " + boost::lexical_cast<std::string>(bestQRatio) + " best_Q=" +
+                       boost::lexical_cast<std::string>(bestQ) + "\n";
+
             qdif_str += "Q=" + boost::lexical_cast<std::string>(Q) +
                         " ValidationQ=" + boost::lexical_cast<std::string>(valQ) + " ";
             qdif_str +=
@@ -296,14 +299,11 @@ double EM::run(std::vector<MolData> &data, int group,
         // check if make any progress yet
         // two conditions: 1. Qratio is less than 1e-15
         //                 2, Q has not improved compare to the best value so far
-        if (Qratio < 1e-15 || bestQ > Q) {
+        const double ratio_cutoff = 1e-15;
+        if (bestQRatio < ratio_cutoff) {
             count_no_progress += 1;
-        } else {
-            count_no_progress = 0;
-        }
-
-        // write param to file if current Q is better
-        if (Q > bestQ) {
+        } // write param to file if current Q is better
+        else {
             bestQ = Q;
             // Write the params
             if (comm->isMaster()) {
@@ -316,8 +316,8 @@ double EM::run(std::vector<MolData> &data, int group,
             count_no_progress = 0;
         }
 
-        // check if EM meet halt flag
         prevQ = Q;
+        // check if EM meet halt flag
         if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
             comm->printToMasterOnly(("EM Converged after " +
                                      boost::lexical_cast<std::string>(iter) +
@@ -667,8 +667,8 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     int max_iteration = cfg->ga_max_iterations;
     int no_progress_count = 0;
     while (iter++ < max_iteration
-            && fabs((Q - prevQ) / Q) >= cfg->ga_converge_thresh
-            && no_progress_count < 3) {
+           && fabs((Q - prevQ) / Q) >= cfg->ga_converge_thresh
+           && no_progress_count < 3) {
 
         if (Q < prevQ && iter > 1 && cfg->ga_method == USE_MOMENTUM_FOR_GA)
             learn_mult = learn_mult * 0.5;
@@ -765,10 +765,9 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
             }
         }
         comm->broadcastParams(param.get());
-        if(Q < bestQ){
-            no_progress_count ++;
-        }
-        else{
+        if (Q < bestQ) {
+            no_progress_count++;
+        } else {
             bestQ = Q;
             no_progress_count = 0;
         }
@@ -833,7 +832,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             // if random samples
             double token = m_uniform_dist(m_rng);
             bool skip_update = false;
-            if(!record_used_idxs) {
+            if (!record_used_idxs) {
                 skip_update = (token < (1.0 - cfg->random_sampling_threshold));
                 skipped += skip_update;
             }
@@ -892,8 +891,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             }
             Q -= nu * log(denom);
         }
-        if(comm->isMaster() && (cfg->random_sampling_threshold < 1.0)){
-            std::cout << "Total: " << fg->getFromIdTMap()->size()  <<  " skipped " << skipped << std::endl;
+        if (comm->isMaster() && (cfg->random_sampling_threshold < 1.0)) {
+            std::cout << "Total: " << fg->getFromIdTMap()->size() << " skipped " << skipped << std::endl;
         }
     }
 
