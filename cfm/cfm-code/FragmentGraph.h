@@ -258,11 +258,14 @@ public:
 
     void clearAllSmiles();
 
+    // Tree pruning
+    // Function to do branching cutting
+    void cutBranch();
+
 protected:
     std::vector<Fragment> fragments;
     std::vector<Transition> transitions;
-    tmap_t
-            from_id_tmap; // Mapping between from_id and transitions with that from_id
+    tmap_t from_id_tmap; // Mapping between from_id and transitions with that from_id
     tmap_t to_id_tmap; // Mapping between to_id and transitions with that to_id
     bool include_isotopes;
     IsotopeCalculator *isotope;
@@ -290,8 +293,6 @@ protected:
     // or -1 in the case where no such transition is found
     int findMatchingTransition(int from_id, int to_id);
 
-    // Tree pruning
-    
 };
 
 class EvidenceFragmentGraph : public FragmentGraph {

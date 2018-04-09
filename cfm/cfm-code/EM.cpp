@@ -294,7 +294,9 @@ double EM::run(std::vector<MolData> &data, int group,
         }
 
         // check if make any progress yet
-        if (Qratio < 1e-15 || prevQ > Q) {
+        // two conditions: 1. Qratio is less than 1e-15
+        //                 2, Q has not improved compare to the best value so far
+        if (Qratio < 1e-15 || bestQ > Q) {
             count_no_progress += 1;
         } else {
             count_no_progress = 0;
@@ -311,6 +313,7 @@ double EM::run(std::vector<MolData> &data, int group,
                 writeParamsToFile(iter_out_param_filename);
                 writeParamsToFile(out_param_filename);
             }
+            count_no_progress = 0;
         }
 
         // check if EM meet halt flag
@@ -621,7 +624,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
-    double Q = 0.0, prev_Q = -DBL_MAX;
+    double Q = 0.0, prevQ = -DBL_MAX, bestQ = -DBL_MAX;
 
     std::vector<double> grads(param->getNumWeights(), 0.0);
     std::vector<double> prev_v(param->getNumWeights(), 0.0);
@@ -664,10 +667,10 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     int max_iteration = cfg->ga_max_iterations;
     int no_progress_count = 0;
     while (iter++ < max_iteration
-            && fabs((Q - prev_Q) / Q) >= cfg->ga_converge_thresh
+            && fabs((Q - prevQ) / Q) >= cfg->ga_converge_thresh
             && no_progress_count < 3) {
 
-        if (Q < prev_Q && iter > 1 && cfg->ga_method == USE_MOMENTUM_FOR_GA)
+        if (Q < prevQ && iter > 1 && cfg->ga_method == USE_MOMENTUM_FOR_GA)
             learn_mult = learn_mult * 0.5;
 
         // adjust learning rate
@@ -680,7 +683,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
             learn_rate *= std::pow(cfg->step_decay_drop, std::floor(iter / cfg->step_decay_epochs_drop));
 
         if (iter > 1)
-            prev_Q = Q;
+            prevQ = Q;
 
         // Select molecules to include in gradient mini-batch.
         std::vector<int> minibatch_flags(data.size());
@@ -712,8 +715,11 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         Q = comm->broadcastQ(Q);
 
         if (comm->isMaster())
-            std::cout << iter << ":  Q=" << Q << " prev_Q=" << prev_Q << " Learning_Rate= " << learn_rate
+            std::cout << iter << ":  Q=" << Q << " prevQ=" << prevQ << " Learning_Rate= " << learn_rate
                       << std::endl;
+        if (Q < bestQ) {
+            bestQ = Q;
+        }
 
         // Step the parameters
         if (comm->isMaster()) {
@@ -762,7 +768,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
             }
         }
         comm->broadcastParams(param.get());
-        if(Q < prev_Q){
+        if(Q < bestQ){
             no_progress_count ++;
         }
         else{
