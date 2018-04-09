@@ -880,12 +880,10 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                 }
             }
             Q -= nu * log(denom);
-            if(comm->isMaster()
-               && (cfg->random_sampling_threshold < 1.0)){
-                std::cout << "Total: " << fg_map_it->size() <<  " skipped " << skipped << std::endl;
-            }
         }
-
+        if(comm->isMaster() && (cfg->random_sampling_threshold < 1.0)){
+            std::cout << "Total: " << fg_map_it->size() <<  " skipped " << skipped << std::endl;
+        }
     }
 
     return Q;
