@@ -280,7 +280,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
         // Check for convergence
         double Qratio = fabs((Q - prevQ) / Q);
-        double bestQRatio = fabs((Q - bestQ) / Q);
+        double bestQRatio = (Q - bestQ) / Q;
         if (comm->isMaster()) {
             std::string qdif_str = "Q_ratio= " + boost::lexical_cast<std::string>(Qratio) + " prev_Q=" +
                                    boost::lexical_cast<std::string>(prevQ) + "\n";
@@ -300,7 +300,7 @@ double EM::run(std::vector<MolData> &data, int group,
         // two conditions: 1. Qratio is less than 1e-15
         //                 2, Q has not improved compare to the best value so far
         const double ratio_cutoff = 1e-15;
-        if (bestQRatio < ratio_cutoff || bestQ > Q) {
+        if (bestQRatio < ratio_cutoff) {
             count_no_progress += 1;
         } // write param to file if current Q is better
         else {
