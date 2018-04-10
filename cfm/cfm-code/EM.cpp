@@ -639,7 +639,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     std::vector<double> mean_squared_delta_x(param->getNumWeights(), 0.0);
 
     // Initial Q and gradient calculation (to determine used indexes)
-    /*if (comm->used_idxs.size() == 0) {
+    if (comm->used_idxs.size() == 0) {
         std::set<unsigned int> temp;
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
@@ -657,19 +657,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         comm->setMasterUsedIdxs();
         if (comm->isMaster())
             zeroUnusedParams();
-    }*/
-
-    if (comm->used_idxs.size() == 0) {
-        for (auto itdata : data) {
-            if (itdata.getGroup() != validation_group) {
-                getUsedIdxs(itdata, comm->used_idxs);
-            }
-        }
-        comm->setMasterUsedIdxs();
-        if (comm->isMaster())
-            zeroUnusedParams();
     }
-
     int N = 0;
     if (comm->isMaster())
         N = ((MasterComms *) comm)->master_used_idxs.size();
@@ -923,6 +911,7 @@ double EM::getUsedIdxs(MolData &moldata, std::set<unsigned int> &used_idxs) {
     getEnergiesLevels(energies);
 
     for (auto energy : energies) {
+
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
 
         // Iterate over from_id (i)
