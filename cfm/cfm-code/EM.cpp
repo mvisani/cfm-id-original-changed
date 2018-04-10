@@ -439,15 +439,7 @@ double EM::updateParametersLBFGS(std::vector<MolData> &data,
                 Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
                                                   true, comm->used_idxs);
             }
-            if (molidx % 10 == 0) {
-                std::string msg = "Compute And Accumulate Gradient: " +
-                                  boost::lexical_cast<std::string>(molidx) + " mols";
-                comm->printToMasterOnly(msg.c_str());
-                // std::cout << "Compute And Accumulate Gradient: " <<  molidx  << "
-                // mols" << std::endl;
-            }
         }
-
         // Collect the used_idxs from all the processors into the MASTER
         comm->setMasterUsedIdxs();
 
@@ -647,10 +639,10 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
                                                   true, comm->used_idxs);
             }
         }
-        if (comm->isMaster())
+        /*if (comm->isMaster())
             Q += addRegularizersAndUpdateGradient(&grads[0]);
         Q = comm->collectQInMaster(Q);
-        Q = comm->broadcastQ(Q);
+        Q = comm->broadcastQ(Q);*/
         comm->setMasterUsedIdxs();
         if (comm->isMaster())
             zeroUnusedParams();
@@ -785,7 +777,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
 
 double EM::computeAndAccumulateGradient(double *grads, int molidx,
                                         MolData &moldata, suft_counts_t &suft,
-                                        bool record_used_idxs,
+                                        bool record_used_idxs_only,
                                         std::set<unsigned int> &used_idxs) {
 
     double Q = 0.0;
@@ -799,7 +791,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         return Q;
 
     // Compute the latest transition thetas
-    moldata.computeTransitionThetas(*param);
+    if(!record_used_idxs_only)
+        moldata.computeTransitionThetas(*param);
     suft_t *suft_values = &(suft.values[molidx]);
 
     // Collect energies to compute
@@ -817,71 +810,78 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         auto fg_map_it = fg->getFromIdTMap()->begin();
         for (int from_idx = 0; fg_map_it != fg->getFromIdTMap()->end(); ++fg_map_it, from_idx++) {
 
-            // if random samples
-            double token = m_uniform_dist(m_rng);
-            bool skip_update = false;
-            if (!record_used_idxs) {
-                skip_update = (token < (1.0 - cfg->random_sampling_threshold));
+
+            if (record_used_idxs_only)
+            {
+                for (auto itt : *fg_map_it) {
+                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(itt);
+                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                        used_idxs.insert(fv_it->first + grad_offset);
+                    }
+                }
+            }
+            else
+            {
+                // if random samples
+                double token = m_uniform_dist(m_rng);
+                bool skip_update = (token < (1.0 - cfg->random_sampling_threshold));
                 skipped += skip_update;
-            }
 
 
-            // Calculate the denominator of the sum terms
-            double denom = 1.0;
-            auto itt = fg_map_it->begin();
-            for (; itt != fg_map_it->end(); ++itt)
-                denom += exp(moldata.getThetaForIdx(energy, *itt));
+                // Calculate the denominator of the sum terms
+                double denom = 1.0;
+                auto itt = fg_map_it->begin();
+                for (; itt != fg_map_it->end(); ++itt)
+                    denom += exp(moldata.getThetaForIdx(energy, *itt));
 
-            // Complete the innermost sum terms	(sum over j')
-            std::map<unsigned int, double> sum_terms;
-            if (!skip_update) {
-                for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
-                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
-
-                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                        auto fv_idx = fv_it->first;
-                        double val = exp(moldata.getThetaForIdx(energy, *itt)) / denom;
-                        if (sum_terms.find(fv_idx) != sum_terms.end())
-                            sum_terms[fv_idx] += val;
-                        else
-                            sum_terms[fv_idx] = val;
-                    }
-                }
-            }
-
-
-            // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
-            double nu_sum = 0.0;
-            for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
-                double nu = (*suft_values)[*itt + suft_offset];
+                // Complete the innermost sum terms	(sum over j')
+                std::map<unsigned int, double> sum_terms;
                 if (!skip_update) {
-                    nu_sum += nu;
-                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
-                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                        auto fv_idx = fv_it->first;
-                        *(grads + fv_idx + grad_offset) += nu;
-                        if (record_used_idxs)
-                            used_idxs.insert(fv_idx + grad_offset);
+                    for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
+                        const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
+
+                        for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                            auto fv_idx = fv_it->first;
+                            double val = exp(moldata.getThetaForIdx(energy, *itt)) / denom;
+                            if (sum_terms.find(fv_idx) != sum_terms.end())
+                                sum_terms[fv_idx] += val;
+                            else
+                                sum_terms[fv_idx] = val;
+                        }
                     }
                 }
-                Q += nu * (moldata.getThetaForIdx(energy, *itt) - log(denom));
+
+
+                // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
+                double nu_sum = 0.0;
+                for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
+                    double nu = (*suft_values)[*itt + suft_offset];
+                    if (!skip_update) {
+                        nu_sum += nu;
+                        const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
+                        for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                            auto fv_idx = fv_it->first;
+                            *(grads + fv_idx + grad_offset) += nu;
+                        }
+                    }
+                    Q += nu * (moldata.getThetaForIdx(energy, *itt) - log(denom));
+                }
+
+                // Accumulate the last term of each transition and the
+                // persistence (i = j) terms of the gradient and Q
+                double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
+                if (!skip_update) {
+                    for (auto &sit: sum_terms) {
+                        *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
+                    }
+                }
+                Q -= nu * log(denom);
             }
 
-            // Accumulate the last term of each transition and the
-            // persistence (i = j) terms of the gradient and Q
-            double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
-            if (!skip_update) {
-                for (auto &sit: sum_terms) {
-                    *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
-                    if (record_used_idxs)
-                        used_idxs.insert(sit.first + grad_offset);
-                }
-            }
-            Q -= nu * log(denom);
         }
-        if (comm->isMaster() && (cfg->random_sampling_threshold < 1.0)) {
+        /*if (comm->isMaster() && (cfg->random_sampling_threshold < 1.0)) {
             std::cout << "Total: " << fg->getFromIdTMap()->size() << " skipped " << skipped << std::endl;
-        }
+        }*/
     }
 
     return Q;
