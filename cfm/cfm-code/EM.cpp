@@ -432,19 +432,23 @@ double EM::updateParametersLBFGS(std::vector<MolData> &data,
     // Initial Q and gradient calculation (to determine used indexes - if we
     // already have them don't bother)
     if (comm->used_idxs.size() == 0) {
+        // gey used idxs
+        for (auto itdata : data) {
+            if (itdata.getGroup() != validation_group) {
+                getUsedIdxs(itdata, comm->used_idxs);
+            }
+        }
+        // init Q
         std::vector<double> grads(param->getNumWeights(), 0.0);
         std::vector<MolData>::iterator itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group) {
-                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
-                                                  true, comm->used_idxs);
+                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, comm->used_idxs);
             }
             if (molidx % 10 == 0) {
                 std::string msg = "Compute And Accumulate Gradient: " +
                                   boost::lexical_cast<std::string>(molidx) + " mols";
                 comm->printToMasterOnly(msg.c_str());
-                // std::cout << "Compute And Accumulate Gradient: " <<  molidx  << "
-                // mols" << std::endl;
             }
         }
 
@@ -579,8 +583,7 @@ lbfgsfloatval_t EM::evaluateLBFGS(const lbfgsfloatval_t *x, lbfgsfloatval_t *g,
          ++itdata, molidx++) {
         if (tmp_minibatch_flags[molidx])
             Q += computeAndAccumulateGradient(grad_ptr, molidx, *itdata,
-                                              *tmp_suft_ptr_lbfgs, false,
-                                              comm->used_idxs);
+                                              *tmp_suft_ptr_lbfgs, comm->used_idxs);
     }
 
     if (comm->isMaster())
@@ -639,7 +642,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     std::vector<double> mean_squared_delta_x(param->getNumWeights(), 0.0);
 
     // Initial Q and gradient calculation (to determine used indexes)
-    if (comm->used_idxs.size() == 0) {
+    /*if (comm->used_idxs.size() == 0) {
         std::set<unsigned int> temp;
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
@@ -657,7 +660,19 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         comm->setMasterUsedIdxs();
         if (comm->isMaster())
             zeroUnusedParams();
+    }*/
+
+    if (comm->used_idxs.size() == 0) {
+        for (auto itdata : data) {
+            if (itdata.getGroup() != validation_group) {
+                getUsedIdxs(itdata, comm->used_idxs);
+            }
+        }
+        comm->setMasterUsedIdxs();
+        if (comm->isMaster())
+            zeroUnusedParams();
     }
+
     int N = 0;
     if (comm->isMaster())
         N = ((MasterComms *) comm)->master_used_idxs.size();
@@ -707,8 +722,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (minibatch_flags[molidx])
-                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
-                                                  false, comm->used_idxs);
+                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, comm->used_idxs);
         }
         if (comm->isMaster())
             Q += addRegularizersAndUpdateGradient(&grads[0]);
@@ -789,7 +803,6 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
 double EM::computeAndAccumulateGradient(double *grads, int molidx,
                                         MolData &moldata, suft_counts_t &suft,
-                                        bool record_used_idxs,
                                         std::set<unsigned int> &used_idxs) {
 
     double Q = 0.0;
@@ -822,11 +835,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
             // if random samples
             double token = m_uniform_dist(m_rng);
-            bool skip_update = false;
-            if (!record_used_idxs) {
-                skip_update = (token < (1.0 - cfg->random_sampling_threshold));
-                skipped += skip_update;
-            }
+            bool skip_update =  (token < (1.0 - cfg->random_sampling_threshold));
+            skipped += skip_update;
 
 
             // Calculate the denominator of the sum terms
@@ -863,8 +873,6 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         auto fv_idx = fv_it->first;
                         *(grads + fv_idx + grad_offset) += nu;
-                        if (record_used_idxs)
-                            used_idxs.insert(fv_idx + grad_offset);
                     }
                 }
                 Q += nu * (moldata.getThetaForIdx(energy, *itt) - log(denom));
@@ -876,15 +884,13 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             if (!skip_update) {
                 for (auto &sit: sum_terms) {
                     *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
-                    if (record_used_idxs)
-                        used_idxs.insert(sit.first + grad_offset);
                 }
             }
             Q -= nu * log(denom);
         }
-        if (comm->isMaster() && (cfg->random_sampling_threshold < 1.0)) {
+        /*if (comm->isMaster() && (cfg->random_sampling_threshold < 1.0)) {
             std::cout << "Total: " << fg->getFromIdTMap()->size() << " skipped " << skipped << std::endl;
-        }
+        }*/
     }
 
     return Q;
@@ -899,7 +905,6 @@ double EM::getUsedIdxs(MolData &moldata, std::set<unsigned int> &used_idxs) {
     getEnergiesLevels(energies);
 
     for (auto energy : energies) {
-
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
 
         // Iterate over from_id (i)

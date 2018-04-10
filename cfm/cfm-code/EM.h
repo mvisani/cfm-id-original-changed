@@ -66,8 +66,7 @@ public:
     virtual void writeParamsToFile(std::string &filename);
 
     //This is public so the test can access it....there must be a better way?
-    virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                                bool record_used_idxs, std::set<unsigned int> &used_idxs);
+    virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft, std::set<unsigned int> &used_idxs);
 
     // This is a function to get all used idx
     virtual double getUsedIdxs(MolData &moldata, std::set<unsigned int> &used_idxs);
@@ -132,7 +131,8 @@ protected:
 
     //Helper functions
     virtual double addRegularizersAndUpdateGradient(double *grads);
-    //function to add L1 term for Q
+
+    //function to add L2 term for Q
     virtual double addRegularizers();
 
     //function to get all eng levels:
