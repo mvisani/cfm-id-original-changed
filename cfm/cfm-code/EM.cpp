@@ -640,13 +640,16 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
     // Initial Q and gradient calculation (to determine used indexes)
     if (comm->used_idxs.size() == 0) {
+        std::set<unsigned int> temp;
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group) {
                 Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
                                                   true, comm->used_idxs);
+                getUsedIdxs(*itdata, temp);
             }
         }
+        std::cout << (temp == comm->used_idxs) << std::endl;
         if (comm->isMaster())
             Q += addRegularizersAndUpdateGradient(&grads[0]);
         Q = comm->collectQInMaster(Q);
@@ -805,21 +808,9 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
     // Collect energies to compute
     std::vector<unsigned int> energies;
-    unsigned int energy;
-    int prev_energy = -1;
-    for (unsigned int d = 0; d < cfg->model_depth; d++) {
-        energy = cfg->map_d_to_energy[d];
-        if (energy != prev_energy)
-            if (energy != prev_energy)
-                energies.push_back(energy);
-        prev_energy = energy;
-    }
+    getEnergiesLevels(energies);
 
-
-
-    // Compute the gradients
-    for (auto eit : energies) {
-        energy = eit;
+    for (auto energy : energies) {
 
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
@@ -899,6 +890,32 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
     return Q;
 }
 
+double EM::getUsedIdxs(MolData &moldata, std::set<unsigned int> &used_idxs) {
+
+    const FragmentGraph *fg = moldata.getFragmentGraph();
+
+    // Collect energies to compute
+    std::vector<unsigned int> energies;
+    getEnergiesLevels(energies);
+
+    for (auto energy : energies) {
+
+        unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
+
+        // Iterate over from_id (i)
+        for (auto fg_map_it = fg->getFromIdTMap()->begin(); fg_map_it != fg->getFromIdTMap()->end(); ++fg_map_it) {
+            for (auto itt : *fg_map_it) {
+                const FeatureVector *fv = moldata.getFeatureVectorForIdx(itt);
+                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                    used_idxs.insert(fv_it->first + grad_offset);
+                }
+            }
+        }
+
+    }
+
+}
+
 double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     double Q = 0.0;
@@ -917,17 +934,9 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     // Collect energies to compute
     std::vector<unsigned int> energies;
-    unsigned int energy;
-    int prev_energy = -1;
-    for (unsigned int d = 0; d < cfg->model_depth; d++) {
-        energy = cfg->map_d_to_energy[d];
-        if (energy != prev_energy)
-            energies.push_back(energy);
-        prev_energy = energy;
-    }
+    getEnergiesLevels(energies);
 
-    for (auto eit : energies) {
-        energy = eit;
+    for (auto energy : energies) {
 
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
@@ -941,7 +950,6 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
                 denom += exp(moldata.getThetaForIdx(energy, itt));
 
             // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
-            double nu_sum = 0.0;
             for (auto itt : *it) {
                 double nu = (*suft_values)[itt + suft_offset];
                 Q += nu * (moldata.getThetaForIdx(energy, itt) - log(denom));
@@ -949,8 +957,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
             // Accumulate the last term of each transition and the
             // persistence (i = j) terms of the gradient and Q
-            double nu =
-                    (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
+            double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
             Q -= nu * log(denom);
         }
     }
@@ -984,7 +991,6 @@ double EM::addRegularizers() {
     for (auto it:((MasterComms *) comm)->master_used_idxs) {
         double weight = param->getWeightAtIdx(it);
         Q_Reg -= 0.5 * cfg->lambda * weight * weight;
-
     }
 
     // Remove the Bias terms (don't regularize the bias terms!)
@@ -1005,6 +1011,18 @@ void EM::zeroUnusedParams() {
             param->setWeightAtIdx(0.0, i);
     }
 }
+
+void EM::getEnergiesLevels(std::vector<unsigned int> &energies) {
+    unsigned int energy;
+    int prev_energy = -1;
+    for (unsigned int d = 0; d < cfg->model_depth; d++) {
+        energy = cfg->map_d_to_energy[d];
+        if (energy != prev_energy)
+            energies.push_back(energy);
+        prev_energy = energy;
+    }
+}
+
 
 void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
 
