@@ -659,7 +659,7 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
             zeroUnusedParams();
     }*/
 
-    if (comm->used_idxs.empty()) {
+    if (comm->used_idxs.size() == 0) {
         for (auto itdata : data) {
             if (itdata.getGroup() != validation_group) {
                 getUsedIdxs(itdata, comm->used_idxs);
