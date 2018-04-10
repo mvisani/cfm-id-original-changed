@@ -217,7 +217,6 @@ struct config_t {
 
     //Gradient Ascent Configuration
     double lambda;    //Regularization constant
-    int use_lbfgs_for_ga;
     int ga_method;
     int ga_decay_method;
     int converge_count_thresh;

@@ -66,8 +66,13 @@ public:
     virtual void writeParamsToFile(std::string &filename);
 
     //This is public so the test can access it....there must be a better way?
-    virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                                bool record_used_idxs, std::set<unsigned int> &used_idxs);
+    virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft, std::set<unsigned int> &used_idxs);
+
+    // This is a function to get all used idx
+    virtual void getUsedIdxs(MolData &moldata, std::set<unsigned int> &used_idxs);
+
+    // This is a function in do prepare work for GA
+    virtual double prepareGradientAscent(std::vector<MolData> &data, double *grads, suft_counts_t &suft);
 
     virtual double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
 
@@ -81,6 +86,7 @@ public:
 
     //Select mini batch (exposed publicly for testing...)
     void selectMiniBatch(std::vector<int> &initialized_minibatch_flags);
+
 
 protected:
     //The feature calculator to use - preconfigured with feature spec
@@ -125,12 +131,18 @@ protected:
     void copyGradsToLBFGS(lbfgsfloatval_t *g, std::vector<double> &grads, int n);
 
     //Simple gradient ascent
-    double updateParametersSimpleGradientDescent(std::vector<MolData> &data, suft_counts_t &suft);
+    double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft);
 
     //Helper functions
+
+    //function to add L2 term for Q and update grads
     virtual double addRegularizersAndUpdateGradient(double *grads);
-    //function to add L1 term for Q
+
+    //function to add L2 term for Q
     virtual double addRegularizers();
+
+    //function to get all eng levels:
+    virtual void getEnergiesLevels(std::vector<unsigned int>& energies);
 
     void zeroUnusedParams();
 
