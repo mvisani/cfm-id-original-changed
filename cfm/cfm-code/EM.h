@@ -69,9 +69,6 @@ public:
     virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
                                                 bool record_used_idxs, std::set<unsigned int> &used_idxs);
 
-    // This is a function to get all used idx
-    virtual double getUsedIdxs(MolData &moldata, std::set<unsigned int> &used_idxs);
-
     virtual double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
 
     //For use by LBFGS only (public for this reason).

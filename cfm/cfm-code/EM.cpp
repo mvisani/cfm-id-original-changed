@@ -640,16 +640,13 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
 
     // Initial Q and gradient calculation (to determine used indexes)
     if (comm->used_idxs.size() == 0) {
-        std::set<unsigned int> temp;
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group) {
                 Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
                                                   true, comm->used_idxs);
-                getUsedIdxs(*itdata, temp);
             }
         }
-        std::cout << (temp == comm->used_idxs) << std::endl;
         if (comm->isMaster())
             Q += addRegularizersAndUpdateGradient(&grads[0]);
         Q = comm->collectQInMaster(Q);
@@ -900,32 +897,6 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
     }
 
     return Q;
-}
-
-double EM::getUsedIdxs(MolData &moldata, std::set<unsigned int> &used_idxs) {
-
-    const FragmentGraph *fg = moldata.getFragmentGraph();
-
-    // Collect energies to compute
-    std::vector<unsigned int> energies;
-    getEnergiesLevels(energies);
-
-    for (auto energy : energies) {
-
-        unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
-
-        // Iterate over from_id (i)
-        for (auto fg_map_it = fg->getFromIdTMap()->begin(); fg_map_it != fg->getFromIdTMap()->end(); ++fg_map_it) {
-            for (auto itt : *fg_map_it) {
-                const FeatureVector *fv = moldata.getFeatureVectorForIdx(itt);
-                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                    used_idxs.insert(fv_it->first + grad_offset);
-                }
-            }
-        }
-
-    }
-
 }
 
 double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
