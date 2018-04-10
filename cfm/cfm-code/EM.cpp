@@ -818,6 +818,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         return Q;
 
     // Compute the latest transition thetas
+
     moldata.computeTransitionThetas(*param);
     suft_t *suft_values = &(suft.values[molidx]);
 
