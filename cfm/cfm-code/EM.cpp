@@ -213,7 +213,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
         after = time(nullptr);
         std::string param_update_time_msg =
-                "Completed M-step param update: Time Elapsed = " +
+                "[M-Step]Completed M-step param update: Time Elapsed = " +
                 boost::lexical_cast<std::string>(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(param_update_time_msg.c_str());
@@ -221,13 +221,8 @@ double EM::run(std::vector<MolData> &data, int group,
 
         // Write the params
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
-        after = time(nullptr);
-        std::string debug_time_msg =
-                "Starting Q compute: Time Elapsed = " +
-                boost::lexical_cast<std::string>(after - before) + " seconds";
-        if (comm->isMaster())
-            writeStatus(debug_time_msg.c_str());
 
+        before = time(nullptr);
         // validation Q value
         double valQ = 0.0;
         // Compute the final Q (with all molecules, in case only some were used in
@@ -251,11 +246,11 @@ double EM::run(std::vector<MolData> &data, int group,
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
         after = time(nullptr);
-        std::string debug_time_msg2 =
+        std::string q_time_msg =
                 "[M-Step] Finished Q compute: Time Elapsed = " +
                 boost::lexical_cast<std::string>(after - before) + " seconds";
         if (comm->isMaster())
-            writeStatus(debug_time_msg2.c_str());
+            writeStatus(q_time_msg.c_str());
 
         valQ = comm->collectQInMaster(valQ);
         if (cfg->ga_minibatch_nth_size > 1) {
