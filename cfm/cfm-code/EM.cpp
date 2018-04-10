@@ -756,7 +756,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
             }
         }
         comm->broadcastParams(param.get());
-        if (Q < bestQ) {
+        if (bestQ > Q) {
             no_progress_count++;
         } else {
             bestQ = Q;
