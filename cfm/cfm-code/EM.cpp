@@ -639,10 +639,6 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
                                                   true, comm->used_idxs);
             }
         }
-        /*if (comm->isMaster())
-            Q += addRegularizersAndUpdateGradient(&grads[0]);
-        Q = comm->collectQInMaster(Q);
-        Q = comm->broadcastQ(Q);*/
         comm->setMasterUsedIdxs();
         if (comm->isMaster())
             zeroUnusedParams();
@@ -879,9 +875,9 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             }
 
         }
-        /*if (comm->isMaster() && (cfg->random_sampling_threshold < 1.0)) {
+        if (comm->isMaster() && (cfg->random_sampling_threshold < 1.0)) {
             std::cout << "Total: " << fg->getFromIdTMap()->size() << " skipped " << skipped << std::endl;
-        }*/
+        }
     }
 
     return Q;
