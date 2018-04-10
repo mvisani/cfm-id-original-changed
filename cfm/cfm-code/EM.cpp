@@ -136,11 +136,6 @@ double EM::run(std::vector<MolData> &data, int group,
         int tot_numc = 0, total_numnonc = 0;
         before = time(nullptr);
 
-        std::string estep_start_msg = "----- Starting E-step Processing -----";
-        if (comm->isMaster())
-            writeStatus(estep_start_msg.c_str());
-        comm->printToMasterOnly(estep_start_msg.c_str());
-
         // Do the inference part (E-step)
         itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
@@ -200,7 +195,7 @@ double EM::run(std::vector<MolData> &data, int group,
             comm->printToMasterOnly(noncvg_msg.c_str());
         }
         std::string estep_time_msg =
-                "Completed E-step processing: Time Elapsed = " +
+                "[E-Step]Completed E-step processing: Time Elapsed = " +
                 boost::lexical_cast<std::string>(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(estep_time_msg.c_str());
@@ -209,11 +204,6 @@ double EM::run(std::vector<MolData> &data, int group,
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
         // Find a new set of parameters to maximize the expected log likelihood
         // (M-step)
-
-        std::string mstep_start_msg = "----- Starting M-step param update -----";
-        if (comm->isMaster())
-            writeStatus(mstep_start_msg.c_str());
-        comm->printToMasterOnly(mstep_start_msg.c_str());
 
         before = time(nullptr);
         if (cfg->ga_method == USE_LBFGS_FOR_GA)
@@ -262,7 +252,7 @@ double EM::run(std::vector<MolData> &data, int group,
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
         after = time(nullptr);
         std::string debug_time_msg2 =
-                "Finished Q compute: Time Elapsed = " +
+                "[M-Step] Finished Q compute: Time Elapsed = " +
                 boost::lexical_cast<std::string>(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(debug_time_msg2.c_str());
@@ -282,7 +272,7 @@ double EM::run(std::vector<MolData> &data, int group,
         double Qratio = fabs((Q - prevQ) / Q);
         double bestQRatio = fabs((Q - bestQ) / Q);
         if (comm->isMaster()) {
-            std::string qdif_str = "Q_ratio= " + boost::lexical_cast<std::string>(Qratio) + " prev_Q=" +
+            std::string qdif_str = "[M-Step] Q_ratio= " + boost::lexical_cast<std::string>(Qratio) + " prev_Q=" +
                                    boost::lexical_cast<std::string>(prevQ) + "\n";
             qdif_str = "Best_Q_ratio= " + boost::lexical_cast<std::string>(bestQRatio) + " best_Q=" +
                        boost::lexical_cast<std::string>(bestQ) + "\n";
@@ -307,7 +297,7 @@ double EM::run(std::vector<MolData> &data, int group,
             bestQ = Q;
             // Write the params
             if (comm->isMaster()) {
-                std::string progress_str = "Found Better Q: "
+                std::string progress_str = "[M-Step] Found Better Q: "
                                            + boost::lexical_cast<std::string>(bestQ) + " Write to File";
                 comm->printToMasterOnly(progress_str.c_str());
                 writeParamsToFile(iter_out_param_filename);
@@ -875,9 +865,9 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             }
 
         }
-        if (comm->isMaster() && (cfg->random_sampling_threshold < 1.0)) {
+        /*if (comm->isMaster() && (cfg->random_sampling_threshold < 1.0)) {
             std::cout << "Total: " << fg->getFromIdTMap()->size() << " skipped " << skipped << std::endl;
-        }
+        }*/
     }
 
     return Q;
