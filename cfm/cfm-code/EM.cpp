@@ -638,27 +638,9 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     std::vector<double> mean_squared_gradients(param->getNumWeights(), 0.0);
     std::vector<double> mean_squared_delta_x(param->getNumWeights(), 0.0);
 
-    // Initial Q and gradient calculation (to determine used indexes)
-    if (comm->used_idxs.size() == 0) {
-        auto itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() != validation_group) {
-                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
-                                                  true, comm->used_idxs);
-            }
-        }
-        if (comm->isMaster())
-            Q += addRegularizersAndUpdateGradient(&grads[0]);
-        Q = comm->collectQInMaster(Q);
-        Q = comm->broadcastQ(Q);
-        comm->setMasterUsedIdxs();
-        if (comm->isMaster())
-            zeroUnusedParams();
-    }
-    int N = 0;
-    if (comm->isMaster())
-        N = ((MasterComms *) comm)->master_used_idxs.size();
-    N = comm->broadcastNumUsed(N);
+    // Initial Q
+    prepareGradientAscent(data, nullptr, suft);
+
 
     int iter = 0;
     double learn_mult = 1.0;
