@@ -347,7 +347,7 @@ void EMTestSingleEnergyIsotopeSelfProduction::runTest(){
 	orig_cfg.spectrum_depths.resize(1);
 	orig_cfg.spectrum_weights.resize(1);
 	orig_cfg.include_isotopes = 1;
-	orig_cfg.ga_method = USE_LBFGS_FOR_GA;
+	orig_cfg.use_lbfgs_for_ga = 1;
 	orig_cfg.ga_converge_thresh = 0.0001;
 
 	//Feature Calculator
@@ -397,7 +397,7 @@ void EMTestLBFGSvsOriginalGradientAscent::runTest(){
 	config_t cfg;
 	std::string cfg_file = "tests/test_data/example_param_config.txt";
 	initConfig( cfg, cfg_file );
-	cfg.ga_method = USE_MOMENTUM_FOR_GA;
+	cfg.use_lbfgs_for_ga = 0;
 	cfg.ga_converge_thresh = 0.0001;
 	cfg.em_init_type = PARAM_FULL_ZERO_INIT;
 	cfg.include_h_losses = true; 
@@ -425,7 +425,7 @@ void EMTestLBFGSvsOriginalGradientAscent::runTest(){
 	std::cout << "Original Q = " << orig_Q << std::endl;
 
 	std::cout << "Running EM using LBFGS gradient ascent algorithm" << std::endl;
-	cfg.ga_method = USE_LBFGS_FOR_GA;
+	cfg.use_lbfgs_for_ga = 1;
 	cfg.ga_converge_thresh = 0.00001;
 	EM em2( &cfg, &fc, status_file );
 	double lbfgs_Q = em2.run( data, 1, tmp_file );
@@ -516,7 +516,7 @@ void EMTestMultiProcessor::runTest(){
 	config_t cfg;
 	std::string cfg_file = "tests/test_data/example_param_config.txt";
 	initConfig( cfg, cfg_file );
-	cfg.ga_method = USE_MOMENTUM_FOR_GA;
+	cfg.use_lbfgs_for_ga = 0;
 	runMultiProcessorEMTest( cfg );
 
 	passed = pass;
@@ -534,7 +534,7 @@ void EMTestMultiProcessorLBFGS::runTest(){
 	config_t cfg;
 	std::string cfg_file = "tests/test_data/example_param_config.txt";
 	initConfig( cfg, cfg_file );
-	cfg.ga_method = USE_LBFGS_FOR_GA;
+	cfg.use_lbfgs_for_ga = 1;
 	pass = runMultiProcessorEMTest( cfg );
 
 	passed = pass;

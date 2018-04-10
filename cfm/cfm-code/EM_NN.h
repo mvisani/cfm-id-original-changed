@@ -36,21 +36,18 @@ public:
     double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
                                         bool record_used_idxs, std::set<unsigned int> &used_idxs);
 
-    double computeQ(int molidx, MolData &moldata, suft_counts_t &suft) override;
+    double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
 
-    double addRegularizersAndUpdateGradient(double *grads) override;
+    double addRegularizersAndUpdateGradient(double *grads);
 
-    void writeParamsToFile(std::string &filename) override;
-
-protected:
-    double prepareGradientAscent(std::vector<MolData> &data, double *grads, suft_counts_t &suft) override;
+    void writeParamsToFile(std::string &filename);
 
 private:
     //The current parameters
     boost::shared_ptr<NNParam> nn_param; //EM::param will also be set to point to this location.
-    void initParams() override;
+    void initParams();
 
-    void computeThetas(MolData *moldata) override;
+    void computeThetas(MolData *moldata);
 
 };
 

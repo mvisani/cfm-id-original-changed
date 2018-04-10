@@ -223,7 +223,8 @@ double EM_NN::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 double EM_NN::addRegularizersAndUpdateGradient(double *grads) {
 
     double Q = 0.0;
-    for (auto it = ((MasterComms *) comm)->master_used_idxs.begin(); it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
+    std::set<unsigned int>::iterator it = ((MasterComms *) comm)->master_used_idxs.begin();
+    for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
         double weight = nn_param->getWeightAtIdx(*it);
         Q -= 0.5 * cfg->lambda * weight * weight;
         *(grads + *it) -= cfg->lambda * weight;
@@ -234,9 +235,9 @@ double EM_NN::addRegularizersAndUpdateGradient(double *grads) {
     std::vector<unsigned int> bias_indexes;
     nn_param->getBiasIndexes(bias_indexes);
     for (unsigned int energy = 0; energy < nn_param->getNumEnergyLevels(); energy++) {
-
+        std::vector<unsigned int>::iterator it = bias_indexes.begin();
         int offset = energy * weights_per_energy;
-        for (auto it = bias_indexes.begin(); it != bias_indexes.end(); ++it) {
+        for (; it != bias_indexes.end(); ++it) {
             double bias = nn_param->getWeightAtIdx(offset + *it);
             Q += 0.99 * 0.5 * cfg->lambda * bias * bias;
             *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
@@ -245,33 +246,3 @@ double EM_NN::addRegularizersAndUpdateGradient(double *grads) {
     return Q;
 }
 
-
-double EM_NN::prepareGradientAscent(std::vector<MolData> &data, double *grads, suft_counts_t &suft)
-{
-    double Q;
-    if (comm->used_idxs.empty()) {
-        auto itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() != validation_group) {
-                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
-                                                  true, comm->used_idxs);
-            }
-        }
-
-        if (comm->isMaster())
-            Q += addRegularizersAndUpdateGradient(&grads[0]);
-
-        Q = comm->collectQInMaster(Q);
-        Q = comm->broadcastQ(Q);
-        comm->setMasterUsedIdxs();
-
-        if (comm->isMaster())
-            zeroUnusedParams();
-    }
-    int N = 0;
-    if (comm->isMaster())
-        N = ((MasterComms *) comm)->master_used_idxs.size();
-    N = comm->broadcastNumUsed(N);
-
-    return Q;
-}

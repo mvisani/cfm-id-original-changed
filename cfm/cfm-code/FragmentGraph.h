@@ -258,6 +258,10 @@ public:
 
     void clearAllSmiles();
 
+    // Tree pruning
+    // Function to do branching cutting
+    void cutBranch();
+
 protected:
     std::vector<Fragment> fragments;
     std::vector<Transition> transitions;
