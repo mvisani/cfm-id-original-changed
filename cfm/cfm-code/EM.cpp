@@ -220,8 +220,7 @@ double EM::run(std::vector<MolData> &data, int group,
         if (cfg->ga_method == USE_LBFGS_FOR_GA)
             Q = updateParametersLBFGS(data, suft);
         else
-            Q = updateParametersSimpleGradientDescent(data, suft);
-
+            Q = updateParametersGradientAscent(data, suft);
         after = time(nullptr);
         std::string param_update_time_msg =
                 "Completed M-step param update: Time Elapsed = " +
@@ -623,7 +622,28 @@ void EM::progressLBFGS(const lbfgsfloatval_t *x, const lbfgsfloatval_t *g,
         selectMiniBatch(tmp_minibatch_flags);
 }
 
-double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
+double EM::prepareGradientAscent(std::vector<MolData> &data, double *grads, suft_counts_t &suft) {
+    if (comm->used_idxs.empty()) {
+        // get used idxs
+        for (auto itdata : data) {
+            if (itdata.getGroup() != validation_group) {
+                getUsedIdxs(itdata, comm->used_idxs);
+            }
+        }
+        comm->setMasterUsedIdxs();
+
+        if (comm->isMaster())
+            zeroUnusedParams();
+    }
+    int N = 0;
+    if (comm->isMaster())
+        N = ((MasterComms *) comm)->master_used_idxs.size();
+    N = comm->broadcastNumUsed(N);
+
+    return 0.0;
+}
+
+double EM::updateParametersGradientAscent(std::vector<MolData> &data,
                                                  suft_counts_t &suft) {
 
     // DBL_MIN is the smallest positive double
@@ -642,42 +662,9 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
     std::vector<double> mean_squared_gradients(param->getNumWeights(), 0.0);
     std::vector<double> mean_squared_delta_x(param->getNumWeights(), 0.0);
 
-    // Initial Q and gradient calculation (to determine used indexes)
-    /*if (comm->used_idxs.size() == 0) {
-        std::set<unsigned int> temp;
-        auto itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() != validation_group) {
-                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
-                                                  true, comm->used_idxs);
-                getUsedIdxs(*itdata, temp);
-            }
-        }
-        std::cout << (temp == comm->used_idxs) << std::endl;
-        if (comm->isMaster())
-            Q += addRegularizersAndUpdateGradient(&grads[0]);
-        Q = comm->collectQInMaster(Q);
-        Q = comm->broadcastQ(Q);
-        comm->setMasterUsedIdxs();
-        if (comm->isMaster())
-            zeroUnusedParams();
-    }*/
+    // Initial Q
+    prepareGradientAscent(data, nullptr, suft);
 
-    if (comm->used_idxs.empty()) {
-        for (auto itdata : data) {
-            if (itdata.getGroup() != validation_group) {
-                getUsedIdxs(itdata, comm->used_idxs);
-            }
-        }
-        comm->setMasterUsedIdxs();
-        if (comm->isMaster())
-            zeroUnusedParams();
-    }
-
-    int N = 0;
-    if (comm->isMaster())
-        N = ((MasterComms *) comm)->master_used_idxs.size();
-    N = comm->broadcastNumUsed(N);
 
     int iter = 0;
     double learn_mult = 1.0;
@@ -717,7 +704,6 @@ double EM::updateParametersSimpleGradientDescent(std::vector<MolData> &data,
         }
 
         // Compute Q and the gradient
-
         std::fill(grads.begin(), grads.end(), 0.0);
         Q = 0.0;
         itdata = data.begin();
@@ -897,7 +883,10 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
     return Q;
 }
 
-double EM::getUsedIdxs(MolData &moldata, std::set<unsigned int> &used_idxs) {
+void EM::getUsedIdxs(MolData &moldata, std::set<unsigned int> &used_idxs) {
+
+    if (!moldata.hasComputedGraph())
+        return;
 
     const FragmentGraph *fg = moldata.getFragmentGraph();
 

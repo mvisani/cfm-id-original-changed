@@ -25,7 +25,6 @@
 void initDefaultConfig(config_t &cfg) {
 
     cfg.lambda = DEFAULT_LAMBDA;
-    cfg.use_lbfgs_for_ga = DEFAULT_USE_LBFGS_FOR_GA;
     cfg.ga_method = USE_LBFGS_FOR_GA;
     cfg.converge_count_thresh = DEFAULT_CONVERGE_COUNT_THRESH;
     cfg.em_converge_thresh = DEFAULT_EM_CONVERGE_THRESH;
@@ -122,7 +121,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "use_single_energy_cfm") cfg.use_single_energy_cfm = (int) value;
         else if (name == "include_isotopes") cfg.include_isotopes = (int) value;
         else if (name == "isotope_thresh") cfg.isotope_thresh = (double) value;
-        else if (name == "use_lbfgs_for_ga") cfg.use_lbfgs_for_ga = (int) value;
         else if (name == "ga_method") cfg.ga_method = (int) value;
         else if (name == "em_init_type") cfg.em_init_type = (int) value;
         else if (name == "use_lower_energy_params_for_init") cfg.use_lower_energy_params_for_init = (int) value;
@@ -210,8 +208,9 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         std::cout << "Using EM Convergence Threshold " << cfg.em_converge_thresh << std::endl;
         std::cout << "Using Lambda " << cfg.lambda << std::endl;
    
-        if(USE_LBFGS_FOR_GA == cfg.ga_method)
+        if(USE_LBFGS_FOR_GA == cfg.ga_method) {
             std::cout << "Using LBFGS package for gradient ascent" << std::endl;
+        }
         else if(USE_MOMENTUM_FOR_GA == cfg.ga_method ) {
             std::cout << "Using simple gradient ascent implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum

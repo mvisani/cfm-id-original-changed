@@ -69,7 +69,10 @@ public:
     virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft, std::set<unsigned int> &used_idxs);
 
     // This is a function to get all used idx
-    virtual double getUsedIdxs(MolData &moldata, std::set<unsigned int> &used_idxs);
+    virtual void getUsedIdxs(MolData &moldata, std::set<unsigned int> &used_idxs);
+
+    // This is a function in do prepare work for GA
+    virtual double prepareGradientAscent(std::vector<MolData> &data, double *grads, suft_counts_t &suft);
 
     virtual double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
 
@@ -83,6 +86,7 @@ public:
 
     //Select mini batch (exposed publicly for testing...)
     void selectMiniBatch(std::vector<int> &initialized_minibatch_flags);
+
 
 protected:
     //The feature calculator to use - preconfigured with feature spec
@@ -127,9 +131,11 @@ protected:
     void copyGradsToLBFGS(lbfgsfloatval_t *g, std::vector<double> &grads, int n);
 
     //Simple gradient ascent
-    double updateParametersSimpleGradientDescent(std::vector<MolData> &data, suft_counts_t &suft);
+    double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft);
 
     //Helper functions
+
+    //function to add L2 term for Q and update grads
     virtual double addRegularizersAndUpdateGradient(double *grads);
 
     //function to add L2 term for Q
