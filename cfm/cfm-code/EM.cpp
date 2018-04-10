@@ -9,6 +9,7 @@
 #					M-step: Gradient Ascent
 #
 # Copyright (c) 2013, Felicity Allen
+# Copyright (c) 2017, Fei Wang
 # All rights reserved.
 
 # This file is part of the cfm-id project.
