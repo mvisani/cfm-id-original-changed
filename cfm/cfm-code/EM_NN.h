@@ -34,20 +34,20 @@ public:
 
     //This is public so the test can access it....there must be a better way?
     double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                        bool record_used_idxs, std::set<unsigned int> &used_idxs);
+                                        bool record_used_idxs, std::set<unsigned int> &used_idxs) override;
 
     double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
 
-    double addRegularizersAndUpdateGradient(double *grads);
+    double addRegularizersAndUpdateGradient(double *grads) override;
 
-    void writeParamsToFile(std::string &filename);
+    void writeParamsToFile(std::string &filename) override;
 
 private:
     //The current parameters
     boost::shared_ptr<NNParam> nn_param; //EM::param will also be set to point to this location.
-    void initParams();
+    void initParams() override;
 
-    void computeThetas(MolData *moldata);
+    void computeThetas(MolData *moldata) override;
 
 };
 

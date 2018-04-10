@@ -223,11 +223,12 @@ double EM_NN::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 double EM_NN::addRegularizersAndUpdateGradient(double *grads) {
 
     double Q = 0.0;
-    std::set<unsigned int>::iterator it = ((MasterComms *) comm)->master_used_idxs.begin();
+    auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
         double weight = nn_param->getWeightAtIdx(*it);
         Q -= 0.5 * cfg->lambda * weight * weight;
-        *(grads + *it) -= cfg->lambda * weight;
+        if(grads != nullptr)
+            *(grads + *it) -= cfg->lambda * weight;
     }
 
     //Remove part of the Bias terms (regularize the bias terms 100 times less than the other weights!)
@@ -235,12 +236,13 @@ double EM_NN::addRegularizersAndUpdateGradient(double *grads) {
     std::vector<unsigned int> bias_indexes;
     nn_param->getBiasIndexes(bias_indexes);
     for (unsigned int energy = 0; energy < nn_param->getNumEnergyLevels(); energy++) {
-        std::vector<unsigned int>::iterator it = bias_indexes.begin();
+        auto it = bias_indexes.begin();
         int offset = energy * weights_per_energy;
         for (; it != bias_indexes.end(); ++it) {
             double bias = nn_param->getWeightAtIdx(offset + *it);
             Q += 0.99 * 0.5 * cfg->lambda * bias * bias;
-            *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
+            if(grads != nullptr)
+                *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
         }
     }
     return Q;

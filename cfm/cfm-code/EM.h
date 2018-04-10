@@ -128,9 +128,14 @@ protected:
     double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft);
 
     //Helper functions
+
+    // function to add Regularization term for Q
+    // update grads is updated if a ptr is passed
+    // nullptr means do not update grads
     virtual double addRegularizersAndUpdateGradient(double *grads);
-    //function to add L1 term for Q
-    virtual double addRegularizers();
+
+    // function to get Eng levels
+    void getEnergiesLevels(std::vector<unsigned int> &energies);
 
     void zeroUnusedParams();
 

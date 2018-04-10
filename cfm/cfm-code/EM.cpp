@@ -270,7 +270,7 @@ double EM::run(std::vector<MolData> &data, int group,
         valQ = comm->collectQInMaster(valQ);
         if (cfg->ga_minibatch_nth_size > 1) {
             if (comm->isMaster()) {
-                Q += addRegularizers();
+                Q += addRegularizersAndUpdateGradient(nullptr);
             }
             Q = comm->collectQInMaster(Q);
             Q = comm->broadcastQ(Q);
@@ -804,21 +804,10 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
     // Collect energies to compute
     std::vector<unsigned int> energies;
-    unsigned int energy;
-    int prev_energy = -1;
-    for (unsigned int d = 0; d < cfg->model_depth; d++) {
-        energy = cfg->map_d_to_energy[d];
-        if (energy != prev_energy)
-            if (energy != prev_energy)
-                energies.push_back(energy);
-        prev_energy = energy;
-    }
-
-
+    getEnergiesLevels(energies);
 
     // Compute the gradients
-    for (auto eit : energies) {
-        energy = eit;
+    for (auto energy : energies) {
 
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
@@ -915,19 +904,12 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
     suft_t *suft_values = &(suft.values[molidx]);
 
     // Collect energies to compute
+
     std::vector<unsigned int> energies;
-    unsigned int energy;
-    int prev_energy = -1;
-    for (unsigned int d = 0; d < cfg->model_depth; d++) {
-        energy = cfg->map_d_to_energy[d];
-        if (energy != prev_energy)
-            energies.push_back(energy);
-        prev_energy = energy;
-    }
+    getEnergiesLevels(energies);
 
-    for (auto eit : energies) {
-        energy = eit;
-
+    // Compute
+    for (auto energy : energies){
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         // Iterate over from_id (i)
@@ -964,7 +946,8 @@ double EM::addRegularizersAndUpdateGradient(double *grads) {
 
         double weight = param->getWeightAtIdx(*it);
         Q -= 0.5 * cfg->lambda * weight * weight;
-        *(grads + *it) -= cfg->lambda * weight;
+        if(grads != nullptr)
+            *(grads + *it) -= cfg->lambda * weight;
     }
 
     // Remove the Bias terms (don't regularize the bias terms!)
@@ -973,27 +956,12 @@ double EM::addRegularizersAndUpdateGradient(double *grads) {
          energy++) {
         double bias = param->getWeightAtIdx(energy * weights_per_energy);
         Q += 0.5 * cfg->lambda * bias * bias;
-        *(grads + energy * weights_per_energy) += cfg->lambda * bias;
+        if(grads != nullptr)
+            *(grads + energy * weights_per_energy) += cfg->lambda * bias;
     }
     return Q;
 }
 
-double EM::addRegularizers() {
-    double Q_Reg = 0.0;
-    for (auto it:((MasterComms *) comm)->master_used_idxs) {
-        double weight = param->getWeightAtIdx(it);
-        Q_Reg -= 0.5 * cfg->lambda * weight * weight;
-
-    }
-
-    // Remove the Bias terms (don't regularize the bias terms!)
-    unsigned int weights_per_energy = param->getNumWeightsPerEnergyLevel();
-    for (unsigned int energy = 0; energy < param->getNumEnergyLevels(); energy++) {
-        double bias = param->getWeightAtIdx(energy * weights_per_energy);
-        Q_Reg += 0.5 * cfg->lambda * bias * bias;
-    }
-    return Q_Reg;
-}
 
 void EM::zeroUnusedParams() {
 
@@ -1004,6 +972,18 @@ void EM::zeroUnusedParams() {
             param->setWeightAtIdx(0.0, i);
     }
 }
+
+void EM::getEnergiesLevels(std::vector<unsigned int> &energies) {
+    unsigned int energy;
+    int prev_energy = -1;
+    for (unsigned int d = 0; d < cfg->model_depth; d++) {
+        energy = cfg->map_d_to_energy[d];
+        if (energy != prev_energy)
+            energies.push_back(energy);
+        prev_energy = energy;
+    }
+}
+
 
 void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
 
