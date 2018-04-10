@@ -663,8 +663,23 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
     std::vector<double> mean_squared_delta_x(param->getNumWeights(), 0.0);
 
     // Initial Q
-    prepareGradientAscent(data, nullptr, suft);
+    //prepareGradientAscent(data, nullptr, suft);
+    if (comm->used_idxs.empty()) {
+        for (auto itdata : data) {
+            if (itdata.getGroup() != validation_group) {
+                getUsedIdxs(itdata, comm->used_idxs);
+            }
+        }
+        comm->setMasterUsedIdxs();
+        if (comm->isMaster())
+            zeroUnusedParams();
+    }
 
+
+    int N = 0;
+    if (comm->isMaster())
+        N = ((MasterComms *) comm)->master_used_idxs.size();
+    N = comm->broadcastNumUsed(N);
 
     int iter = 0;
     double learn_mult = 1.0;
