@@ -23,6 +23,7 @@
 #include "Param.h"
 #include "NNParam.h"
 #include "Config.h"
+#include "Spectrum.h"
 
 static const int MAX_FRAGMENTS_PER_MOLECULE = 100000;
 static const int MAX_TRANSITIONS_PER_MOLECULE = 1000000;
@@ -86,8 +87,8 @@ public:
 
     //Compute a FragmentGraph starting at the given node and computing to the depth given.
     //The output will be appended to the current_graph
-    void compute(FragmentTreeNode &startnode, int remaining_depth, int parentid,
-                 int remaining_ring_breaks, std::vector<Spectrum>& Spectrums);
+    bool compute(FragmentTreeNode &startnode, int remaining_depth, int parentid,
+                 int remaining_ring_breaks, std::vector<Spectrum>& spectrums,double abs_tol, double ppm_tol);
 protected:
     FeatureCalculator *fc;
     FeatureHelper *fh;

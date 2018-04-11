@@ -249,7 +249,6 @@ void Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
     normalizeAndSort();
 }
 
-
 bool Spectrum::hasPeakByMassWithinTol(double target_mass, double abs_tol, double ppm_tol){
     if(!is_sorted)
         normalizeAndSort();

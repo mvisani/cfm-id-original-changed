@@ -27,7 +27,6 @@ probabilities using those thetas.
 #include "MolData.h"
 #include "Inference.h"
 
-#include <GraphMol/Fingerprints/Fingerprints.h>
 #include <GraphMol/RDKitBase.h>
 
 double MolData::getMolecularWeight() const {
@@ -79,16 +78,24 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
     fg = fgen.createNewGraph(cfg);
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
-    if (cfg->do_prelim_bfs && !cfg->allow_frag_detours && cfg->fg_depth > 1)
-        fgen.compute(
-                *startnode, 1, -1,
-                cfg->max_ring_breaks); // Initial breadth-first to depth 1 (faster?)
-    fgen.compute(*startnode, cfg->fg_depth, -1, cfg->max_ring_breaks);
+    if(cfg->use_graph_pruning == USE_GRAPH_PRUNING) {
+        fgen.compute(*startnode, cfg->fg_depth, -1, cfg->max_ring_breaks,
+                     spectra, cfg->abs_mass_tol, cfg->ppm_mass_tol);
+    }
+    else {
+        if (cfg->do_prelim_bfs && !cfg->allow_frag_detours && cfg->fg_depth > 1)
+            fgen.compute(
+                    *startnode, 1, -1,
+                    cfg->max_ring_breaks); // Initial breadth-first to depth 1 (faster?)
+        fgen.compute(*startnode, cfg->fg_depth, -1, cfg->max_ring_breaks);
+    }
+
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
     delete startnode;
     graph_computed = 1;
 }
+
 
 void MolData::computeFragmentGraph() {
     // Note: Do not use this if you want to compute fvs after - FeatureHelper will
@@ -229,7 +236,7 @@ void MolData::annotatePeaks(double abs_tol, double ppm_tol,
 
     if (!ev_graph_computed) {
         std::cout << "Warning: called annotate peaks without first computing "
-                "evidence graph"
+                     "evidence graph"
                   << std::endl;
         return;
     }
