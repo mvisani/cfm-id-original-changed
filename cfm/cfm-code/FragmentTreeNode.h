@@ -21,6 +21,7 @@
 #include "Util.h"
 #include "Feature.h"
 #include "Features/FeatureHelper.h"
+#include "Spectrum.h"
 
 // Class for storing information about a particular break
 class Break {
@@ -159,6 +160,9 @@ public:
     undoAlreadyChargedOrSplitCharge(RDKit::RWMol &rwmol,
                                     boost::tuple<int, int, int> &pidx_nidx_ridx);
 
+    void setImportantFlag(bool flag) { important_flag = flag; };
+
+    void computeLocalImportantFlag(std::vector<Spectrum>& spectrums, double abs_tol, double ppm_tol);
 private:
     // Helper class for feature labels that need to be added during fragment graph
     // computation
@@ -169,6 +173,9 @@ private:
 
     // Temporary storage for the current theta value in each node
     std::vector<double> tmp_thetas;
+
+    // a helper flag for branch cut
+    bool important_flag = false;
 
     // Helper functions:
     // Used to produce FragIdx labels for a broken molecule
