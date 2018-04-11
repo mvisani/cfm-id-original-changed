@@ -192,75 +192,6 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 }
 
 
-void FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parentid,
-                                            int remaining_ring_breaks, std::vector<Spectrum>& Spectrums)
-{
-    if (current_graph->getNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
-        || current_graph->getNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
-        std::cout << "Maximum number of fragments or transitions exceeded." << std::endl;
-        throw FragmentGraphMaxSizeExceededException();
-    }
-
-    if (verbose)
-        std::cout << current_graph->getNumFragments() << ":" << RDKit::MolToSmiles(*node.ion.get()) << std::endl;
-
-    //Add the node to the graph, and return a fragment id
-    int id = -1;
-    if (mols_to_fv)
-        id = current_graph->addToGraphAndReplaceMolWithFV(node, parentid, fc);
-    else
-        id = current_graph->addToGraph(node, parentid);
-
-    bool save_node = node.
-    //Only compute to the desired depth
-    if (remaining_depth <= 0)
-        return;
-
-    //If the node was already in the graph at sufficient depth, skip any further computation
-    if (alreadyComputed(id, remaining_depth)) {
-        if (verbose)
-            std::cout << "Node already computed: Skipping" << std::endl;
-        return;
-    }
-
-    //Generate Breaks
-    std::vector<Break> breaks;
-    bool h_loss_allowed = false;
-    if (parentid < 0)    //Break from Precursor
-        h_loss_allowed = current_graph->includesHLossesPrecursorOnly() || current_graph->includesHLosses();
-    else                //Break from Non-Precursor
-        h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
-    node.generateBreaks(breaks, h_loss_allowed);
-
-    //Iterate over the possible breaks
-    for (auto brk: breaks) {
-
-        if (brk.isRingBreak() && remaining_ring_breaks == 0)
-            continue;
-
-        for (int ifrag_idx = 0; ifrag_idx < brk.getNumIonicFragAllocations(); ifrag_idx++) {
-
-            node.applyBreak(brk, ifrag_idx);
-            node.generateChildrenOfBreak(brk);
-
-            int child_remaining_ring_breaks = remaining_ring_breaks;
-            if (brk.isRingBreak() && remaining_ring_breaks > 0)
-                child_remaining_ring_breaks--;
-
-            //Recur over children
-            for (auto child : node.children) {
-                compute(child, remaining_depth - 1, id, child_remaining_ring_breaks);
-            }
-
-            //Undo and remove children
-            node.undoBreak(brk, ifrag_idx);
-        }
-        node.children = std::vector<FragmentTreeNode>();
-    }
-
-}
-
-
 //Compute a FragmentGraph starting at the given node and computing to the depth given.
 //The output will be appended to the current_graph
 void
@@ -268,8 +199,8 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
                                       int remaining_ring_breaks) {
 
     //Check Timeout
-    if (parentid < 0) start_time = time(nullptr);
-    time_t current_time = time(nullptr);
+    if (parentid < 0) start_time = time(NULL);
+    time_t current_time = time(NULL);
     if (cfg->fragraph_compute_timeout_in_secs > 0) {
         if ((current_time - start_time) > cfg->fragraph_compute_timeout_in_secs)
             throw FragmentGraphTimeoutException();

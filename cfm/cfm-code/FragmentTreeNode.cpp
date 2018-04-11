@@ -795,7 +795,7 @@ void FragmentTreeNode::applyBreak(Break &brk, int ionic_allocation_idx) {
             RDKit::Atom *atom = ion.get()->getAtomWithIdx(*it);
             atom->getProp("NumUnbrokenRings", numrings);
             atom->setProp("NumUnbrokenRings", numrings - 1);
-        }void computeLocalImportantFlag(std::vector<Spectrum>& Spectrums);
+        }
 
         RDKit::RingInfo::VECT_INT_VECT brings = rinfo->bondRings();
         for (it = brings[ringidx].begin(); it != brings[ringidx].end(); ++it) {
@@ -958,11 +958,4 @@ void FragmentTreeNode::recordOrigAtomIdxs(RDKit::RWMol &rwmol) {
         unsigned int idx = (*ait)->getIdx();
         (*ait)->setProp("OrigIdx", idx);
     }
-}
-
-void FragmentTreeNode::computeLocalImportantFlag(std::vector<Spectrum>& spectrums,double abs_tol, double ppm_tol) {
-    for(auto spectrum: spectrums){
-        important_flag |= spectrum.hasPeakByMassWithinTol(ion->,abs_tol,ppm_tol);
-    }
-
 }

@@ -84,10 +84,6 @@ public:
     //The output will be appended to the current_graph
     void compute(FragmentTreeNode &startnode, int remaining_depth, int parentid, int remaining_ring_breaks);
 
-    //Compute a FragmentGraph starting at the given node and computing to the depth given.
-    //The output will be appended to the current_graph
-    void compute(FragmentTreeNode &startnode, int remaining_depth, int parentid,
-                 int remaining_ring_breaks, std::vector<Spectrum>& Spectrums);
 protected:
     FeatureCalculator *fc;
     FeatureHelper *fh;
@@ -137,7 +133,6 @@ public:
     //The output will be appended to the current_graph
     void compute(FragmentTreeNode &startnode, int remaining_depth, int parentid, double parent_log_prob,
                  int remaining_ring_breaks);
-
 
 private:
     Param *param;
