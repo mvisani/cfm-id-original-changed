@@ -111,6 +111,7 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
 
     if (parentid < 0 || fragments[id].getDepth() == -1)
         fragments[id].setDepth(node.depth);    //Set start fragment depth
+
     //Add a transition, IF:
     // - This transition does not exist (i.e. this parent_id -> id)
     // - There is no (already added) shorter path to this fragment (we track the minimum depth at which each fragment is seen)
@@ -230,7 +231,7 @@ void EvidenceFragmentGraph::addTransition(int from_id, int to_id, const std::str
     to_id_tmap[to_id].push_back(idx);
 }
 
-int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bool add) {
+int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass) {
 
     std::string reduced_smiles;
 
@@ -263,11 +264,6 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bo
         reduced_smiles = RDKit::MolToSmiles(f1_copy);
     } else frag_mass_lookup[rounded_mass];
 
-    int newid = (int)fragments.size();
-    // if not add return newid
-    if(!add)
-        return newid;
-
     //No match found, create the fragment
     if (reduced_smiles.size() == 0) {
         RDKit::RWMol f1_copy = *ion.get();
@@ -275,7 +271,7 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bo
         reduced_smiles = RDKit::MolToSmiles(f1_copy);
     }
     std::string smiles = RDKit::MolToSmiles(*ion.get());
-
+    int newid = fragments.size();
     if (include_isotopes) {
         Spectrum isotope_spectrum;
         long charge = RDKit::MolOps::getFormalCharge(*ion.get());

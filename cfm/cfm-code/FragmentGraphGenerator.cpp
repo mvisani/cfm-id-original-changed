@@ -186,14 +186,14 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
             //Undo and remove children
             node.undoBreak(*it, ifrag_idx);
         }
-        node.children.clear();
+        node.children = std::vector<FragmentTreeNode>();
     }
 
 }
 
-bool FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parentid,
-                                            int remaining_ring_breaks, std::vector<Spectrum>&spectrums,
-                                            double abs_tol, double ppm_tol)
+
+void FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parentid,
+                                            int remaining_ring_breaks, std::vector<Spectrum>& Spectrums)
 {
     if (current_graph->getNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
         || current_graph->getNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
@@ -204,34 +204,24 @@ bool FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth
     if (verbose)
         std::cout << current_graph->getNumFragments() << ":" << RDKit::MolToSmiles(*node.ion.get()) << std::endl;
 
+    //Add the node to the graph, and return a fragment id
+    int id = -1;
+    if (mols_to_fv)
+        id = current_graph->addToGraphAndReplaceMolWithFV(node, parentid, fc);
+    else
+        id = current_graph->addToGraph(node, parentid);
 
-    // check if we are going to save this
-    bool need_save = false;
-    double fg_mass = getMonoIsotopicMass(node.ion);
-    for(auto spectrum: spectrums){
-        need_save = (need_save || spectrum.hasPeakByMassWithinTol(fg_mass, abs_tol, ppm_tol));
+    bool save_node = node.
+    //Only compute to the desired depth
+    if (remaining_depth <= 0)
+        return;
+
+    //If the node was already in the graph at sufficient depth, skip any further computation
+    if (alreadyComputed(id, remaining_depth)) {
+        if (verbose)
+            std::cout << "Node already computed: Skipping" << std::endl;
+        return;
     }
-
-
-    // Only compute to the desired depth
-    // if this is leaf node
-    if (remaining_depth <= 0) {
-        if(need_save) {
-            //Add the node to the graph, and return a fragment id
-            if (mols_to_fv)
-                current_graph->addToGraphAndReplaceMolWithFV(node, parentid, fc);
-            else
-                current_graph->addToGraph(node, parentid);
-            return true;
-        } else{
-            return false;
-        }
-    }
-
-    // if this is not leaf node
-    // get id only , don't add
-    int id = current_graph->addFragmentOrFetchExistingId(node.ion, fg_mass, false);
-
 
     //Generate Breaks
     std::vector<Break> breaks;
@@ -259,31 +249,15 @@ bool FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth
 
             //Recur over children
             for (auto child : node.children) {
-                need_save = (need_save || compute(child, remaining_depth - 1, id, child_remaining_ring_breaks, spectrums,
-                                     abs_tol, ppm_tol));
+                compute(child, remaining_depth - 1, id, child_remaining_ring_breaks);
             }
 
             //Undo and remove children
             node.undoBreak(brk, ifrag_idx);
         }
-        node.children.clear();
+        node.children = std::vector<FragmentTreeNode>();
     }
 
-    if(need_save) {
-        //Add the node to the graph, and return a fragment id
-        if (mols_to_fv)
-            current_graph->addToGraphAndReplaceMolWithFV(node, parentid, fc);
-        else
-            current_graph->addToGraph(node, parentid);
-    }
-    //If the node was already in the graph at sufficient depth, skip any further computation
-    if (alreadyComputed(id, remaining_depth)) {
-        if (verbose)
-            std::cout << "Node already computed: Skipping" << std::endl;
-        return true;
-    }
-
-    return need_save;
 }
 
 

@@ -169,9 +169,6 @@ static const int DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS = -1;    //-1 is no t
 //Random Sample settings
 static const double DEFAULT_RANDOM_SAMPLE_THRESHOLD = 1.0;
 
-
-static const int USE_GRAPH_PRUNING = 1;
-
 //Configuration
 struct config_t {
 
@@ -187,9 +184,6 @@ struct config_t {
     int ionization_mode;
     int include_isotopes;
     double isotope_thresh;
-
-    //Fragments graph setting
-    int use_graph_pruning;
 
     //Model Level Configuration
     unsigned int model_depth; //Total Depth

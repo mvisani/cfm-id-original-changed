@@ -210,15 +210,16 @@ double EM::run(std::vector<MolData> &data, int group,
             Q = updateParametersLBFGS(data, suft);
         else
             Q = updateParametersGradientAscent(data, suft);
+
         after = time(nullptr);
         std::string param_update_time_msg =
-                "[M-Step]Completed Param update: Time Elapsed = " +
+                "[M-Step]Completed M-step param update: Time Elapsed = " +
                 boost::lexical_cast<std::string>(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(param_update_time_msg.c_str());
         comm->printToMasterOnly(param_update_time_msg.c_str());
 
-        // Compute Qs
+        // Write the params
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
 
         before = time(nullptr);
@@ -303,21 +304,11 @@ double EM::run(std::vector<MolData> &data, int group,
         prevQ = Q;
         // check if EM meet halt flag
         if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
-            if(cfg->random_sampling_threshold == 1.0) {
-                comm->printToMasterOnly(("EM Converged after " +
-                                         boost::lexical_cast<std::string>(iter) +
-                                         " iterations")
-                                                .c_str());
-                break;
-            }
-            else {
-                cfg->random_sampling_threshold = 1.0;
-                if(comm->isMaster()) {
-                    comm->printToMasterOnly("[EM] Turn Random sampling off");
-                }
-
-            }
-
+            comm->printToMasterOnly(("EM Converged after " +
+                                     boost::lexical_cast<std::string>(iter) +
+                                     " iterations")
+                                            .c_str());
+            break;
         }
         iter++;
     }

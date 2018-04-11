@@ -258,9 +258,9 @@ public:
 
     void clearAllSmiles();
 
-    // Find the id for an existing fragment that matches the input ion and mass
-    // or create a new fragment in the case where no such fragment is found
-    int addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bool add = true);
+    // Tree pruning
+    // Function to do branching cutting
+    void cutBranch();
 
 protected:
     std::vector<Fragment> fragments;
@@ -279,7 +279,7 @@ protected:
 
     // Find the id for an existing fragment that matches the input ion and mass
     // or create a new fragment in the case where no such fragment is found
-    //int addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bool add);
+    int addFragmentOrFetchExistingId(romol_ptr_t ion, double mass);
 
     // Determine if the two fragments match - assumes the masses have already
     // been checked to be roughly the same, now check reduced structure.

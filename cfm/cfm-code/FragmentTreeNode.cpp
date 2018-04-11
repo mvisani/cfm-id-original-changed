@@ -959,3 +959,10 @@ void FragmentTreeNode::recordOrigAtomIdxs(RDKit::RWMol &rwmol) {
         (*ait)->setProp("OrigIdx", idx);
     }
 }
+
+void FragmentTreeNode::computeLocalImportantFlag(std::vector<Spectrum>& spectrums,double abs_tol, double ppm_tol) {
+    for(auto spectrum: spectrums){
+        important_flag |= spectrum.hasPeakByMassWithinTol(ion->,abs_tol,ppm_tol);
+    }
+
+}
