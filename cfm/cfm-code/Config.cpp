@@ -73,6 +73,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.include_precursor_h_losses_only = DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY;
     cfg.fragraph_compute_timeout_in_secs = DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS;
     cfg.random_sampling_threshold = DEFAULT_RANDOM_SAMPLE_THRESHOLD;
+    cfg.use_graph_pruning = USE_GRAPH_PRUNING;
 }
 
 
@@ -143,6 +144,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "include_precursor_h_losses_only") cfg.include_precursor_h_losses_only = (int) value;
         else if (name == "fragraph_compute_timeout_in_secs") cfg.fragraph_compute_timeout_in_secs = (int) value;
         else if (name == "random_sampling_threshold") cfg.random_sampling_threshold = value;
+        else if (name == "use_graph_pruning") cfg.use_graph_pruning = (int)value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -255,6 +257,11 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
         std::cout << "Using Random Sampling with threshold: " << cfg.random_sampling_threshold << std::endl;
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
+        if(cfg.use_graph_pruning == USE_GRAPH_PRUNING) {
+            std::cout << "Using graph pruning" << std::endl;
+        }
+
+
         if (cfg.allow_frag_detours) {
             std::cout << "Allowing fragmentation detours " << std::endl;
         }

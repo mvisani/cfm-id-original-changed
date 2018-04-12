@@ -260,7 +260,7 @@ public:
 
     // Tree pruning
     // Function to do branching cutting
-    void cutBranch();
+    void treePruning();
 
 protected:
     std::vector<Fragment> fragments;
@@ -324,6 +324,7 @@ public:
 
     void setFlagsForDirectPaths(std::vector<int> &direct_flags, unsigned int fidx,
                                 std::vector<int> &annotated_flags) const;
+
 
 private:
     std::vector<EvidenceFragment> fragments;
