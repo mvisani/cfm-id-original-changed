@@ -167,6 +167,7 @@ int main(int argc, char *argv[]) {
 
     //Loading input spectra
     before_fg = time(nullptr);
+    MPI_Barrier(MPI_COMM_WORLD);
     if (mpi_rank == MASTER) std::cout << "Loading spectra..";
     bool spectra_in_msp = false;
     std::string pre_id = "";
@@ -198,13 +199,14 @@ int main(int argc, char *argv[]) {
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
+    if (mpi_rank == MASTER)
+        std::cout << "Done" << std::endl;
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    //Fragment Graph Computation (or load from file)
     before_fg = time(nullptr);
     if (mpi_rank == MASTER)
-    {
-        std::cout << "Done" << std::endl;
         std::cout << "Computing fragmentation graphs and features..";
-    }
-
 
     int success_count = 0, except_count = 0;
     for (auto mit : data) {
