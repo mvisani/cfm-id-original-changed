@@ -260,7 +260,7 @@ public:
 
     // Tree pruning
     // Function to do branching cutting
-    void treePruning();
+    void pruneGraphBySpectra(std::vector<Spectrum>& spectra);
 
 protected:
     std::vector<Fragment> fragments;
@@ -292,6 +292,9 @@ protected:
     // Find the id for an existing transition that matches the input ids
     // or -1 in the case where no such transition is found
     int findMatchingTransition(int from_id, int to_id);
+
+    // Function to remove give transitions and update id maps
+    void removeTransitions( std::vector<int>& ids);
 
 };
 

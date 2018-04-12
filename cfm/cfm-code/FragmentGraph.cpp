@@ -58,48 +58,69 @@ Transition::Transition(int a_from_id, int a_to_id, const RootedROMolPtr &a_nl, c
 //Function to remove detour transitions from the graph (used if !cfg.allow_frag_detours)
 void FragmentGraph::removeDetours() {
 
-    std::vector<int> id_map(transitions.size());    //Map old id to new id (or -1 if deleting)
+    std::vector<int> remove_ids;
 
-    //Remove detour transitions, and record a mapping of old->new transition ids
-    int next_id = 0;
+    // Get a list of  transitions need to be removed
     for (int i = 0; i < transitions.size(); i++) {
         Transition *t = &transitions[i];
         Fragment *f_parent = &fragments[t->getFromId()];
         Fragment *f_child = &fragments[t->getToId()];
 
         if (f_parent->getDepth() >= f_child->getDepth())
-            id_map[i] = -1;
-        else {
-            transitions[next_id] = transitions[i];
-            id_map[i] = next_id++;
-        }
+            remove_ids.push_back(i);
     }
-    transitions.resize(next_id);
-
-    //Update the id maps
-    for (int i = 0; i < fragments.size(); i++) {
-
-        //Update the To Id Tmap
-        int count = 0;
-        for (int j = 0; j < to_id_tmap[i].size(); j++) {
-            if (id_map[to_id_tmap[i][j]] >= 0)
-                to_id_tmap[i][count++] = id_map[to_id_tmap[i][j]];
-        }
-        to_id_tmap[i].resize(count);
-
-        //Update the From Id Tmap
-        count = 0;
-        for (int j = 0; j < from_id_tmap[i].size(); j++) {
-            if (id_map[from_id_tmap[i][j]] >= 0)
-                from_id_tmap[i][count++] = id_map[from_id_tmap[i][j]];
-        }
-        from_id_tmap[i].resize(count);
-    }
+    removeTransitions(remove_ids);
 }
 
-//Function to remove detour transitions from the graph (used if !cfg.allow_frag_detours)
-void FragmentGraph::treePruning() {
 
+void FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum>& spectra){
+
+}
+
+//Function to remove given transitions from the graph
+void FragmentGraph::removeTransitions(std::vector<int>& ids){
+
+        std::sort(ids.begin(),ids.end());
+
+        std::vector<int> id_map(transitions.size());    //Map old id to new id (or -1 if deleting)
+        //Remove transitions, and record a mapping of old->new transition ids
+        unsigned int next_id = 0;
+        unsigned int id_idx = 0;
+        for (int i = 0; i < transitions.size(); i++) {
+            bool need_remove = (id_idx < ids.size());
+            if(need_remove)
+                need_remove = (need_remove && (ids[id_idx] == i));
+            // if deleting
+            if (need_remove){
+                id_map[i] = -1;
+                ++id_idx;
+            }
+            else {
+                transitions[next_id] = transitions[i];
+                id_map[i] = next_id++;
+            }
+        }
+        transitions.resize(next_id);
+
+        //Update the id maps
+        for (int i = 0; i < fragments.size(); i++) {
+
+            //Update the To Id Tmap
+            unsigned int count = 0;
+            for (int j = 0; j < to_id_tmap[i].size(); j++) {
+                if (id_map[to_id_tmap[i][j]] >= 0)
+                    to_id_tmap[i][count++] = id_map[to_id_tmap[i][j]];
+            }
+            to_id_tmap[i].resize(count);
+
+            //Update the From Id Tmap
+            count = 0;
+            for (int j = 0; j < from_id_tmap[i].size(); j++) {
+                if (id_map[from_id_tmap[i][j]] >= 0)
+                    from_id_tmap[i][count++] = id_map[from_id_tmap[i][j]];
+            }
+            from_id_tmap[i].resize(count);
+        }
 }
 
 //Add a fragment node to the graph (should be the only way to modify the graph)
