@@ -99,7 +99,7 @@ void FragmentGraph::removeDetours() {
 
 //Function to remove detour transitions from the graph (used if !cfg.allow_frag_detours)
 void FragmentGraph::treePruning() {
-    
+
 }
 
 //Add a fragment node to the graph (should be the only way to modify the graph)
