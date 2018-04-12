@@ -92,13 +92,12 @@ bool FragmentGraph::getPruningTransitionsIds(int fg_id, std::vector<Spectrum>& s
         for(auto trans_id : from_id_tmap[fg_id]) {
             auto to_id = transitions[trans_id].getToId();
             bool child_need_save = getPruningTransitionsIds(to_id,spectra,abs_tol,ppm_tol,removed_transitions_ids);
+            if(!child_need_save)
+                removed_transitions_ids.emplace_back(trans_id);
             need_save = (need_save || child_need_save);
         }
     }
 
-    // if there need to save this
-    if(!need_save)
-        removed_transitions_ids.emplace_back(fg_id);
 
     return need_save;
 }
