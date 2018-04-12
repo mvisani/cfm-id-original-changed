@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
                 std::string spec_file = peakfile_dir_or_msp + "/" + mit.getId() + ".txt";
                 mit.readInSpectraFromFile(spec_file);
             }
-            //mit.removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
+            mit.removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
@@ -272,18 +272,6 @@ int main(int argc, char *argv[]) {
         delete fv_ifs;
         if (min_group == 0) boost::filesystem::remove(fv_filename_in);
     }
-
-    if (mpi_rank == MASTER)
-        std::cout << "Post Procssing Peaks" << std::endl;
-    // Remove Peaks we can not explain
-    for (auto mit : data) {
-        if ((mit.getGroup() >= min_group && mit.getGroup() <= max_group) || !no_train) {
-            mit.removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
-        }
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-    if (mpi_rank == MASTER)
-        std::cout << "Done" << std::endl;
 
     //Training
     for (int group = min_group; group <= max_group; group++) {
