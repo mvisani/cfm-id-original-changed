@@ -114,19 +114,28 @@ int main(int argc, char *argv[]) {
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
-    if (mpi_rank == MASTER) std::cout << "Initialising Feature Calculator..";
+    // init feature calculator
+    if (mpi_rank == MASTER)
+        std::cout << "Initialising Feature Calculator..";
     FeatureCalculator fc(feature_filename);
-    if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
 
-    if (mpi_rank == MASTER) std::cout << "Initialising Parameter Configuration..";
+    if (mpi_rank == MASTER)
+        std::cout << "Done" << std::endl;
+    // read config
+    if (mpi_rank == MASTER)
+        std::cout << "Initialising Parameter Configuration..";
     config_t cfg;
     initConfig(cfg, config_filename, mpi_rank == MASTER);
-    if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
+    if (mpi_rank == MASTER)
+        std::cout << "Done" << std::endl;
 
-    if (mpi_rank == MASTER) std::cout << "Parsing input file...";
+    // read input file
+    if (mpi_rank == MASTER)
+        std::cout << "Parsing input file...";
     std::vector<MolData> data;
     parseInputFile(data, input_filename, mpi_rank, mpi_nump, &cfg);
-    if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
+    if (mpi_rank == MASTER)
+        std::cout << "Done" << std::endl;
 
     //Configure fragment graph state files
     std::string fv_filename_out =
@@ -153,74 +162,11 @@ int main(int argc, char *argv[]) {
     std::ofstream fv_out;
     if (min_group == 0) fv_out.open(fv_filename_out.c_str(), std::ios::out | std::ios::binary);
 
-    //Fragment Graph Computation (or load from file)
-    time_t before_fg, after_fg;
-    before_fg = time(NULL);
-    if (mpi_rank == MASTER) std::cout << "Computing fragmentation graphs and features..";
-    std::vector<MolData>::iterator mit = data.begin();
-    int success_count = 0, except_count = 0;
-    for (; mit != data.end(); ++mit) {
-        try {
-            //If we're not training, only load the ones we'll be testing
-            if ((mit->getGroup() >= min_group && mit->getGroup() <= max_group) || !no_train) {
-                if (mit->getId() == next_id) {
-                    mit->readInFVFragmentGraphFromStream(*fv_ifs);
-                    unsigned int id_size;
-                    fv_ifs->read(reinterpret_cast<char *>(&id_size), sizeof(id_size));
-                    if (!fv_ifs->eof()) {
-                        next_id.resize(id_size);
-                        fv_ifs->read(&next_id[0], id_size);
-                    }
-                    else next_id = "NULL_ID";
 
-                } else {
-                    time_t before, after;
-                    before = time(NULL);
-                    mit->computeFragmentGraphAndReplaceMolsWithFVs(&fc);
-                    std::ofstream eout;
-                    eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
-                    after = time(NULL);
-                    eout << "ID: " << mit->getId() << " is Done. Time Elaspsed = " << (after - before) << " Seconds ";
-                    eout << " :Num Frag = " << mit->getFragmentGraph()->getNumFragments();
-                    eout << " :Num Trans = " << mit->getFragmentGraph()->getNumTransitions() << std::endl;
-                    eout.close();
-                }
-                unsigned int id_size = mit->getId().size();
-                if (min_group == 0) {
-                    fv_out.write(reinterpret_cast<const char *>(&id_size), sizeof(id_size));
-                    fv_out.write(&(mit->getId()[0]), id_size);
-                    mit->writeFVFragmentGraphToStream(
-                            fv_out);    //We always write it, in case we haven't already computed all of them
-                }
-                success_count++;
-            }
-        }
-        catch (std::exception e) {
-            std::ofstream eout;
-            eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
-            eout << "Exception occurred computing fragment graph for " << mit->getId() << std::endl;
-            eout << mit->getSmilesOrInchi() << std::endl;
-            eout << e.what() << std::endl << std::endl;
-            except_count++;
-            eout << except_count << " exceptions, from " << except_count + success_count << " total" << std::endl;
-            eout.close();
-        }
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-    after_fg = time(NULL);
-    if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
-    std::cout << mpi_rank << ": " << success_count << " successfully computed. " << except_count << " exceptions."
-              << std::endl;
-    if (mpi_rank == MASTER)
-        std::cout << "Total Fragmentation Graph Computation Time Elaspsed = " << (after_fg - before_fg) << " Seconds";
-    if (min_group == 0) fv_out.close();
-    if (boost::filesystem::exists(fv_filename_in)) {
-        if (*fv_ifs) fv_ifs->close();
-        delete fv_ifs;
-        if (min_group == 0) boost::filesystem::remove(fv_filename_in);
-    }
+    time_t before_fg, after_fg;
 
     //Loading input spectra
+    before_fg = time(nullptr);
     MPI_Barrier(MPI_COMM_WORLD);
     if (mpi_rank == MASTER) std::cout << "Loading spectra..";
     bool spectra_in_msp = false;
@@ -241,26 +187,98 @@ int main(int argc, char *argv[]) {
     std::ofstream of_emsp, of_pmsp;
     //Create the MSP lookup
     if (spectra_in_msp) msp = new MspReader(peakfile_dir_or_msp.c_str(), "");
-    for (mit = data.begin(); mit != data.end(); ++mit) {
-        if ((mit->getGroup() >= min_group && mit->getGroup() <= max_group) || !no_train) {
+    for (auto mit : data) {
+        if ((mit.getGroup() >= min_group && mit.getGroup() <= max_group) || !no_train) {
             if (spectra_in_msp)
-                mit->readInSpectraFromMSP(*msp);
+                mit.readInSpectraFromMSP(*msp);
             else {
-                std::string spec_file = peakfile_dir_or_msp + "/" + mit->getId() + ".txt";
-                mit->readInSpectraFromFile(spec_file);
+                std::string spec_file = peakfile_dir_or_msp + "/" + mit.getId() + ".txt";
+                mit.readInSpectraFromFile(spec_file);
             }
-            mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
+            mit.removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
+    if (mpi_rank == MASTER)
+        std::cout << "Done" << std::endl;
+
+
+    //Fragment Graph Computation (or load from file)
+    before_fg = time(nullptr);
+    if (mpi_rank == MASTER)
+        std::cout << "Computing fragmentation graphs and features..";
+
+    int success_count = 0, except_count = 0;
+    for (auto mit : data) {
+        try {
+            //If we're not training, only load the ones we'll be testing
+            if ((mit.getGroup() >= min_group && mit.getGroup() <= max_group) || !no_train) {
+                if (mit.getId() == next_id) {
+                    mit.readInFVFragmentGraphFromStream(*fv_ifs);
+                    unsigned int id_size;
+                    fv_ifs->read(reinterpret_cast<char *>(&id_size), sizeof(id_size));
+                    if (!fv_ifs->eof()) {
+                        next_id.resize(id_size);
+                        fv_ifs->read(&next_id[0], id_size);
+                    }
+                    else next_id = "NULL_ID";
+
+                } else {
+                    time_t before, after;
+                    before = time(nullptr);
+                    mit.computeFragmentGraphAndReplaceMolsWithFVs(&fc);
+                    std::ofstream eout;
+                    eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
+                    after = time(nullptr);
+                    eout << "ID: " << mit.getId() << " is Done. Time Elaspsed = " << (after - before) << " Seconds ";
+                    eout << " :Num Frag = " << mit.getFragmentGraph()->getNumFragments();
+                    eout << " :Num Trans = " << mit.getFragmentGraph()->getNumTransitions() << std::endl;
+                    eout.close();
+                }
+                unsigned int id_size = mit.getId().size();
+                if (min_group == 0) {
+                    fv_out.write(reinterpret_cast<const char *>(&id_size), sizeof(id_size));
+                    fv_out.write(&(mit.getId()[0]), id_size);
+                    mit.writeFVFragmentGraphToStream(
+                            fv_out);    //We always write it, in case we haven't already computed all of them
+                }
+                success_count++;
+            }
+        }
+        catch (std::exception e) {
+            std::ofstream eout;
+            eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
+            eout << "Exception occurred computing fragment graph for " << mit.getId() << std::endl;
+            eout << mit.getSmilesOrInchi() << std::endl;
+            eout << e.what() << std::endl << std::endl;
+            except_count++;
+            eout << except_count << " exceptions, from " << except_count + success_count << " total" << std::endl;
+            eout.close();
+        }
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // print str after trees
+    after_fg = time(nullptr);
     if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
+    std::cout << mpi_rank << ": " << success_count << " successfully computed. " << except_count << " exceptions."
+              << std::endl;
+    if (mpi_rank == MASTER)
+        std::cout << "Total Fragmentation Graph Computation Time Elaspsed = " << (after_fg - before_fg) << " Seconds";
+    if (min_group == 0)
+        fv_out.close();
+    if (boost::filesystem::exists(fv_filename_in)) {
+        if (*fv_ifs) fv_ifs->close();
+        delete fv_ifs;
+        if (min_group == 0) boost::filesystem::remove(fv_filename_in);
+    }
 
     //Training
     for (int group = min_group; group <= max_group; group++) {
         if (mpi_rank == MASTER) std::cout << "Running EM to train parameters for Group " << group << std::endl;
 
         time_t before, after;
-        before = time(NULL);
+        before = time(nullptr);
         std::string param_filename = "tmp_data/param_output";
         param_filename += boost::lexical_cast<std::string>(group);
         param_filename += ".log";
@@ -274,7 +292,7 @@ int main(int argc, char *argv[]) {
         if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
 
         if (mpi_rank == MASTER) {
-            after = time(NULL);
+            after = time(nullptr);
             std::cout << "EM: Time Elaspsed = " << (after - before) << " Seconds";
         }
 
@@ -301,17 +319,17 @@ int main(int argc, char *argv[]) {
             param = new NNParam(param_filename);
         else
             param = new Param(param_filename);
-        for (mit = data.begin(); mit != data.end(); ++mit) {
-            if (mit->getGroup() != group) continue;
-            if (!mit->hasComputedGraph()) continue;    //If we couldn't compute it's graph for some reason..
+        for (auto mit: data) {
+            if (mit.getGroup() != group) continue;
+            if (!mit.hasComputedGraph()) continue;    //If we couldn't compute it's graph for some reason..
 
             //Predicted spectrum
-            mit->computePredictedSpectra(*param, false);
+            mit.computePredictedSpectra(*param, false);
 
-            if (spectra_in_msp) mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
+            if (spectra_in_msp) mit.writePredictedSpectraToMspFileStream(*out_pred_msp);
             else {
-                std::string spectra_filename = "tmp_data/predicted_output/" + mit->getId() + ".txt";
-                mit->writePredictedSpectraToFile(spectra_filename);
+                std::string spectra_filename = "tmp_data/predicted_output/" + mit.getId() + ".txt";
+                mit.writePredictedSpectraToFile(spectra_filename);
             }
         }
         delete param;

@@ -74,7 +74,6 @@ void MolData::writeFVFragmentGraph(std::string &fv_filename) {
 }
 
 void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
-
     fg = fgen.createNewGraph(cfg);
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
