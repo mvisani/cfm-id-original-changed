@@ -182,13 +182,14 @@ struct config_t {
     int max_ring_breaks;
     int include_h_losses;
     int include_precursor_h_losses_only;
-    int use_graph_pruning;
 
     int use_single_energy_cfm;    //Use Single Energy CFM (rather than Combined Energy)
     int ionization_mode;
     int include_isotopes;
     double isotope_thresh;
 
+    //Fragments graph setting
+    int use_graph_pruning;
 
     //Model Level Configuration
     unsigned int model_depth; //Total Depth
