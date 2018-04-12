@@ -250,6 +250,9 @@ void Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
 }
 
 bool Spectrum::hasPeakByMassWithinTol(double target_mass, double abs_tol, double ppm_tol){
+    if(!is_sorted)
+        normalizeAndSort();
+
     // find closest mass
     // since peak is sorted by mass
     auto diff = DBL_MAX;
@@ -259,7 +262,10 @@ bool Spectrum::hasPeakByMassWithinTol(double target_mass, double abs_tol, double
         if(diff > current_diff) {
             diff = current_diff;
             closet_mass = peak.mass;
+        } else{
+            break;
         }
     }
+
     return getMassTol(abs_tol, ppm_tol, closet_mass) >= diff;
 }
