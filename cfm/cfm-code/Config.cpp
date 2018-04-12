@@ -73,7 +73,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.include_precursor_h_losses_only = DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY;
     cfg.fragraph_compute_timeout_in_secs = DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS;
     cfg.random_sampling_threshold = DEFAULT_RANDOM_SAMPLE_THRESHOLD;
-    cfg.use_graph_pruning = USE_GRAPH_PRUNING;
+    cfg.use_graph_pruning = DEFAULT_USE_GRAPH_PRUNING;
+    cfg.ga_use_best_q = DEFAULT_USE_BEST_Q_IN_GA;
 }
 
 
@@ -145,6 +146,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "fragraph_compute_timeout_in_secs") cfg.fragraph_compute_timeout_in_secs = (int) value;
         else if (name == "random_sampling_threshold") cfg.random_sampling_threshold = value;
         else if (name == "use_graph_pruning") cfg.use_graph_pruning = (int)value;
+        else if (name == "ga_use_best_q") cfg.ga_use_best_q = (int) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -254,10 +256,11 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             default:
                 std::cout << "NOT Using Decay Method" << std::endl;
         }
-
+        if(cfg.ga_use_best_q)
+            std::cout << "Using Best Q instead of Prev Q in GA" << std::endl;
         std::cout << "Using Random Sampling with threshold: " << cfg.random_sampling_threshold << std::endl;
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
-        if(cfg.use_graph_pruning == USE_GRAPH_PRUNING) {
+        if(cfg.use_graph_pruning == DEFAULT_USE_GRAPH_PRUNING) {
             std::cout << "Using graph pruning" << std::endl;
         }
 

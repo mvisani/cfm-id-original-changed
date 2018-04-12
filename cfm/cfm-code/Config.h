@@ -169,7 +169,8 @@ static const int DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS = -1;    //-1 is no t
 //Random Sample settings
 static const double DEFAULT_RANDOM_SAMPLE_THRESHOLD = 1.0;
 
-static const int USE_GRAPH_PRUNING = 0;
+static const int DEFAULT_USE_GRAPH_PRUNING = 0;
+static const int DEFAULT_USE_BEST_Q_IN_GA = 0;
 
 //Configuration
 struct config_t {
@@ -229,10 +230,9 @@ struct config_t {
     double ga_converge_thresh;
     double line_search_alpha;
     double line_search_beta;
-
-    // For GA
     double starting_step_size;
     int ga_max_iterations;
+    int ga_use_best_q;
 
     // Decay
     double decay_rate;

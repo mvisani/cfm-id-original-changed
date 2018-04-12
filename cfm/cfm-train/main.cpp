@@ -212,7 +212,8 @@ int main(int argc, char *argv[]) {
     std::cout << mpi_rank << ": " << success_count << " successfully computed. " << except_count << " exceptions."
               << std::endl;
     if (mpi_rank == MASTER)
-        std::cout << "Total Fragmentation Graph Computation Time Elaspsed = " << (after_fg - before_fg) << " Seconds";
+        std::cout << "Total Fragmentation Graph Computation Time Elaspsed = "
+                     << (after_fg - before_fg) << " Seconds" << std::endl;
     if (min_group == 0) fv_out.close();
     if (boost::filesystem::exists(fv_filename_in)) {
         if (*fv_ifs) fv_ifs->close();
@@ -249,6 +250,8 @@ int main(int argc, char *argv[]) {
                 std::string spec_file = peakfile_dir_or_msp + "/" + mit->getId() + ".txt";
                 mit->readInSpectraFromFile(spec_file);
             }
+            if(cfg.use_graph_pruning)
+                mit->pruneGraphBySpectra(cfg.abs_mass_tol, cfg.ppm_mass_tol);
             mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
         }
     }

@@ -28,7 +28,7 @@
 
 Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, const romol_ptr_t &an_ion) {
 
-    RDKit::Atom *root = NULL, *other_root = NULL;
+    RDKit::Atom *root = nullptr, *other_root = nullptr;
     RDKit::Atom *first_atom = an_ion.get()->getAtomWithIdx(0);
     if (first_atom->hasProp("Root") && first_atom->hasProp("OtherRoot")) {
         root = getLabeledAtom(an_ion, "Root");
@@ -36,8 +36,8 @@ Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, cons
     } else std::cout << "Warning: Ion Root atoms not defined" << std::endl;
     ion = RootedROMolPtr(an_ion, root, other_root);
 
-    root = NULL;
-    other_root = NULL;
+    root = nullptr;
+    other_root = nullptr;
     first_atom = a_nl.get()->getAtomWithIdx(0);
     if (first_atom->hasProp("Root") && first_atom->hasProp("OtherRoot")) {
         root = getLabeledAtom(a_nl, "Root");
@@ -73,10 +73,73 @@ void FragmentGraph::removeDetours() {
 }
 
 
-void FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum>& spectra){
+bool FragmentGraph::getPruningTransitionsIds(int fg_id, std::vector<Spectrum>& spectra,
+                                           double abs_tol, double ppm_tol,
+                                           std::vector<int>&removed_transitions_ids){
 
+    //first thing , check if we need save this node by itself
+    bool need_save = false;
+    for(auto spectrum : spectra) {
+        need_save = need_save || spectrum.hasPeakByMassWithinTol(fragments[fg_id].getMass(), abs_tol, ppm_tol);
+        if (need_save)
+            break;
+    }
+
+    // if there is transitions from this fragments
+    // that means this is not a leaf node
+    if(fg_id < from_id_tmap.size())
+    {
+        for(auto trans_id : from_id_tmap[fg_id]) {
+            auto to_id = transitions[trans_id].getToId();
+            bool child_need_save = getPruningTransitionsIds(to_id,spectra,abs_tol,ppm_tol,removed_transitions_ids);
+            need_save = (need_save || child_need_save);
+        }
+    }
+
+    // if there need to save this
+    if(!need_save)
+        removed_transitions_ids.emplace_back(fg_id);
+
+    return need_save;
 }
 
+void FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum>& spectra,  double abs_tol, double ppm_tol){
+    int fg_id = 0;
+    std::vector<int> removed_transitions_ids;
+    getPruningTransitionsIds(fg_id,spectra,abs_tol,ppm_tol,removed_transitions_ids);
+
+    // make sure all ids are unique
+    std::set<int> temp_set( removed_transitions_ids.begin(), removed_transitions_ids.end());
+    removed_transitions_ids.assign( temp_set.begin(), temp_set.end() );
+
+    std::cout << "current number of transitions "<< transitions.size() << std::endl;
+    removeTransitions(removed_transitions_ids);
+    std::cout << removed_transitions_ids.size()
+              << " transitions removed, current number of transitions "<< transitions.size() << std::endl;
+}
+
+
+double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int>&selected_ids) {
+
+    /*double theta_sum = 0.0;
+    // if there is transitions from this fragments
+    // that means this is not a leaf node
+    if(fg_id < from_id_tmap.size())
+    {
+        for(auto trans_id : from_id_tmap[fg_id]) {
+            auto to_id = transitions[trans_id].getToId();
+            theta_sum += transitions[trans_id].
+            double child_prob = notSoRandomSampling(to_id,selected_ids);
+            need_save = (need_save || child_need_save);
+        }
+    }
+
+    // if there need to save this
+    if(!need_save)
+    removed_transitions_ids.emplace_back(fg_id);
+
+    return need_save;*/
+}
 //Function to remove given transitions from the graph
 void FragmentGraph::removeTransitions(std::vector<int>& ids){
 
@@ -241,7 +304,7 @@ int FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std:
 int EvidenceFragmentGraph::addToGraphDirectNoCheck(const EvidenceFragment &fragment, const Transition *transition,
                                                    int parentid) {
 
-    int id = fragments.size();
+    auto id = fragments.size();
     fragments.push_back(EvidenceFragment(fragment, id));
     from_id_tmap.resize(id + 1);
     to_id_tmap.resize(id + 1);
@@ -250,7 +313,7 @@ int EvidenceFragmentGraph::addToGraphDirectNoCheck(const EvidenceFragment &fragm
 }
 
 void EvidenceFragmentGraph::addTransition(int from_id, int to_id, const std::string *nl_smiles) {
-    unsigned int idx = transitions.size();
+    auto idx = transitions.size();
     transitions.push_back(Transition(from_id, to_id, nl_smiles));
     from_id_tmap[from_id].push_back(idx);
     to_id_tmap[to_id].push_back(idx);

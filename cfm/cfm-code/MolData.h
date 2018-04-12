@@ -117,6 +117,8 @@ public:
     };
 
     // Spectrum Related Functions
+    void pruneGraphBySpectra(double abs_tol, double ppm_tol);
+
     void removePeaksWithNoFragment(double abs_tol, double ppm_tol);
 
     bool hasEmptySpectrum() const;

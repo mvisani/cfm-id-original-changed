@@ -454,6 +454,10 @@ void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
         it->clean(abs_tol, ppm_tol);
 }
 
+void MolData::pruneGraphBySpectra(double abs_tol, double ppm_tol){
+    fg->pruneGraphBySpectra(spectra,abs_tol,ppm_tol);
+}
+
 void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
 
     std::vector<double> all_masses;
