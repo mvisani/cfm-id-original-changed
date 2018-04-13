@@ -889,7 +889,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                 }
 
                 if(Q != Q)
-                    std::cerr << "cp3" << std::endl;
+                    std::cerr << moldata.getId() << "cp3" << std::endl;
 
                 // Accumulate the last term of each transition and the
                 // persistence (i = j) terms of the gradient and Q
@@ -900,7 +900,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
                 Q -= nu * log(denom);
                 if(Q != Q)
-                    std::cerr << "cp4" << std::endl;
+                    std::cerr << moldata.getId() << "cp4" << std::endl;
             }
 
         }
