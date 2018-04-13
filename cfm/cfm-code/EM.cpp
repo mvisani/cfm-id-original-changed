@@ -373,6 +373,7 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
         double belief = 0.0;
         int energy = cfg->map_d_to_energy[0];
         if (i == 0) // main ion is always id = 0
+        if (i == 0) // main ion is always id = 0
             belief += exp(beliefs->ps[i][0]);
         for (unsigned int d = 1; d < cfg->model_depth; d++) {
             energy = cfg->map_d_to_energy[d];
@@ -416,9 +417,9 @@ double EM::updateParametersLBFGS(std::vector<MolData> &data,
 
     // Initial Q and gradient calculation (to determine used indexes - if we
     // already have them don't bother)
-    if (comm->used_idxs.size() == 0) {
+    if (comm->used_idxs.empty()) {
         std::vector<double> grads(param->getNumWeights(), 0.0);
-        std::vector<MolData>::iterator itdata = data.begin();
+        auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group) {
                 Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
@@ -551,7 +552,7 @@ lbfgsfloatval_t EM::evaluateLBFGS(const lbfgsfloatval_t *x, lbfgsfloatval_t *g,
 
     // Compute Q and the gradient
     double Q = 0.0;
-    std::vector<MolData>::iterator itdata = tmp_moldata_ptr_lbfgs->begin();
+    auto itdata = tmp_moldata_ptr_lbfgs->begin();
     for (int molidx = 0; itdata != tmp_moldata_ptr_lbfgs->end();
          ++itdata, molidx++) {
         if (tmp_minibatch_flags[molidx])
@@ -616,7 +617,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
     std::vector<double> mean_squared_delta_x(param->getNumWeights(), 0.0);
 
     // Initial Q and gradient calculation (to determine used indexes)
-    if (comm->used_idxs.size() == 0) {
+    if (comm->used_idxs.empty()) {
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group) {
@@ -883,7 +884,12 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                     }
 
                     Q += nu * (moldata.getThetaForIdx(energy, trans_id) - log(denom));
+                    if(Q != Q)
+                        std::cerr << "cp2 " << moldata.getThetaForIdx(energy, trans_id) << " " <<  log(denom) <<  std::endl;
                 }
+
+                if(Q != Q)
+                    std::cerr << "cp3" << std::endl;
 
                 // Accumulate the last term of each transition and the
                 // persistence (i = j) terms of the gradient and Q
@@ -893,6 +899,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                 }
 
                 Q -= nu * log(denom);
+                if(Q != Q)
+                    std::cerr << "cp4" << std::endl;
             }
 
         }
