@@ -114,7 +114,6 @@ double EM::run(std::vector<MolData> &data, int group,
     double bestQ = -DBL_MAX;
 
     int count_no_progress = 0;
-    int total_ga_iter = 0;
     while (iter < MAX_EM_ITERATIONS) {
 
         std::string iter_out_param_filename =
@@ -411,7 +410,6 @@ static int lbfgs_progress(void *instance, const lbfgsfloatval_t *x,
 double EM::updateParametersLBFGS(std::vector<MolData> &data,
                                  suft_counts_t &suft) {
 
-    int ret = 0;
     double Q = 0.0;
     lbfgs_parameter_t lparam;
     lbfgs_parameter_init(&lparam);
@@ -466,7 +464,7 @@ double EM::updateParametersLBFGS(std::vector<MolData> &data,
     tmp_suft_ptr_lbfgs = &suft;
     lbfgsfloatval_t fx;
     comm->printToMasterOnly("Running LBFGS...");
-    ret = lbfgs(N, x, &fx, lbfgs_evaluate, lbfgs_progress, this, &lparam);
+    lbfgs(N, x, &fx, lbfgs_evaluate, lbfgs_progress, this, &lparam);
 
     // Master converts and broadcasts final param weights and Q to all
     copyLBFGSToParams(x);
@@ -884,7 +882,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                     }
 
                     Q += nu * (moldata.getThetaForIdx(energy, trans_id) - log(denom));
-
+                    if (boost::math::isnan(Q))
+                        std::cerr << "Setp1" << std::endl;
                 }
 
 
@@ -895,14 +894,14 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                 for (auto &sit: sum_terms) {
                     *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
                 }
-
                 Q -= nu * log(denom);
-
+                if (boost::math::isnan(Q))
+                    std::cerr << "Setp2" << std::endl;
             }
-
         }
     }
-
+    if (boost::math::isnan(Q))
+        std::cerr << moldata.getId() << std::endl;
     return Q;
 }
 
