@@ -802,17 +802,15 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
         std::vector<int> not_so_random_selected;
         if (USE_GRAPH_RANDOM_SAMPLING == cfg->ga_sampling_method) {
-            std::cout << moldata.getId() << "...";
-            try{
+            std::cerr << moldata.getId() << "...";
+            
                 moldata.getSampledTransitionIds(not_so_random_selected,
                                                 cfg->ga_graph_sampling_k,
                                                 energy, m_rng,
                                                 m_uniform_dist);
                 std::sort(not_so_random_selected.begin(), not_so_random_selected.end());
-            }catch (std::exception &e) {
-                std::cerr << moldata.getId() << " " << e.what() << std::endl;
-            }
-            std::cout << "Done" << std::endl;
+
+            std::cerr << "Done" << std::endl;
         }
         //int skipped = 0;
         // Iterate over from_id (i)
