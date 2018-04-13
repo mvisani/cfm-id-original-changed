@@ -882,10 +882,9 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                     }
 
                     Q += nu * (moldata.getThetaForIdx(energy, trans_id) - log(denom));
-                    if (boost::math::isnan(Q))
-                        std::cerr << "Setp1" << std::endl;
                 }
-
+                if (boost::math::isnan(Q))
+                    std::cerr << "Setp1" << std::endl;
 
 
                 // Accumulate the last term of each transition and the
@@ -896,7 +895,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                 }
                 Q -= nu * log(denom);
                 if (boost::math::isnan(Q)) {
-                    std::cerr << moldata.getId() << "Setp 2" << nu << " " << denom << " " << from_idx + suft_offset
+                    std::cerr << moldata.getId() << "Setp2" << nu << " " << denom << " " << log(denom) << " "
+                              << from_idx + suft_offset
                               << std::endl;
                     break;
                 }
