@@ -885,7 +885,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
                     Q += nu * (moldata.getThetaForIdx(energy, trans_id) - log(denom));
                     if(Q != Q)
-                        std::cerr << "cp2 " << moldata.getThetaForIdx(energy, trans_id) << " " <<  log(denom) <<  std::endl;
+                        std::cerr << moldata.getId() << "cp2 " << moldata.getThetaForIdx(energy, trans_id) << " " <<  log(denom) <<  std::endl;
                 }
 
                 if(Q != Q)
