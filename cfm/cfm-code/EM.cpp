@@ -898,6 +898,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                 if (boost::math::isnan(Q)) {
                     std::cerr << moldata.getId() << "Setp 2" << nu << " " << denom << " " << from_idx + suft_offset
                               << std::endl;
+                    break;
                 }
             }
         }
