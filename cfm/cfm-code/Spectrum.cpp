@@ -226,25 +226,29 @@ void Spectrum::sortAndNormalizeAnnotations() {
 void Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
                                          double abs_tol, double ppm_tol) {
 
+    int removed_cout = 0;
     // Remove any peaks more than mass_tol away from any fragment
-    std::vector<Peak>::iterator itp = peaks.begin();
-    for (; itp != peaks.end();) {
+    auto peak = peaks.begin();
+    for (; peak != peaks.end();) {
 
-        double mass_tol = getMassTol(abs_tol, ppm_tol, itp->mass);
+        double mass_tol = getMassTol(abs_tol, ppm_tol, peak->mass);
         bool found = false;
-        std::vector<double>::iterator it = frag_masses.begin();
-        for (; it != frag_masses.end(); ++it) {
-            if (fabs(*it - itp->mass) < mass_tol) {
+        for (auto frag_mass: frag_masses) {
+            if (fabs(frag_mass - peak->mass) < mass_tol) {
                 found = true;
                 break;
             }
         }
         if (!found)
-            itp = peaks.erase(itp);
-        else
-            ++itp;
-    }
+        {
+            removed_cout++;
+            peak = peaks.erase(peak);
+        }
 
+        else
+            ++peak;
+    }
+    std::cout << "Number of Removed Peaks" << removed_cout <<  std::endl;
     // Renormalise
     normalizeAndSort();
 }
@@ -257,9 +261,9 @@ bool Spectrum::hasPeakByMassWithinTol(double target_mass, double abs_tol, double
 
     auto diff = DBL_MAX;
     double closet_mass = 0.0;
-    for(auto peak: peaks) {
-        double current_diff = std::fabs(target_mass-peak.mass);
-        if(diff > current_diff) {
+    for (auto peak: peaks) {
+        double current_diff = std::fabs(target_mass - peak.mass);
+        if (diff > current_diff) {
             diff = current_diff;
             closet_mass = peak.mass;
         }
