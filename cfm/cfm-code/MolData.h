@@ -193,8 +193,10 @@ public:
 
     // Functions to dump all fvs to a csv file
     // one fv per line
-    std::string getFVsAsCSVString();
     std::string getFVsAsSparseCSVString();
+
+    void getSampledTransitionIds(std::vector<int>&selected_ids, int top_k, int energy,
+                                 std::mt19937 & rng, std::uniform_real_distribution<double> & uniform_dist);
 
     ~MolData();
 

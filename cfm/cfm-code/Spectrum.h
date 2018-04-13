@@ -103,7 +103,7 @@ public:
 
     void quantisePeaksByMass(int num_dec_places);
 
-    bool hasPeakByMassWithinTol(double target_mass, double abs_tol, double ppm_tol);
+    bool hasPeakByMassWithinTol(double target_mass, double abs_tol, double ppm_tol) const;
 
 private:
     std::vector<Peak> peaks;

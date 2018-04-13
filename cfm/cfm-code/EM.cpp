@@ -797,16 +797,24 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
-        int skipped = 0;
+        std::vector<int> not_so_random_selected;
+        if(USE_GRAPH_RANDOM_SAMPLING == cfg->ga_sampling_method) {
+            moldata.getSampledTransitionIds(not_so_random_selected,
+                                            cfg->ga_graph_sampling_k,
+                                            energy, m_rng,
+                                            m_uniform_dist);
+            std::sort(not_so_random_selected.begin(), not_so_random_selected.end());
+        }
+        //int skipped = 0;
         // Iterate over from_id (i)
-        auto fg_map_it = fg->getFromIdTMap()->begin();
-        for (int from_idx = 0; fg_map_it != fg->getFromIdTMap()->end(); ++fg_map_it, from_idx++) {
+        auto frag_trans_map = fg->getFromIdTMap()->begin();
 
+        for (int from_idx = 0; frag_trans_map != fg->getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
 
             if (record_used_idxs_only)
             {
-                for (auto itt : *fg_map_it) {
-                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(itt);
+                for (auto trans_id : *frag_trans_map) {
+                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         used_idxs.insert(fv_it->first + grad_offset);
                     }
@@ -814,66 +822,80 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             }
             else
             {
-                // if random samples
-                double token = m_uniform_dist(m_rng);
-                bool skip_update = (token < (1.0 - cfg->random_sampling_threshold));
-                skipped += skip_update;
+                //Do some random selection
+                std::vector<int> frag_trans_local_copy;
+                for(auto item: *frag_trans_map) {
+                    frag_trans_local_copy.emplace_back(item);
+                }
+                if(USE_RANDOM_SAMPLING == cfg->ga_sampling_method) {
+                    std::shuffle(frag_trans_local_copy.begin(), frag_trans_local_copy.end(), m_rng);
+                    auto resize_len = (unsigned)((double)frag_trans_local_copy.size() * cfg->random_sampling_threshold);
+                    if (resize_len == 0)
+                        resize_len = 1;
+                    frag_trans_local_copy.resize(resize_len);
+                }
+                else if(USE_GRAPH_RANDOM_SAMPLING == cfg->ga_sampling_method)
+                {
+                    if(!frag_trans_local_copy.empty())
+                    {
+                        std::vector<int> v_intersection;
+                        std::sort(frag_trans_local_copy.begin(),frag_trans_local_copy.end());
+                        std::set_intersection(  frag_trans_local_copy.begin(), frag_trans_local_copy.end(),
+                                                not_so_random_selected.begin(), not_so_random_selected.end(),
+                                                std::back_inserter( v_intersection )  );
+                        frag_trans_local_copy = v_intersection;
+                    }
+                }
 
 
                 // Calculate the denominator of the sum terms
                 double denom = 1.0;
-                auto itt = fg_map_it->begin();
-                for (; itt != fg_map_it->end(); ++itt)
-                    denom += exp(moldata.getThetaForIdx(energy, *itt));
+                for (auto trans_id : frag_trans_local_copy)
+                    denom += exp(moldata.getThetaForIdx(energy, trans_id));
 
                 // Complete the innermost sum terms	(sum over j')
                 std::map<unsigned int, double> sum_terms;
-                if (!skip_update) {
-                    for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
-                        const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
+
+                    for (auto trans_id : frag_trans_local_copy) {
+                        const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
 
                         for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                             auto fv_idx = fv_it->first;
-                            double val = exp(moldata.getThetaForIdx(energy, *itt)) / denom;
+                            double val = exp(moldata.getThetaForIdx(energy, trans_id)) / denom;
                             if (sum_terms.find(fv_idx) != sum_terms.end())
                                 sum_terms[fv_idx] += val;
                             else
                                 sum_terms[fv_idx] = val;
                         }
-                    }
-                }
 
+                }
 
                 // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
                 double nu_sum = 0.0;
-                for (itt = fg_map_it->begin(); itt != fg_map_it->end(); ++itt) {
-                    double nu = (*suft_values)[*itt + suft_offset];
-                    if (!skip_update) {
-                        nu_sum += nu;
-                        const FeatureVector *fv = moldata.getFeatureVectorForIdx(*itt);
-                        for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                            auto fv_idx = fv_it->first;
-                            *(grads + fv_idx + grad_offset) += nu;
-                        }
+                for (auto trans_id : frag_trans_local_copy) {
+                    double nu = (*suft_values)[trans_id + suft_offset];
+                    nu_sum += nu;
+                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
+
+                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                        auto fv_idx = fv_it->first;
+                        *(grads + fv_idx + grad_offset) += nu;
                     }
-                    Q += nu * (moldata.getThetaForIdx(energy, *itt) - log(denom));
+
+                    Q += nu * (moldata.getThetaForIdx(energy, trans_id) - log(denom));
                 }
 
                 // Accumulate the last term of each transition and the
                 // persistence (i = j) terms of the gradient and Q
                 double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
-                if (!skip_update) {
-                    for (auto &sit: sum_terms) {
-                        *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
-                    }
+                for (auto &sit: sum_terms) {
+                    *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
                 }
+
                 Q -= nu * log(denom);
             }
 
         }
-        /*if (comm->isMaster() && (cfg->random_sampling_threshold < 1.0)) {
-            std::cout << "Total: " << fg->getFromIdTMap()->size() << " skipped " << skipped << std::endl;
-        }*/
     }
 
     return Q;

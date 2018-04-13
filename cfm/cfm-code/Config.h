@@ -171,6 +171,10 @@ static const double DEFAULT_RANDOM_SAMPLE_THRESHOLD = 1.0;
 
 static const int DEFAULT_USE_GRAPH_PRUNING = 0;
 static const int DEFAULT_USE_BEST_Q_IN_GA = 0;
+static const int USE_NO_SAMPLING = 0;
+static const int USE_RANDOM_SAMPLING = 1;
+static const int USE_GRAPH_RANDOM_SAMPLING = 2;
+static const int DEFAULT_GRAPH_SAMPLING_K = 5;
 
 //Configuration
 struct config_t {
@@ -188,9 +192,11 @@ struct config_t {
     int include_isotopes;
     double isotope_thresh;
 
+    // For random sampling
+    double random_sampling_threshold;
     int use_graph_pruning;
-
-
+    int ga_sampling_method;
+    int ga_graph_sampling_k;
 
     //Model Level Configuration
     unsigned int model_depth; //Total Depth
@@ -252,8 +258,6 @@ struct config_t {
     int update_bias_first;
     int ga_minibatch_nth_size;
 
-    // For random sampling
-    double random_sampling_threshold;
 
     int fragraph_compute_timeout_in_secs;
 

@@ -20,6 +20,8 @@
 
 #include <GraphMol/ROMol.h>
 #include <vector>
+#include <map>
+#include <random>
 
 #include "Util.h"
 #include "Feature.h"
@@ -263,7 +265,11 @@ public:
     void pruneGraphBySpectra(std::vector<Spectrum>& spectra, double abs_tol, double ppm_tol);
 
     // Get a list of transitions ids , with weighted prob
-    void doSomethingFunction();
+    void getSampledTransitionIds(std::vector<int>&selected_ids,
+                                 int top_k,
+                                 int energy,
+                                 std::vector<std::vector<double>> & thetas,
+                                 std::mt19937 & rng, std::uniform_real_distribution<double> & uniform_dist);
 
 protected:
     std::vector<Fragment> fragments;
@@ -305,7 +311,11 @@ protected:
                                   std::vector<int>&removed_transitions_ids);
 
     // Function do some not so random selection
-    double notSoRandomSampling(int fg_id, std::vector<int>&selected_ids);
+    double notSoRandomSampling(int fg_id, std::vector<int> &selected_ids,
+                               const int top_k,
+                               const int energy,
+                               std::vector<std::vector<double>> &thetas,
+                               std::mt19937 &rng, std::uniform_real_distribution<double> &uniform_dist);
 };
 
 class EvidenceFragmentGraph : public FragmentGraph {

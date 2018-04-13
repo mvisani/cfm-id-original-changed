@@ -75,6 +75,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.random_sampling_threshold = DEFAULT_RANDOM_SAMPLE_THRESHOLD;
     cfg.use_graph_pruning = DEFAULT_USE_GRAPH_PRUNING;
     cfg.ga_use_best_q = DEFAULT_USE_BEST_Q_IN_GA;
+    cfg.ga_sampling_method = USE_NO_SAMPLING;
+    cfg.ga_graph_sampling_k = DEFAULT_GRAPH_SAMPLING_K;
 }
 
 
@@ -147,6 +149,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "random_sampling_threshold") cfg.random_sampling_threshold = value;
         else if (name == "use_graph_pruning") cfg.use_graph_pruning = (int)value;
         else if (name == "ga_use_best_q") cfg.ga_use_best_q = (int) value;
+        else if (name == "ga_sampling_method") cfg.ga_sampling_method = (int) value;
+        else if (name == "ga_graph_sampling_k") cfg.ga_graph_sampling_k = (int) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -264,7 +268,18 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             std::cout << "Using graph pruning" << std::endl;
         }
 
-
+        switch (cfg.ga_sampling_method)
+        {
+            case USE_RANDOM_SAMPLING:
+                std::cout << "Using Random Sampling on transitions with ratio=" << cfg.random_sampling_threshold << std::endl;
+                break;
+            case USE_GRAPH_RANDOM_SAMPLING:
+                std::cout << "Using Graph Random Sampling on transitions with K=" << cfg.ga_graph_sampling_k <<  std::endl;
+                break;
+            case USE_NO_SAMPLING:
+            default:
+                std::cout << "NOT Using Sampling Method" << std::endl;
+        }
         if (cfg.allow_frag_detours) {
             std::cout << "Allowing fragmentation detours " << std::endl;
         }

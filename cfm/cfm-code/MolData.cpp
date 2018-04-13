@@ -776,16 +776,6 @@ void MolData::quantiseMeasuredSpectra(int num_dec_places) {
         it->quantisePeaksByMass(num_dec_places);
 }
 
-std::string MolData::getFVsAsCSVString() {
-    std::string csv_str = "";
-    /*for (auto fv : fvs) {
-        if (csv_str != "") {
-            csv_str += "\n";
-        }
-        csv_str += fv->toCSVString();
-    }*/
-    return csv_str;
-}
 
 std::string MolData::getFVsAsSparseCSVString() {
     std::string csv_str = "";
@@ -796,6 +786,14 @@ std::string MolData::getFVsAsSparseCSVString() {
         csv_str += fv->toSparseCSVString();
     }
     return csv_str;
+}
+
+void MolData::getSampledTransitionIds(std::vector<int>&selected_ids,
+                                      int top_k,
+                                      int energy,
+                                      std::mt19937 & rng,
+                                      std::uniform_real_distribution<double> & uniform_dist){
+    fg->getSampledTransitionIds(selected_ids, top_k ,energy,thetas,rng,uniform_dist);
 }
 
 MolData::~MolData() {

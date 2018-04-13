@@ -107,38 +107,61 @@ void FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum>& spectra,  double 
     std::vector<int> removed_transitions_ids;
     getPruningTransitionsIds(fg_id,spectra,abs_tol,ppm_tol,removed_transitions_ids);
 
-    // make sure all ids are unique
+    // make sure all ids are unique, duplication should never happens
     std::set<int> temp_set( removed_transitions_ids.begin(), removed_transitions_ids.end());
     removed_transitions_ids.assign( temp_set.begin(), temp_set.end() );
 
-    std::cout << "current number of transitions "<< transitions.size() << std::endl;
+    //std::cout << "current number of transitions "<< transitions.size() << std::endl;
     removeTransitions(removed_transitions_ids);
-    std::cout << removed_transitions_ids.size()
-              << " transitions removed, current number of transitions "<< transitions.size() << std::endl;
+    //std::cout << removed_transitions_ids.size()
+    //          << " transitions removed, current number of transitions "<< transitions.size() << std::endl;
 }
 
+void FragmentGraph::getSampledTransitionIds(std::vector<int>&selected_ids,
+                                            int top_k,
+                                            int energy,
+                                            std::vector<std::vector<double>> & thetas,
+                                            std::mt19937 & rng, std::uniform_real_distribution<double> & uniform_dist){
+    int fg_id = 0;
+    notSoRandomSampling(fg_id,selected_ids, top_k, energy, thetas, rng, uniform_dist);
+}
 
-double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int>&selected_ids) {
+double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int> &selected_ids,
+                                          const int top_k, const int energy,
+                                          std::vector<std::vector<double>> &thetas,
+                                          std::mt19937 &rng, std::uniform_real_distribution<double> &uniform_dist) {
 
-    /*double theta_sum = 0.0;
+    double theta_sum = 0.0;
     // if there is transitions from this fragments
     // that means this is not a leaf node
+    std::map<double,int> child_weights_map;
     if(fg_id < from_id_tmap.size())
     {
         for(auto trans_id : from_id_tmap[fg_id]) {
             auto to_id = transitions[trans_id].getToId();
-            theta_sum += transitions[trans_id].
-            double child_prob = notSoRandomSampling(to_id,selected_ids);
-            need_save = (need_save || child_need_save);
+            theta_sum += thetas[energy][trans_id];
+            double child_weight = notSoRandomSampling(to_id, selected_ids, top_k, energy, thetas, rng, uniform_dist);
+            child_weights_map[child_weight] = trans_id;
         }
     }
 
-    // if there need to save this
-    if(!need_save)
-    removed_transitions_ids.emplace_back(fg_id);
+    // random select N transitions from sorted list
+    int count = 0;
+    for(auto weights_id_pair : child_weights_map){
+        double coin = uniform_dist(rng);
+        if(coin > 0.5)
+        {
+            selected_ids.emplace_back(weights_id_pair.second);
+            count ++;
+        }
+        if(count == top_k)
+            break;
+    }
 
-    return need_save;*/
+    // if there need to save this
+    return theta_sum;
 }
+
 //Function to remove given transitions from the graph
 void FragmentGraph::removeTransitions(std::vector<int>& ids){
 
