@@ -139,6 +139,8 @@ protected:
 
     void zeroUnusedParams();
 
+    void infCheck(double &belief);
+
     //tmp pointers for use during LBFGS
     suft_counts_t *tmp_suft_ptr_lbfgs;
     std::vector<MolData> *tmp_moldata_ptr_lbfgs;

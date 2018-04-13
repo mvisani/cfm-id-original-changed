@@ -357,19 +357,14 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
         for (unsigned int d = 1; d < cfg->model_depth; d++) {
             energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
+                infCheck(belief);
                 suft.values[molidx][i + cfg->map_d_to_energy[d - 1] * len_offset] =
                         belief;
                 belief = 0.0;
             }
             belief += exp(beliefs->tn[i][d]);
         }
-        // TODO FIND A BETTER WAY THIS IS A SUPER HACKY FIX
-        if (boost::math::isinf(belief)) {
-            if (belief < 0)
-                belief = -1000000000;
-            else
-                belief = 1000000000;
-        }
+        infCheck(belief);
         suft.values[molidx][i + energy * len_offset] = belief;
     }
 
@@ -385,6 +380,7 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
         for (unsigned int d = 1; d < cfg->model_depth; d++) {
             energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
+                infCheck(belief);
                 suft.values[molidx][i + offset +
                                     cfg->map_d_to_energy[d - 1] * len_offset] = belief;
                 belief = 0.0;
@@ -398,6 +394,7 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
             else
                 belief = 1000000000;
         }
+        infCheck(belief);
         suft.values[molidx][i + offset + energy * len_offset] = belief;
     }
 }
@@ -1036,4 +1033,14 @@ void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
             (num_mols + cfg->ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;
     for (int i = num_minibatch_mols; i < idxs.size(); i++)
         initialized_minibatch_flags[idxs[i]] = 0;
+}
+
+void EM::infCheck(double &belief) {
+    // TODO FIND A BETTER WAY THIS IS A SUPER HACKY FIX
+    if (boost::math::isinf(belief)) {
+        if (belief < 0)
+            belief = -1000000000;
+        else
+            belief = 1000000000;
+    }
 }
