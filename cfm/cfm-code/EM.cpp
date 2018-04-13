@@ -386,7 +386,7 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
             belief += exp(beliefs->ps[i][d]);
         }
         // TODO FIND A BETTER WAY THIS IS A SUPER HACKY FIX
-        if (isinf(belief))
+        if (boost::math::isinf(belief))
             belief = 1000000000;
         suft.values[molidx][i + offset + energy * len_offset] = belief;
     }
