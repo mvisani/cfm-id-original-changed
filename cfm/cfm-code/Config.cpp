@@ -213,6 +213,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             std::cout << "Warning: Unknown parameter initialization, revering to default mode (full random)!"
                       << std::endl;
 
+        std::cout << "EM Restart Times: " << cfg.num_em_restarts << std::endl;
         std::cout << "Using EM Convergence Threshold " << cfg.em_converge_thresh << std::endl;
         std::cout << "Using Lambda " << cfg.lambda << std::endl;
    

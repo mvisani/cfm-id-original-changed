@@ -248,7 +248,7 @@ void Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
         else
             ++peak;
     }
-    std::cout << "Number of Removed Peaks" << removed_cout <<  std::endl;
+    //std::cout << "Number of Removed Peaks" << removed_cout <<  std::endl;
     // Renormalise
     normalizeAndSort();
 }

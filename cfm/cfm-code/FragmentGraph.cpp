@@ -108,8 +108,8 @@ void FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum>& spectra,  double 
     getPruningTransitionsIds(fg_id,spectra,abs_tol,ppm_tol,removed_transitions_ids);
 
     // make sure all ids are unique, duplication should never happens
-    std::set<int> temp_set( removed_transitions_ids.begin(), removed_transitions_ids.end());
-    removed_transitions_ids.assign( temp_set.begin(), temp_set.end() );
+    //std::set<int> temp_set( removed_transitions_ids.begin(), removed_transitions_ids.end());
+    //removed_transitions_ids.assign( temp_set.begin(), temp_set.end() );
 
     //std::cout << "current number of transitions "<< transitions.size() << std::endl;
     removeTransitions(removed_transitions_ids);
@@ -140,8 +140,8 @@ double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int> &selected_
         for(auto trans_id : from_id_tmap[fg_id]) {
             auto to_id = transitions[trans_id].getToId();
             double child_weight = notSoRandomSampling(to_id, selected_ids, top_k, energy, thetas, rng, uniform_dist);
-            theta_sum += thetas[energy][trans_id];
-            theta_sum += child_weight;
+            //theta_sum += thetas[energy][trans_id];
+            //theta_sum += child_weight;
             child_weights_map[child_weight] = trans_id;
         }
     }
