@@ -359,7 +359,7 @@ trainCombinedEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalcul
             em = new EM(&cfg, &fc, status_filename, repeat_filename);
 
         double Q = em->run(data, group, out_filename);
-        if (Q < prev_Q) {
+        if (Q > prev_Q) {
             if (mpi_rank == MASTER) {
                 std::cout << "Found better Q!" << std::endl;
                 em->writeParamsToFile(param_filename);
@@ -409,10 +409,10 @@ trainSingleEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalculat
                     em = new EM(&se_cfg, &fc, status_filename, repeat_filename);
 
                 double Q = em->run(data, group, out_filename);
-                if (Q < prev_Q) {
+                if (Q > prev_Q) {
                     if (mpi_rank == MASTER) {
                         std::cout << "Found better Q!" << std::endl;
-                        em->writeParamsToFile(param_filename);
+                        em->writeParamsToFile(eparam_filename);
                     }
                     prev_Q = Q;
                 }
