@@ -395,7 +395,7 @@ trainSingleEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalculat
                         << "Warning: best Q for previous repeats unknown, may not pick up best params - check manually!"
                         << std::endl;
             }
-            for (int repeat = start_repeat; repeat < cfg.num_em_restarts; repeat++) {
+            for (int repeat = start_repeat; repeat < se_cfg.num_em_restarts; repeat++) {
 
                 EM *em;
                 std::string repeat_filename = eparam_filename + boost::lexical_cast<std::string>(repeat);
