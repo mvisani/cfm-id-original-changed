@@ -37,6 +37,8 @@ class Fragment {
 public:
     // Constructor, store the ion smiles and a reduced smiles since the ion is
     // not needed and takes more space.
+    Fragment() {};
+
     Fragment(std::string &a_ion_smiles, std::string &a_reduced_smiles, int an_id,
              double a_mass)
             : id(an_id), ion_smiles(a_ion_smiles), reduced_smiles(a_reduced_smiles),
@@ -126,6 +128,10 @@ public:
     int getFromId() const { return from_id; };
 
     int getToId() const { return to_id; };
+
+    int setFromId(const int id) {  from_id = id; };
+
+    int setToId(const int id) {  to_id = id; };
 
     const std::string *getNLSmiles() const { return &nl_smiles; };
 
@@ -303,12 +309,19 @@ protected:
     int findMatchingTransition(int from_id, int to_id);
 
     // Function to remove give transitions and update id maps
-    void removeTransitions( std::vector<int>& ids);
+    void removeTransitions( std::vector<int>& input_ids);
+
+    // Function to remove give fragments and update id maps
+    void removeFragments(std::vector<int>& input_ids);
+
+    // Function to remove lonely frags in the tree
+    // where there is no trans lead or from those frags
+    void removeLonelyFrags();
 
     // Function do get list of transitions can be removed
-    bool getPruningTransitionsIds(int fg_id, std::vector<Spectrum>& spectra,
-                                  double abs_tol, double ppm_tol,
-                                  std::vector<int>&removed_transitions_ids);
+    bool getPruningTransitionIds(int fg_id, std::vector<Spectrum> &spectra,
+                                 double abs_tol, double ppm_tol,
+                                 std::vector<int> &removed_transitions_ids);
 
     // Function do some not so random selection
     double notSoRandomSampling(int fg_id, std::vector<int> &selected_ids,
