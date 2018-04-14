@@ -377,7 +377,6 @@ void MolData::computeTransitionProbabilities() {
         for (unsigned int i = 0; i < fg->getNumFragments(); i++)
             log_probs[energy][offset + i] = -denom_cache[i];
     }
-    return;
 }
 
 void MolData::readInSpectraFromFile(const std::string &peak_filename,
@@ -463,18 +462,16 @@ void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
     std::vector<double> all_masses;
     getEnumerationSpectraMasses(all_masses);
 
-    std::cout << getId() << ": " << std::endl;
-    for (auto it = spectra.begin(); it != spectra.end(); ++it)
-        it->removePeaksWithNoFragment(all_masses, abs_tol, ppm_tol);
+    for(auto spectrum : spectra) {
+        spectrum.removePeaksWithNoFragment(all_masses, abs_tol, ppm_tol);
+    }
 }
 
 bool MolData::hasEmptySpectrum() const {
 
     bool result = false;
-    std::vector<Spectrum>::const_iterator it = spectra.begin();
-    for (; it != spectra.end(); ++it) {
-        if (it->size() == 0)
-            result = true;
+    for(auto &spectrum : spectra) {
+        result = (result || (spectrum.size() == 0));
     }
     return result;
 }
