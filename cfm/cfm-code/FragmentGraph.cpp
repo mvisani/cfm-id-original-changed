@@ -159,8 +159,8 @@ double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int> &selected_
         for (auto trans_id : from_id_tmap[fg_id]) {
             auto to_id = transitions[trans_id].getToId();
             double child_weight = notSoRandomSampling(to_id, selected_ids, top_k, energy, thetas, rng, uniform_dist);
-            //theta_sum += thetas[energy][trans_id];
-            //theta_sum += child_weight;
+            theta_sum += thetas[energy][trans_id];
+            theta_sum += child_weight;
             child_weights_map[child_weight] = trans_id;
         }
     }
