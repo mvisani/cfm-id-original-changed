@@ -226,7 +226,8 @@ double EM::run(std::vector<MolData> &data, int group,
         double valQ = 0.0;
         // Compute the final Q (with all molecules, in case only some were used in
         // the mini-batch)
-        if (cfg->ga_minibatch_nth_size > 1) {
+        if (cfg->ga_minibatch_nth_size > 1 ||
+                cfg->ga_sampling_method != USE_NO_SAMPLING){
             Q = 0;
             if (comm->isMaster())
                 std::cout << "Using minibatch, compute the final Q" << std::endl;
@@ -236,7 +237,8 @@ double EM::run(std::vector<MolData> &data, int group,
             if (itdata->getGroup() == validation_group) {
                 //valQ += computeQ( molidx, *itdata, suft );
                 numvalmols++;
-            } else if (cfg->ga_minibatch_nth_size > 1) {
+            } else if (cfg->ga_minibatch_nth_size > 1 ||
+              cfg->ga_sampling_method != USE_NO_SAMPLING) {
                 Q += computeQ(molidx, *itdata, suft);
                 numnonvalmols++;
             } else
@@ -252,7 +254,8 @@ double EM::run(std::vector<MolData> &data, int group,
             writeStatus(q_time_msg.c_str());
 
         valQ = comm->collectQInMaster(valQ);
-        if (cfg->ga_minibatch_nth_size > 1) {
+        if (cfg->ga_minibatch_nth_size > 1 ||
+            cfg->ga_sampling_method != USE_NO_SAMPLING) {
             if (comm->isMaster()) {
                 Q += addRegularizersAndUpdateGradient(nullptr);
             }
