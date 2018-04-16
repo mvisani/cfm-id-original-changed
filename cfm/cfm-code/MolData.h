@@ -195,8 +195,12 @@ public:
     // one fv per line
     std::string getFVsAsSparseCSVString();
 
-    void getSampledTransitionIds(std::vector<int>&selected_ids, int top_k, int energy,
-                                 std::mt19937 & rng, std::uniform_real_distribution<double> & uniform_dist);
+    void getSampledTransitionIds(std::vector<int> &selected_ids,
+                                    const int top_k,
+                                    const double selection_prob,
+                                    const int energy,
+                                    std::mt19937 &rng,
+                                    std::uniform_real_distribution<double> &uniform_dist);
 
     ~MolData();
 

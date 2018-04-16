@@ -72,7 +72,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.include_h_losses = DEFAULT_INCLUDE_H_LOSSES;
     cfg.include_precursor_h_losses_only = DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY;
     cfg.fragraph_compute_timeout_in_secs = DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS;
-    cfg.random_sampling_threshold = DEFAULT_RANDOM_SAMPLE_THRESHOLD;
+    cfg.ga_sampling_selection_threshold = DEFAULT_RANDOM_SAMPLE_THRESHOLD;
     cfg.use_graph_pruning = DEFAULT_USE_GRAPH_PRUNING;
     cfg.ga_use_best_q = DEFAULT_USE_BEST_Q_IN_GA;
     cfg.ga_sampling_method = USE_NO_SAMPLING;
@@ -146,7 +146,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "include_h_losses") cfg.include_h_losses = (int) value;
         else if (name == "include_precursor_h_losses_only") cfg.include_precursor_h_losses_only = (int) value;
         else if (name == "fragraph_compute_timeout_in_secs") cfg.fragraph_compute_timeout_in_secs = (int) value;
-        else if (name == "random_sampling_threshold") cfg.random_sampling_threshold = value;
+        else if (name == "ga_sampling_selection_threshold") cfg.ga_sampling_selection_threshold = value;
         else if (name == "use_graph_pruning") cfg.use_graph_pruning = (int)value;
         else if (name == "ga_use_best_q") cfg.ga_use_best_q = (int) value;
         else if (name == "ga_sampling_method") cfg.ga_sampling_method = (int) value;
@@ -263,7 +263,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         }
         if(cfg.ga_use_best_q)
             std::cout << "Using Best Q instead of Prev Q in GA" << std::endl;
-        std::cout << "Using Random Sampling with threshold: " << cfg.random_sampling_threshold << std::endl;
+        std::cout << "Using Random Sampling with threshold: " << cfg.ga_sampling_selection_threshold << std::endl;
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
         if(cfg.use_graph_pruning == DEFAULT_USE_GRAPH_PRUNING) {
             std::cout << "Using graph pruning" << std::endl;
@@ -272,10 +272,10 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         switch (cfg.ga_sampling_method)
         {
             case USE_RANDOM_SAMPLING:
-                std::cout << "Using Random Sampling on transitions with ratio=" << cfg.random_sampling_threshold << std::endl;
+                std::cout << "Using Random Sampling on transitions with ratio=" << cfg.ga_sampling_selection_threshold << std::endl;
                 break;
             case USE_GRAPH_RANDOM_SAMPLING:
-                std::cout << "Using Graph Random Sampling on transitions with K=" << cfg.ga_graph_sampling_k <<  std::endl;
+                std::cout << "Using Graph Random Sampling on transitions with K=" << cfg.ga_graph_sampling_k << " And Selection Prob=" << cfg.ga_sampling_selection_threshold << std::endl;
                 break;
             case USE_NO_SAMPLING:
             default:

@@ -192,8 +192,8 @@ struct config_t {
     int include_isotopes;
     double isotope_thresh;
 
-    // For random sampling
-    double random_sampling_threshold;
+    // For sampling
+    double ga_sampling_selection_threshold;
     int use_graph_pruning;
     int ga_sampling_method;
     int ga_graph_sampling_k;

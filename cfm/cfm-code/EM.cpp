@@ -808,7 +808,9 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         if (USE_GRAPH_RANDOM_SAMPLING == cfg->ga_sampling_method && !record_used_idxs_only) {
             moldata.getSampledTransitionIds(not_so_random_selected,
                                             cfg->ga_graph_sampling_k,
-                                            energy, m_rng,
+                                            cfg->ga_sampling_selection_threshold,
+                                            energy,
+                                            m_rng,
                                             m_uniform_dist);
             std::sort(not_so_random_selected.begin(), not_so_random_selected.end());
 
@@ -835,7 +837,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                 if (USE_RANDOM_SAMPLING == cfg->ga_sampling_method) {
                     std::shuffle(frag_trans_local_copy.begin(), frag_trans_local_copy.end(), m_rng);
                     auto resize_len = (unsigned) ((double) frag_trans_local_copy.size() *
-                                                  cfg->random_sampling_threshold);
+                                                  cfg->ga_sampling_selection_threshold);
                     if (resize_len == 0)
                         resize_len = 1;
                     frag_trans_local_copy.resize(resize_len);

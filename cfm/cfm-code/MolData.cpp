@@ -785,12 +785,10 @@ std::string MolData::getFVsAsSparseCSVString() {
     return csv_str;
 }
 
-void MolData::getSampledTransitionIds(std::vector<int>&selected_ids,
-                                      int top_k,
-                                      int energy,
-                                      std::mt19937 & rng,
-                                      std::uniform_real_distribution<double> & uniform_dist){
-    fg->getSampledTransitionIds(selected_ids, top_k ,energy,thetas,rng,uniform_dist);
+void MolData::getSampledTransitionIds(std::vector<int> &selected_ids, const int top_k, const double selection_prob,
+                                      const int energy, std::mt19937 &rng,
+                                      std::uniform_real_distribution<double> &uniform_dist) {
+    fg->getSampledTransitionIds(selected_ids, top_k, selection_prob, energy, thetas, rng, uniform_dist);
 }
 
 MolData::~MolData() {

@@ -137,19 +137,17 @@ void FragmentGraph::removeLonelyFrags() {
     removeFragments(removed_fragmentation_ids);
 }
 
-void FragmentGraph::getSampledTransitionIds(std::vector<int> &selected_ids,
-                                            int top_k,
-                                            int energy,
-                                            std::vector<std::vector<double>> &thetas,
-                                            std::mt19937 &rng, std::uniform_real_distribution<double> &uniform_dist) {
+void FragmentGraph::getSampledTransitionIds(std::vector<int> &selected_ids, const int top_k, const double selection_prob,
+                                            const int energy, std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
+                                            std::uniform_real_distribution<double> &uniform_dist) {
     int fg_id = 0;
-    notSoRandomSampling(fg_id, selected_ids, top_k, energy, thetas, rng, uniform_dist);
+    notSoRandomSampling(fg_id, selected_ids, top_k, selection_prob, energy, thetas, rng, uniform_dist);
 }
 
-double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int> &selected_ids,
-                                          const int top_k, const int energy,
-                                          std::vector<std::vector<double>> &thetas,
-                                          std::mt19937 &rng, std::uniform_real_distribution<double> &uniform_dist) {
+double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int> &selected_ids, const int top_k,
+                                          const double selection_prob, const int energy,
+                                          std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
+                                          std::uniform_real_distribution<double> &uniform_dist) {
 
     double theta_sum = 0.0;
     // if there is transitions from this fragments
@@ -160,7 +158,7 @@ double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int> &selected_
             auto to_id = transitions[trans_id].getToId();
             double child_weight = thetas[energy][trans_id];
             //child_weight +=
-            notSoRandomSampling(to_id, selected_ids, top_k, energy, thetas, rng, uniform_dist);
+            notSoRandomSampling(to_id, selected_ids, top_k, selection_prob, energy, thetas, rng, uniform_dist);
             //child_weight += thetas[energy][trans_id];
             //theta_sum += child_weight;
             // we want higher weights in the front
@@ -173,7 +171,7 @@ double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int> &selected_
     int count = 0;
     for (auto weights_id_pair : child_weights_map) {
         double coin = uniform_dist(rng);
-        if (coin > 0.1) {
+        if (coin > selection_prob) {
             selected_ids.push_back(weights_id_pair.second);
             count++;
         }
