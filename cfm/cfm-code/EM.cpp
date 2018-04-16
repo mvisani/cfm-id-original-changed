@@ -1028,9 +1028,14 @@ void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
 void EM::infCheck(double &belief) {
     // TODO FIND A BETTER WAY THIS IS A SUPER HACKY FIX
     if (boost::math::isinf(belief)) {
-        if (belief < 0)
+        if (belief < 0) {
+            std::cout << "Warning: belief is -Inf" << std::endl;
             belief = -1000000000;
-        else
+        }
+        else{
+            std::cout << "Warning: belief is Inf" << std::endl;
             belief = 1000000000;
+        }
+
     }
 }
