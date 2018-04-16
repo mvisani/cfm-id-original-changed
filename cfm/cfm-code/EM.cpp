@@ -1030,11 +1030,11 @@ void EM::infCheck(double &belief) {
     if (boost::math::isinf(belief)) {
         if (belief < 0) {
             std::cout << "Warning: belief is -Inf" << std::endl;
-            belief = -1000000000;
+            //belief = -100000000000;
         }
         else{
             std::cout << "Warning: belief is Inf" << std::endl;
-            belief = 1000000000;
+            //belief = 100000000000;
         }
 
     }
