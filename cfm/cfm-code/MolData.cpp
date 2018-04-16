@@ -229,7 +229,7 @@ void MolData::annotatePeaks(double abs_tol, double ppm_tol,
 
     if (!ev_graph_computed) {
         std::cout << "Warning: called annotate peaks without first computing "
-                "evidence graph"
+                     "evidence graph"
                   << std::endl;
         return;
     }
@@ -453,8 +453,8 @@ void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
         it->clean(abs_tol, ppm_tol);
 }
 
-void MolData::pruneGraphBySpectra(double abs_tol, double ppm_tol){
-    fg->pruneGraphBySpectra(spectra,abs_tol,ppm_tol);
+void MolData::pruneGraphBySpectra(double abs_tol, double ppm_tol) {
+    fg->pruneGraphBySpectra(spectra, abs_tol, ppm_tol);
 }
 
 void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
@@ -462,7 +462,7 @@ void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
     std::vector<double> all_masses;
     getEnumerationSpectraMasses(all_masses);
 
-    for(auto spectrum : spectra) {
+    for (auto spectrum : spectra) {
         spectrum.removePeaksWithNoFragment(all_masses, abs_tol, ppm_tol);
     }
 }
@@ -470,7 +470,7 @@ void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
 bool MolData::hasEmptySpectrum() const {
 
     bool result = false;
-    for(auto &spectrum : spectra) {
+    for (auto &spectrum : spectra) {
         result = (result || (spectrum.size() == 0));
     }
     return result;
@@ -790,6 +790,26 @@ void MolData::getSampledTransitionIds(std::vector<int> &selected_ids, const int 
                                       std::uniform_real_distribution<double> &uniform_dist) {
     fg->getSampledTransitionIds(selected_ids, top_k, selection_prob, energy, thetas, rng, uniform_dist);
 }
+
+void MolData::getSampledTransitionIdsFromFrag(int fg_id,
+                                              std::vector<int> &selected_ids,
+                                              const int top_k,
+                                              const double selection_prob,
+                                              const int energy,
+                                              std::mt19937 &rng,
+                                              std::uniform_real_distribution<double> &uniform_dist) {
+    fg->getSampledTransitionIdsFromFrag(fg_id, selected_ids, top_k, selection_prob, energy, thetas, rng, uniform_dist);
+}
+
+
+void MolData::getSampledTransitionIdsFromFrag(int fg_id,
+                                              std::vector<int> &selected_ids,
+                                              const double selection_prob,
+                                              std::mt19937 &rng,
+                                              std::uniform_real_distribution<double> &uniform_dist) {
+    fg->getSampledTransitionIdsFromFrag(fg_id, selected_ids, selection_prob, rng, uniform_dist);
+}
+
 
 MolData::~MolData() {
 

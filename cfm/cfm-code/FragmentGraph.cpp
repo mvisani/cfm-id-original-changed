@@ -137,6 +137,49 @@ void FragmentGraph::removeLonelyFrags() {
     removeFragments(removed_fragmentation_ids);
 }
 
+void FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids, const int top_k, const double selection_prob,
+                                            const int energy, std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
+                                            std::uniform_real_distribution<double> &uniform_dist) {
+    // in case there is nothing to see
+    if (fg_id >= from_id_tmap.size()) {
+        return;
+    }
+
+    std::map<double, int, std::greater<int>> theta_id_map;
+    for(auto & trans_id : from_id_tmap[fg_id]) {
+        double trans_theta = thetas[energy][trans_id];
+        theta_id_map[trans_theta] = trans_id;
+    }
+
+    int count = 0;
+    for (auto &theta_id_pair : theta_id_map) {
+        double coin = uniform_dist(rng);
+        if (coin < selection_prob) {
+            selected_ids.push_back(theta_id_pair.second);
+            count++;
+        }
+        if (count == top_k)
+            break;
+    }
+}
+
+void FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids,  const double selection_prob,
+                                                    std::mt19937 &rng,
+                                                    std::uniform_real_distribution<double> &uniform_dist) {
+    // in case there is nothing to see
+    if (fg_id >= from_id_tmap.size()) {
+        return;
+    }
+
+    for(auto & trans_id : from_id_tmap[fg_id]) {
+        double coin = uniform_dist(rng);
+        if (coin < selection_prob)
+            selected_ids.push_back(trans_id);
+    }
+}
+
+
+
 void FragmentGraph::getSampledTransitionIds(std::vector<int> &selected_ids, const int top_k, const double selection_prob,
                                             const int energy, std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
                                             std::uniform_real_distribution<double> &uniform_dist) {
@@ -152,7 +195,7 @@ double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int> &selected_
     double theta_sum = 0.0;
     // if there is transitions from this fragments
     // that means this is not a leaf node
-    std::map<double, int> child_weights_map;
+    std::map<double, int, std::greater<int>> child_weights_map;
     if (fg_id < from_id_tmap.size()) {
         for (auto trans_id : from_id_tmap[fg_id]) {
             auto to_id = transitions[trans_id].getToId();
@@ -163,7 +206,7 @@ double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int> &selected_
             //theta_sum += child_weight;
             // we want higher weights in the front
             // so , we are using negative keys
-            child_weights_map[-child_weight] = trans_id;
+            child_weights_map[child_weight] = trans_id;
         }
     }
 
@@ -171,7 +214,7 @@ double FragmentGraph::notSoRandomSampling(int fg_id, std::vector<int> &selected_
     int count = 0;
     for (auto weights_id_pair : child_weights_map) {
         double coin = uniform_dist(rng);
-        if (coin > selection_prob) {
+        if (coin < selection_prob) {
             selected_ids.push_back(weights_id_pair.second);
             count++;
         }

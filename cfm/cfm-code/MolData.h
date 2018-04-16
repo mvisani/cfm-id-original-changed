@@ -202,6 +202,19 @@ public:
                                     std::mt19937 &rng,
                                     std::uniform_real_distribution<double> &uniform_dist);
 
+    void getSampledTransitionIdsFromFrag(int fg_id,
+                                    std::vector<int> &selected_ids,
+                                 const int top_k,
+                                 const double selection_prob,
+                                 const int energy,
+                                 std::mt19937 &rng,
+                                 std::uniform_real_distribution<double> &uniform_dist);
+
+    void getSampledTransitionIdsFromFrag(int fg_id,
+                                         std::vector<int> &selected_ids,
+                                         const double selection_prob,
+                                         std::mt19937 &rng,
+                                         std::uniform_real_distribution<double> &uniform_dist);
     ~MolData();
 
 protected
