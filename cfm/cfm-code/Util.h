@@ -84,4 +84,6 @@ inline double logAdd(double log_x, double log_y) {
     return rval;
 }
 
+void softmax(std::vector<double>& weight, std::vector<double>& prob);
+
 #endif // __UTIL_H__

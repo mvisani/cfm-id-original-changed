@@ -137,9 +137,10 @@ void FragmentGraph::removeLonelyFrags() {
     removeFragments(removed_fragmentation_ids);
 }
 
+
 void FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids, const int top_k, const double selection_prob,
-                                            const int energy, std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
-                                            std::uniform_real_distribution<double> &uniform_dist) {
+                                                    const int energy, std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
+                                                    std::uniform_real_distribution<double> &uniform_dist) {
     // in case there is nothing to see
     if (fg_id >= from_id_tmap.size()) {
         return;
@@ -161,6 +162,33 @@ void FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> 
         if (count == top_k)
             break;
     }
+}
+
+void FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids, const int top_k, const double selection_prob,
+                                            const int energy, std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
+                                            std::uniform_real_distribution<double> &uniform_dist) {
+    // in case there is nothing to see
+    if (fg_id >= from_id_tmap.size()) {
+        return;
+    }
+    std::vector<double> probs(from_id_tmap.size() + 1);
+    std::vector<double> weights(from_id_tmap.size() + 1);
+    weights.emplace_back(1.0);
+    //std::map<double, int, std::greater<int>> theta_id_map;
+    for(auto & trans_id : from_id_tmap[fg_id]) {
+        double trans_theta = thetas[energy][trans_id];
+        probs.emplace_back(trans_theta);
+    }
+    softmax(weights,probs);
+    std::sort(probs.begin(),probs.end());
+    double coin = uniform_dist(rng);
+    int idx = 0;
+    //std::map<double, int, std::greater<int>> theta_id_map;
+    for(auto & trans_id : from_id_tmap[fg_id]) {
+        double trans_theta = thetas[energy][trans_id];
+        probs.emplace_back(trans_theta);
+    }
+
 }
 
 void FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids,  const double selection_prob,

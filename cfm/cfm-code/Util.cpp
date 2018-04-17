@@ -108,3 +108,15 @@ romol_ptr_t createMolPtr(const char *smiles_or_inchi) {
     addIonicChargeLabels(mol);
     return romol_ptr_t(mol);
 }
+
+void softmax(std::vector<double>& weights, std::vector<double>& probs) {
+    double sum = 0.0;
+    for(auto weight : weights){
+        double tmp = std::exp(weight);
+        probs.push_back(tmp);
+        sum += tmp;
+    }
+    for(auto &prob: probs){
+        prob /= sum;
+    }
+}
