@@ -691,16 +691,11 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
                 Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
                                                   false, comm->used_idxs);
         }
+
+
         if (comm->isMaster())
             Q += addRegularizersAndUpdateGradient(&grads[0]);
         comm->collectGradsInMaster(&grads[0]);
-
-        Q = comm->collectQInMaster(Q);
-        Q = comm->broadcastQ(Q);
-
-        if (comm->isMaster())
-            std::cout << iter << ":  Q=" << Q << " prevQ=" << prevQ << " Learning_Rate= " << learn_rate
-                      << std::endl;
 
         // Step the parameters
         if (comm->isMaster()) {
@@ -749,6 +744,20 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
             }
         }
         comm->broadcastParams(param.get());
+
+        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
+            if (minibatch_flags[molidx])
+                Q += computeQ(molidx, *itdata, suft);
+        }
+        if (comm->isMaster())
+            Q += addRegularizersAndUpdateGradient(nullptr);
+        Q = comm->collectQInMaster(Q);
+        Q = comm->broadcastQ(Q);
+
+        if (comm->isMaster())
+            std::cout << iter << ":  Q=" << Q << " prevQ=" << prevQ << " Learning_Rate= " << learn_rate
+                      << std::endl;
+
 
         if (cfg->ga_use_best_q) {
             if (bestQ > Q) {
@@ -952,6 +961,28 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
         }
     }
     return Q;
+}
+
+
+double EM::updateGradientForRegularizers(double *grads) {
+
+    auto it = ((MasterComms *) comm)->master_used_idxs.begin();
+    for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
+
+        double weight = param->getWeightAtIdx(*it);
+        if (grads != nullptr)
+            *(grads + *it) -= cfg->lambda * weight;
+    }
+
+    // Remove the Bias terms (don't regularize the bias terms!)
+    unsigned int weights_per_energy = param->getNumWeightsPerEnergyLevel();
+    for (unsigned int energy = 0; energy < param->getNumEnergyLevels();
+         energy++) {
+        double bias = param->getWeightAtIdx(energy * weights_per_energy);
+        if (grads != nullptr)
+            *(grads + energy * weights_per_energy) += cfg->lambda * bias;
+    }
+
 }
 
 double EM::addRegularizersAndUpdateGradient(double *grads) {

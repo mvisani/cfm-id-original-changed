@@ -134,6 +134,8 @@ protected:
     // nullptr means do not update grads
     virtual double addRegularizersAndUpdateGradient(double *grads);
 
+    virtual void updateGradientForRegularizers(double *grads);
+
     // function to get Eng levels
     void getEnergiesLevels(std::vector<unsigned int> &energies);
 
