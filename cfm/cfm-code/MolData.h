@@ -195,26 +195,25 @@ public:
     // one fv per line
     std::string getFVsAsSparseCSVString();
 
-    void getSampledTransitionIds(std::vector<int> &selected_ids,
-                                    const int top_k,
-                                    const double selection_prob,
-                                    const int energy,
-                                    std::mt19937 &rng,
-                                    std::uniform_real_distribution<double> &uniform_dist);
-
-    void getSampledTransitionIdsFromFrag(int fg_id,
-                                    std::vector<int> &selected_ids,
-                                 const int top_k,
-                                 const double selection_prob,
-                                 const int energy,
-                                 std::mt19937 &rng,
-                                 std::uniform_real_distribution<double> &uniform_dist);
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int num_iter, int energy,
+                                           std::mt19937 &rng);
 
     void getSampledTransitionIdsFromFrag(int fg_id,
                                          std::vector<int> &selected_ids,
-                                         const double selection_prob,
+                                         int top_k,
+                                         double selection_prob,
+                                         int energy,
                                          std::mt19937 &rng,
                                          std::uniform_real_distribution<double> &uniform_dist);
+
+    void getSampledTransitionIdsFromFrag(int fg_id,
+                                         std::vector<int> &selected_ids,
+                                         double selection_prob,
+                                         std::mt19937 &rng,
+                                         std::uniform_real_distribution<double> &uniform_dist);
+
+    void initThetasToOne(int num_energy_levels);
+
     ~MolData();
 
 protected

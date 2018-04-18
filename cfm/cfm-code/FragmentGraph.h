@@ -22,6 +22,8 @@
 #include <vector>
 #include <map>
 #include <random>
+#include <queue>
+#include <set>
 
 #include "Util.h"
 #include "Feature.h"
@@ -279,9 +281,9 @@ public:
                                    std::uniform_real_distribution<double> &uniform_dist);
 
     // Get a list of transitions ids , with weighted prob
-    void getSampledTransitionIds(std::vector<int> &selected_ids, const int top_k, const double selection_prob,
-                                     const int energy, std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
-                                     std::uniform_real_distribution<double> &uniform_dist);
+    // Function do some not so random selection
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int num_iter, int energy,
+                                           std::vector<std::vector<double>> &thetas, std::mt19937 &rng);
 
 protected:
     std::vector<Fragment> fragments;
@@ -328,12 +330,6 @@ protected:
     bool getPruningTransitionIds(int fg_id, std::vector<Spectrum> &spectra,
                                  double abs_tol, double ppm_tol,
                                  std::vector<int> &removed_transitions_ids);
-
-    // Function do some not so random selection
-    double notSoRandomSampling(int fg_id, std::vector<int> &selected_ids, const int top_k,
-                               const double selection_prob, const int energy,
-                               std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
-                               std::uniform_real_distribution<double> &uniform_dist);
 };
 
 class EvidenceFragmentGraph : public FragmentGraph {

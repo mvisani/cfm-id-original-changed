@@ -785,17 +785,17 @@ std::string MolData::getFVsAsSparseCSVString() {
     return csv_str;
 }
 
-void MolData::getSampledTransitionIds(std::vector<int> &selected_ids, const int top_k, const double selection_prob,
-                                      const int energy, std::mt19937 &rng,
-                                      std::uniform_real_distribution<double> &uniform_dist) {
-    fg->getSampledTransitionIds(selected_ids, top_k, selection_prob, energy, thetas, rng, uniform_dist);
+void
+MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int num_iter, int energy,
+                                           std::mt19937 &rng) {
+    fg->getSampledTransitionIdsRandomWalk(selected_ids, num_iter, energy, thetas, rng);
 }
 
 void MolData::getSampledTransitionIdsFromFrag(int fg_id,
                                               std::vector<int> &selected_ids,
-                                              const int top_k,
-                                              const double selection_prob,
-                                              const int energy,
+                                              int top_k,
+                                              double selection_prob,
+                                              int energy,
                                               std::mt19937 &rng,
                                               std::uniform_real_distribution<double> &uniform_dist) {
     fg->getSampledTransitionIdsFromFrag(fg_id, selected_ids, top_k, selection_prob, energy, thetas, rng, uniform_dist);
@@ -804,12 +804,23 @@ void MolData::getSampledTransitionIdsFromFrag(int fg_id,
 
 void MolData::getSampledTransitionIdsFromFrag(int fg_id,
                                               std::vector<int> &selected_ids,
-                                              const double selection_prob,
+                                              double selection_prob,
                                               std::mt19937 &rng,
                                               std::uniform_real_distribution<double> &uniform_dist) {
     fg->getSampledTransitionIdsFromFrag(fg_id, selected_ids, selection_prob, rng, uniform_dist);
 }
 
+void MolData::initThetasToOne(int num_energy_levels) {
+
+    thetas.resize(num_energy_levels);
+    for (unsigned int energy = 0; energy < num_energy_levels; energy++) {
+
+        // Compute the theta value for each feature vector
+        thetas[energy].resize(fg->getNumTransitions());
+        for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
+            thetas[energy][i] = 1.0;
+    }
+}
 
 MolData::~MolData() {
 

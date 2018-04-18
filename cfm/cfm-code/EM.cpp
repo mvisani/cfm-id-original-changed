@@ -107,6 +107,7 @@ double EM::run(std::vector<MolData> &data, int group,
     if (comm->isMaster())
         writeParamsToFile(init_out_param_filename);
 
+
     // EM
     iter = 0;
     double Q = 0.0;
@@ -155,7 +156,11 @@ double EM::run(std::vector<MolData> &data, int group,
             MolData *moldata = &(*itdata);
 
             // Compute the transition probabilities
-            computeThetas(moldata);
+            if (iter > 0) {
+                computeThetas(moldata);
+            } else {
+                moldata->initThetasToOne(param->getNumEnergyLevels());
+            }
             moldata->computeTransitionProbabilities();
 
             // Apply the peak evidence, compute the beliefs and record the sufficient
@@ -227,7 +232,7 @@ double EM::run(std::vector<MolData> &data, int group,
         // Compute the final Q (with all molecules, in case only some were used in
         // the mini-batch)
         if (cfg->ga_minibatch_nth_size > 1 ||
-                cfg->ga_sampling_method != USE_NO_SAMPLING){
+            cfg->ga_sampling_method != USE_NO_SAMPLING) {
             Q = 0;
             if (comm->isMaster())
                 std::cout << "Using minibatch, compute the final Q" << std::endl;
@@ -238,7 +243,7 @@ double EM::run(std::vector<MolData> &data, int group,
                 //valQ += computeQ( molidx, *itdata, suft );
                 numvalmols++;
             } else if (cfg->ga_minibatch_nth_size > 1 ||
-              cfg->ga_sampling_method != USE_NO_SAMPLING) {
+                       cfg->ga_sampling_method != USE_NO_SAMPLING) {
                 Q += computeQ(molidx, *itdata, suft);
                 numnonvalmols++;
             } else
@@ -787,9 +792,6 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
     if (!moldata.hasComputedGraph())
         return Q;
 
-    // Compute the latest transition thetas
-    if (!record_used_idxs_only)
-        moldata.computeTransitionThetas(*param);
     suft_t *suft_values = &(suft.values[molidx]);
 
     // Collect energies to compute
@@ -802,6 +804,10 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
+        std::set<int> selected_trans_id;
+        if (!record_used_idxs_only && cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, cfg->ga_graph_sampling_k, energy, m_rng);
+        }
 
         // Iterate over from_id (i)
         auto frag_trans_map = fg->getFromIdTMap()->begin();
@@ -817,21 +823,30 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                 }
             } else {
                 //Do some random selection
-                std::vector<int > sampled_ids;
-                if(cfg->ga_sampling_method == USE_RANDOM_SAMPLING)
+                std::vector<int> sampled_ids;
+                if (cfg->ga_sampling_method == USE_RANDOM_SAMPLING)
                     moldata.getSampledTransitionIdsFromFrag(from_idx,
                                                             sampled_ids,
                                                             cfg->ga_sampling_selection_threshold,
                                                             m_rng, m_uniform_dist);
-                else if(cfg->ga_sampling_method == USE_GRAPH_RANDOM_SAMPLING)
+                else if (cfg->ga_sampling_method == USE_GRAPH_RANDOM_SAMPLING)
                     moldata.getSampledTransitionIdsFromFrag(from_idx,
-                                                    sampled_ids,
-                                                    cfg->ga_graph_sampling_k,
-                                                    cfg->ga_sampling_selection_threshold,
-                                                    energy,
-                                                    m_rng, m_uniform_dist);
-                else
+                                                            sampled_ids,
+                                                            cfg->ga_graph_sampling_k,
+                                                            cfg->ga_sampling_selection_threshold,
+                                                            energy,
+                                                            m_rng, m_uniform_dist);
+
+                else if (cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
+                    for (auto id: *frag_trans_map) {
+                        if (selected_trans_id.find(id) != selected_trans_id.end()) {
+                            sampled_ids.emplace_back(id);
+                        }
+                    }
+                } else
                     sampled_ids = *frag_trans_map;
+
+
 
                 // Calculate the denominator of the sum terms
                 double denom = 1.0;
@@ -880,6 +895,11 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
             }
         }
     }
+
+    // Compute the latest transition thetas
+    if (!record_used_idxs_only)
+        moldata.computeTransitionThetas(*param);
+
     return Q;
 }
 
@@ -1008,8 +1028,7 @@ void EM::infCheck(double &belief) {
         if (belief < 0) {
             std::cout << "Warning: belief is -Inf" << std::endl;
             //belief = -100000000000;
-        }
-        else{
+        } else {
             std::cout << "Warning: belief is Inf" << std::endl;
             //belief = 100000000000;
         }
