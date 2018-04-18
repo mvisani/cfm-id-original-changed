@@ -632,7 +632,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group) {
-                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
+                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
                                                   true, comm->used_idxs);
             }
         }
@@ -684,17 +684,16 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
 
         // Compute Q and the gradient
         std::fill(grads.begin(), grads.end(), 0.0);
-        Q = 0.0;
         itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (minibatch_flags[molidx])
-                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
+                    computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
                                                   false, comm->used_idxs);
         }
 
 
         if (comm->isMaster())
-            Q += addRegularizersAndUpdateGradient(&grads[0]);
+            addRegularizersAndUpdateGradient(&grads[0]);
         comm->collectGradsInMaster(&grads[0]);
 
         // Step the parameters
@@ -745,6 +744,9 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
         }
         comm->broadcastParams(param.get());
 
+        // compute Q
+        Q = 0.0;
+        itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (minibatch_flags[molidx])
                 Q += computeQ(molidx, *itdata, suft);
@@ -964,7 +966,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 }
 
 
-double EM::updateGradientForRegularizers(double *grads) {
+/*double EM::updateGradientForRegularizers(double *grads) {
 
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
@@ -983,7 +985,7 @@ double EM::updateGradientForRegularizers(double *grads) {
             *(grads + energy * weights_per_energy) += cfg->lambda * bias;
     }
 
-}
+}*/
 
 double EM::addRegularizersAndUpdateGradient(double *grads) {
 
