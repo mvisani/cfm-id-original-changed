@@ -365,14 +365,14 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
         for (unsigned int d = 1; d < cfg->model_depth; d++) {
             energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
-                infCheck(belief);
+                infCheck(belief, moldata);
                 suft.values[molidx][i + cfg->map_d_to_energy[d - 1] * len_offset] =
                         belief;
                 belief = 0.0;
             }
             belief += exp(beliefs->tn[i][d]);
         }
-        infCheck(belief);
+        infCheck(belief, moldata);
         suft.values[molidx][i + energy * len_offset] = belief;
     }
 
@@ -388,14 +388,14 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
         for (unsigned int d = 1; d < cfg->model_depth; d++) {
             energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
-                infCheck(belief);
+                infCheck(belief, moldata);
                 suft.values[molidx][i + offset +
                                     cfg->map_d_to_energy[d - 1] * len_offset] = belief;
                 belief = 0.0;
             }
             belief += exp(beliefs->ps[i][d]);
         }
-        infCheck(belief);
+        infCheck(belief, moldata);
         suft.values[molidx][i + offset + energy * len_offset] = belief;
     }
 }
@@ -1052,14 +1052,14 @@ void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
         initialized_minibatch_flags[idxs[i]] = 0;
 }
 
-void EM::infCheck(double &belief) {
+void EM::infCheck(double &belief, MolData* moldata) {
     // TODO FIND A BETTER WAY THIS IS A SUPER HACKY FIX
     if (boost::math::isinf(belief)) {
         if (belief < 0) {
-            std::cerr << "Warning: belief is -Inf" << std::endl;
+            std::cerr << "Warning: belief is -Inf " << moldata->getId() << std::endl;
             //belief = -100000000000;
         } else {
-            std::cerr << "Warning: belief is Inf" << std::endl;
+            std::cerr << "Warning: belief is Inf " << moldata->getId() <<  std::endl;
             //belief = 100000000000;
         }
 
