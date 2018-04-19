@@ -892,8 +892,6 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                         auto fv_idx = fv_it->first;
                         *(grads + fv_idx + grad_offset) += nu;
                     }
-
-                    Q += nu * (moldata.getThetaForIdx(energy, trans_id) - log(denom));
                 }
 
                 // Accumulate the last term of each transition and the
@@ -902,7 +900,6 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                 for (auto &sit: sum_terms) {
                     *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
                 }
-                Q -= nu * log(denom);
             }
         }
     }
@@ -966,7 +963,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 }
 
 
-/*double EM::updateGradientForRegularizers(double *grads) {
+void EM::updateGradientForRegularizers(double *grads) {
 
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
@@ -985,7 +982,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
             *(grads + energy * weights_per_energy) += cfg->lambda * bias;
     }
 
-}*/
+}
 
 double EM::addRegularizersAndUpdateGradient(double *grads) {
 
@@ -1059,10 +1056,10 @@ void EM::infCheck(double &belief) {
     // TODO FIND A BETTER WAY THIS IS A SUPER HACKY FIX
     if (boost::math::isinf(belief)) {
         if (belief < 0) {
-            std::cout << "Warning: belief is -Inf" << std::endl;
+            std::cerr << "Warning: belief is -Inf" << std::endl;
             //belief = -100000000000;
         } else {
-            std::cout << "Warning: belief is Inf" << std::endl;
+            std::cerr << "Warning: belief is Inf" << std::endl;
             //belief = 100000000000;
         }
 
