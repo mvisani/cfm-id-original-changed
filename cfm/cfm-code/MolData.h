@@ -212,7 +212,7 @@ public:
                                          std::mt19937 &rng,
                                          std::uniform_real_distribution<double> &uniform_dist);
 
-    void initThetasToOne(int num_energy_levels);
+    void initThetasToZero(int num_energy_levels);
 
     ~MolData();
 

@@ -810,7 +810,7 @@ void MolData::getSampledTransitionIdsFromFrag(int fg_id,
     fg->getSampledTransitionIdsFromFrag(fg_id, selected_ids, selection_prob, rng, uniform_dist);
 }
 
-void MolData::initThetasToOne(int num_energy_levels) {
+void MolData::initThetasToZero(int num_energy_levels) {
 
     thetas.resize(num_energy_levels);
     for (unsigned int energy = 0; energy < num_energy_levels; energy++) {
@@ -818,7 +818,7 @@ void MolData::initThetasToOne(int num_energy_levels) {
         // Compute the theta value for each feature vector
         thetas[energy].resize(fg->getNumTransitions());
         for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
-            thetas[energy][i] = 1.0;
+            thetas[energy][i] = 0.0;
     }
 }
 

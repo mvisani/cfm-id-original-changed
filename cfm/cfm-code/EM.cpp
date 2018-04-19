@@ -159,7 +159,7 @@ double EM::run(std::vector<MolData> &data, int group,
             if (iter > 0) {
                 computeThetas(moldata);
             } else {
-                moldata->initThetasToOne(param->getNumEnergyLevels());
+                moldata->initThetasToZero(param->getNumEnergyLevels());
             }
             moldata->computeTransitionProbabilities();
 
@@ -433,8 +433,7 @@ double EM::updateParametersLBFGS(std::vector<MolData> &data,
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group) {
-                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
-                                                  true, comm->used_idxs);
+                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, false);
             }
         }
         // Collect the used_idxs from all the processors into the MASTER
@@ -567,9 +566,8 @@ lbfgsfloatval_t EM::evaluateLBFGS(const lbfgsfloatval_t *x, lbfgsfloatval_t *g,
     for (int molidx = 0; itdata != tmp_moldata_ptr_lbfgs->end();
          ++itdata, molidx++) {
         if (tmp_minibatch_flags[molidx])
-            Q += computeAndAccumulateGradient(grad_ptr, molidx, *itdata,
-                                              *tmp_suft_ptr_lbfgs, false,
-                                              comm->used_idxs);
+            Q += computeAndAccumulateGradient(grad_ptr, molidx, *itdata, *tmp_suft_ptr_lbfgs, false, comm->used_idxs,
+                                              false);
     }
 
     if (comm->isMaster())
@@ -627,23 +625,25 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
     std::vector<double> mean_squared_gradients(param->getNumWeights(), 0.0);
     std::vector<double> mean_squared_delta_x(param->getNumWeights(), 0.0);
 
-    // Initial Q and gradient calculation (to determine used indexes)
-    if (comm->used_idxs.empty()) {
-        auto itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() != validation_group) {
-                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
-                                                  true, comm->used_idxs);
-            }
+    //Initial Q and gradient calculation (to determine used indexes)
+    if( comm->used_idxs.size() == 0 ){
+        std::vector<MolData>::iterator itdata = data.begin();
+        for( int molidx = 0; itdata != data.end(); ++itdata, molidx++ ){
+            if( itdata->getGroup() != validation_group )
+                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, false);
         }
+        /*if( comm->isMaster() )
+            Q += addRegularizers( &grads[0] );
+        Q = comm->collectQInMaster(Q);
+        Q = comm->broadcastQ(Q);*/
         comm->setMasterUsedIdxs();
-        if (comm->isMaster())
+        if( comm->isMaster() )
             zeroUnusedParams();
     }
     int N = 0;
-    if (comm->isMaster())
-        N = ((MasterComms *) comm)->master_used_idxs.size();
-    N = comm->broadcastNumUsed(N);
+    if( comm->isMaster() )
+        N = ((MasterComms *)comm)->master_used_idxs.size();
+    N = comm->broadcastNumUsed( N );
 
     int iter = 0;
     double learn_mult = 1.0;
@@ -687,8 +687,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
         itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (minibatch_flags[molidx])
-                    computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft,
-                                                  false, comm->used_idxs);
+                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, false, comm->used_idxs, true);
         }
 
 
@@ -788,10 +787,9 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
     return Q;
 }
 
-double EM::computeAndAccumulateGradient(double *grads, int molidx,
-                                        MolData &moldata, suft_counts_t &suft,
-                                        bool record_used_idxs_only,
-                                        std::set<unsigned int> &used_idxs) {
+double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
+                                        bool record_used_idxs, std::set<unsigned int> &used_idxs,
+                                        bool use_sampling) {
 
     double Q = 0.0;
     const FragmentGraph *fg = moldata.getFragmentGraph();
@@ -816,8 +814,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         std::set<int> selected_trans_id;
-        if (!record_used_idxs_only && cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, cfg->ga_graph_sampling_k, energy, m_rng);
+        if (use_sampling && cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, cfg->ga_graph_sampling_k * (energy + 1), energy, m_rng);
         }
 
         // Iterate over from_id (i)
@@ -825,22 +823,15 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
 
         for (int from_idx = 0; frag_trans_map != fg->getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
 
-            if (record_used_idxs_only) {
-                for (auto trans_id : *frag_trans_map) {
-                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
-                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                        used_idxs.insert(fv_it->first + grad_offset);
-                    }
-                }
-            } else {
+
                 //Do some random selection
                 std::vector<int> sampled_ids;
-                if (cfg->ga_sampling_method == USE_RANDOM_SAMPLING)
+                if (cfg->ga_sampling_method == USE_RANDOM_SAMPLING && use_sampling)
                     moldata.getSampledTransitionIdsFromFrag(from_idx,
                                                             sampled_ids,
                                                             cfg->ga_sampling_selection_threshold,
                                                             m_rng, m_uniform_dist);
-                else if (cfg->ga_sampling_method == USE_GRAPH_RANDOM_SAMPLING)
+                else if (cfg->ga_sampling_method == USE_GRAPH_RANDOM_SAMPLING && use_sampling)
                     moldata.getSampledTransitionIdsFromFrag(from_idx,
                                                             sampled_ids,
                                                             cfg->ga_graph_sampling_k,
@@ -848,7 +839,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                                                             energy,
                                                             m_rng, m_uniform_dist);
 
-                else if (cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
+                else if (cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING && use_sampling) {
                     for (auto id: *frag_trans_map) {
                         if (selected_trans_id.find(id) != selected_trans_id.end()) {
                             sampled_ids.emplace_back(id);
@@ -891,7 +882,12 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         auto fv_idx = fv_it->first;
                         *(grads + fv_idx + grad_offset) += nu;
+
+                        if(record_used_idxs)
+                            used_idxs.insert(fv_it->first + grad_offset);
+
                     }
+                    Q += nu*(moldata.getThetaForIdx(energy, trans_id) - log(denom));
                 }
 
                 // Accumulate the last term of each transition and the
@@ -899,13 +895,16 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx,
                 double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
                 for (auto &sit: sum_terms) {
                     *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
+
+                    if(record_used_idxs)
+                        used_idxs.insert(sit.first + grad_offset);
                 }
-            }
+                Q -= nu*log(denom);
         }
     }
 
     // Compute the latest transition thetas
-    if (!record_used_idxs_only)
+    if (!record_used_idxs)
         moldata.computeTransitionThetas(*param);
 
     return Q;
