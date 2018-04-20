@@ -231,6 +231,8 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
                     int selected_trans_id = from_id_tmap[fg_id][selected_idx];
                     fgs.push(transitions[selected_trans_id].getToId());
                     selected_ids.emplace(selected_trans_id);
+                } else if(!from_id_tmap[fg_id].empty()){
+                    fgs.push(fg_id);
                 }
             }
         }
