@@ -160,15 +160,22 @@ double EM::run(std::vector<MolData> &data, int group,
             MolData *moldata = &(*itdata);
 
             // Compute the transition probabilities
-            if (iter > 0) {
+            /*if (iter > 0) {
                 computeThetas(moldata);
             } else {
                 moldata->initThetasToZero(param->getNumEnergyLevels());
-            }
+            }*/
+            if (comm->isMaster())
+                std::cout << "[E-Step] Compute Thetas and Transition Probabilities" << std::endl;
+
+            computeThetas(moldata);
             moldata->computeTransitionProbabilities();
 
             // Apply the peak evidence, compute the beliefs and record the sufficient
             // statistics
+            if (comm->isMaster())
+                std::cout << "[E-Step] Running IPFP" << std::endl;
+            
             if (cfg->use_single_energy_cfm) {
                 beliefs_t beliefs;
                 Inference infer(moldata, cfg);
@@ -300,6 +307,7 @@ double EM::run(std::vector<MolData> &data, int group,
             count_no_progress += 1;
             if(learning_rate > cfg->starting_step_size * 0.02)
                 learning_rate *= 0.5;
+
         } // write param to file if current Q is better
         else {
             bestQ = Q;
