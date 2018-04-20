@@ -191,18 +191,22 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
     for(auto & transitions: from_id_tmap) {
 
         // Init weights and prob vector
-        std::vector<double> probs(transitions.size() + 1);
+        std::vector<double> probs;
         std::vector<double> weights(transitions.size() + 1);
 
         for(auto & trans_id : transitions) {
             weights.emplace_back(thetas[energy][trans_id]);
         }
-        // Append 1.0 for i -> i
-        weights.emplace_back(1.0);
+
+        // Append 0.0 for i -> i
+        // exp(0.0) = 1.0
+        weights.emplace_back(0.0);
 
         // Apply softmax
-        softmax(weights,probs);
+        softmax(weights, probs);
 
+        if(weights.size() != probs.size())
+            std::cerr << "ERROR, softmax is not working correctly" << std::endl;
         // add to discrete_distributions
         discrete_distributions.emplace_back(std::discrete_distribution<int> (probs.begin(),probs.end()));
     }
@@ -222,7 +226,7 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
             // if there is somewhere to go
             if(!from_id_tmap[fg_id].empty())
             {
-                int selected_trans_idx = 0;//discrete_distributions[fg_id](rng);
+                int selected_trans_idx = discrete_distributions[fg_id](rng);
                 if(selected_trans_idx < from_id_tmap[fg_id].size()) {
                     int selected_trans_id = from_id_tmap[fg_id][selected_trans_idx];
                     fgs.push(transitions[selected_trans_id].getToId());
