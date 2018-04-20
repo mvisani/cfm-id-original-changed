@@ -815,7 +815,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 
         std::set<int> selected_trans_id;
         if (use_sampling && cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, cfg->ga_graph_sampling_k, energy, m_rng);
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, cfg->ga_graph_sampling_k * (energy +1), energy, m_rng);
         }
 
         // Iterate over from_id (i)
