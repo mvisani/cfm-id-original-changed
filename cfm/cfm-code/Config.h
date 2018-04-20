@@ -176,6 +176,8 @@ static const int USE_RANDOM_SAMPLING = 1;
 static const int USE_GRAPH_RANDOM_SAMPLING = 2;
 static const int USE_GRAPH_RANDOM_WALK_SAMPLING = 3;
 static const int DEFAULT_GRAPH_SAMPLING_K = 5;
+static const int DEFAULT_NOT_USE_SQRT_PROB = 0;
+static const int DEFAULT_NOT_USE_SQUARD_ITER = 0;
 
 //Configuration
 struct config_t {
@@ -198,6 +200,8 @@ struct config_t {
     int use_graph_pruning;
     int ga_sampling_method;
     int ga_graph_sampling_k;
+    int ga_use_sqrt_prob;
+    int ga_use_sqaured_iter_num;
 
     //Model Level Configuration
     unsigned int model_depth; //Total Depth

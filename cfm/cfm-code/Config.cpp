@@ -77,6 +77,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_use_best_q = DEFAULT_USE_BEST_Q_IN_GA;
     cfg.ga_sampling_method = USE_NO_SAMPLING;
     cfg.ga_graph_sampling_k = DEFAULT_GRAPH_SAMPLING_K;
+    cfg.ga_use_sqaured_iter_num = DEFAULT_NOT_USE_SQUARD_ITER;
+    cfg.ga_use_sqrt_prob = DEFAULT_NOT_USE_SQRT_PROB;
 }
 
 
@@ -151,6 +153,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_use_best_q") cfg.ga_use_best_q = (int) value;
         else if (name == "ga_sampling_method") cfg.ga_sampling_method = (int) value;
         else if (name == "ga_graph_sampling_k") cfg.ga_graph_sampling_k = (int) value;
+        else if (name == "ga_use_sqaured_iter_num") cfg.ga_use_sqaured_iter_num = (int)value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
