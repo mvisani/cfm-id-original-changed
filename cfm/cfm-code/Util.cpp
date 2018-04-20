@@ -110,6 +110,7 @@ romol_ptr_t createMolPtr(const char *smiles_or_inchi) {
 }
 
 void softmax(std::vector<double>& weights, std::vector<double>& probs) {
+    probs.clear();
     double sum = 0.0;
     for(auto weight : weights){
         double tmp = std::exp(weight);

@@ -226,9 +226,9 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
             // if there is somewhere to go
             if(!from_id_tmap[fg_id].empty())
             {
-                int selected_trans_idx = discrete_distributions[fg_id](rng);
-                if(selected_trans_idx < from_id_tmap[fg_id].size()) {
-                    int selected_trans_id = from_id_tmap[fg_id][selected_trans_idx];
+                int selected_idx = discrete_distributions[fg_id](rng);
+                if(selected_idx < from_id_tmap[fg_id].size()) {
+                    int selected_trans_id = from_id_tmap[fg_id][selected_idx];
                     fgs.push(transitions[selected_trans_id].getToId());
                     selected_ids.emplace(selected_trans_id);
                 }
