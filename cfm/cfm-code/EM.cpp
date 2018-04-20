@@ -298,6 +298,8 @@ double EM::run(std::vector<MolData> &data, int group,
         const double ratio_cutoff = 1e-15;
         if (bestQRatio < ratio_cutoff || bestQ > Q) {
             count_no_progress += 1;
+            if(learning_rate > cfg->starting_step_size * 0.02)
+                learning_rate *= 0.5;
         } // write param to file if current Q is better
         else {
             bestQ = Q;
@@ -657,9 +659,9 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
            && fabs((Q - prevQ) / Q) >= cfg->ga_converge_thresh
            && no_progress_count < 3) {
 
-        if (Q < prevQ && iter > 1 && learning_rate > 0.00001) {
+        /*if (Q < prevQ && iter > 1 && learning_rate > 0.0001) {
             learning_rate = learning_rate * 0.5;
-        }
+        }*/
 
         // adjust learning rate
         double learn_rate = learning_rate; //cfg->starting_step_size * learn_mult;
@@ -819,7 +821,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 
         std::set<int> selected_trans_id;
         if (use_sampling && cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, cfg->ga_graph_sampling_k * (energy +1) * (energy +1), energy, m_rng);
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, cfg->ga_graph_sampling_k, energy, m_rng);
         }
 
         // Iterate over from_id (i)
