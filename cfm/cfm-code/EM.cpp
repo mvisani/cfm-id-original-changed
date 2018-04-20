@@ -655,7 +655,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
            && fabs((Q - prevQ) / Q) >= cfg->ga_converge_thresh
            && no_progress_count < 3) {
 
-        if (Q < prevQ && iter > 1 && cfg->ga_method == USE_MOMENTUM_FOR_GA)
+        if (Q < prevQ && iter > 1)
             learn_mult = learn_mult * 0.5;
 
         // adjust learning rate
