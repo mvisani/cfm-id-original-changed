@@ -114,6 +114,10 @@ double EM::run(std::vector<MolData> &data, int group,
     double prevQ = -DBL_MAX;
     double bestQ = -DBL_MAX;
 
+    // make of copy of learing rate
+    // so we can share the save lr var over all em iterations
+    double learning_rate = cfg->starting_step_size;
+
     int count_no_progress = 0;
     while (iter < MAX_EM_ITERATIONS) {
 
@@ -213,7 +217,7 @@ double EM::run(std::vector<MolData> &data, int group,
         if (cfg->ga_method == USE_LBFGS_FOR_GA)
             Q = updateParametersLBFGS(data, suft);
         else
-            Q = updateParametersGradientAscent(data, suft);
+            Q = updateParametersGradientAscent(data, suft, learning_rate);
 
         after = time(nullptr);
         std::string param_update_time_msg =
@@ -606,8 +610,7 @@ void EM::progressLBFGS(const lbfgsfloatval_t *x, const lbfgsfloatval_t *g,
         selectMiniBatch(tmp_minibatch_flags);
 }
 
-double EM::updateParametersGradientAscent(std::vector<MolData> &data,
-                                          suft_counts_t &suft) {
+double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double &learning_rate) {
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
@@ -646,20 +649,20 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
     N = comm->broadcastNumUsed( N );
 
     int iter = 0;
-    double learn_mult = 1.0;
+    //double learn_mult = 1.0;
 
-    //TODO maybe I should force iteration time such time ga covers all data points
     int max_iteration = cfg->ga_max_iterations;
     int no_progress_count = 0;
     while (iter++ < max_iteration
            && fabs((Q - prevQ) / Q) >= cfg->ga_converge_thresh
            && no_progress_count < 3) {
 
-        if (Q < prevQ && iter > 1)
-            learn_mult = learn_mult * 0.5;
+        if (Q < prevQ && iter > 1) {
+            learning_rate = learning_rate * 0.5;
+        }
 
         // adjust learning rate
-        double learn_rate = cfg->starting_step_size * learn_mult;
+        double learn_rate = learning_rate; //cfg->starting_step_size * learn_mult;
         if (USE_DEFAULT_DECAY == cfg->ga_decay_method)
             learn_rate *= 1.0 / (1.0 + cfg->decay_rate * (iter - 1));
         else if (USE_EXP_DECAY == cfg->ga_decay_method)
@@ -755,11 +758,12 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data,
         Q = comm->collectQInMaster(Q);
         Q = comm->broadcastQ(Q);
 
-        if (comm->isMaster())
-            std::cout << iter << ":  Q=" << Q << " prevQ=" << prevQ << " Learning_Rate= " << learn_rate
+        if (comm->isMaster()){
+            std::cout << iter << ":  Q=" << Q << " prevQ=" << prevQ << " Learning_Rate=" << learn_rate
                       << std::endl;
+        }
 
-
+        
         if (cfg->ga_use_best_q) {
             if (bestQ > Q) {
                 no_progress_count++;
