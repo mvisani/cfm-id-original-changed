@@ -73,7 +73,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.include_precursor_h_losses_only = DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY;
     cfg.fragraph_compute_timeout_in_secs = DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS;
     cfg.ga_sampling_selection_threshold = DEFAULT_RANDOM_SAMPLE_THRESHOLD;
-    cfg.use_graph_pruning = DEFAULT_USE_GRAPH_PRUNING;
+    cfg.use_graph_pruning = DEFAULT_NOT_USE_GRAPH_PRUNING;
     cfg.ga_use_best_q = DEFAULT_USE_BEST_Q_IN_GA;
     cfg.ga_sampling_method = USE_NO_SAMPLING;
     cfg.ga_graph_sampling_k = DEFAULT_GRAPH_SAMPLING_K;
@@ -265,7 +265,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             std::cout << "Using Best Q instead of Prev Q in GA" << std::endl;
         std::cout << "Using Random Sampling with threshold: " << cfg.ga_sampling_selection_threshold << std::endl;
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
-        if(cfg.use_graph_pruning == DEFAULT_USE_GRAPH_PRUNING) {
+        if(cfg.use_graph_pruning != DEFAULT_NOT_USE_GRAPH_PRUNING) {
             std::cout << "Using graph pruning" << std::endl;
         }
 

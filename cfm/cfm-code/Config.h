@@ -169,7 +169,7 @@ static const int DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS = -1;    //-1 is no t
 //Random Sample settings
 static const double DEFAULT_RANDOM_SAMPLE_THRESHOLD = 1.0;
 
-static const int DEFAULT_USE_GRAPH_PRUNING = 0;
+static const int DEFAULT_NOT_USE_GRAPH_PRUNING = 0;
 static const int DEFAULT_USE_BEST_Q_IN_GA = 0;
 static const int USE_NO_SAMPLING = 0;
 static const int USE_RANDOM_SAMPLING = 1;

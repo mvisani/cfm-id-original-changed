@@ -158,14 +158,7 @@ double EM::run(std::vector<MolData> &data, int group,
                 continue;
 
             MolData *moldata = &(*itdata);
-
-            // Compute the transition probabilities
-            /*if (iter > 0) {
-                computeThetas(moldata);
-            } else {
-                moldata->initThetasToZero(param->getNumEnergyLevels());
-            }*/
-
+            
             computeThetas(moldata);
             moldata->computeTransitionProbabilities();
 
