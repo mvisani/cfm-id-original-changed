@@ -123,7 +123,6 @@ void Param::fullZeroInit() {
 double Param::computeTheta(const FeatureVector &fv, int energy) {
 
     double theta = 0.0;
-    double bias = 1.0;
     //Check Feature Length
     int len = fv.getTotalLength();
     if (len != expected_num_input_features) {
@@ -136,7 +135,7 @@ double Param::computeTheta(const FeatureVector &fv, int energy) {
     int energy_offset = len * energy;
     for (auto fv_it = fv.getFeatureBegin(); fv_it != fv.getFeatureEnd(); ++fv_it)
         theta += weights[fv_it->first + energy_offset] * fv_it->second;
-    return theta + bias;
+    return theta;
 }
 
 void Param::adjustWeightsByGrads_Momentum(std::vector<double> &grads, std::set<unsigned int> &used_idxs,
