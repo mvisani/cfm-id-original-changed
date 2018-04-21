@@ -818,7 +818,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 
         std::set<int> selected_trans_id;
         if (use_sampling && cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
-            int num_iterations = moldata.getSpectrum(energy)->size();//cfg->ga_graph_sampling_k;
+            int num_iterations = moldata.getSpectrum(energy)->size() * cfg->ga_graph_sampling_k;
             if(cfg->ga_use_sqaured_iter_num)
                 num_iterations =  num_iterations  * (energy+1) * (energy+1);
             moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, m_rng);
