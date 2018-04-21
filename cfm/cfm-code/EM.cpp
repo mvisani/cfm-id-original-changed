@@ -609,7 +609,7 @@ void EM::progressLBFGS(const lbfgsfloatval_t *x, const lbfgsfloatval_t *g,
         selectMiniBatch(tmp_minibatch_flags);
 }
 
-double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double &learning_rate) {
+double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate) {
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
@@ -660,9 +660,9 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
            && fabs((Q - prevQ) / Q) >= cfg->ga_converge_thresh
            && no_progress_count < 3) {
 
-        /*if (Q < prevQ && iter > 1 && learning_rate > 0.0001) {
+        if (Q < prevQ && iter > 1 && learning_rate) {
             learning_rate = learning_rate * 0.5;
-        }*/
+        }
 
         // adjust learning rate
         double learn_rate = learning_rate; //cfg->starting_step_size * learn_mult;
