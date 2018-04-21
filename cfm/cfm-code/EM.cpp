@@ -629,7 +629,9 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
 
     //Initial Q and gradient calculation (to determine used indexes)
     if( comm->used_idxs.size() == 0 ){
-        std::vector<MolData>::iterator itdata = data.begin();
+        if (comm->isMaster())
+            std::cout << "[M-Step] Initial Calculation ...";
+        auto itdata = data.begin();
         for( int molidx = 0; itdata != data.end(); ++itdata, molidx++ ){
             if( itdata->getGroup() != validation_group )
                 computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, false);
@@ -641,6 +643,8 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
         comm->setMasterUsedIdxs();
         if( comm->isMaster() )
             zeroUnusedParams();
+        if (comm->isMaster())
+            std::cout << "Done" << std::endl;
     }
     int N = 0;
     if( comm->isMaster() )
