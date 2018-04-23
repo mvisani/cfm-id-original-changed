@@ -192,15 +192,15 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
 
         // Init weights and prob vector
         std::vector<double> probs;
-        std::vector<double> weights(transitions.size() + 1);
+        std::vector<double> weights;
 
         for(auto & trans_id : transitions) {
-            weights.emplace_back(thetas[energy][trans_id]);
+            weights.push_back(thetas[energy][trans_id]);
         }
 
         // Append 0.0 for i -> i
         // exp(0.0) = 1.0
-        weights.emplace_back(0.0);
+        weights.push_back(0.0);
 
         // Apply softmax
         softmax(weights, probs);
@@ -228,14 +228,18 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
             {
                 int selected_idx = discrete_distributions[fg_id](rng);
                 if(selected_idx < from_id_tmap[fg_id].size()) {
+                    // go to child
                     int selected_trans_id = from_id_tmap[fg_id][selected_idx];
                     fgs.push(transitions[selected_trans_id].getToId());
-                    selected_ids.emplace(selected_trans_id);
+                    selected_ids.insert(selected_trans_id);
                 }
-                // TODO FIX ME
-                /*else if(!from_id_tmap[fg_id].empty()){
+                else if(selected_idx == from_id_tmap[fg_id].size()) {
+                    // select the same node again
                     fgs.push(fg_id);
-                }*/
+                }
+                else {
+                    std::cerr << "Sampling Out of Boundary" << std::endl;
+                }
             }
         }
     }

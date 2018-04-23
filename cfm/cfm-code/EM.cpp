@@ -852,7 +852,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
                 else if (cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING && use_sampling) {
                     for (auto id: *frag_trans_map) {
                         if (selected_trans_id.find(id) != selected_trans_id.end()) {
-                            sampled_ids.emplace_back(id);
+                            sampled_ids.push_back(id);
                         }
                     }
                 } else
