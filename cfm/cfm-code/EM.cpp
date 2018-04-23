@@ -828,9 +828,9 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
             moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, m_rng);
         }
 
+        
         // Iterate over from_id (i)
         auto frag_trans_map = fg->getFromIdTMap()->begin();
-
         for (int from_idx = 0; frag_trans_map != fg->getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
 
 

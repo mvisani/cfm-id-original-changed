@@ -212,8 +212,7 @@ public:
                                          std::mt19937 &rng,
                                          std::uniform_real_distribution<double> &uniform_dist);
 
-    void initThetasToZero(int num_energy_levels);
-
+    bool thetasNanAndInfCheck(int energy_level);
     ~MolData();
 
 protected
