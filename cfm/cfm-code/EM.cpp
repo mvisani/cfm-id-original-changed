@@ -816,7 +816,8 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 
     // Compute the gradients
     for (auto energy : energies) {
-
+        if(!moldata.thetasNanAndInfCheck(energy))
+            std::cerr << "[Warning] NaN " << moldata.getId() << " " << "energy " << energy << std::endl;
         unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
