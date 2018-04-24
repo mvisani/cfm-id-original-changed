@@ -227,8 +227,8 @@ void FragmentGraph::getSampledTransitionIds(std::set<int> &selected_ids, const i
             int selection_count = 0;
             for (auto &prob_id_pair: prob_id_map) {
                 int trans_id = prob_id_pair.second;
-                // if we have not see this before
-                if (selected_ids.find(trans_id) == selected_ids.end()) {
+                // if we have not see this before and we are not stay in the same node
+                if (selected_ids.find(trans_id) == selected_ids.end() && trans_id != -1) {
                     fgs.push(prob_id_pair.second);
                     selected_ids.insert(prob_id_pair.second);
                 }
@@ -296,7 +296,8 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
 
                 } else if (selected_idx == from_id_tmap[fg_id].size()) {
                     // select the same node again
-                    fgs.push(fg_id);
+                    // fgs.push(fg_id);
+                    // There is none zero chance we are going to trapped in this fever
                 } else {
                     std::cerr << "Sampling Out of Boundary" << std::endl;
                 }
