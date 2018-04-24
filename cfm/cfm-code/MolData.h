@@ -195,8 +195,8 @@ public:
     // one fv per line
     std::string getFVsAsSparseCSVString();
 
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int num_iter, int energy,
-                                           std::mt19937 &rng);
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_frag, int max_num_iter, int energy,
+                                               std::mt19937 &rng);
 
     void getSampledTransitionIdsFromFrag(int fg_id,
                                          std::vector<int> &selected_ids,

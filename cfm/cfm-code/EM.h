@@ -43,7 +43,7 @@ struct suft_counts_t {
 
 class EMComputationException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const throw() override {
         return "Error during EM, unable to proceed.";
     }
 };

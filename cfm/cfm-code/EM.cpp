@@ -110,7 +110,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
     // EM
     iter = 0;
-    double Q = 0.0;
+    double Q;
     double prevQ = -DBL_MAX;
     double bestQ = -DBL_MAX;
 
@@ -335,7 +335,7 @@ double EM::run(std::vector<MolData> &data, int group,
 void EM::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
 
     // Resize the suft structure for each molecule
-    unsigned int num_mols = data.size();
+    auto num_mols = data.size();
     suft.values.resize(num_mols);
     for (unsigned int i = 0; i < num_mols; i++) {
         const FragmentGraph *fg = data[i].getFragmentGraph();
@@ -822,10 +822,12 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 
         std::set<int> selected_trans_id;
         if (use_sampling && cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
-            int num_iterations = moldata.getSpectrum(energy)->size() * cfg->ga_graph_sampling_k;
+
+            int num_frags = moldata.getSpectrum(energy)->size();
+            int num_iterations = cfg->ga_graph_sampling_k * num_frags;
             if(cfg->ga_use_sqaured_iter_num)
                 num_iterations =  num_iterations  * (energy+1) * (energy+1);
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, m_rng);
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_frags, num_iterations, energy, m_rng);
         }
 
         

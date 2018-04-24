@@ -25,7 +25,7 @@
 #include <GraphMol/SmilesParse/SmilesParse.h>
 #include <GraphMol/SanitException.h>
 #include <GraphMol/MolOps.h>
-#include <queue>
+#include <stack>
 
 Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, const romol_ptr_t &an_ion) {
 
@@ -139,8 +139,10 @@ void FragmentGraph::removeLonelyFrags() {
 }
 
 
-void FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids, const int top_k, const double selection_prob,
-                                                    const int energy, std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
+void FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids, const int top_k,
+                                                    const double selection_prob,
+                                                    const int energy, std::vector<std::vector<double>> &thetas,
+                                                    std::mt19937 &rng,
                                                     std::uniform_real_distribution<double> &uniform_dist) {
     // in case there is nothing to see
     if (fg_id >= from_id_tmap.size()) {
@@ -148,7 +150,7 @@ void FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> 
     }
 
     std::map<double, int, std::greater<int>> theta_id_map;
-    for(auto & trans_id : from_id_tmap[fg_id]) {
+    for (auto &trans_id : from_id_tmap[fg_id]) {
         double trans_theta = thetas[energy][trans_id];
         theta_id_map[trans_theta] = trans_id;
     }
@@ -165,36 +167,94 @@ void FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> 
     }
 }
 
-void FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids,  const double selection_prob,
-                                                    std::mt19937 &rng,
-                                                    std::uniform_real_distribution<double> &uniform_dist) {
+void
+FragmentGraph::getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids, const double selection_prob,
+                                               std::mt19937 &rng,
+                                               std::uniform_real_distribution<double> &uniform_dist) {
     // in case there is nothing to see
     if (fg_id >= from_id_tmap.size()) {
         return;
     }
 
-    for(auto & trans_id : from_id_tmap[fg_id]) {
+    for (auto &trans_id : from_id_tmap[fg_id]) {
         double coin = uniform_dist(rng);
         if (coin < selection_prob)
             selected_ids.push_back(trans_id);
     }
 }
 
+void FragmentGraph::getSampledTransitionIds(std::set<int> &selected_ids, const int top_k, int energy,
+                                            std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
+                                            std::uniform_real_distribution<double> &uniform_dist) {
+
+    // init queue and add root
+    std::stack<int> fgs;
+    fgs.push(0);
+    while (!fgs.empty()) {
+
+        // get current id
+        int fg_id = fgs.top();
+        fgs.pop();
+
+        // if there is somewhere to go
+        if (!from_id_tmap[fg_id].empty()) {
+
+            // Init weights and prob vector
+            std::vector<double> probs;
+            std::vector<double> weights;
+
+            for (auto &trans_id : from_id_tmap[fg_id]) {
+                weights.push_back(thetas[energy][trans_id]);
+            }
+
+            // Append 0.0 for i -> i
+            // exp(0.0) = 1.0
+            weights.push_back(0.0);
+
+            // Apply softmax
+            softmax(weights, probs);
 
 
-void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int num_iter, int energy,
-                                                      std::vector<std::vector<double>> &thetas, std::mt19937 &rng) {
+            std::map<double, int, std::greater<int>> prob_id_map;
+            for (auto idx = 0; idx < from_id_tmap[fg_id].size(); ++idx) {
+                double trans_theta = probs[idx] * uniform_dist(rng);
+                prob_id_map[trans_theta] = from_id_tmap[fg_id][idx];
+            }
+
+            // Add prob for i -> i trans
+            prob_id_map[probs[from_id_tmap[fg_id].size()] * uniform_dist(rng)] = -1;
+
+            int selection_count = 0;
+            for (auto &prob_id_pair: prob_id_map) {
+                int trans_id = prob_id_pair.second;
+                // if we have not see this before
+                if (selected_ids.find(trans_id) == selected_ids.end()) {
+                    fgs.push(prob_id_pair.second);
+                    selected_ids.insert(prob_id_pair.second);
+                }
+                selection_count++;
+                if (selection_count == top_k)
+                    break;
+            }
+        }
+    }
+}
+
+
+void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_frags, int max_num_iter,
+                                                      int energy, std::vector<std::vector<double>> &thetas,
+                                                      std::mt19937 &rng) {
 
     std::vector<std::discrete_distribution<int>> discrete_distributions;
 
 
-    for(auto & transitions: from_id_tmap) {
+    for (auto &frag_trans_ids: from_id_tmap) {
 
         // Init weights and prob vector
         std::vector<double> probs;
         std::vector<double> weights;
 
-        for(auto & trans_id : transitions) {
+        for (auto &trans_id : frag_trans_ids) {
             weights.push_back(thetas[energy][trans_id]);
         }
 
@@ -205,43 +265,44 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
         // Apply softmax
         softmax(weights, probs);
 
-        if(weights.size() != probs.size())
+        if (weights.size() != probs.size())
             std::cerr << "ERROR, softmax is not working correctly" << std::endl;
         // add to discrete_distributions
-        discrete_distributions.emplace_back(std::discrete_distribution<int> (probs.begin(),probs.end()));
+        discrete_distributions.emplace_back(std::discrete_distribution<int>(probs.begin(), probs.end()));
     }
 
-
-    for(auto count = 0; count < num_iter; ++count)
-    {
+    int num_iter = 0;
+    std::set<int> visited_fgs;
+    while (!(num_iter == max_num_iter || visited_fgs.size() == max_num_frags)) {
         // init queue and add root
-        std::queue<int>fgs;
+        std::queue<int> fgs;
+
         fgs.push(0);
-        while(!fgs.empty()) {
+        while (!fgs.empty()) {
 
             // get current id
             int fg_id = fgs.front();
+            visited_fgs.insert(fg_id);
             fgs.pop();
 
             // if there is somewhere to go
-            if(!from_id_tmap[fg_id].empty())
-            {
+            if (!from_id_tmap[fg_id].empty()) {
                 int selected_idx = discrete_distributions[fg_id](rng);
-                if(selected_idx < from_id_tmap[fg_id].size()) {
+                if (selected_idx < from_id_tmap[fg_id].size()) {
                     // go to child
                     int selected_trans_id = from_id_tmap[fg_id][selected_idx];
                     fgs.push(transitions[selected_trans_id].getToId());
                     selected_ids.insert(selected_trans_id);
-                }
-                else if(selected_idx == from_id_tmap[fg_id].size()) {
+
+                } else if (selected_idx == from_id_tmap[fg_id].size()) {
                     // select the same node again
                     fgs.push(fg_id);
-                }
-                else {
+                } else {
                     std::cerr << "Sampling Out of Boundary" << std::endl;
                 }
             }
         }
+        num_iter++;
     }
 }
 

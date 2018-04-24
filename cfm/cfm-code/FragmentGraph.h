@@ -282,8 +282,13 @@ public:
 
     // Get a list of transitions ids , with weighted prob
     // Function do some not so random selection
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int num_iter, int energy,
-                                           std::vector<std::vector<double>> &thetas, std::mt19937 &rng);
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_frags, int max_num_iter,
+                                           int energy, std::vector<std::vector<double>> &thetas,
+                                           std::mt19937 &rng);
+
+    void getSampledTransitionIds(std::set<int> &selected_ids, int top_k, int energy,
+                                     std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
+                                     std::uniform_real_distribution<double> &uniform_dist);
 
 protected:
     std::vector<Fragment> fragments;
