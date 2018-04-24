@@ -110,6 +110,8 @@ void FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, double a
 
     // Get trans ids to remove
     getPruningTransitionIds(fg_id, spectra, abs_tol, ppm_tol, removed_transitions_ids);
+
+    // remove transitions
     removeTransitions(removed_transitions_ids);
 
     // once trans are gone
@@ -125,6 +127,7 @@ void FragmentGraph::removeLonelyFrags() {
     for (auto &trans : transitions) {
         int from_id = trans.getFromId();
         int to_id = trans.getToId();
+
         if (from_id >= 0 && from_id < removed_fragmentation_flag.size())
             removed_fragmentation_flag[from_id] = false;
         if (to_id >= 0 && to_id < removed_fragmentation_flag.size())
@@ -134,7 +137,7 @@ void FragmentGraph::removeLonelyFrags() {
         if (removed_fragmentation_flag[i])
             removed_fragmentation_ids.push_back(i);
     }
-
+    //std::cout << "Pruned Fragmentations " << removed_fragmentation_ids.size() << std::endl;
     removeFragments(removed_fragmentation_ids);
 }
 
@@ -346,7 +349,8 @@ void FragmentGraph::removeFragments(std::vector<int> &input_ids) {
 //Function to remove given transitions from the graph
 void FragmentGraph::removeTransitions(std::vector<int> &input_ids) {
 
-
+    std::sort(input_ids.begin(),input_ids.end());
+    //std::cout << transitions.size() << std::endl;
     std::vector<int> id_map(transitions.size());    //Map old id to new id (or -1 if deleting)
     //Remove transitions, and record a mapping of old->new transition ids
     unsigned int next_id = 0;
@@ -365,6 +369,7 @@ void FragmentGraph::removeTransitions(std::vector<int> &input_ids) {
         }
     }
     transitions.resize(next_id);
+    //std::cout << transitions.size() << std::endl;
 
     //Update the id maps
     for (int i = 0; i < fragments.size(); i++) {

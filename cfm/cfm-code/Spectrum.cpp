@@ -239,16 +239,13 @@ void Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
                 break;
             }
         }
-        if (!found)
-        {
+        if (!found) {
             removed_cout++;
             peak = peaks.erase(peak);
-        }
-
-        else
+        } else
             ++peak;
     }
-    //std::cout << "Number of Removed Peaks" << removed_cout <<  std::endl;
+    // std::cout << "Number of Removed Peaks " << removed_cout <<  std::endl;
     // Renormalise
     normalizeAndSort();
 }
