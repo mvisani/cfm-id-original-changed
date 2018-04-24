@@ -273,7 +273,7 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
 
     int num_iter = 0;
     std::set<int> visited_fgs;
-    while (!(num_iter == max_num_iter || visited_fgs.size() == max_num_frags)) {
+    while (!(num_iter == max_num_iter || visited_fgs.size() >= max_num_frags)) {
         // init queue and add root
         std::queue<int> fgs;
 
@@ -305,6 +305,7 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
         }
         num_iter++;
     }
+    //std::cout <<  visited_fgs.size() << " " << max_num_frags << std::endl;
 }
 
 //Function to remove frags from the graph
