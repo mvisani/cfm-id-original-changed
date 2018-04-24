@@ -110,7 +110,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
     // EM
     iter = 0;
-    double Q;
+    double Q  = 0.0;
     double prevQ = -DBL_MAX;
     double bestQ = -DBL_MAX;
 
@@ -971,6 +971,8 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
             Q -= nu * log(denom);
         }
     }
+    if(boost::math::isnan(Q))
+        std::cerr << "[NaN] ComputeQ " << moldata.getId() << std::endl;
     return Q;
 }
 
