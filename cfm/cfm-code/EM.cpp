@@ -692,8 +692,12 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
         std::fill(grads.begin(), grads.end(), 0.0);
         itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (minibatch_flags[molidx])
+            if (minibatch_flags[molidx]){
+                //std::cout << itdata->getId() << " Start" << std::endl;
                 computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, false, comm->used_idxs, true);
+                //std::cout << itdata->getId() << " Finished" << std::endl;
+            }
+
         }
 
 
@@ -946,6 +950,8 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     // Compute
     for (auto energy : energies) {
+        if(!moldata.thetasNanAndInfCheck(energy))
+            std::cerr << "[Warning] NaN " << moldata.getId() << " " << "energy " << energy << std::endl;
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         // Iterate over from_id (i)
