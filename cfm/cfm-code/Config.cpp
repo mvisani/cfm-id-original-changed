@@ -269,7 +269,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         std::cout << "Using Random Sampling with threshold: " << cfg.ga_sampling_selection_threshold << std::endl;
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
         if(cfg.use_graph_pruning != DEFAULT_NOT_USE_GRAPH_PRUNING) {
-            std::cerr << "Using graph pruning" << std::endl;
+            std::cout << "Using graph pruning" << std::endl;
         }
 
         switch (cfg.ga_sampling_method)

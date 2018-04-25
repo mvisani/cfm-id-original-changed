@@ -87,7 +87,7 @@ void EM::initParams() {
 }
 
 void EM::computeThetas(MolData *moldata) {
-    moldata->computeTransitionThetas(*param);
+    moldata->computeNormalizedTransitionThetas(*param);
 }
 
 double EM::run(std::vector<MolData> &data, int group,
@@ -922,7 +922,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 
     // Compute the latest transition thetas
     if (!record_used_idxs)
-        moldata.computeTransitionThetas(*param);
+        moldata.computeNormalizedTransitionThetas(*param);
 
     return Q;
 }
@@ -940,7 +940,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
         return Q;
 
     // Compute the latest transition thetas
-    moldata.computeTransitionThetas(*param);
+    moldata.computeNormalizedTransitionThetas(*param);
     suft_t *suft_values = &(suft.values[molidx]);
 
     // Collect energies to compute

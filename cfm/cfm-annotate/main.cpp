@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 	//Compute the fragmentation graph with transition probabilities
 	FeatureCalculator fc( *param->getFeatureNames() );
 	moldata.computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
-	moldata.computeTransitionThetas(*param);
+    moldata.computeNormalizedTransitionThetas(*param);
 	moldata.computeTransitionProbabilities();
 
 	moldata.removePeaksWithNoFragment( cfg.abs_mass_tol, cfg.ppm_mass_tol );
