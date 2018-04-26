@@ -89,21 +89,25 @@ bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &sp
     // if there is transitions from this fragments
     // that means this is not a leaf node
     if (fg_id < from_id_tmap.size()) {
+        bool save_child = false;
         for (auto trans_id : from_id_tmap[fg_id]) {
             auto to_id = transitions[trans_id].getToId();
             bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol,
                                                            removed_transitions_ids);
-            // if remove child
-            // we also need remove transition to that child
-            need_save = (need_save && child_need_save);
-        }
-    }
+            // if any child node need save
+            // parent node need save
+            save_child = (save_child || child_need_save);
 
-    // if all my child does not happen, and myself does not happen
-    // that means we only need learn to this node and stop
-    if(!need_save){
-        for (auto trans_id : from_id_tmap[fg_id]) {
+            need_save = (need_save || child_need_save);
+        }
+
+
+        // if all my child does not happen, and myself does not happen
+        // that means we only need learn to this node and stop
+        if(!save_child){
+            for (auto trans_id : from_id_tmap[fg_id]) {
                 removed_transitions_ids.push_back(trans_id);
+            }
         }
     }
 
