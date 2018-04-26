@@ -95,11 +95,18 @@ bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &sp
                                                            removed_transitions_ids);
             // if remove child
             // we also need remove transition to that child
-            if (!child_need_save)
-                removed_transitions_ids.push_back(trans_id);
-            need_save = (need_save || child_need_save);
+            need_save = (need_save && child_need_save);
         }
     }
+
+    // if all my child does not happen, and myself does not happen
+    // that means we only need learn to this node and stop
+    if(!need_save){
+        for (auto trans_id : from_id_tmap[fg_id]) {
+                removed_transitions_ids.push_back(trans_id);
+        }
+    }
+
 
     return need_save;
 }
