@@ -42,7 +42,7 @@ public:
 			thetas[energy][1] = 2.456735772821304;	//0->2
 			thetas[energy][2] = 0.0;	//2->3
 		}
-        computeTransitionLogProbabilities();
+		computeTransitionProbabilities();
 
 		//Set the spectra
 		spectra.resize(3);
@@ -73,7 +73,7 @@ public:
 		thetas[0].resize( fg->getNumTransitions() );
 		for( int i = 0; i < fg->getNumTransitions(); i++ )
 			thetas[0][i] = (double(std::rand())/double(RAND_MAX) -  0.5)*3;
-        computeTransitionLogProbabilities();
+		computeTransitionProbabilities();
 
 		//Load a very simple spectrum
 		spectra.resize(1);

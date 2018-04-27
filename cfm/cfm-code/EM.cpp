@@ -160,7 +160,7 @@ double EM::run(std::vector<MolData> &data, int group,
             MolData *moldata = &(*itdata);
             
             computeThetas(moldata);
-            moldata->computeTransitionLogProbabilities();
+            moldata->computeTransitionProbabilities();
 
             // Apply the peak evidence, compute the beliefs and record the sufficient
             // statistics

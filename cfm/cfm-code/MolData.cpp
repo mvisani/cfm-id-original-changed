@@ -350,7 +350,7 @@ void MolData::computeNormalizedTransitionThetas(Param &param) {
     }
 }
 
-void MolData::computeTransitionLogProbabilities() {
+void MolData::computeTransitionProbabilities() {
 
     log_probs.resize(thetas.size());
     for (unsigned int energy = 0; energy < thetas.size(); energy++) {
@@ -493,7 +493,7 @@ void MolData::computePredictedSpectra(Param &param, bool postprocess,
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
         computeNormalizedTransitionThetas(param);
-    computeTransitionLogProbabilities();
+    computeTransitionProbabilities();
 
     // Run forward inference
     std::vector<Message> msgs;
@@ -535,7 +535,7 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
         computeNormalizedTransitionThetas(param);
-    computeTransitionLogProbabilities();
+    computeTransitionProbabilities();
 
     // Generate and collect the peak results
     std::string outfilename;
