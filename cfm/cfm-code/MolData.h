@@ -168,7 +168,7 @@ public:
 
     void computeNormalizedTransitionThetas(Param &param);
 
-    void computeTransitionProbabilities();
+    void computeTransitionLogProbabilities();
 
     void computePredictedSpectra(Param &param, bool postprocess = false,
                                  bool use_existing_thetas = false);

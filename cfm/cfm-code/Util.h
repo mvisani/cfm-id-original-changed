@@ -78,9 +78,14 @@ inline double logAdd(double log_x, double log_y) {
 
     // only replace log(1+exp(log(y)-log(x))) with log(y)-log(x)
     // if the the difference is small enough to be meaningful
+    if(boost::math::isinf(log_y))
+        std::cerr << "log_y" << std::endl;
+
     if (rval > 100.0) return log_y;
     rval = std::log(1.0 + std::exp(rval));
     rval += log_x;
+    if(boost::math::isinf(rval))
+        std::cerr << "rval" << std::endl;
     return rval;
 }
 

@@ -41,7 +41,7 @@ public:
 			thetas[energy][1] = 2.456735772821304;	//0->2
 			thetas[energy][2] = 0.0;	//2->3
 		}
-		computeTransitionProbabilities();
+        computeTransitionLogProbabilities();
 
 		//Set the spectra
 		spectra.resize(3);
@@ -78,7 +78,7 @@ public:
 			thetas[energy][1] = 2.456735772821304;	//0->2
 			thetas[energy][2] = 0.0;	//2->3
 		}
-		computeTransitionProbabilities();
+        computeTransitionLogProbabilities();
 
 		//Set the spectra
 		spectra.resize(3);
@@ -119,7 +119,7 @@ public:
 			thetas[energy][2] = 0.0;	//2->3
 			thetas[energy][3] = 5.0;	//0->4
 		}
-		computeTransitionProbabilities();
+        computeTransitionLogProbabilities();
 
 		//Set the spectra
 		spectra.resize(3);
@@ -156,7 +156,7 @@ public:
 			thetas[energy][2] = 5.0;	//1->2
 			thetas[energy][3] = 0.0;	//2->3
 		}
-		computeTransitionProbabilities();
+        computeTransitionLogProbabilities();
 
 		//Set the spectra
 		spectra.resize(3);
@@ -191,7 +191,7 @@ public:
 			thetas[energy][1] = 5.0;	//1->2
 			thetas[energy][2] = 0.0;	//2->3
 		}
-		computeTransitionProbabilities();
+        computeTransitionLogProbabilities();
 
 		//Set the spectra
 		spectra.resize(3);

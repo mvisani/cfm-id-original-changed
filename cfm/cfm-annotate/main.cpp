@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 	FeatureCalculator fc( *param->getFeatureNames() );
 	moldata.computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
     moldata.computeNormalizedTransitionThetas(*param);
-	moldata.computeTransitionProbabilities();
+    moldata.computeTransitionLogProbabilities();
 
 	moldata.removePeaksWithNoFragment( cfg.abs_mass_tol, cfg.ppm_mass_tol );
 
