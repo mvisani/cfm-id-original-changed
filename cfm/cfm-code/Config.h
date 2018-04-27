@@ -198,6 +198,7 @@ struct config_t {
     // For sampling
     double ga_sampling_selection_threshold;
     int use_graph_pruning;
+    bool aggressive_graph_pruning;
     int ga_sampling_method;
     int ga_graph_sampling_k;
     int ga_use_sqrt_prob;

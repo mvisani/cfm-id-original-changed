@@ -117,7 +117,7 @@ public:
     };
 
     // Spectrum Related Functions
-    void pruneGraphBySpectra(double abs_tol, double ppm_tol);
+    void pruneGraphBySpectra(double abs_tol, double ppm_tol, bool aggressive);
 
     void removePeaksWithNoFragment(double abs_tol, double ppm_tol);
 

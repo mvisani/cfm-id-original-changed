@@ -270,7 +270,7 @@ public:
 
     // Tree pruning
     // Function to do branching cutting
-    void pruneGraphBySpectra(std::vector<Spectrum>& spectra, double abs_tol, double ppm_tol);
+    void pruneGraphBySpectra(std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol, bool aggressive);
 
     void getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids, const int top_k, const double selection_prob,
                                          const int energy, std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
@@ -333,7 +333,7 @@ protected:
 
     // Function do get list of transitions can be removed
     bool getPruningTransitionIds(int fg_id, std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
-                                 std::vector<int> &removed_transitions_ids);
+                                 std::vector<int> &removed_transitions_ids, bool aggressive);
 };
 
 class EvidenceFragmentGraph : public FragmentGraph {
