@@ -396,9 +396,11 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
                                     cfg->map_d_to_energy[d - 1] * len_offset] = belief;
                 belief = 0.0;
             }
+            infCheck(belief, moldata,"4");
+            infCheck(beliefs->ps[i][d], moldata,"4.1");
             belief += exp(beliefs->ps[i][d]);
         }
-        infCheck(belief, moldata, "4");
+        infCheck(belief, moldata, "5");
         suft.values[molidx][i + offset + energy * len_offset] = belief;
     }
 }
