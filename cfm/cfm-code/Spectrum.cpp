@@ -21,13 +21,12 @@
 
 void Spectrum::outputToStream(std::ostream &out, bool do_annotate) const {
 
-    std::vector<Peak>::const_iterator itp = peaks.begin();
-    for (; itp != peaks.end(); ++itp) {
+    for (auto itp = peaks.begin(); itp != peaks.end(); ++itp) {
         out << std::setprecision(10) << itp->mass << " " << itp->intensity;
         if (do_annotate) {
             std::stringstream ss_values;
             ss_values << std::setprecision(5) << "(";
-            std::vector<annotation_t>::const_iterator ita = itp->annotations.begin();
+            auto ita = itp->annotations.begin();
             for (; ita != itp->annotations.end(); ++ita) {
                 out << " " << ita->first;
                 if (ita != itp->annotations.begin())
@@ -35,7 +34,7 @@ void Spectrum::outputToStream(std::ostream &out, bool do_annotate) const {
                 ss_values << ita->second * 100.0;
             }
             ss_values << ")";
-            if (itp->annotations.size() > 0)
+            if (itp->annotations.empty())
                 out << " " << ss_values.str();
         }
         out << std::endl;
@@ -72,8 +71,6 @@ void Spectrum::outputToMgfStream(std::ostream &out, std::string id,
     out << "TITLE=" << id << ";Energy" << energy << ";";
     if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
         out << "[M+H]+;In-silico MS/MS by CFM-ID;" << std::endl;
-    else if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
-        out << "[M]+;In-silico MS by CFM-ID;" << std::endl;
     else if (ionization_mode == NEGATIVE_ESI_IONIZATION_MODE)
         out << "[M-H]+;In-silico MS/MS by CFM-ID;" << std::endl;
     outputToStream(out, false);
@@ -87,9 +84,9 @@ void Spectrum::quantisePeaksByMass(int num_dec_places) {
     // masses are given only to integer precision.
     normalizeAndSort();
     long long prev_mass = 0;
-    std::vector<Peak>::iterator it = peaks.begin();
-    for (; it != peaks.end(); ++it) {
-        long long tmp_mass =
+
+    for (auto it = peaks.begin(); it != peaks.end(); ++it) {
+        auto tmp_mass =
                 (long long) (it->mass * std::pow(10.0, num_dec_places) + 0.5);
         it->mass = tmp_mass * std::pow(10.0, -num_dec_places);
         if (tmp_mass == prev_mass) {
@@ -108,10 +105,9 @@ void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks) {
 
     std::sort(peaks.begin(), peaks.end(), sort_peaks_by_intensity);
     double total = 0.0;
-    std::vector<Peak>::iterator it = peaks.begin();
-    int count = 0;
 
-    for (; it != peaks.end(); ++it) {
+    int count = 0;
+    for (auto it = peaks.begin(); it != peaks.end(); ++it) {
         total += it->intensity;
         count++;
         // e.g. Take the top 80% of energy (assuming at least 5 peaks),
@@ -130,8 +126,8 @@ void Spectrum::normalizeAndSort() {
     if (!is_normalized) {
         // Compute the normalizer
         double sum = 0.0;
-        std::vector<Peak>::iterator itp = peaks.begin();
-        for (; itp != peaks.end(); ++itp)
+        auto itp = peaks.begin();
+        for ( ;itp != peaks.end(); ++itp)
             sum += itp->intensity;
         double norm = 1.0;
         if (sum > 0.0)
@@ -164,7 +160,7 @@ void Spectrum::clean(double abs_mass_tol, double ppm_mass_tol) {
     // Forward Pass
     double prev_intensity = -1.0;
     double prev_mass = -100.0;
-    std::vector<Peak>::iterator itp = peaks.begin();
+    auto itp = peaks.begin();
     for (int idx = 0; itp != peaks.end(); ++itp, idx++) {
         if (itp->intensity < abs_intensity_thresh)
             peak_flags[idx] = false;
@@ -180,7 +176,7 @@ void Spectrum::clean(double abs_mass_tol, double ppm_mass_tol) {
     // Reverse Pass
     prev_intensity = -1.0;
     prev_mass = -100.0;
-    std::vector<Peak>::reverse_iterator ritp = peaks.rbegin();
+    auto ritp = peaks.rbegin();
     for (int idx = peaks.size() - 1; ritp != peaks.rend(); ++ritp, idx--) {
         double mass_tol = getMassTol(abs_mass_tol, ppm_mass_tol, ritp->mass);
         if (fabs(ritp->mass - prev_mass) < mass_tol &&
@@ -204,14 +200,14 @@ void Spectrum::clean(double abs_mass_tol, double ppm_mass_tol) {
 
 void Spectrum::sortAndNormalizeAnnotations() {
 
-    std::vector<Peak>::iterator it = peaks.begin();
+    auto it = peaks.begin();
     for (; it != peaks.end(); ++it) {
         // Sort
         std::sort(it->annotations.begin(), it->annotations.end(),
                   sort_annotations_by_score);
 
         // Normalize
-        std::vector<annotation_t>::iterator itt = it->annotations.begin();
+        auto itt = it->annotations.begin();
         double total = 0.0;
         for (; itt != it->annotations.end(); ++itt)
             total += itt->second;
@@ -245,7 +241,6 @@ void Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
         } else
             ++peak;
     }
-    // std::cout << "Number of Removed Peaks " << removed_cout <<  std::endl;
     // Renormalise
     normalizeAndSort();
 }

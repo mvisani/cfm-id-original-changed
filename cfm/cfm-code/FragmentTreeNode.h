@@ -47,9 +47,8 @@ public:
     Break(std::pair<int, int> bond_idxs, int a_ring_idx,
           int a_num_ionic_frag_allocations = 1)
             : h_only_break(false), ring_break(true), ionic_break(false),
-              num_ionic_frag_allocations(a_num_ionic_frag_allocations),
               bond_idx(bond_idxs.first), second_bond_idx(bond_idxs.second),
-              ring_idx(a_ring_idx), ionic_idx(-1) {};
+              ring_idx(a_ring_idx), ionic_idx(-1), num_ionic_frag_allocations(a_num_ionic_frag_allocations) {};
 
     // Access functions (note: bools convert to ints for use in RDKit properties)
     int getBondIdx() const { return bond_idx; };
@@ -69,14 +68,17 @@ public:
     int getNumIonicFragAllocations() const { return num_ionic_frag_allocations; };
 
 private:
+
+    bool h_only_break;
     bool ring_break; // Flag indicating ring break
+    bool ionic_break;
+
     int bond_idx;    // Indexes of the broken bond(s)
     int second_bond_idx;
     int ring_idx; // Index of the ring that is broken
-    bool ionic_break;
-    int num_ionic_frag_allocations;
+
     int ionic_idx;
-    bool h_only_break;
+    int num_ionic_frag_allocations;
 };
 
 // Class for generating fragments via the systematic bond disconnection approach
