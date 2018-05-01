@@ -109,25 +109,25 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "update_bias_first") cfg.update_bias_first = (int) value;
         else if (name == "model_depth") cfg.model_depth = (unsigned int) value;
         else if (name == "spectrum_depth") cfg.spectrum_depths.push_back((unsigned int) value);
-        else if (name == "spectrum_weight") cfg.spectrum_weights.push_back( value);
-        else if (name == "abs_mass_tol") cfg.abs_mass_tol =  value;
-        else if (name == "ppm_mass_tol") cfg.ppm_mass_tol = value;
+        else if (name == "spectrum_weight") cfg.spectrum_weights.push_back((double) value);
+        else if (name == "abs_mass_tol") cfg.abs_mass_tol = (double) value;
+        else if (name == "ppm_mass_tol") cfg.ppm_mass_tol = (double) value;
         else if (name == "num_em_restarts") cfg.num_em_restarts = (int) value;
-        else if (name == "line_search_alpha") cfg.line_search_alpha =  value;
-        else if (name == "line_search_beta") cfg.line_search_beta =  value;
-        else if (name == "starting_step_size") cfg.starting_step_size =  value;
-        else if (name == "decay_rate") cfg.decay_rate =  value;
+        else if (name == "line_search_alpha") cfg.line_search_alpha = (double) value;
+        else if (name == "line_search_beta") cfg.line_search_beta = (double) value;
+        else if (name == "starting_step_size") cfg.starting_step_size = (double) value;
+        else if (name == "decay_rate") cfg.decay_rate = (double) value;
         else if (name == "max_search_count") cfg.max_search_count = (int) value;
         else if (name == "fg_depth") cfg.fg_depth = (int) value;
         else if (name == "allow_frag_detours") cfg.allow_frag_detours = (int) value;
         else if (name == "do_prelim_bfs") cfg.do_prelim_bfs = (int) value;
         else if (name == "max_ring_breaks") cfg.max_ring_breaks = (int) value;
         else if (name == "ipfp_algorithm") cfg.ipfp_algorithm = (int) value;
-        else if (name == "ipfp_converge_thresh") cfg.ipfp_converge_thresh = value;
-        else if (name == "osc_ipfp_converge_thresh") cfg.osc_ipfp_converge_thresh =  value;
+        else if (name == "ipfp_converge_thresh") cfg.ipfp_converge_thresh = (double) value;
+        else if (name == "osc_ipfp_converge_thresh") cfg.osc_ipfp_converge_thresh = (double) value;
         else if (name == "use_single_energy_cfm") cfg.use_single_energy_cfm = (int) value;
         else if (name == "include_isotopes") cfg.include_isotopes = (int) value;
-        else if (name == "isotope_thresh") cfg.isotope_thresh = value;
+        else if (name == "isotope_thresh") cfg.isotope_thresh = (double) value;
         else if (name == "ga_method") cfg.ga_method = (int) value;
         else if (name == "em_init_type") cfg.em_init_type = (int) value;
         else if (name == "use_lower_energy_params_for_init") cfg.use_lower_energy_params_for_init = (int) value;
@@ -136,15 +136,15 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "theta_nn_layer_act_func_ids") cfg.theta_nn_layer_act_func_ids.push_back((int) value);
         else if (name == "ga_minibatch_nth_size") cfg.ga_minibatch_nth_size = (int) value;
         else if (name == "ga_max_iterations") cfg.ga_max_iterations = (int) value;
-        else if (name == "ga_momentum") cfg.ga_momentum = value;
-        else if (name == "ga_adam_beta_1") cfg.ga_adam_beta_1 = value;
-        else if (name == "ga_adam_beta_2") cfg.ga_adam_beta_2 = value;
-        else if (name == "ga_eps") cfg.ga_eps = value;
-        else if (name == "ga_adadelta_rho") cfg.ga_adadelta_rho = value;
+        else if (name == "ga_momentum") cfg.ga_momentum = (double) value;
+        else if (name == "ga_adam_beta_1") cfg.ga_adam_beta_1 = (double) value;
+        else if (name == "ga_adam_beta_2") cfg.ga_adam_beta_2 = (double) value;
+        else if (name == "ga_eps") cfg.ga_eps = (double) value;
+        else if (name == "ga_adadelta_rho") cfg.ga_adadelta_rho = (double)value;
         else if (name == "ga_decay_method") cfg.ga_decay_method = (int)value;
-        else if (name == "exp_decay_k") cfg.exp_decay_k = value;
-        else if (name == "step_decay_drop") cfg.step_decay_drop = value;
-        else if (name == "step_decay_epochs_drop") cfg.step_decay_epochs_drop = value;
+        else if (name == "exp_decay_k") cfg.exp_decay_k = (double)value;
+        else if (name == "step_decay_drop") cfg.step_decay_drop = (double)value;
+        else if (name == "step_decay_epochs_drop") cfg.step_decay_epochs_drop = (double)value;
         else if (name == "obs_function") cfg.obs_function = (int) value;
         else if (name == "include_h_losses") cfg.include_h_losses = (int) value;
         else if (name == "include_precursor_h_losses_only") cfg.include_precursor_h_losses_only = (int) value;
@@ -350,8 +350,8 @@ void initDerivedConfig(config_t &cfg, int se_energy) {
     int energy = 0;
     if (se_energy > 0) energy = se_energy;
     for (unsigned int d = 0; d < cfg.model_depth; d++) {
-
-        for (auto it = cfg.spectrum_depths.begin(); it != cfg.spectrum_depths.end(); ++it) {
+        std::vector<int>::iterator it = cfg.spectrum_depths.begin();
+        for (; it != cfg.spectrum_depths.end(); ++it) {
             if (d == *it) energy++;
         }
         cfg.map_d_to_energy[d] = energy;
@@ -362,7 +362,7 @@ void initDerivedConfig(config_t &cfg, int se_energy) {
 
     //Re-normalise weights
     double sum = 0.0;
-    auto it = cfg.dv_spectrum_weights.begin();
+    std::vector<double>::iterator it = cfg.dv_spectrum_weights.begin();
     for (; it != cfg.dv_spectrum_weights.end(); ++it) sum += *it;
     it = cfg.dv_spectrum_weights.begin();
     for (; it != cfg.dv_spectrum_weights.end(); ++it) *it = *it / sum;
