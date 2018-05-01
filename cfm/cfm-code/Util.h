@@ -72,7 +72,6 @@ inline double logAdd(double log_x, double log_y) {
         double t = log_x;
         log_x = log_y;
         log_y = t;
-        std::swap(log_x,log_y);
     }
 
     double rval = log_y - log_x;
