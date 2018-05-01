@@ -81,6 +81,7 @@ else()
   endif()
 
   if(NOT RDKIT_LIBRARIES)
+	if(NOT RDKIT_LIBRARY_DIR)
     find_library(FILEPARSERS_LIB NAMES FileParsers RDKitFileParsers
       PATHS
         ${RDKIT_DIR}/lib
@@ -94,6 +95,9 @@ else()
         /opt/rdkit/lib
         $ENV{LD_LIBRARY_PATH}
     )
+	else()
+		find_library(FILEPARSERS_LIB NAMES FileParsers RDKitFileParsers HINTS ${RDKIT_LIBRARY_DIR})
+	endif()
     if(FILEPARSERS_LIB)
        GET_FILENAME_COMPONENT(RDKIT_LIBRARY_DIR ${FILEPARSERS_LIB} PATH)
        message(STATUS "Found RDKit libraries at ${RDKIT_LIBRARY_DIR}")

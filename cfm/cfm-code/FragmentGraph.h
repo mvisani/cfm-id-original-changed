@@ -131,9 +131,9 @@ public:
 
     int getToId() const { return to_id; };
 
-    int setFromId(const int id) {  from_id = id; };
+    void setFromId(const int id) {  from_id = id; };
 
-    int setToId(const int id) {  to_id = id; };
+    void setToId(const int id) {  to_id = id; };
 
     const std::string *getNLSmiles() const { return &nl_smiles; };
 
