@@ -72,7 +72,7 @@ inline double logAdd(double log_x, double log_y) {
         double t = log_x;
         log_x = log_y;
         log_y = t;
-        std::swap(log_x,log_y);
+        //std::swap(log_x,log_y);
     }
 
     double rval = log_y - log_x;
@@ -82,6 +82,8 @@ inline double logAdd(double log_x, double log_y) {
         return log_y;
     rval = std::log(1.0 + std::exp(rval));
     rval += log_x;
+    if(boost::math::isinf(rval))
+        std::cerr << "rval" << std::endl;
     return rval;
 }
 
