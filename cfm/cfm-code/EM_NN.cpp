@@ -61,7 +61,7 @@ void EM_NN::writeParamsToFile(std::string &filename) {
 
 //Gradient Computation using Backpropagation
 double EM_NN::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                           bool record_used_idxs, std::set<unsigned int> &used_idxs, bool use_sampling) {
+                                           bool record_used_idxs_only, std::set<unsigned int> &used_idxs) {
 
     double Q = 0.0;
     const FragmentGraph *fg = moldata.getFragmentGraph();
@@ -142,14 +142,14 @@ double EM_NN::computeAndAccumulateGradient(double *grads, int molidx, MolData &m
                     *(grads + grad_offset + i) += nu * unweighted_grads[idx][i];
             }
 
-            if (record_used_idxs) {
+            if (record_used_idxs_only) {
                 //Combine the used indexes for the first layer
                 for (sit = from_id_used_idxs.begin(); sit != from_id_used_idxs.end(); ++sit)
                     used_idxs.insert(grad_offset + *sit);
             }
         }
 
-        if (record_used_idxs) {
+        if (record_used_idxs_only) {
             //Add used indexes for the subsequent layers (all of them)
             for (int i = layer2_offset; i < weights_per_energy; i++)
                 used_idxs.insert(grad_offset + i);

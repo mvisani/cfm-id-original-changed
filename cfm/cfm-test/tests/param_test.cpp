@@ -205,7 +205,7 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
 	std::string null_str = "null";
 	EM em(&cfg, &fc_null, null_str, param_filename );
 	double Q_only = em.computeQ( 0, moldata, suft );
-	double Q = em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, false);
+	double Q = em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs);
 	
 	//Check Q
 	if( fabs(Q - -3.823 )  > tol ){

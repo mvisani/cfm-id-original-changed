@@ -67,7 +67,7 @@ public:
 
     //This is public so the test can access it....there must be a better way?
     virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                                bool record_used_idxs, std::set<unsigned int> &used_idxs, bool use_sampling);
+                                                bool record_used_idxs_only, std::set<unsigned int> &used_idxs);
 
     virtual double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
 
