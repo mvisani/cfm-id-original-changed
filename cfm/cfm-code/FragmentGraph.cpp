@@ -269,9 +269,8 @@ void FragmentGraph::getSampledTransitionIds(std::set<int> &selected_ids, const i
 }
 
 
-void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_frags, int max_num_iter,
-                                                      int energy, std::vector<std::vector<double>> &thetas,
-                                                      std::mt19937 &rng) {
+void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
+                                                      std::vector<std::vector<double>> &thetas, std::mt19937 &rng) {
 
     std::vector<std::discrete_distribution<int>> discrete_distributions;
 
@@ -300,8 +299,7 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
     }
 
     int num_iter = 0;
-    std::set<int> visited_fgs;
-    while (!(num_iter == max_num_iter || visited_fgs.size() >= max_num_frags)) {
+    while (num_iter >= max_num_iter) {
         // init queue and add root
         std::queue<int> fgs;
 
@@ -310,7 +308,6 @@ void FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_id
 
             // get current id
             int fg_id = fgs.front();
-            visited_fgs.insert(fg_id);
             fgs.pop();
 
             // if there is somewhere to go
