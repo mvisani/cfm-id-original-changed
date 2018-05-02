@@ -368,14 +368,14 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
         for (unsigned int d = 1; d < cfg->model_depth; d++) {
             energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
-                infCheck(belief, moldata);
+                //infCheck(belief, moldata);
                 suft.values[molidx][i + cfg->map_d_to_energy[d - 1] * len_offset] =
                         belief;
                 belief = 0.0;
             }
             belief += exp(beliefs->tn[i][d]);
         }
-        infCheck(belief, moldata);
+        //infCheck(belief, moldata);
         suft.values[molidx][i + energy * len_offset] = belief;
     }
 
@@ -391,14 +391,14 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
         for (unsigned int d = 1; d < cfg->model_depth; d++) {
             energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
-                infCheck(belief, moldata);
+                //infCheck(belief, moldata);
                 suft.values[molidx][i + offset +
                                     cfg->map_d_to_energy[d - 1] * len_offset] = belief;
                 belief = 0.0;
             }
             belief += exp(beliefs->ps[i][d]);
         }
-        infCheck(belief, moldata);
+        //infCheck(belief, moldata);
         suft.values[molidx][i + offset + energy * len_offset] = belief;
     }
 }
@@ -977,8 +977,6 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
             Q -= nu * log(denom);
         }
     }
-    if(boost::math::isnan(Q))
-        std::cerr << "[NaN] ComputeQ " << moldata.getId() << std::endl;
     return Q;
 }
 
