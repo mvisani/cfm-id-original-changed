@@ -368,7 +368,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
     const unsigned int num_atom_types = 6;
     const unsigned int num_degree_feature_size = 5;
     for (int i = 0; i < num_atom; ++i) {
-        int atom_type_feature[num_degree_feature_size] = {0};
+        int atom_type_feature[num_atom_types] = {0};
         int atom_degree_feature[num_degree_feature_size] = {0};
 
         if (i < visit_order.size()) {
