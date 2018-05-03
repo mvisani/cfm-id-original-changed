@@ -263,15 +263,15 @@ void FeatureVector::addFeatureAtIdx(double value, unsigned int idx) {
         mapped_fv.push_back(std::pair<feature_idx_t, feature_value_t>(fv_idx,value));
 }
 
-void FeatureVector::addFeatures(double values[], int size) {
-    for (int i = 0; i < size; ++i) {
-        this->addFeature(values[i]);
+void FeatureVector::addFeatures(const std::vector<double> &values) {
+    for (const auto & value: values) {
+        this->addFeature(value);
     }
 }
 
-void FeatureVector::addFeatures(int values[], int size) {
-    for (int i = 0; i < size; ++i) {
-        this->addFeature((double) values[i]);
+void FeatureVector::addFeatures(const std::vector<int> &values) {
+    for (const auto & value: values) {
+        this->addFeature((double) value);
     }
 }
 

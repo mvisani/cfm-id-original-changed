@@ -21,10 +21,10 @@ param.cpp.
 class NLRootMatrixSimpleFP : public FingerPrintFeature {
 public:
     NLRootMatrixSimpleFP() {
-        size = 220;
+        size = 330; //220
         name = "NLRootMatrixSimpleFP";
     };
 
     void compute(FeatureVector &fv, const RootedROMolPtr *NL,
-                 const RootedROMolPtr *nl) const;
+                 const RootedROMolPtr *nl) const override;
 };
