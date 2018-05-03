@@ -847,20 +847,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
             else {
                 //Do some random selection
                 std::vector<int> sampled_ids;
-                if (cfg->ga_sampling_method == USE_RANDOM_SAMPLING)
-                    moldata.getSampledTransitionIdsFromFrag(from_idx,
-                                                            sampled_ids,
-                                                            cfg->ga_sampling_selection_threshold,
-                                                            m_rng, m_uniform_dist);
-                else if (cfg->ga_sampling_method == USE_GRAPH_RANDOM_SAMPLING)
-                    moldata.getSampledTransitionIdsFromFrag(from_idx,
-                                                            sampled_ids,
-                                                            cfg->ga_graph_sampling_k,
-                                                            cfg->ga_sampling_selection_threshold,
-                                                            energy,
-                                                            m_rng, m_uniform_dist);
-
-                else if (cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
+                if (cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
                     for (auto id: *frag_trans_map) {
                         if (selected_trans_id.find(id) != selected_trans_id.end()) {
                             sampled_ids.push_back(id);
@@ -1073,18 +1060,4 @@ void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
             (num_mols + cfg->ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;
     for (int i = num_minibatch_mols; i < idxs.size(); i++)
         initialized_minibatch_flags[idxs[i]] = 0;
-}
-
-void EM::infCheck(double &belief, MolData* moldata) {
-    // TODO FIND A BETTER WAY THIS IS A SUPER HACKY FIX
-    if (boost::math::isinf(belief)) {
-        if (belief < 0) {
-            std::cerr << "Warning: belief is -Inf " << moldata->getId() << std::endl;
-            //belief = -100000000000;
-        } else {
-            std::cerr << "Warning: belief is Inf " << moldata->getId() <<  std::endl;
-            //belief = 100000000000;
-        }
-
-    }
 }

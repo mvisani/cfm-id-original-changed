@@ -272,22 +272,13 @@ public:
     // Function to do branching cutting
     void pruneGraphBySpectra(std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol, bool aggressive);
 
-    void getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids, const int top_k, const double selection_prob,
-                                         const int energy, std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
-                                         std::uniform_real_distribution<double> &uniform_dist);
-
-    void getSampledTransitionIdsFromFrag(int fg_id, std::vector<int> &selected_ids,  const double selection_prob,
-                                   std::mt19937 &rng,
-                                   std::uniform_real_distribution<double> &uniform_dist);
-
     // Get a list of transitions ids , with weighted prob
     // Function do some not so random selection
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
-                                           std::vector<std::vector<double>> &thetas, std::mt19937 &rng);
+    void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
+                                                   std::vector<std::vector<double>> &thetas, std::mt19937 &rng);
 
-    void getSampledTransitionIds(std::set<int> &selected_ids, int top_k, int energy,
-                                     std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
-                                     std::uniform_real_distribution<double> &uniform_dist);
+    // Get a list of transitions ids , Full random walk
+    // void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy, std::mt19937 &rng);
 
 protected:
     std::vector<Fragment> fragments;

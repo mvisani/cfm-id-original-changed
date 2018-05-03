@@ -198,20 +198,6 @@ public:
     void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                std::mt19937 &rng);
 
-    void getSampledTransitionIdsFromFrag(int fg_id,
-                                         std::vector<int> &selected_ids,
-                                         int top_k,
-                                         double selection_prob,
-                                         int energy,
-                                         std::mt19937 &rng,
-                                         std::uniform_real_distribution<double> &uniform_dist);
-
-    void getSampledTransitionIdsFromFrag(int fg_id,
-                                         std::vector<int> &selected_ids,
-                                         double selection_prob,
-                                         std::mt19937 &rng,
-                                         std::uniform_real_distribution<double> &uniform_dist);
-
     bool thetasNanAndInfCheck(int energy_level);
     ~MolData();
 
