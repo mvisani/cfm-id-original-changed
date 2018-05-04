@@ -292,8 +292,15 @@ double EM::run(std::vector<MolData> &data, int group,
         // two conditions: 1. Qratio is less than 1e-15
         //                 2, Q has not improved compare to the best value so far
         const double ratio_cutoff = 1e-15;
-        if (bestQRatio < ratio_cutoff || bestQ > Q) {
+
+        if(Qratio < ratio_cutoff || prevQ > Q) {
             count_no_progress += 1;
+        }
+        else {
+            count_no_progress = 0;
+        }
+
+        if (bestQRatio < ratio_cutoff || bestQ > Q) {
             if(learning_rate > cfg->starting_step_size * 0.02)
                 learning_rate *= 0.5;
 
@@ -308,12 +315,12 @@ double EM::run(std::vector<MolData> &data, int group,
                 writeParamsToFile(iter_out_param_filename);
                 writeParamsToFile(out_param_filename);
             }
-            count_no_progress = 0;
+            //count_no_progress = 0;
         }
 
         prevQ = Q;
         // check if EM meet halt flag
-        if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
+        if (Qratio < cfg->em_converge_thresh || count_no_progress >= 5) {
             comm->printToMasterOnly(("EM Converged after " +
                                      boost::lexical_cast<std::string>(iter) +
                                      " iterations")
