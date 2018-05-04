@@ -1382,7 +1382,7 @@ void FVFragGraphSaveAndLoadState::runTest(){
 			for(; fit1 != fv1->getFeatureEnd(); ++fit1, ++fit2 ){
 				if( *fit1 != *fit2 ){
 					std::cout << "Mismatch in feature vectors for transition at idx " << i << ": "
-																			   << fit1->first << " vs " << fit2->first << std::endl;
+																			   << *fit1 << " vs " << *fit2 << std::endl;
 					pass = false;
 					break;
 				}

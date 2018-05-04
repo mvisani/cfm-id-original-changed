@@ -842,7 +842,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
                 for (auto trans_id : *frag_trans_map) {
                     const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                        used_idxs.insert(fv_it->first + grad_offset);
+                        used_idxs.insert(*fv_it + grad_offset);
                     }
                 }
             }
@@ -885,7 +885,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
                     const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
 
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                        auto fv_idx = fv_it->first;
+                        auto fv_idx = *fv_it;
                         double val = exp(moldata.getThetaForIdx(energy, trans_id)) / denom;
                         if (sum_terms.find(fv_idx) != sum_terms.end())
                             sum_terms[fv_idx] += val;
@@ -903,11 +903,11 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
                     const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
 
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                        auto fv_idx = fv_it->first;
+                        auto fv_idx = *fv_it;
                         *(grads + fv_idx + grad_offset) += nu;
 
                         if(record_used_idxs_only)
-                            used_idxs.insert(fv_it->first + grad_offset);
+                            used_idxs.insert(fv_idx + grad_offset);
 
                     }
                     Q += nu*(moldata.getThetaForIdx(energy, trans_id) - log(denom));

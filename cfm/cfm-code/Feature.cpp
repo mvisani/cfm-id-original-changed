@@ -18,8 +18,8 @@ the feature
 #########################################################################*/
 #include <DataStructs/SparseIntVect.h>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/filesystem.hpp>
 
 #include "Feature.h"
 #include "Features/BreakAtomPair.h"
@@ -30,40 +30,40 @@ the feature
 #include "Features/HydrogenMovement.h"
 #include "Features/HydrogenRemoval.h"
 #include "Features/IonExtraFunctionalGroupFeatures.h"
-#include "Features/IonFunctionalGroupFeatures.h"
 #include "Features/IonFunctionalGroupFeaturesD2.h"
+#include "Features/IonFunctionalGroupFeatures.h"
 #include "Features/IonFunctionalGroupRootOnlyFeatures.h"
+#include "Features/IonicFeatures.h"
 #include "Features/IonNeighbourMMFFAtomType.h"
 #include "Features/IonRootAtom.h"
-#include "Features/IonRootEncodingD3.h"
-#include "Features/IonRootEncodingD4.h"
-#include "Features/IonRootEncodingD4Long.h"
 #include "Features/IonRootMMFFAtomType.h"
-#include "Features/IonRootMatrixFP.h"
-#include "Features/IonRootMatrixSimpleFP.h"
 #include "Features/IonRootPairs.h"
 #include "Features/IonRootTriples.h"
 #include "Features/IonRootTriplesIncludeBond.h"
-#include "Features/IonicFeatures.h"
+#include "Features/NeighbourOrigBondTypes.h"
 #include "Features/NLExtraFunctionalGroupFeatures.h"
-#include "Features/NLFunctionalGroupFeatures.h"
 #include "Features/NLFunctionalGroupFeaturesD2.h"
+#include "Features/NLFunctionalGroupFeatures.h"
 #include "Features/NLFunctionalGroupRootOnlyFeatures.h"
 #include "Features/NLNeighbourMMFFAtomType.h"
 #include "Features/NLRootAtom.h"
-#include "Features/NLRootEncodingD3.h"
-#include "Features/NLRootEncodingD4.h"
-#include "Features/NLRootEncodingD4Long.h"
 #include "Features/NLRootMMFFAtomType.h"
-#include "Features/NLRootMatrixFP.h"
-#include "Features/NLRootMatrixSimpleFP.h"
 #include "Features/NLRootPairs.h"
 #include "Features/NLRootTriples.h"
 #include "Features/NLRootTriplesIncludeBond.h"
-#include "Features/NeighbourOrigBondTypes.h"
 #include "Features/QuadraticFeatures.h"
 #include "Features/RadicalFeatures.h"
 #include "Features/RingFeatures.h"
+#include "Features/IonRootEncodingD3.h"
+#include "Features/NLRootEncodingD3.h"
+#include "Features/IonRootEncodingD4.h"
+#include "Features/NLRootEncodingD4.h"
+#include "Features/IonRootEncodingD4Long.h"
+#include "Features/NLRootEncodingD4Long.h"
+#include "Features/IonRootMatrixFP.h"
+#include "Features/NLRootMatrixFP.h"
+#include "Features/IonRootMatrixSimpleFP.h"
+#include "Features/NLRootMatrixSimpleFP.h"
 
 const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
 
@@ -237,7 +237,7 @@ FeatureVector *FeatureCalculator::computeFV(const RootedROMolPtr *ion,
 }
 
 bool FeatureCalculator::includesFeature(const std::string &fname) {
-    auto it = used_feature_idxs.begin();
+    std::vector<int>::iterator it = used_feature_idxs.begin();
     for (; it != used_feature_idxs.end(); ++it) {
         const Feature *cog = &(featureCogs()[*it]);
         if (cog->getName() == fname)
@@ -246,21 +246,18 @@ bool FeatureCalculator::includesFeature(const std::string &fname) {
     return false;
 }
 
-feature_idx_t FeatureVector::getFeatureIdxForUnitTestOnly(int idx) const {
-    return mapped_fv[idx].first;
-}
-
 void FeatureVector::addFeature(double value) {
     if (value != 0.0)
-        mapped_fv.push_back(std::pair<feature_idx_t, feature_value_t>(fv_idx,value));
-    fv_idx += 1;
+        fv.push_back(fv_idx++);
+    else
+        fv_idx++;
 }
 
 void FeatureVector::addFeatureAtIdx(double value, unsigned int idx) {
     if (fv_idx <= idx)
         fv_idx = idx + 1;
     if (value != 0.0)
-        mapped_fv.push_back(std::pair<feature_idx_t, feature_value_t>(fv_idx,value));
+        fv.push_back(idx);
 }
 
 void FeatureVector::addFeatures(double values[], int size) {
@@ -275,43 +272,16 @@ void FeatureVector::addFeatures(int values[], int size) {
     }
 }
 
-// create a Sparse CSV string
-std::string FeatureVector::toSparseCSVString(bool isBinary) const {
-    std::string csv_str = "";
-    for( auto & mapped_feature : mapped_fv)
-    {
-        csv_str += std::to_string(mapped_feature.first);
-        csv_str += ",";
-        if(false == isBinary) {
-            csv_str += std::to_string(mapped_feature.second);
-            csv_str += ",";
-        }
-    }
-    return csv_str;
-}
-
-
 // print debug info
-void FeatureVector::printDebugInfo() const {
+void FeatureVector::printDebugInfo() const
+{
     std::cout << "fv_idx : " << fv_idx << std::endl;
-    std::cout << "fv_vector_size: " << mapped_fv.size() << std::endl;
-    for( auto & mapped_feature : mapped_fv)
+    std::cout << "fv_vector_size: " << fv.size()  << std::endl;
+    for(int i = 0; i < fv.size(); i ++)
     {
-        std::cout << mapped_feature.first << ": " << mapped_feature.second << ", ";
+        std::cout << fv[i] << " ";
     }
     std::cout << std::endl;
-}
-
-void FeatureVector::applyPCA(std::vector<std::vector <double>> & mat)
-{
-    std::unordered_map<feature_idx_t ,feature_value_t > new_fv;
-
-    for( auto & mapped_feature : mapped_fv)
-    {
-        auto idx = mapped_feature.first;
-        auto value = mapped_feature.second;
-
-    }
 }
 
 // Helper functions for multiple features
@@ -356,7 +326,8 @@ const std::vector<std::string> &Feature::OKSymbolsLess() {
     return x;
 }
 
-unsigned int Feature::GetSizeOfOKSymbolsLess() const {
+unsigned int Feature::GetSizeOfOKSymbolsLess() const
+{
     return OKSymbolsLess().size();
 }
 

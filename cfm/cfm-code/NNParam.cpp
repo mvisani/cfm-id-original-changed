@@ -86,7 +86,7 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
     for (int hnode = 0; hnode < (*itlayer); hnode++) {
         double z_val = 0.0;
         for (auto it = fv.getFeatureBegin(); it != fv.getFeatureEnd(); ++it)
-            z_val += *(wit + it->first);
+            z_val += *(wit + *it);
         wit += len;
         *zit++ = z_val;
         *ait++ = (*itaf++)(z_val);
@@ -308,9 +308,9 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
     std::set<unsigned int> tmp_used_idxs;
     for (int idx = 0; idx < num_trans_from_id; idx++) {
         for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
-            tmp_used_idxs.insert(fit->first);
+            tmp_used_idxs.insert(*fit);
             for (int hnode = 0; hnode < hlayer_num_nodes[0]; hnode++)
-                used_idxs.insert(hnode * feature_len + fit->first);
+                used_idxs.insert(hnode * feature_len + *fit);
         }
     }
 
@@ -323,8 +323,8 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
             double deltaA = *itAs[idx]++;
             double deltaB = *itBs[idx]++;
             for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
-                *(itgrads[idx] + fit->first) = deltaA;
-                *(normit + fit->first) -= deltaB;
+                *(itgrads[idx] + *fit) = deltaA;
+                *(normit + *fit) -= deltaB;
             }
         }
 

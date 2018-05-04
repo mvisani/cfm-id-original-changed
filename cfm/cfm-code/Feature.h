@@ -17,24 +17,19 @@
 #ifndef __FEATURE_H__
 #define __FEATURE_H__
 
-#include "FunctionalGroups.h"
 #include "Util.h"
+#include "FunctionalGroups.h"
 
 #include <GraphMol/FragCatalog/FragCatParams.h>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/lexical_cast.hpp>
 
-/*
-#include <boost/numeric/ublas/vector_sparse.hpp>
-#include <boost/numeric/ublas/io.hpp>
-*/
-
-#include <fstream>
-#include <iostream>
 #include <string>
-#include <map>
 #include <vector>
+#include <unordered_map>
+#include <iostream>
+#include <fstream>
 
 struct input_file_t;
 
@@ -65,8 +60,7 @@ public:
 };
 
 // Structure to hold a sparse computed feature vector
-typedef unsigned int feature_idx_t;
-typedef double feature_value_t;
+typedef unsigned int feature_t;
 
 class FeatureVector {
 public:
@@ -82,27 +76,21 @@ public:
 
     unsigned int getTotalLength() const { return fv_idx; };
 
-    // Ugly API for Unit Test
-    // Just don't want to rewrite all test cases
-    feature_idx_t getFeatureIdxForUnitTestOnly(int idx) const;
+    feature_t getFeature(int idx) const { return fv[idx]; };
 
-    std::vector<std::pair<feature_idx_t, feature_value_t>>::const_iterator getFeatureBegin() const noexcept {
-        return mapped_fv.begin();
+    std::vector<feature_t>::const_iterator getFeatureBegin() const {
+        return fv.begin();
     };
 
-    std::vector<std::pair<feature_idx_t, feature_value_t>>::const_iterator getFeatureEnd() const noexcept {
-        return mapped_fv.end();
+    std::vector<feature_t>::const_iterator getFeatureEnd() const {
+        return fv.end();
     };
 
-    unsigned long getNumSetFeatures() const { return mapped_fv.size(); };
-
-    std::string toSparseCSVString(bool isBinary = true) const;
+    unsigned int getNumSetFeatures() const { return fv.size(); };
 
     void printDebugInfo() const;
-
-    void applyPCA(std::vector<std::vector <double>> &mat);
 private:
-    std::vector<std::pair<feature_idx_t, feature_value_t>> mapped_fv;
+    std::vector<feature_t> fv;
     unsigned int fv_idx;
 };
 
