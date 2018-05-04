@@ -305,6 +305,7 @@ double EM::run(std::vector<MolData> &data, int group,
                     std::cout << "[INFO]Reset Sampling Flag to 0, Reset Learning Rate" << std::endl;
                 cfg->ga_sampling_method = 0;
                 learning_rate = cfg->starting_step_size;
+                count_no_progress = 0;
             }
         }
         else {
