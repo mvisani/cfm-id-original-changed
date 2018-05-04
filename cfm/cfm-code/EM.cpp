@@ -299,10 +299,8 @@ double EM::run(std::vector<MolData> &data, int group,
                 learning_rate *= 0.1;
                 //cfg->ga_graph_sampling_k = 10 * cfg->ga_graph_sampling_k;
             else if (cfg->ga_sampling_method != 0) {
-                if (comm->isMaster())
-                    std::cout << "Reset Sampling Flag to 0, Reset Learning Rate" << std::endl;
                 cfg->ga_sampling_method = 0;
-                learning_rate = cfg->starting_step_size;
+                learning_rate = cfg->starting_step_size * 0.1;
             }
         }
         else {
