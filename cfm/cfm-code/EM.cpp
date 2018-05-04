@@ -295,14 +295,12 @@ double EM::run(std::vector<MolData> &data, int group,
 
         if(Qratio < ratio_cutoff || prevQ > Q) {
             count_no_progress += 1;
-            if(learning_rate > cfg->starting_step_size * 0.001){
+            if(learning_rate > cfg->starting_step_size * 0.01)
                 learning_rate *= 0.1;
-                if (comm->isMaster())
-                    std::cout << "[INFO]Update Learning Rate to " << learning_rate  << std::endl;
-            }
+                //cfg->ga_graph_sampling_k = 10 * cfg->ga_graph_sampling_k;
             else if (cfg->ga_sampling_method != 0) {
                 if (comm->isMaster())
-                    std::cout << "[INFO]Reset Sampling Flag to 0, Reset Learning Rate" << std::endl;
+                    std::cout << "Reset Sampling Flag to 0, Reset Learning Rate" << std::endl;
                 cfg->ga_sampling_method = 0;
                 learning_rate = cfg->starting_step_size;
             }
