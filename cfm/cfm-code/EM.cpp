@@ -297,6 +297,9 @@ double EM::run(std::vector<MolData> &data, int group,
             count_no_progress += 1;
             if(learning_rate > cfg->starting_step_size * 0.01)
                 learning_rate *= 0.1;
+            else if (cfg->ga_sampling_method != 0) {
+                cfg->ga_sampling_method = 0;
+            }
         }
         else {
             count_no_progress = 0;
@@ -317,7 +320,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
         prevQ = Q;
         // check if EM meet halt flag
-        if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
+        if (Qratio < cfg->em_converge_thresh || count_no_progress >= 5) {
             comm->printToMasterOnly(("EM Converged after " +
                                      boost::lexical_cast<std::string>(iter) +
                                      " iterations")
