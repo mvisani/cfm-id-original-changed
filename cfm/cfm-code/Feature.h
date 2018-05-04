@@ -70,9 +70,9 @@ public:
 
     void addFeatureAtIdx(double value, unsigned int idx);
 
-    void addFeatures(double values[], int size);
+    void addFeatures(const std::vector<double> &values);
 
-    void addFeatures(int values[], int size);
+    void addFeatures(const std::vector<int> &values);
 
     unsigned int getTotalLength() const { return fv_idx; };
 

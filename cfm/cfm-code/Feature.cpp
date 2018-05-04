@@ -260,15 +260,15 @@ void FeatureVector::addFeatureAtIdx(double value, unsigned int idx) {
         fv.push_back(idx);
 }
 
-void FeatureVector::addFeatures(double values[], int size) {
-    for (int i = 0; i < size; ++i) {
-        this->addFeature(values[i]);
+void FeatureVector::addFeatures(const std::vector<double> &values) {
+    for (const auto & value: values) {
+        this->addFeature(value);
     }
 }
 
-void FeatureVector::addFeatures(int values[], int size) {
-    for (int i = 0; i < size; ++i) {
-        this->addFeature((double) values[i]);
+void FeatureVector::addFeatures(const std::vector<int> &values) {
+    for (const auto & value: values) {
+        this->addFeature((double) value);
     }
 }
 

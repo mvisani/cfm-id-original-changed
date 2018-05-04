@@ -792,28 +792,8 @@ std::string MolData::getFVsAsSparseCSVString() {
 void
 MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                            std::mt19937 &rng) {
-    fg->getSampledTransitionIdsRandomWalk(selected_ids, max_num_iter, energy, thetas, rng);
+    fg->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, energy, thetas, rng);
 }
-
-void MolData::getSampledTransitionIdsFromFrag(int fg_id,
-                                              std::vector<int> &selected_ids,
-                                              int top_k,
-                                              double selection_prob,
-                                              int energy,
-                                              std::mt19937 &rng,
-                                              std::uniform_real_distribution<double> &uniform_dist) {
-    fg->getSampledTransitionIdsFromFrag(fg_id, selected_ids, top_k, selection_prob, energy, thetas, rng, uniform_dist);
-}
-
-
-void MolData::getSampledTransitionIdsFromFrag(int fg_id,
-                                              std::vector<int> &selected_ids,
-                                              double selection_prob,
-                                              std::mt19937 &rng,
-                                              std::uniform_real_distribution<double> &uniform_dist) {
-    fg->getSampledTransitionIdsFromFrag(fg_id, selected_ids, selection_prob, rng, uniform_dist);
-}
-
 
 bool MolData::thetasNanAndInfCheck(int energy_level){
 
