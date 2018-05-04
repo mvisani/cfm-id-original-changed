@@ -195,8 +195,8 @@ public:
     // one fv per line
     std::string getFVsAsSparseCSVString();
 
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
-                                               std::mt19937 &rng);
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy, std::mt19937 &rng,
+                                           double explore_weight);
 
     bool thetasNanAndInfCheck(int energy_level);
     ~MolData();

@@ -168,7 +168,7 @@ void FragmentGraph::removeLonelyFrags() {
 
 void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                               std::vector<std::vector<double>> &thetas,
-                                                              std::mt19937 &rng) {
+                                                              std::mt19937 &rng, double explore_weight) {
 
     std::vector<std::discrete_distribution<int>> discrete_distributions;
 
@@ -202,7 +202,7 @@ void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &sel
         // init queue and add root
         std::queue<int> fgs;
         // a coin , one out 3 chance we just go explore
-        std::discrete_distribution<int> explore_coin(3,1);
+        std::discrete_distribution<int> explore_coin({1.0, explore_weight});
         fgs.push(0);
         while (!fgs.empty()) {
 

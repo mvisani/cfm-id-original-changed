@@ -297,10 +297,11 @@ double EM::run(std::vector<MolData> &data, int group,
             count_no_progress += 1;
             if(learning_rate > cfg->starting_step_size * 0.01)
                 learning_rate *= 0.1;
-            else if (cfg->ga_sampling_method != 0) {
+            cfg->ga_graph_sampling_k = 10 * cfg->ga_graph_sampling_k;
+            /*else if (cfg->ga_sampling_method != 0) {
                 cfg->ga_sampling_method = 0;
                 learning_rate = cfg->starting_step_size;
-            }
+            }*/
         }
         else {
             count_no_progress = 0;
@@ -836,7 +837,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
             int num_iterations = cfg->ga_graph_sampling_k * num_frags;
             if(cfg->ga_use_sqaured_iter_num)
                 num_iterations =  num_iterations  * (energy+1) * (energy+1);
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, m_rng);
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, m_rng, 1.0);
         }
 
         
