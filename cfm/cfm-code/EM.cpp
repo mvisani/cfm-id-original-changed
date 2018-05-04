@@ -299,6 +299,7 @@ double EM::run(std::vector<MolData> &data, int group,
                 learning_rate *= 0.1;
             else if (cfg->ga_sampling_method != 0) {
                 cfg->ga_sampling_method = 0;
+                learning_rate = cfg->starting_step_size;
             }
         }
         else {
