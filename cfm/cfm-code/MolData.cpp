@@ -792,6 +792,7 @@ std::string MolData::getFVsAsSparseCSVString() {
 void
 MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy, std::mt19937 &rng,
                                            double explore_weight) {
+
     fg->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, energy, thetas, rng, explore_weight);
 }
 

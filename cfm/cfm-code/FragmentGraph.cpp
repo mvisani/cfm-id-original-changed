@@ -167,8 +167,8 @@ void FragmentGraph::removeLonelyFrags() {
 }
 
 void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
-                                                              std::vector<std::vector<double>> &thetas,
-                                                              std::mt19937 &rng, double explore_weight) {
+                                                              std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
+                                                              double explore_weight) {
 
     std::vector<std::discrete_distribution<int>> discrete_distributions;
 
@@ -190,19 +190,18 @@ void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &sel
         // Apply softmax
         softmax(weights, probs);
 
-        if (weights.size() != probs.size())
-            std::cerr << "ERROR, softmax is not working correctly" << std::endl;
         // add to discrete_distributions
         discrete_distributions.emplace_back(std::discrete_distribution<int>(probs.begin(), probs.end()));
     }
 
     int num_iter = 0;
+    std::discrete_distribution<int> explore_coin({1.0, explore_weight});
 
-    while (num_iter >= max_num_iter) {
+    while (num_iter <= max_num_iter) {
         // init queue and add root
         std::queue<int> fgs;
         // a coin , one out 3 chance we just go explore
-        std::discrete_distribution<int> explore_coin({1.0, explore_weight});
+
         fgs.push(0);
         while (!fgs.empty()) {
 
@@ -214,7 +213,9 @@ void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &sel
             if (!from_id_tmap[fg_id].empty()) {
                 // add a uct style random select
                 int selected_idx;
-                if(explore_coin(rng) == 1)
+                int coin = explore_coin(rng);
+                //std::cerr << coin << std::endl;
+                if(coin == 1)
                 {
                     std::uniform_int_distribution<> dis(0, (int)from_id_tmap[fg_id].size());
                     selected_idx = dis(rng);

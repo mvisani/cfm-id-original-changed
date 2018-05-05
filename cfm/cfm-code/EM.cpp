@@ -318,8 +318,8 @@ double EM::run(std::vector<MolData> &data, int group,
 
         prevQ = Q;
         // check if EM meet halt flag
-        if (Qratio < cfg->em_converge_thresh || count_no_progress >= 5) {
-            if (cfg->ga_sampling_method != 0) {
+        if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
+           if (cfg->ga_sampling_method != 0) {
                 if(comm->isMaster())
                     std::cout << "[Reset] Turn off sampling" << std::endl;
                 cfg->ga_sampling_method = 0;
