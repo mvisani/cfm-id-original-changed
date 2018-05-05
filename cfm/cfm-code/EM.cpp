@@ -293,15 +293,11 @@ double EM::run(std::vector<MolData> &data, int group,
         //                 2, Q has not improved compare to the best value so far
         const double ratio_cutoff = 1e-15;
 
-        if(Qratio < ratio_cutoff || prevQ > Q) {
+        if(Qratio < ratio_cutoff || prevQ >= Q) {
             count_no_progress += 1;
             if (learning_rate > cfg->starting_step_size * 0.001)
                 learning_rate *= 0.1;
                 //cfg->ga_graph_sampling_k = 10 * cfg->ga_graph_sampling_k;
-            else if (cfg->ga_sampling_method != 0) {
-                cfg->ga_sampling_method = 0;
-                learning_rate = cfg->starting_step_size;
-            }
         }
         else {
             count_no_progress = 0;
@@ -323,11 +319,19 @@ double EM::run(std::vector<MolData> &data, int group,
         prevQ = Q;
         // check if EM meet halt flag
         if (Qratio < cfg->em_converge_thresh || count_no_progress >= 5) {
-            comm->printToMasterOnly(("EM Converged after " +
-                                     boost::lexical_cast<std::string>(iter) +
-                                     " iterations")
-                                            .c_str());
-            break;
+            if (cfg->ga_sampling_method != 0) {
+                if(comm->isMaster())
+                    std::cout << "[Reset] Turn off sampling" << std::endl;
+                cfg->ga_sampling_method = 0;
+                learning_rate = cfg->starting_step_size;
+                count_no_progress =0;
+            } else {
+                comm->printToMasterOnly(("EM Converged after " +
+                                         boost::lexical_cast<std::string>(iter) +
+                                         " iterations")
+                                                .c_str());
+                break;
+            }
         }
         iter++;
     }
