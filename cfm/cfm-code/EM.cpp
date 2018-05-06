@@ -294,10 +294,13 @@ double EM::run(std::vector<MolData> &data, int group,
         const double ratio_cutoff = 1e-15;
 
         if(Qratio < ratio_cutoff || prevQ >= Q) {
-            count_no_progress += 1;
-            if (learning_rate > cfg->starting_step_size * 0.001)
+            if (learning_rate > cfg->starting_step_size * 0.001){
                 learning_rate *= 0.1;
-                //cfg->ga_graph_sampling_k = 10 * cfg->ga_graph_sampling_k;
+                count_no_progress = 0;
+            }
+            else{
+                count_no_progress += 1;
+            }
         }
         else {
             count_no_progress = 0;
