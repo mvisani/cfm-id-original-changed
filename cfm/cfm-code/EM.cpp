@@ -294,8 +294,8 @@ double EM::run(std::vector<MolData> &data, int group,
         const double ratio_cutoff = 1e-15;
 
         if(Qratio < ratio_cutoff || prevQ >= Q) {
-            if (learning_rate > cfg->starting_step_size * 0.001){
-                learning_rate *= 0.1;
+            if (learning_rate > cfg->starting_step_size * 0.02){
+                learning_rate *= 0.5;
                 count_no_progress = 0;
             }
             else{
@@ -321,7 +321,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
         prevQ = Q;
         // check if EM meet halt flag
-        if (Qratio < cfg->em_converge_thresh || count_no_progress >= 5) {
+        if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
            if (cfg->ga_sampling_method != 0) {
                 if(comm->isMaster())
                     std::cout << "[Reset] Turn off sampling" << std::endl;
