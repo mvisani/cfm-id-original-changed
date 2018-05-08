@@ -458,7 +458,27 @@ void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
 }
 
 void MolData::pruneGraphBySpectra(double abs_tol, double ppm_tol, bool aggressive) {
-    fg->pruneGraphBySpectra(spectra, abs_tol, ppm_tol, aggressive);
+    std::vector<int> removed_transitions_ids;
+    fg->pruneGraphBySpectra(spectra, abs_tol, ppm_tol, removed_transitions_ids, aggressive);
+
+    // remove fvs
+    std::sort(removed_transitions_ids.begin(),removed_transitions_ids.end());
+    //Remove transitions, and record a mapping of old->new transition ids
+    unsigned int next_id = 0;
+    unsigned int id_idx = 0;
+    for (int i = 0; i < fvs.size(); i++) {
+        bool need_remove = (id_idx < removed_transitions_ids.size());
+        if (need_remove)
+            need_remove = (need_remove && (removed_transitions_ids[id_idx] == i));
+        // if deleting
+        if (need_remove) {
+            ++id_idx;
+        } else {
+            fvs[next_id] = fvs[i];
+            next_id++;
+        }
+    }
+    fvs.resize(next_id);
 }
 
 void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {

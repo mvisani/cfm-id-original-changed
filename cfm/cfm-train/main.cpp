@@ -252,8 +252,10 @@ int main(int argc, char *argv[]) {
             }
 
             mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
-            if(cfg.use_graph_pruning)
+            if(cfg.use_graph_pruning){
                 mit->pruneGraphBySpectra(cfg.abs_mass_tol, cfg.ppm_mass_tol, cfg.aggressive_graph_pruning);
+            }
+
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);

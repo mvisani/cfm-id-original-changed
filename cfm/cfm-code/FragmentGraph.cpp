@@ -129,9 +129,9 @@ bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &sp
 }
 
 void
-FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol, bool aggressive) {
+FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
+                                   std::vector<int> &removed_transitions_ids, bool aggressive) {
     int fg_id = 0;
-    std::vector<int> removed_transitions_ids;
 
     // Get trans ids to remove
     getPruningTransitionIds(fg_id, spectra, abs_tol, ppm_tol, removed_transitions_ids, aggressive);

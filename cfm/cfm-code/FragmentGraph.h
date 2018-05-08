@@ -270,7 +270,8 @@ public:
 
     // Tree pruning
     // Function to do branching cutting
-    void pruneGraphBySpectra(std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol, bool aggressive);
+    void pruneGraphBySpectra(std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
+                             std::vector<int> &removed_transitions_ids, bool aggressive);
 
     // Get a list of transitions ids , with weighted prob
     // Function do some not so random selection
