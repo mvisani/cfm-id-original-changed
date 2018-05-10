@@ -80,6 +80,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_use_sqaured_iter_num = DEFAULT_NOT_USE_SQUARD_ITER;
     cfg.ga_use_sqrt_prob = DEFAULT_NOT_USE_SQRT_PROB;
     cfg.aggressive_graph_pruning = false;
+	cfg.reset_sampling = false;
+	cfg.reset_sampling_lr_ratio = 1.0;
 }
 
 
@@ -156,6 +158,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_graph_sampling_k") cfg.ga_graph_sampling_k = (int) value;
         else if (name == "ga_use_sqaured_iter_num") cfg.ga_use_sqaured_iter_num = (int)value;
         else if (name == "aggressive_graph_pruning") cfg.aggressive_graph_pruning = (bool)value;
+		else if (name == "reset_sampling") cfg.reset_sampling = (bool)value;
+		else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double)value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -272,7 +276,9 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
         if(cfg.use_graph_pruning != DEFAULT_NOT_USE_GRAPH_PRUNING) {
             std::cout << "Using graph pruning" << std::endl;
-            std::cout << "Using aggressive graph pruning" << cfg.aggressive_graph_pruning << std::endl;
+            std::cout << "Using aggressive graph pruning: " << cfg.aggressive_graph_pruning << std::endl;
+			std::cout << "Reset_sampling: " << cfg.reset_sampling << std::endl;
+			std::cout << "reset_sampling_lr_rati: " << cfg.reset_sampling_lr_ratio << std::endl;
         }
 
         switch (cfg.ga_sampling_method)
@@ -283,6 +289,9 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             case USE_GRAPH_RANDOM_SAMPLING:
                 std::cout << "Using Graph Random Sampling on transitions with K=" << cfg.ga_graph_sampling_k << " And Selection Prob=" << cfg.ga_sampling_selection_threshold << std::endl;
                 break;
+			case USE_GRAPH_RANDOM_WALK_SAMPLING:
+				std::cout << "Using Graph Random Walk Sampling on transitions with K=" << cfg.ga_graph_sampling_k << std::endl;
+				break;
             case USE_NO_SAMPLING:
             default:
                 std::cout << "NOT Using Sampling Method" << std::endl;

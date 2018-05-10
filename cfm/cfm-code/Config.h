@@ -199,6 +199,8 @@ struct config_t {
     double ga_sampling_selection_threshold;
     int use_graph_pruning;
     bool aggressive_graph_pruning;
+	bool reset_sampling;
+	double reset_sampling_lr_ratio;
     int ga_sampling_method;
     int ga_graph_sampling_k;
     int ga_use_sqrt_prob;
@@ -263,7 +265,6 @@ struct config_t {
     int max_search_count;
     int update_bias_first;
     int ga_minibatch_nth_size;
-
 
     int fragraph_compute_timeout_in_secs;
 
