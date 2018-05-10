@@ -805,8 +805,8 @@ std::string MolData::getFVsAsSparseCSVString() {
             csv_str += "\n";
         }
         csv_str += fv->toSparseCSVString();
-    }
-    return csv_str;*/
+    }*/
+    return "";
 }
 
 void
