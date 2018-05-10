@@ -67,7 +67,7 @@ public:
 
     //This is public so the test can access it....there must be a better way?
     virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                                bool record_used_idxs_only, std::set<unsigned int> &used_idxs);
+                                                bool record_used_idxs_only, std::set<unsigned int> &used_idxs, int sampling_method = 0);
 
     virtual double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
 
@@ -125,7 +125,7 @@ protected:
     void copyGradsToLBFGS(lbfgsfloatval_t *g, std::vector<double> &grads, int n);
 
     //Simple gradient ascent
-    double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate);
+    double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate, int sampling_method);
 
     //Helper functions
 
@@ -134,14 +134,10 @@ protected:
     // nullptr means do not update grads
     virtual double addRegularizersAndUpdateGradient(double *grads);
 
-    virtual void updateGradientForRegularizers(double *grads);
-
     // function to get Eng levels
     void getEnergiesLevels(std::vector<unsigned int> &energies);
 
     void zeroUnusedParams();
-
-    void infCheck(double &belief, MolData * moldata);
 
     //tmp pointers for use during LBFGS
     suft_counts_t *tmp_suft_ptr_lbfgs;

@@ -75,7 +75,10 @@ void FragmentGraph::removeDetours() {
 
 
 bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
-                                            std::vector<int> &removed_transitions_ids, bool aggressive) {
+                                            std::vector<int> &removed_transitions_ids, std::map<int, int>& visited, bool aggressive) {
+
+	if (visited.find(fg_id) == visited.end())
+		return  visited[fg_id];
 
     //first thing , check if we need save this node by itself
     bool need_save = false;
@@ -91,12 +94,11 @@ bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &sp
         bool save_child = false;
         for (auto trans_id : from_id_tmap[fg_id]) {
             auto to_id = transitions[trans_id].getToId();
-            bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol, removed_transitions_ids,
-                                                           aggressive);
+            bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol, removed_transitions_ids, visited, aggressive
+            );
             // if any child node need save
             // parent node need save
             save_child = (save_child || child_need_save);
-
             need_save = (need_save || child_need_save);
         }
 
@@ -115,8 +117,8 @@ bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &sp
     if (fg_id < from_id_tmap.size() && aggressive) {
         for (auto trans_id : from_id_tmap[fg_id]) {
             auto to_id = transitions[trans_id].getToId();
-            bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol, removed_transitions_ids,
-                                                           aggressive);
+            bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol, removed_transitions_ids, visited, aggressive
+            );
             // if remove child
             // we also need remove transition to that child
             if (!child_need_save)
@@ -125,6 +127,7 @@ bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &sp
         }
     }
 
+	visited[fg_id] = need_save;
     return need_save;
 }
 
@@ -132,9 +135,9 @@ void
 FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
                                    std::vector<int> &removed_transitions_ids, bool aggressive) {
     int fg_id = 0;
-
+	std::map<int, int> visited;
     // Get trans ids to remove
-    getPruningTransitionIds(fg_id, spectra, abs_tol, ppm_tol, removed_transitions_ids, aggressive);
+    getPruningTransitionIds(fg_id, spectra, abs_tol, ppm_tol, removed_transitions_ids, visited, aggressive);
 
     // remove transitions
     removeTransitions(removed_transitions_ids);

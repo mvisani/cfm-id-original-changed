@@ -117,6 +117,7 @@ double EM::run(std::vector<MolData> &data, int group,
     // make of copy of learing rate
     // so we can share the save lr var over all em iterations
     double learning_rate = cfg->starting_step_size;
+	int sampling_method = cfg->ga_sampling_method;
 
     int count_no_progress = 0;
     while (iter < MAX_EM_ITERATIONS) {
@@ -213,7 +214,7 @@ double EM::run(std::vector<MolData> &data, int group,
         if (cfg->ga_method == USE_LBFGS_FOR_GA)
             Q = updateParametersLBFGS(data, suft);
         else
-            Q = updateParametersGradientAscent(data, suft, learning_rate);
+            Q = updateParametersGradientAscent(data, suft, learning_rate, sampling_method);
 
         after = time(nullptr);
         std::string param_update_time_msg =
@@ -232,7 +233,7 @@ double EM::run(std::vector<MolData> &data, int group,
         // Compute the final Q (with all molecules, in case only some were used in
         // the mini-batch)
         if (cfg->ga_minibatch_nth_size > 1 ||
-            cfg->ga_sampling_method != USE_NO_SAMPLING) {
+            sampling_method != USE_NO_SAMPLING) {
             Q = 0;
             if (comm->isMaster())
                 std::cout << "[INFO]Using MiniBatch and/or Sampling, Compute the final Q" << std::endl;
@@ -243,7 +244,7 @@ double EM::run(std::vector<MolData> &data, int group,
                 //valQ += computeQ( molidx, *itdata, suft );
                 numvalmols++;
             } else if (cfg->ga_minibatch_nth_size > 1 ||
-                       cfg->ga_sampling_method != USE_NO_SAMPLING) {
+                       sampling_method != USE_NO_SAMPLING) {
                 Q += computeQ(molidx, *itdata, suft);
                 numnonvalmols++;
             } else
@@ -260,7 +261,7 @@ double EM::run(std::vector<MolData> &data, int group,
 
         valQ = comm->collectQInMaster(valQ);
         if (cfg->ga_minibatch_nth_size > 1 ||
-            cfg->ga_sampling_method != USE_NO_SAMPLING) {
+            sampling_method != USE_NO_SAMPLING) {
             if (comm->isMaster()) {
                 Q += addRegularizersAndUpdateGradient(nullptr);
             }
@@ -322,10 +323,10 @@ double EM::run(std::vector<MolData> &data, int group,
         prevQ = Q;
         // check if EM meet halt flag
         if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
-           if (cfg->ga_sampling_method != 0) {
+           if (sampling_method != USE_NO_SAMPLING) {
                 if(comm->isMaster())
                     std::cout << "[Reset] Turn off sampling" << std::endl;
-                cfg->ga_sampling_method = 0;
+                sampling_method = USE_NO_SAMPLING;
                 learning_rate = cfg->starting_step_size;
                 count_no_progress =0;
             } else {
@@ -624,7 +625,7 @@ void EM::progressLBFGS(const lbfgsfloatval_t *x, const lbfgsfloatval_t *g,
         selectMiniBatch(tmp_minibatch_flags);
 }
 
-double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate) {
+double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate, int sampling_method) {
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
@@ -709,7 +710,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (minibatch_flags[molidx]){
                 //std::cout << itdata->getId() << " Start" << std::endl;
-                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, false, comm->used_idxs);
+                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, false, comm->used_idxs, sampling_method);
                 //std::cout << itdata->getId() << " Finished" << std::endl;
             }
 
@@ -814,7 +815,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
 }
 
 double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                        bool record_used_idxs_only, std::set<unsigned int> &used_idxs) {
+                                        bool record_used_idxs_only, std::set<unsigned int> &used_idxs, int sampling_method) {
 
     double Q = 0.0;
     const FragmentGraph *fg = moldata.getFragmentGraph();
@@ -838,7 +839,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         std::set<int> selected_trans_id;
-        if (!record_used_idxs_only && cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
+        if (!record_used_idxs_only && sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
 
             int num_frags = moldata.getSpectrum(energy)->size();
             int num_iterations = cfg->ga_graph_sampling_k * num_frags;
@@ -863,7 +864,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
             else {
                 //Do some random selection
                 std::vector<int> sampled_ids;
-                if (cfg->ga_sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
+                if (sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
                     for (auto id: *frag_trans_map) {
                         if (selected_trans_id.find(id) != selected_trans_id.end()) {
                             sampled_ids.push_back(id);
@@ -988,27 +989,6 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
     return Q;
 }
 
-
-void EM::updateGradientForRegularizers(double *grads) {
-
-    auto it = ((MasterComms *) comm)->master_used_idxs.begin();
-    for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
-
-        double weight = param->getWeightAtIdx(*it);
-        if (grads != nullptr)
-            *(grads + *it) -= cfg->lambda * weight;
-    }
-
-    // Remove the Bias terms (don't regularize the bias terms!)
-    unsigned int weights_per_energy = param->getNumWeightsPerEnergyLevel();
-    for (unsigned int energy = 0; energy < param->getNumEnergyLevels();
-         energy++) {
-        double bias = param->getWeightAtIdx(energy * weights_per_energy);
-        if (grads != nullptr)
-            *(grads + energy * weights_per_energy) += cfg->lambda * bias;
-    }
-
-}
 
 double EM::addRegularizersAndUpdateGradient(double *grads) {
 

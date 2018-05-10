@@ -325,7 +325,7 @@ protected:
 
     // Function do get list of transitions can be removed
     bool getPruningTransitionIds(int fg_id, std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
-                                 std::vector<int> &removed_transitions_ids, bool aggressive);
+		std::vector<int> &removed_transitions_ids, std::map<int, int>& visited, bool aggressive);
 };
 
 class EvidenceFragmentGraph : public FragmentGraph {

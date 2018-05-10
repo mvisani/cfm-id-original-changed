@@ -61,7 +61,7 @@ void EM_NN::writeParamsToFile(std::string &filename) {
 
 //Gradient Computation using Backpropagation
 double EM_NN::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                           bool record_used_idxs_only, std::set<unsigned int> &used_idxs) {
+                                           bool record_used_idxs_only, std::set<unsigned int> &used_idxs, int sampling_method) {
 
     double Q = 0.0;
     const FragmentGraph *fg = moldata.getFragmentGraph();
