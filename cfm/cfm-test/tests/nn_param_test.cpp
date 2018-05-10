@@ -416,7 +416,7 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	std::string null_str = "null";
 	EM_NN em(&cfg, &fc_null, null_str, param_filename );
 	double Qonly  = em.computeQ(0, moldata, suft );
-	double Q = em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs);
+	double Q = em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, USE_NO_SAMPLING);
 
 	//Check Q
 	double theta1 = 12.0, theta2 = 10.0;
