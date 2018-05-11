@@ -786,7 +786,6 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
                       << std::endl;
         }
 
-
         if (cfg->ga_use_best_q) {
             if (bestQ > Q) {
                 no_progress_count++;

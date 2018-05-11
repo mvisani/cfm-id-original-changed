@@ -94,11 +94,35 @@ double EM_NN::computeAndAccumulateGradient(double *grads, int molidx, MolData &m
         unsigned int grad_offset = energy * nn_param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
+		
+    	std::set<int> selected_trans_id;
+		if (!record_used_idxs_only && sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
+
+			int num_frags = moldata.getSpectrum(energy)->size();
+			int num_iterations = cfg->ga_graph_sampling_k * num_frags;
+			if (cfg->ga_use_sqaured_iter_num)
+				num_iterations = num_iterations * (energy + 1) * (energy + 1);
+			moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, m_rng, 1.0);
+		}
+
         //Iterate over from_id (i)
         const tmap_t *from_map = fg->getFromIdTMap();
         for (int from_idx = 0; from_idx < num_fragments; from_idx++) {
 
             const std::vector<int> *from_id_map = &(*from_map)[from_idx];
+			std::vector<int> sampled_trans_id_for_fg;
+			if(sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING && !record_used_idxs_only){
+				for(const auto &  trans_id : (*from_map)[from_idx]){
+					if(selected_trans_id.find(trans_id) != selected_trans_id.end()){
+						sampled_trans_id_for_fg.push_back(trans_id);
+					}
+				}
+				from_id_map = &sampled_trans_id_for_fg;
+			}
+
+			if(from_id_map->empty())
+				continue;
+
             unsigned int num_trans_from_id = from_id_map->size();
             std::vector<azd_vals_t> a_values(num_trans_from_id);
             std::vector<azd_vals_t> z_values(num_trans_from_id);
