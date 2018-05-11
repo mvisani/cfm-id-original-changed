@@ -28,9 +28,13 @@ protected:
     // function to get part of Mol from given root
     // and all atom within given range
     // trivarse tree using BFS
-    void getRemoveAtomIdx(romol_ptr_t mol, const RDKit::Atom *root,
-                          std::vector<unsigned int> &remove_atom_ids,
-                          int distance) const;
+    void getRemoveAtomIdxByDisatnce(romol_ptr_t mol, const RDKit::Atom *root,
+                                    std::vector<unsigned int> &remove_atom_ids,
+                                    int distance) const;
+
+    void getRemoveAtomIdxByCount(romol_ptr_t mol, const RDKit::Atom *root,
+                                    std::vector<unsigned int> &remove_atom_ids,
+                                    int count) const;
 
     // remove atoms from mol in given list
     void removeAtomInTheList(RDKit::RWMol &mol,

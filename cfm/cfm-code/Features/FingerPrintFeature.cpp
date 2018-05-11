@@ -26,8 +26,8 @@ param.cpp.
 
 #include <queue>
 
-void FingerPrintFeature::getRemoveAtomIdx(
-        const romol_ptr_t mol, const RDKit::Atom *root,
+void FingerPrintFeature::getRemoveAtomIdxByDisatnce(
+        romol_ptr_t mol, const RDKit::Atom *root,
         std::vector<unsigned int> &remove_atom_ids, int distance) const {
 
     std::queue<const RDKit::Atom *> atom_queue;
@@ -68,6 +68,56 @@ void FingerPrintFeature::getRemoveAtomIdx(
     }
 }
 
+void FingerPrintFeature::getRemoveAtomIdxByCount(romol_ptr_t mol, const RDKit::Atom *root,
+                             std::vector<unsigned int> &remove_atom_ids,
+                             int count) const {
+    std::queue<const RDKit::Atom *> atom_queue;
+    std::queue<int> distance_queue;
+    atom_queue.push(root);
+    distance_queue.push(0);
+
+    std::unordered_set<unsigned int> visited;
+
+    while (!atom_queue.empty() && !distance_queue.empty()) {
+        const RDKit::Atom *curr = atom_queue.front();
+        int curr_distance = distance_queue.front();
+        atom_queue.pop();
+        distance_queue.pop();
+
+        // tracking cycles
+        if (visited.find(curr->getIdx()) != visited.end()) {
+            continue;
+        }
+
+        visited.insert(curr->getIdx());
+
+        // thus we need remove it
+        // also we does not care Hs
+        if (visited.size() >= count) {
+            remove_atom_ids.push_back(curr->getIdx());
+        }
+
+        // use multimap since we can have duplicated labels
+        std::multimap<std::string, const RDKit::Atom *> child_visit_order;
+
+        for (auto itp = mol->getAtomNeighbors(curr); itp.first != itp.second; ++itp.first) {
+            RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
+            // if we have not visit this node before
+            // and this node is in the visit list
+            if (nbr_atom != curr) {
+                std::string  sorting_key = getSortingLabel(mol, nbr_atom, curr, 1);
+                child_visit_order.insert(
+                        std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
+            }
+        }
+
+        for (auto child : child_visit_order) {
+            atom_queue.push(child.second);
+            distance_queue.push(curr_distance + 1);
+        }
+    }
+}
+
 void FingerPrintFeature::removeAtomInTheList(
         RDKit::RWMol &mol, std::vector<unsigned int> &remove_atom_ids) const {
 
@@ -87,16 +137,6 @@ void FingerPrintFeature::removeAtomInTheList(
     }
 }
 
-// replace bond type with orig bond type
-void FingerPrintFeature::replaceWithOrigBondType(RDKit::RWMol &rwmol) const {
-
-    for (auto bi = rwmol.beginBonds(); bi != rwmol.endBonds(); ++bi) {
-        int bond_type;
-        (*bi)->getProp("OrigBondTypeRaw", bond_type);
-        (*bi)->setBondType(static_cast<RDKit::Bond::BondType>(bond_type));
-    }
-}
-
 void FingerPrintFeature::addRDKitFingerPrint(
         FeatureVector &fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
         const unsigned int finger_print_size, const unsigned int max_nbr_distance,
@@ -106,7 +146,7 @@ void FingerPrintFeature::addRDKitFingerPrint(
     // Get list of atom we need to remove
     std::vector<unsigned int> remove_atom_ids;
 
-    getRemoveAtomIdx(mol->mol, root, remove_atom_ids, max_nbr_distance);
+    getRemoveAtomIdxByDisatnce(mol->mol, root, remove_atom_ids, max_nbr_distance);
 
     // Get Mol Object and remove atoms
     RDKit::RWMol part;
@@ -158,7 +198,7 @@ void FingerPrintFeature::addMorganFingerPrint(
     // Get list of atom we need to remove
     std::vector<unsigned int> remove_atom_ids;
     std::unordered_set<unsigned int> visited;
-    getRemoveAtomIdx(mol->mol, root, remove_atom_ids, max_nbr_distance);
+    getRemoveAtomIdxByDisatnce(mol->mol, root, remove_atom_ids, max_nbr_distance);
 
     // Get Mol Object and remove atoms
     RDKit::RWMol part;
