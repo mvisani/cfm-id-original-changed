@@ -241,7 +241,7 @@ double EM::run(std::vector<MolData> &data, int group,
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
         for (itdata = data.begin(); itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
-                //valQ += computeQ( molidx, *itdata, suft );
+                valQ += computeQ(molidx, *itdata, suft);
                 numvalmols++;
             } else if (cfg->ga_minibatch_nth_size > 1 ||
                        sampling_method != USE_NO_SAMPLING) {
