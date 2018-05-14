@@ -72,8 +72,8 @@ private:
     };
 
     void getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit::Atom *root,
-                              std::vector<unsigned int> &visit_order, int range, int size,
-                              Bfs_Stop_Logic stop_logic) const;
+                              std::vector<unsigned int> &visit_order, int num_atoms,
+                              std::map<int, int> &path_record) const;
 
     std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
                                 const RDKit::Atom *parent_atom, int depth) const;
