@@ -441,14 +441,15 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv, cons
 
         fv.addFeatures(atom_type_feature);
         fv.addFeatures(atom_degree_feature);
-
-        const unsigned int size_path_fv = 5;
-        for (int i = 1; i <= num_atom; ++i) {
-            std::vector<int> tmp_path_fv(size_path_fv, 0);
-            int idx = path_record[0] > (size_path_fv - 1) ? (size_path_fv - 1) : path_record[0];
-            tmp_path_fv[idx] = 1;
-            fv.addFeatures(tmp_path_fv);
-        }
+    }
+    
+    const unsigned int size_path_fv = 5;
+    for (int i = 1; i <= num_atom; ++i) {
+        std::vector<int> tmp_path_fv(size_path_fv, 0);
+        int idx = path_record[0] > (size_path_fv - 1) ? (size_path_fv - 1) : path_record[0];
+        tmp_path_fv[idx] = 1;
+        fv.addFeatures(tmp_path_fv);
+        fv.getTotalLength()
     }
 }
 
