@@ -56,10 +56,9 @@ protected:
                                       int ring_break,
                                       int radius) const;
 
-    void addAdjacentMatrixRepresentationFeature(
-            FeatureVector &fv, const RootedROMolPtr *mol,
-            unsigned int max_nbr_distance, unsigned int num_atom,
-            int ring_break, bool include_adjacency_matrix) const;
+    void addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                unsigned int num_atom, int ring_break,
+                                                bool include_adjacency_matrix) const;
 
 private:
     // void getAtomsWithRange(int range);
@@ -104,10 +103,7 @@ private:
                              unsigned int finger_print_min_path,
                              unsigned int finger_print_max_path) const;
 
-    void addAdjacentMatrixRepresentation(FeatureVector &fv,
-                                         const RootedROMolPtr *mol,
-                                         const RDKit::Atom *root,
-                                         unsigned int max_nbr_distance,
-                                         unsigned int num_atom,
+    void addAdjacentMatrixRepresentation(FeatureVector &fv, const RootedROMolPtr *mol,
+                                         const RDKit::Atom *root, unsigned int num_atom,
                                          bool include_con_matrix) const;
 };

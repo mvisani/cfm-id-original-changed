@@ -343,9 +343,9 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit
     }
 }
 
-void FingerPrintFeature::addAdjacentMatrixRepresentation(
-        FeatureVector &fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
-        unsigned int max_nbr_distance, unsigned int num_atom, bool include_adjacency_matrix) const {
+void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                         const RDKit::Atom *root, unsigned int num_atom,
+                                                         bool include_adjacency_matrix) const {
 
     // Get visit order
     std::vector<unsigned int> visit_order;
@@ -455,16 +455,13 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(
 // for all the samples we have max atoms with a 3 atom group is 10
 // for all the samples we have max atoms with a 5 atom group is 16
 // therefore  we need 50 features for arcs
-void FingerPrintFeature::addAdjacentMatrixRepresentationFeature(
-        FeatureVector &fv, const RootedROMolPtr *mol,
-        unsigned int max_nbr_distance, unsigned int num_atom,
-        int ring_break, bool include_adjacency_matrix) const {
+void FingerPrintFeature::addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                                unsigned int num_atom, int ring_break,
+                                                                bool include_adjacency_matrix) const {
 
-    addAdjacentMatrixRepresentation(fv, mol, mol->root, max_nbr_distance,
-                                    num_atom, include_adjacency_matrix);
+    addAdjacentMatrixRepresentation(fv, mol, mol->root, num_atom, include_adjacency_matrix);
     if (ring_break > 0) {
-        addAdjacentMatrixRepresentation(fv, mol, mol->other_root, max_nbr_distance,
-                                        num_atom, include_adjacency_matrix);
+        addAdjacentMatrixRepresentation(fv, mol, mol->other_root, num_atom, include_adjacency_matrix);
     } else {
         // TODO: Get ride of this magic numbers
         unsigned int feature_size = num_atom * 11 + 5 * (num_atom);
