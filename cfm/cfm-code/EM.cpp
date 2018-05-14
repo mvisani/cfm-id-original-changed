@@ -322,13 +322,13 @@ double EM::run(std::vector<MolData> &data, int group,
 
         prevQ = Q;
         // check if EM meet halt flag
-        if (Qratio < cfg->em_converge_thresh || count_no_progress >= 3) {
+        if (bestQRatio < cfg->em_converge_thresh || count_no_progress >= 3) {
            if (sampling_method != USE_NO_SAMPLING && cfg->reset_sampling) {
                 if(comm->isMaster())
                     std::cout << "[Reset] Turn off sampling" << std::endl;
                 sampling_method = USE_NO_SAMPLING;
                 learning_rate = cfg->starting_step_size * cfg->reset_sampling_lr_ratio;
-                count_no_progress =0;
+                count_no_progress = 0;
             } else {
                 comm->printToMasterOnly(("EM Converged after " +
                                          boost::lexical_cast<std::string>(iter) +
