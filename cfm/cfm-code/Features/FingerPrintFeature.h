@@ -43,11 +43,11 @@ protected:
     // replace bond type with orig bond type
     void replaceWithOrigBondType(RDKit::RWMol &mol) const;
 
-    void addRDKitFingerPrintFeatures(
-            FeatureVector &fv, const RootedROMolPtr *mol,
-            unsigned int finger_print_size, unsigned int max_nbr_distance,
-            int ring_break, unsigned int finger_print_min_path,
-            unsigned int finger_print_max_path) const;
+    void addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+                                     unsigned int finger_print_size, unsigned int limitation_param,
+                                     int ring_break, bool limited_by_distance,
+                                     unsigned int finger_print_min_path,
+                                     unsigned int finger_print_max_path) const;
 
     void addMorganFingerPrintFeatures(FeatureVector &fv,
                                       const RootedROMolPtr *mol,
@@ -96,12 +96,10 @@ private:
                               unsigned int finger_print_size,
                               int radius) const;
 
-    void addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
-                             const RDKit::Atom *root,
-                             unsigned int finger_print_size,
-                             unsigned int max_nbr_distance,
-                             unsigned int finger_print_min_path,
-                             unsigned int finger_print_max_path) const;
+    void addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
+                             unsigned int finger_print_size, unsigned int limitation_param,
+                             unsigned int finger_print_min_path, unsigned int finger_print_max_path,
+                             bool limited_by_distance) const;
 
     void addAdjacentMatrixRepresentation(FeatureVector &fv, const RootedROMolPtr *mol,
                                          const RDKit::Atom *root, unsigned int num_atom,

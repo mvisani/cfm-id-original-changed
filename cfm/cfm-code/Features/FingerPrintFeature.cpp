@@ -137,16 +137,17 @@ void FingerPrintFeature::removeAtomInTheList(
     }
 }
 
-void FingerPrintFeature::addRDKitFingerPrint(
-        FeatureVector &fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
-        const unsigned int finger_print_size, const unsigned int max_nbr_distance,
-        const unsigned int finger_print_min_path,
-        const unsigned int finger_print_max_path) const {
+void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
+                                             unsigned int finger_print_size, unsigned int limitation_param,
+                                             unsigned int finger_print_min_path, unsigned int finger_print_max_path,
+                                             bool limited_by_distance) const {
 
     // Get list of atom we need to remove
     std::vector<unsigned int> remove_atom_ids;
-
-    getRemoveAtomIdxByDisatnce(mol->mol, root, remove_atom_ids, max_nbr_distance);
+    if (limited_by_distance)
+        getRemoveAtomIdxByDisatnce(mol->mol, root, remove_atom_ids, limitation_param);
+    else
+        getRemoveAtomIdxByCount(mol->mol, root, remove_atom_ids, limitation_param);
 
     // Get Mol Object and remove atoms
     RDKit::RWMol part;
@@ -170,19 +171,18 @@ void FingerPrintFeature::addRDKitFingerPrint(
     delete fingerPrint;
 }
 
-void FingerPrintFeature::addRDKitFingerPrintFeatures(
-        FeatureVector &fv, const RootedROMolPtr *mol,
-        unsigned int finger_print_size, unsigned int max_nbr_distance,
-        int ring_break, unsigned int finger_print_min_path,
-        unsigned int finger_print_max_path) const {
+void FingerPrintFeature::addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                     unsigned int finger_print_size, unsigned int limitation_param,
+                                                     int ring_break, bool limited_by_distance,
+                                                     unsigned int finger_print_min_path,
+                                                     unsigned int finger_print_max_path) const {
 
-    addRDKitFingerPrint(fv, mol, mol->root, finger_print_size, max_nbr_distance,
-                        finger_print_min_path, finger_print_max_path);
+    addRDKitFingerPrint(fv, mol, mol->root, finger_print_size, limitation_param, finger_print_min_path,
+                        finger_print_max_path, limited_by_distance);
 
     if (ring_break) {
-        addRDKitFingerPrint(fv, mol, mol->other_root, finger_print_size,
-                            max_nbr_distance, finger_print_min_path,
-                            finger_print_max_path);
+        addRDKitFingerPrint(fv, mol, mol->other_root, finger_print_size, limitation_param, finger_print_min_path,
+                            finger_print_max_path, limited_by_distance);
     } else {
         for (int i = 0; i < finger_print_size; ++i) {
             fv.addFeature(0.0);
