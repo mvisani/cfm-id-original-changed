@@ -155,8 +155,8 @@ double EM::run(std::vector<MolData> &data, int group,
                 // or missing spectra.
             }
 
-            if (itdata->getGroup() == validation_group)
-                continue;
+            //if (itdata->getGroup() == validation_group)
+            //    continue;
 
             MolData *moldata = &(*itdata);
             
@@ -947,6 +947,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
     if (!moldata.hasComputedGraph())
         return Q;
 
+
     // Compute the latest transition thetas
     moldata.computeNormalizedTransitionThetas(*param);
     suft_t *suft_values = &(suft.values[molidx]);
@@ -958,8 +959,6 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     // Compute
     for (auto energy : energies) {
-        if(!moldata.thetasNanAndInfCheck(energy))
-            std::cerr << "[Warning] NaN " << moldata.getId() << " " << "energy " << energy << std::endl;
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         // Iterate over from_id (i)
@@ -972,7 +971,6 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
                 denom += exp(moldata.getThetaForIdx(energy, itt));
 
             // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
-            double nu_sum = 0.0;
             for (auto itt : *it) {
                 double nu = (*suft_values)[itt + suft_offset];
                 Q += nu * (moldata.getThetaForIdx(energy, itt) - log(denom));
