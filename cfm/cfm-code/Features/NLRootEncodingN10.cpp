@@ -22,7 +22,7 @@ void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *NL,
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
     unsigned int min_path = 1;
-    unsigned int max_path = 10;
+    unsigned int max_path = 3;
     unsigned int atom_count = 10;
     unsigned finger_print_size = 512;
 
