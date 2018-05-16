@@ -989,9 +989,11 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
     }
     if(boost::math::isnan(Q)){
         std::cerr << "Warning Q is NaN" << std ::endl;
+        exit(0);
     }
     if(boost::math::isinf(Q)){
         std::cerr << "Warning Q is Inf" << std ::endl;
+        exit(0);
     }
     return Q;
 }
