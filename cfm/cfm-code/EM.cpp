@@ -961,6 +961,9 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
     for (auto energy : energies) {
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
+        if(!moldata.thetasNanAndInfCheck(energy))
+            std::cerr << "[Warning] NaN " << moldata.getId() << " " << "energy " << energy << std::endl;
+
         // Iterate over from_id (i)
         auto it = fg->getFromIdTMap()->begin();
         for (int from_idx = 0; it != fg->getFromIdTMap()->end(); ++it, from_idx++) {
@@ -970,6 +973,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
             for (auto itt : *it)
                 denom += exp(moldata.getThetaForIdx(energy, itt));
 
+            double nu_sum = 0.0;
             // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
             for (auto itt : *it) {
                 double nu = (*suft_values)[itt + suft_offset];
