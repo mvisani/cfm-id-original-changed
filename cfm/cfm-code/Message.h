@@ -22,7 +22,7 @@
 #include <limits>
 
 // This is a hack
-static const double DBL_MAXIMUM = -1000000000000.0;//std::numeric_limits<double>::max();
+static const double DBL_MAXIMUM = 1000000000000.0; //std::numeric_limits<double>::max();
 
 //Log Domain Double (converts null entry to -DBL_MAX)
 class logdbl {
