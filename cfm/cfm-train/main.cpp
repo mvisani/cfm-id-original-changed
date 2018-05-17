@@ -316,7 +316,7 @@ int main(int argc, char *argv[]) {
 
             if (spectra_in_msp) mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
             else {
-                std::string spectra_filename = "tmp_data/predicted_output/" + mit->getId() + ".txt";
+                std::string spectra_filename = "tmp_data/predicted_output/" + mit->getId() + ".log";
                 mit->writePredictedSpectraToFile(spectra_filename);
             }
         }
