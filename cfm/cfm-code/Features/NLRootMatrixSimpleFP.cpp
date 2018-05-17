@@ -26,5 +26,5 @@ void NLRootMatrixSimpleFP::compute(FeatureVector &fv, const RootedROMolPtr *NL,
     unsigned int num_atoms = 10;
     bool include_adjacency_matrix = false;
 
-    addAdjacentMatrixRepresentationFeature(fv, NL, distance_to_root, num_atoms, ring_break, include_adjacency_matrix);
+    addAdjacentMatrixRepresentationFeature(fv, NL, num_atoms, ring_break, include_adjacency_matrix);
 }

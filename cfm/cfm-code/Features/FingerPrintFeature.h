@@ -28,9 +28,13 @@ protected:
     // function to get part of Mol from given root
     // and all atom within given range
     // trivarse tree using BFS
-    void getRemoveAtomIdx(romol_ptr_t mol, const RDKit::Atom *root,
-                          std::vector<unsigned int> &remove_atom_ids,
-                          int distance) const;
+    void getRemoveAtomIdxByDisatnce(romol_ptr_t mol, const RDKit::Atom *root,
+                                    std::vector<unsigned int> &remove_atom_ids,
+                                    int distance) const;
+
+    void getRemoveAtomIdxByCount(romol_ptr_t mol, const RDKit::Atom *root,
+                                    std::vector<unsigned int> &remove_atom_ids,
+                                    int count) const;
 
     // remove atoms from mol in given list
     void removeAtomInTheList(RDKit::RWMol &mol,
@@ -39,11 +43,11 @@ protected:
     // replace bond type with orig bond type
     void replaceWithOrigBondType(RDKit::RWMol &mol) const;
 
-    void addRDKitFingerPrintFeatures(
-            FeatureVector &fv, const RootedROMolPtr *mol,
-            unsigned int finger_print_size, unsigned int max_nbr_distance,
-            int ring_break, unsigned int finger_print_min_path,
-            unsigned int finger_print_max_path) const;
+    void addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+                                     unsigned int finger_print_size, unsigned int limitation_param,
+                                     int ring_break, bool limited_by_distance,
+                                     unsigned int finger_print_min_path,
+                                     unsigned int finger_print_max_path) const;
 
     void addMorganFingerPrintFeatures(FeatureVector &fv,
                                       const RootedROMolPtr *mol,
@@ -52,10 +56,9 @@ protected:
                                       int ring_break,
                                       int radius) const;
 
-    void addAdjacentMatrixRepresentationFeature(
-            FeatureVector &fv, const RootedROMolPtr *mol,
-            unsigned int max_nbr_distance, unsigned int num_atom,
-            int ring_break, bool include_adjacency_matrix) const;
+    void addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                unsigned int num_atom, int ring_break,
+                                                bool include_adjacency_matrix) const;
 
 private:
     // void getAtomsWithRange(int range);
@@ -68,8 +71,8 @@ private:
     };
 
     void getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit::Atom *root,
-                              std::vector<unsigned int> &visit_order, int range, int size,
-                              Bfs_Stop_Logic stop_logic) const;
+                              std::vector<unsigned int> &visit_order, int num_atoms,
+                              std::map<int, int> &path_record) const;
 
     std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
                                 const RDKit::Atom *parent_atom, int depth) const;
@@ -93,17 +96,12 @@ private:
                               unsigned int finger_print_size,
                               int radius) const;
 
-    void addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
-                             const RDKit::Atom *root,
-                             unsigned int finger_print_size,
-                             unsigned int max_nbr_distance,
-                             unsigned int finger_print_min_path,
-                             unsigned int finger_print_max_path) const;
+    void addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
+                             unsigned int finger_print_size, unsigned int limitation_param,
+                             unsigned int finger_print_min_path, unsigned int finger_print_max_path,
+                             bool limited_by_distance) const;
 
-    void addAdjacentMatrixRepresentation(FeatureVector &fv,
-                                         const RootedROMolPtr *mol,
-                                         const RDKit::Atom *root,
-                                         unsigned int max_nbr_distance,
-                                         unsigned int num_atom,
+    void addAdjacentMatrixRepresentation(FeatureVector &fv, const RootedROMolPtr *mol,
+                                         const RDKit::Atom *root, unsigned int num_atom,
                                          bool include_con_matrix) const;
 };

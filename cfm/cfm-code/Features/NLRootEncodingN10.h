@@ -1,7 +1,7 @@
 /*#########################################################################
-# Mass Spec PredictNL and Identification of Metabolites
+# Mass Spec Prediction and Identification of Metabolites
 #
-# IonRootMatrixFP.cpp
+# NLRootEncoding.cpp
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
@@ -15,16 +15,16 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#include "IonRootMatrixSimpleFP.h"
+#include "FingerPrintFeature.h"
 
-void IonRootMatrixSimpleFP::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                              const RootedROMolPtr *nl) const {
-    int ring_break;
-    nl->mol.get()->getProp("IsRingBreak", ring_break);
+// Features use fingerprint encode ion fragmentation
+class NLRootEncodingN10 : public FingerPrintFeature {
+public:
+    NLRootEncodingN10() {
+        size = 1024;
+        name = "NLRootEncodingN10";
+    };
 
-    unsigned int distance_to_root = 2;
-    unsigned int num_atoms = 10;
-    bool include_adjacency_matrix = false;
-
-    addAdjacentMatrixRepresentationFeature(fv, ion, num_atoms, ring_break, include_adjacency_matrix);
-}
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                 const RootedROMolPtr *nl) const;
+};

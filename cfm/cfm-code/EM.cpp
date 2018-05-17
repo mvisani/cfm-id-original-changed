@@ -155,8 +155,8 @@ double EM::run(std::vector<MolData> &data, int group,
                 // or missing spectra.
             }
 
-            if (itdata->getGroup() == validation_group)
-                continue;
+            //if (itdata->getGroup() == validation_group)
+            //    continue;
 
             MolData *moldata = &(*itdata);
             
@@ -241,7 +241,7 @@ double EM::run(std::vector<MolData> &data, int group,
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
         for (itdata = data.begin(); itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
-                //valQ += computeQ( molidx, *itdata, suft );
+                valQ += computeQ(molidx, *itdata, suft);
                 numvalmols++;
             } else if (cfg->ga_minibatch_nth_size > 1 ||
                        sampling_method != USE_NO_SAMPLING) {
@@ -385,14 +385,12 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
         for (unsigned int d = 1; d < cfg->model_depth; d++) {
             energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
-                //infCheck(belief, moldata);
                 suft.values[molidx][i + cfg->map_d_to_energy[d - 1] * len_offset] =
                         belief;
                 belief = 0.0;
             }
             belief += exp(beliefs->tn[i][d]);
         }
-        //infCheck(belief, moldata);
         suft.values[molidx][i + energy * len_offset] = belief;
     }
 
@@ -408,14 +406,12 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
         for (unsigned int d = 1; d < cfg->model_depth; d++) {
             energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
-                //infCheck(belief, moldata);
                 suft.values[molidx][i + offset +
                                     cfg->map_d_to_energy[d - 1] * len_offset] = belief;
                 belief = 0.0;
             }
             belief += exp(beliefs->ps[i][d]);
         }
-        //infCheck(belief, moldata);
         suft.values[molidx][i + offset + energy * len_offset] = belief;
     }
 }
@@ -947,6 +943,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
     if (!moldata.hasComputedGraph())
         return Q;
 
+
     // Compute the latest transition thetas
     moldata.computeNormalizedTransitionThetas(*param);
     suft_t *suft_values = &(suft.values[molidx]);
@@ -958,9 +955,10 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     // Compute
     for (auto energy : energies) {
+        unsigned int suft_offset = energy * (num_transitions + num_fragments);
+
         if(!moldata.thetasNanAndInfCheck(energy))
             std::cerr << "[Warning] NaN " << moldata.getId() << " " << "energy " << energy << std::endl;
-        unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         // Iterate over from_id (i)
         auto it = fg->getFromIdTMap()->begin();
@@ -971,8 +969,8 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
             for (auto itt : *it)
                 denom += exp(moldata.getThetaForIdx(energy, itt));
 
-            // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
             double nu_sum = 0.0;
+            // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
             for (auto itt : *it) {
                 double nu = (*suft_values)[itt + suft_offset];
                 Q += nu * (moldata.getThetaForIdx(energy, itt) - log(denom));
@@ -984,6 +982,14 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
                     (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
             Q -= nu * log(denom);
         }
+    }
+    if(boost::math::isnan(Q)){
+        std::cerr << "Warning Q is NaN" << std ::endl;
+        exit(0);
+    }
+    if(boost::math::isinf(Q)){
+        std::cerr << "Warning Q is Inf" << std ::endl;
+        exit(0);
     }
     return Q;
 }

@@ -58,8 +58,8 @@ the feature
 #include "Features/NLRootEncodingD3.h"
 #include "Features/IonRootEncodingD4.h"
 #include "Features/NLRootEncodingD4.h"
-#include "Features/IonRootEncodingD4Long.h"
-#include "Features/NLRootEncodingD4Long.h"
+#include "Features/IonRootEncodingN10.h"
+#include "Features/NLRootEncodingN10.h"
 #include "Features/IonRootMatrixFP.h"
 #include "Features/NLRootMatrixFP.h"
 #include "Features/IonRootMatrixSimpleFP.h"
@@ -106,8 +106,8 @@ const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
         cogs.push_back(new IonRootEncodingD3());
         cogs.push_back(new NLRootEncodingD4());
         cogs.push_back(new IonRootEncodingD4());
-        cogs.push_back(new NLRootEncodingD4Long());
-        cogs.push_back(new IonRootEncodingD4Long());
+        cogs.push_back(new NLRootEncodingN10());
+        cogs.push_back(new IonRootEncodingN10());
         cogs.push_back(new NLRootMatrixFP());
         cogs.push_back(new IonRootMatrixFP());
         cogs.push_back(new NLRootMatrixSimpleFP());
