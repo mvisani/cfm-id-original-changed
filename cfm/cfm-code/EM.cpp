@@ -120,7 +120,7 @@ double EM::run(std::vector<MolData> &data, int group,
     if(cfg->add_noise){
         for(auto & mol : data){
             if(mol.getGroup() != validation_group)
-                mol.addNoise(1.0, 20, cfg->abs_mass_tol,cfg->ppm_mass_tol);
+                mol.addNoise(1.0, 50, cfg->abs_mass_tol,cfg->ppm_mass_tol);
         }
     }
     while (iter < MAX_EM_ITERATIONS) {

@@ -273,7 +273,7 @@ bool Spectrum::hasPeakByMassWithinTol(double target_mass, double abs_tol, double
 void Spectrum::addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol){
 
     auto added_intensity = 0.0;
-    std::uniform_real_distribution<double> dist(0,max_intensity);
+    std::uniform_real_distribution<double> dist(0.05, max_intensity);
     int num_real_peaks = peaks.size();
     std::uniform_int_distribution<int> peak_id_dis(0, num_real_peaks-1);
 
