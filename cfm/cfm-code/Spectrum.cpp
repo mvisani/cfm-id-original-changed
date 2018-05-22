@@ -268,3 +268,36 @@ bool Spectrum::hasPeakByMassWithinTol(double target_mass, double abs_tol, double
 
     return getMassTol(abs_tol, ppm_tol, closet_mass) >= diff;
 }
+
+
+void Spectrum::addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol){
+
+    auto added_intensity = 0.0;
+    std::uniform_real_distribution<double> dist(0,max_intensity);
+    std::uniform_int_distribution<int> peak_id_dis(0, peaks.size()-1);
+
+    std::vector<Peak> noise_peaks;
+    while(added_intensity < total_intensity){
+        // get noise intensity
+        double noise_intensity = dist(util_rng);
+
+        // select real peak
+        int selected_peak_id = peak_id_dis(util_rng);
+        // get peak mass and mass tol
+        double peak_mass = peaks[selected_peak_id].mass;
+        double mass_tol = getMassTol(abs_tol,  ppm_tol,  peak_mass);
+
+        // roll dice to add noise around peak but outside of mass tol
+        std::normal_distribution<double> normal_distribution{peak_mass, 3 * mass_tol};
+        double noise_mass = normal_distribution(util_rng);
+        while(fabs(noise_mass - peak_mass) < mass_tol){
+            normal_distribution(util_rng);
+        }
+
+        Peak noise_peak(noise_mass, noise_intensity);
+        noise_peaks.push_back(noise_peak);
+    }
+
+    peaks.reserve(peaks.size() + noise_peaks.size());
+    std::move(noise_peaks.begin(),noise_peaks.end(),peaks.begin()+ peaks.size());
+}

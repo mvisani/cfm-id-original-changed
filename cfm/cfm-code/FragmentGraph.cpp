@@ -75,10 +75,11 @@ void FragmentGraph::removeDetours() {
 
 
 bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
-                                            std::vector<int> &removed_transitions_ids, std::map<int, int>& visited, bool aggressive) {
+                                            std::vector<int> &removed_transitions_ids, std::map<int, int> &visited,
+                                            bool aggressive) {
 
-	if (visited.find(fg_id) == visited.end())
-		return  visited[fg_id];
+    if (visited.find(fg_id) == visited.end())
+        return visited[fg_id];
 
     //first thing , check if we need save this node by itself
     bool need_save = false;
@@ -94,8 +95,8 @@ bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &sp
         bool save_child = false;
         for (auto trans_id : from_id_tmap[fg_id]) {
             auto to_id = transitions[trans_id].getToId();
-            bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol, removed_transitions_ids, visited, aggressive
-            );
+            bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol, removed_transitions_ids,
+                                                           visited, aggressive);
             // if any child node need save
             // parent node need save
             save_child = (save_child || child_need_save);
@@ -105,20 +106,17 @@ bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &sp
 
         // if all my child does not happen, and myself does not happen
         // that means we only need learn to this node and stop
-        if(!save_child){
+        if (!save_child) {
             for (auto trans_id : from_id_tmap[fg_id]) {
                 removed_transitions_ids.push_back(trans_id);
             }
         }
     }
-
-    // if there is transitions from this fragments
-    // that means this is not a leaf node
-    if (fg_id < from_id_tmap.size() && aggressive) {
+    else if (fg_id < from_id_tmap.size() && aggressive) {
         for (auto trans_id : from_id_tmap[fg_id]) {
             auto to_id = transitions[trans_id].getToId();
-            bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol, removed_transitions_ids, visited, aggressive
-            );
+            bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol, removed_transitions_ids,
+                                                           visited, aggressive);
             // if remove child
             // we also need remove transition to that child
             if (!child_need_save)
@@ -127,7 +125,7 @@ bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &sp
         }
     }
 
-	visited[fg_id] = need_save;
+    visited[fg_id] = need_save;
     return need_save;
 }
 
@@ -135,7 +133,7 @@ void
 FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
                                    std::vector<int> &removed_transitions_ids, bool aggressive) {
     int fg_id = 0;
-	std::map<int, int> visited;
+    std::map<int, int> visited;
     // Get trans ids to remove
     getPruningTransitionIds(fg_id, spectra, abs_tol, ppm_tol, removed_transitions_ids, visited, aggressive);
 
@@ -170,8 +168,7 @@ void FragmentGraph::removeLonelyFrags() {
 }
 
 void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
-                                                              std::vector<std::vector<double>> &thetas, std::mt19937 &rng,
-                                                              double explore_weight) {
+                                                              std::vector<std::vector<double>> &thetas, double explore_weight) {
 
     std::vector<std::discrete_distribution<int>> discrete_distributions;
 
@@ -216,14 +213,13 @@ void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &sel
             if (!from_id_tmap[fg_id].empty()) {
                 // add a uct style random select
                 int selected_idx;
-                int coin = explore_coin(rng);
+                int coin = explore_coin(util_rng);
                 //std::cerr << coin << std::endl;
-                if(coin == 1)
-                {
-                    std::uniform_int_distribution<> dis(0, (int)from_id_tmap[fg_id].size());
-                    selected_idx = dis(rng);
+                if (coin == 1) {
+                    std::uniform_int_distribution<> dis(0, (int) from_id_tmap[fg_id].size());
+                    selected_idx = dis(util_rng);
                 } else {
-                    selected_idx = discrete_distributions[fg_id](rng);
+                    selected_idx = discrete_distributions[fg_id](util_rng);
                 }
                 if (selected_idx < from_id_tmap[fg_id].size()) {
                     // go to child
@@ -282,7 +278,7 @@ void FragmentGraph::removeFragments(std::vector<int> &input_ids) {
 //Function to remove given transitions from the graph
 void FragmentGraph::removeTransitions(std::vector<int> &input_ids) {
 
-    std::sort(input_ids.begin(),input_ids.end());
+    std::sort(input_ids.begin(), input_ids.end());
     //std::cout << transitions.size() << std::endl;
     std::vector<int> id_map(transitions.size());    //Map old id to new id (or -1 if deleting)
     //Remove transitions, and record a mapping of old->new transition ids

@@ -23,10 +23,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
-// Init static members
-std::random_device   EM::m_rd;
-std::mt19937         EM::m_rng(EM::m_rd());
-std::uniform_real_distribution<double> EM::m_uniform_dist(0, 1.0);
 
 EM::EM(config_t *a_cfg, FeatureCalculator *an_fc,
        std::string &a_status_filename, std::string initial_params_filename) {
@@ -120,6 +116,13 @@ double EM::run(std::vector<MolData> &data, int group,
 	int sampling_method = cfg->ga_sampling_method;
 
     int count_no_progress = 0;
+
+    if(cfg->add_noise){
+        for(auto & mol : data){
+            if(mol.getGroup() != validation_group)
+                mol.addNoise(1.0, 20, cfg->abs_mass_tol,cfg->ppm_mass_tol);
+        }
+    }
     while (iter < MAX_EM_ITERATIONS) {
 
         std::string iter_out_param_filename =
@@ -840,7 +843,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
             int num_iterations = cfg->ga_graph_sampling_k * num_frags;
             if(cfg->ga_use_sqaured_iter_num)
                 num_iterations =  num_iterations  * (energy+1) * (energy+1);
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, m_rng, 1.0);
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
         }
 
         
@@ -1055,7 +1058,7 @@ void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
     idxs.resize(count);
 
 
-    std::shuffle(idxs.begin(), idxs.end(), m_rng);
+    std::shuffle(idxs.begin(), idxs.end(), util_rng);
 
     int num_minibatch_mols =
             (num_mols + cfg->ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;

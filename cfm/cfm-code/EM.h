@@ -31,7 +31,6 @@ static const int MAX_EM_ITERATIONS = 100;
 #include <boost/shared_ptr.hpp>
 
 #include <lbfgs.h>
-#include <random>
 
 //Sufficient stats, access by transition index for a given molecule
 typedef std::vector<double> suft_t;
@@ -146,10 +145,6 @@ protected:
 
     int validation_group;
     bool sparse_params;
-
-    static std::random_device   m_rd;
-    static std::mt19937         m_rng;
-    static std::uniform_real_distribution<double> m_uniform_dist;
 };
 
 #endif // __EM_TRAIN_H__

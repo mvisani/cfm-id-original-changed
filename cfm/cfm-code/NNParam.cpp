@@ -99,7 +99,9 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
         for (int hnode = 0; hnode < (*itlayer); hnode++) {
             ait_input_tmp = ait_input;
             double z_val = *wit++; //Bias
-            for (int i = 0; i < num_input; i++) z_val += (*ait_input_tmp++) * (*wit++);
+            for (int i = 0; i < num_input; i++) {
+                z_val += (*ait_input_tmp++) * (*wit++);
+            }
             *zit++ = z_val;
             *ait++ = (*itaf++)(z_val);
         }

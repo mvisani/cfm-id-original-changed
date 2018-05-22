@@ -102,7 +102,7 @@ double EM_NN::computeAndAccumulateGradient(double *grads, int molidx, MolData &m
 			int num_iterations = cfg->ga_graph_sampling_k * num_frags;
 			if (cfg->ga_use_sqaured_iter_num)
 				num_iterations = num_iterations * (energy + 1) * (energy + 1);
-			moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, m_rng, 1.0);
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
 		}
 
         //Iterate over from_id (i)

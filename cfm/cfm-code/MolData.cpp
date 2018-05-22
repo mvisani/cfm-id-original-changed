@@ -810,10 +810,16 @@ std::string MolData::getFVsAsSparseCSVString() {
 }
 
 void
-MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy, std::mt19937 &rng,
+MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                            double explore_weight) {
 
-    fg->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, energy, thetas, rng, explore_weight);
+    fg->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, energy, thetas, explore_weight);
+}
+
+void MolData::addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol){
+    for(auto & spectrum: spectra){
+        spectrum.addNoise(max_intensity, total_intensity,  abs_tol, ppm_tol);
+    }
 }
 
 bool MolData::thetasNanAndInfCheck(int energy_level){

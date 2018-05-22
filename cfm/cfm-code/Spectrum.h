@@ -105,6 +105,11 @@ public:
 
     bool hasPeakByMassWithinTol(double target_mass, double abs_tol, double ppm_tol) const;
 
+    // a function to add noise with in abs or ppm to the existing peaks
+    // this may helps on overfitting
+    void addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
+
+
 private:
     std::vector<Peak> peaks;
     bool is_normalized;

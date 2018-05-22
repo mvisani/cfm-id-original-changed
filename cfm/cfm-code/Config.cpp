@@ -82,6 +82,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.aggressive_graph_pruning = false;
 	cfg.reset_sampling = false;
 	cfg.reset_sampling_lr_ratio = 1.0;
+	cfg.add_noise = false;
 }
 
 
@@ -160,6 +161,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "aggressive_graph_pruning") cfg.aggressive_graph_pruning = (bool)value;
 		else if (name == "reset_sampling") cfg.reset_sampling = (bool)value;
 		else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double)value;
+        else if (name == "add_noise") cfg.add_noise = (bool)value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();

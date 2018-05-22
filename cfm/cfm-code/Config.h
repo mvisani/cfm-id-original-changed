@@ -268,6 +268,8 @@ struct config_t {
 
     int fragraph_compute_timeout_in_secs;
 
+    //noise
+    bool add_noise;
 };
 
 void initDefaultConfig(config_t &cfg);
