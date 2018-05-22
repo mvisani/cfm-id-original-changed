@@ -122,7 +122,7 @@ double EM::run(std::vector<MolData> &data, int group,
             if(mol.getGroup() != validation_group)
                 mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol,cfg->ppm_mass_tol);
                 mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-                std::cerr << mol.getSpectrum(0)->size() << std::endl;
+                //std::cerr << mol.getSpectrum(0)->size() << std::endl;
         }
 
     }
