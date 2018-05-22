@@ -274,9 +274,9 @@ void Spectrum::addNoise(double max_intensity, double total_intensity, double abs
 
     auto added_intensity = 0.0;
     std::uniform_real_distribution<double> dist(0,max_intensity);
-    std::uniform_int_distribution<int> peak_id_dis(0, peaks.size()-1);
+    int num_real_peaks = peaks.size();
+    std::uniform_int_distribution<int> peak_id_dis(0, num_real_peaks-1);
 
-    std::vector<Peak> noise_peaks;
     while(added_intensity < total_intensity){
         // get noise intensity
         double noise_intensity = dist(util_rng);
@@ -291,13 +291,12 @@ void Spectrum::addNoise(double max_intensity, double total_intensity, double abs
         std::normal_distribution<double> normal_distribution{peak_mass, 3 * mass_tol};
         double noise_mass = normal_distribution(util_rng);
         while(fabs(noise_mass - peak_mass) < mass_tol){
-            normal_distribution(util_rng);
+            noise_mass = normal_distribution(util_rng);
         }
 
         Peak noise_peak(noise_mass, noise_intensity);
-        noise_peaks.push_back(noise_peak);
+        peaks.push_back(noise_peak);
+        added_intensity += noise_intensity;
     }
-
-    peaks.reserve(peaks.size() + noise_peaks.size());
-    std::move(noise_peaks.begin(),noise_peaks.end(),peaks.begin()+ peaks.size());
+    this->clean(abs_tol, ppm_tol);
 }
