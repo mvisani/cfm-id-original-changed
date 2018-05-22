@@ -83,6 +83,8 @@ void initDefaultConfig(config_t &cfg) {
 	cfg.reset_sampling = false;
 	cfg.reset_sampling_lr_ratio = 1.0;
 	cfg.add_noise = false;
+    cfg.noise_max = 0.1;
+    cfg.noise_sum = 10;
 }
 
 
@@ -162,6 +164,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 		else if (name == "reset_sampling") cfg.reset_sampling = (bool)value;
 		else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double)value;
         else if (name == "add_noise") cfg.add_noise = (bool)value;
+        else if (name == "noise_max") cfg.noise_max = (double)value;
+        else if (name == "noise_sum") cfg.noise_sum = (double)value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();

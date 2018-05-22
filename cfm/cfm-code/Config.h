@@ -270,6 +270,8 @@ struct config_t {
 
     //noise
     bool add_noise;
+    double noise_sum;
+    double noise_max;
 };
 
 void initDefaultConfig(config_t &cfg);
