@@ -85,7 +85,7 @@ public:
 
     double getLastMass() const { return peaks.back().mass; };
 
-    void postProcess(double perc_thresh, int min_peaks, int max_peaks);
+    void postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_intensity = 100.0);
 
     void normalizeAndSort();
 

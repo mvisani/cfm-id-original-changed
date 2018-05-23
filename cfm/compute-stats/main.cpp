@@ -305,11 +305,11 @@ int main(int argc, char *argv[]) {
         mit->quantisePredictedSpectra(quantise_spectra_dec_pl);
         mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
       }
+      double min_intensity = 0.1;
       if (apply_cutoffs)
-        mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30);
+        mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
       else
-        mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0,
-                                         1000000);
+        mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0, 1000000, min_intensity);
       num_spectra = mit->getNumSpectra();
       if (clean_target_spectra)
         mit->cleanSpectra(0.1, 10.0);
