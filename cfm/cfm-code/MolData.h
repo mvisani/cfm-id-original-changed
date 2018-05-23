@@ -173,8 +173,7 @@ public:
     void computePredictedSpectra(Param &param, bool postprocess = false,
                                  bool use_existing_thetas = false);
 
-    void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 5,
-                                     int max_peaks = 30, double min_intensity = 100);
+    void postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks, double min_intensity = 100);
 
     void quantisePredictedSpectra(int num_dec_places);
 
