@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     double ppm_mass_tol = 10.0, abs_mass_tol = 0.01;
     int num_spectra = 0;
 
-    if (argc < 5 || argc > 13) {
+    if (argc < 5 || argc > 14) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
                   << "Usage: compute-stats.exe <input_filename> "
@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
                   << std::endl;
         std::cout << std::endl
                   << "minimum intensity (opt):" << std::endl
-                  << "Filter out any peaks below this intensity (default = 100 (off))"
+                  << "Filter out any peaks below this intensity (default = 0 (off))"
                   << std::endl;
         std::cout << std::endl
                   << "apply_cutoffs (opt):" << std::endl
@@ -114,12 +114,12 @@ int main(int argc, char *argv[]) {
 
     input_filename = argv[1];
     int group_to_compute = -1;
-    if (argc >= 13) {
+    if (argc >= 14) {
         try {
             group_to_compute = boost::lexical_cast<bool>(argv[12]);
         } catch (boost::bad_lexical_cast e) {
             std::cout << "Invalid group_to_compute (Expecting numerical): "
-                      << argv[12] << std::endl;
+                      << argv[13] << std::endl;
             exit(1);
         }
     }
@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
     }
 
     double cumulative_intensity_thresh = 100;
-    double min_intensity = 100.0;
+    double min_intensity = 0.0;
     int apply_cutoffs = 0, clean_target_spectra = 0;
     int quantise_spectra_dec_pl = -1;
     if (argc >= 9) {
@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Fetch list of input ids
+
     std::vector<MolData> data;
     parseInputFile(data, input_filename);
 
@@ -257,6 +257,15 @@ int main(int argc, char *argv[]) {
     } else
         buf = std::cout.rdbuf();
     std::ostream out(buf);
+
+    // Out put configs
+    out << "Config: "  << std::endl;
+    out << "cumulative_intensity_thresh " << cumulative_intensity_thresh << std::endl;
+    out << "min_intensity " << min_intensity << std::endl;
+    out << "apply_cutoffs " << apply_cutoffs << std::endl;
+    out << "clean_target_spectra " << clean_target_spectra << std::endl;
+    out << "quantise_spectra_dec_pl " << quantise_spectra_dec_pl << std::endl << std::endl;
+
 
     // Compute the scores (per energy level and average scores across energy
     // levels)
@@ -291,36 +300,37 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-      // Read in the spectra (both measured and predicted)
-      if (measured_is_msp)
-        mit->readInSpectraFromMSP(*measured_msp);
-      else {
-        std::string spec_file = measured_spec_dir + "/" + mit->getId() + ".txt";
-        mit->readInSpectraFromFile(spec_file);
-      }
-      if (predicted_is_msp) {
-        try {
-          mit->readInSpectraFromMSP(*predicted_msp, true);
-        } catch (MspIdException e) {
-          mit->freeSpectra();
-          continue;
-        } // If it's not in the MSP, we failed to predict/enumerate it
-      } else {
-        std::string pred_spec_file =
-            predicted_spec_dir + "/" + mit->getId() + ".log";
-        mit->readInSpectraFromFile(pred_spec_file, true);
-      }
-      if (quantise_spectra_dec_pl >= 0) {
-        mit->quantisePredictedSpectra(quantise_spectra_dec_pl);
-        mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
-      }
-      if (apply_cutoffs)
-        mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
-      else
-        mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0, 1000000, min_intensity);
-      num_spectra = mit->getNumSpectra();
-      if (clean_target_spectra)
-        mit->cleanSpectra(0.1, 10.0);
+            // Read in the spectra (both measured and predicted)
+            if (measured_is_msp)
+                mit->readInSpectraFromMSP(*measured_msp);
+            else {
+                std::string spec_file = measured_spec_dir + "/" + mit->getId() + ".txt";
+                mit->readInSpectraFromFile(spec_file);
+            }
+            if (predicted_is_msp) {
+                try {
+                    mit->readInSpectraFromMSP(*predicted_msp, true);
+                } catch (MspIdException e) {
+                    mit->freeSpectra();
+                    continue;
+                } // If it's not in the MSP, we failed to predict/enumerate it
+            } else {
+                std::string pred_spec_file =
+                        predicted_spec_dir + "/" + mit->getId() + ".log";
+                mit->readInSpectraFromFile(pred_spec_file, true);
+            }
+            if (quantise_spectra_dec_pl >= 0) {
+                mit->quantisePredictedSpectra(quantise_spectra_dec_pl);
+                mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
+            }
+            if (apply_cutoffs)
+                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
+            else
+                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0, 1000000, min_intensity);
+
+            //num_spectra = mit->getNumSpectra();
+            if (clean_target_spectra)
+                mit->cleanSpectra(0.1, 10.0);
 
             out << "\t" << mit->getSpectrum(i)->size() << "\t"
                 << mit->getPredictedSpectrum(i)->size() << "\t";
@@ -390,30 +400,29 @@ int main(int argc, char *argv[]) {
         out << std::endl;
     }
 
-    if(num_spectra > 1) {
-        // Write all the resulting scores to the output file (or stdout)
-        out << "Totals:" << std::endl;
 
-        // Report the mean and std of each
-        out << std::endl;
-        out << "Recall (mean, std err): ";
-        reportMeanStd(out, rscores);
-        out << std::endl << "Precision (mean, std err): ";
-        reportMeanStd(out, pscores);
-        out << std::endl << "Weighted Recall (mean, std err): ";
-        reportMeanStd(out, wrscores);
-        out << std::endl << "Weighted Precision (mean, std err): ";
-        reportMeanStd(out, wpscores);
-        out << std::endl << "Jaccard (mean, std err): ";
-        reportMeanStd(out, jscores);
-        out << std::endl << "Altered Dot Product (mean, std err): ";
-        reportMeanStd(out, adscores);
-        out << std::endl << "Dot Product (mean, std err): ";
-        reportMeanStd(out, dpscores);
-        out << std::endl << "Original Stein Dot Product (mean, std err): ";
-        reportMeanStd(out, odpscores);
-        out << std::endl;
-    }
+    // Write all the resulting scores to the output file (or stdout)
+    out << "Totals:" << std::endl;
+
+    // Report the mean and std of each
+    out << std::endl;
+    out << "Recall (mean, std err): ";
+    reportMeanStd(out, rscores);
+    out << std::endl << "Precision (mean, std err): ";
+    reportMeanStd(out, pscores);
+    out << std::endl << "Weighted Recall (mean, std err): ";
+    reportMeanStd(out, wrscores);
+    out << std::endl << "Weighted Precision (mean, std err): ";
+    reportMeanStd(out, wpscores);
+    out << std::endl << "Jaccard (mean, std err): ";
+    reportMeanStd(out, jscores);
+    out << std::endl << "Altered Dot Product (mean, std err): ";
+    reportMeanStd(out, adscores);
+    out << std::endl << "Dot Product (mean, std err): ";
+    reportMeanStd(out, dpscores);
+    out << std::endl << "Original Stein Dot Product (mean, std err): ";
+    reportMeanStd(out, odpscores);
+    out << std::endl;
 
     if (measured_is_msp)
         delete measured_msp;

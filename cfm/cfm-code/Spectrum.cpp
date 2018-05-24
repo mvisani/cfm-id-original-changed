@@ -116,12 +116,9 @@ void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, dou
         count++;
         // e.g. Take the top 80% of energy (assuming at least 5 peaks),
         // or the highest 30 peaks (whichever comes first)
-        if ((total > perc_thresh && count > min_peaks) || count > max_peaks) {
+        if ((total > perc_thresh && count > min_peaks) || count > max_peaks || it->intensity < min_intensity) {
             break;
         }
-        /*if (it->intensity < min_intensity){
-            break;
-        }*/
     }
     peaks.resize(count);
     std::sort(peaks.begin(), peaks.end(), sort_peaks_by_mass);
