@@ -22,3 +22,7 @@ cfm/cmake-build-release/
 cfm/debug/
 
 cfm/cmake-build-relwithdebinfo/
+
+cfm/\.vs/
+
+cfm/CMakeSettings\.json
