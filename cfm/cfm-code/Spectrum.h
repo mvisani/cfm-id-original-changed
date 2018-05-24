@@ -39,7 +39,7 @@ public:
 };
 
 static bool sort_peaks_by_intensity(const Peak &u, const Peak &v) {
-    return u.intensity < v.intensity;
+    return u.intensity > v.intensity;
 }
 
 static bool sort_peaks_by_mass(const Peak &u, const Peak &v) {

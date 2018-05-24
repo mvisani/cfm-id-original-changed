@@ -119,9 +119,9 @@ void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, dou
         if ((total > perc_thresh && count > min_peaks) || count > max_peaks) {
             break;
         }
-        if (it->intensity < min_intensity){
+        /*if (it->intensity < min_intensity){
             break;
-        }
+        }*/
     }
     peaks.resize(count);
     std::sort(peaks.begin(), peaks.end(), sort_peaks_by_mass);
