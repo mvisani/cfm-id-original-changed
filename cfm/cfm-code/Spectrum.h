@@ -31,10 +31,12 @@ class Peak {
 public:
     Peak() {};
 
-    Peak(double a_mass, double an_intensity) :
-            mass(a_mass), intensity(an_intensity) {};
+    Peak(double a_mass, double an_intensity, bool noise_flag = false) :
+            mass(a_mass), intensity(an_intensity), is_noise(noise_flag) {};
     double mass;
     double intensity;
+    // flag to indicate if this is a noise
+    bool is_noise;
     std::vector<annotation_t> annotations;
 };
 
