@@ -277,37 +277,37 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            // Read in the spectra (both measured and predicted)
-            if (measured_is_msp)
-                mit->readInSpectraFromMSP(*measured_msp);
-            else {
-                std::string spec_file = measured_spec_dir + "/" + mit->getId() + ".txt";
-                mit->readInSpectraFromFile(spec_file);
-            }
-            if (predicted_is_msp) {
-                try {
-                    mit->readInSpectraFromMSP(*predicted_msp, true);
-                } catch (MspIdException e) {
-                    mit->freeSpectra();
-                    continue;
-                } // If it's not in the MSP, we failed to predict/enumerate it
-            } else {
-                std::string pred_spec_file =
-                        predicted_spec_dir + "/" + mit->getId() + ".log";
-                mit->readInSpectraFromFile(pred_spec_file, true);
-            }
-            if (quantise_spectra_dec_pl >= 0) {
-                mit->quantisePredictedSpectra(quantise_spectra_dec_pl);
-                mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
-            }
-            if (apply_cutoffs)
-                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30);
-            else
-                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0,
-                                                 1000000);
-            num_spectra = mit->getNumSpectra();
-            if (clean_target_spectra)
-                mit->cleanSpectra(0.1, 10.0);
+      // Read in the spectra (both measured and predicted)
+      if (measured_is_msp)
+        mit->readInSpectraFromMSP(*measured_msp);
+      else {
+        std::string spec_file = measured_spec_dir + "/" + mit->getId() + ".txt";
+        mit->readInSpectraFromFile(spec_file);
+      }
+      if (predicted_is_msp) {
+        try {
+          mit->readInSpectraFromMSP(*predicted_msp, true);
+        } catch (MspIdException e) {
+          mit->freeSpectra();
+          continue;
+        } // If it's not in the MSP, we failed to predict/enumerate it
+      } else {
+        std::string pred_spec_file =
+            predicted_spec_dir + "/" + mit->getId() + ".log";
+        mit->readInSpectraFromFile(pred_spec_file, true);
+      }
+      if (quantise_spectra_dec_pl >= 0) {
+        mit->quantisePredictedSpectra(quantise_spectra_dec_pl);
+        mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
+      }
+      double min_intensity = 1.0;
+      if (apply_cutoffs)
+        mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
+      else
+        mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0, 1000000, min_intensity);
+      num_spectra = mit->getNumSpectra();
+      if (clean_target_spectra)
+        mit->cleanSpectra(0.1, 10.0);
 
             out << "\t" << mit->getSpectrum(i)->size() << "\t"
                 << mit->getPredictedSpectrum(i)->size() << "\t";
