@@ -771,12 +771,13 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
     }
 }
 
-void MolData::postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks, double min_intensity) {
+void MolData::postprocessPredictedSpectra(double perc_thresh, int min_peaks,
+                                          int max_peaks) {
 
     std::vector<Spectrum>::iterator it = predicted_spectra.begin();
     for (; it != predicted_spectra.end(); ++it) {
         it->quantisePeaksByMass(10);
-        it->postProcess(perc_thresh, min_peaks, max_peaks, min_intensity);
+        it->postProcess(perc_thresh, min_peaks, max_peaks);
         it->normalizeAndSort();
         it->sortAndNormalizeAnnotations();
     }
