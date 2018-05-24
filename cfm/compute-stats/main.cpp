@@ -87,6 +87,10 @@ int main(int argc, char *argv[]) {
                      "(off))"
                   << std::endl;
         std::cout << std::endl
+                  << "minimum intensity (opt):" << std::endl
+                  << "Filter out any peaks below this intensity (default = 100 (off))"
+                  << std::endl;
+        std::cout << std::endl
                   << "apply_cutoffs (opt):" << std::endl
                   << "Whether to apply minimum and maximum peak cutoffs of 5 and "
                      "30 respectively (default = 0(off))"
@@ -181,6 +185,7 @@ int main(int argc, char *argv[]) {
     }
 
     double cumulative_intensity_thresh = 100;
+    double min_intensity = 100.0;
     int apply_cutoffs = 0, clean_target_spectra = 0;
     int quantise_spectra_dec_pl = -1;
     if (argc >= 9) {
@@ -194,16 +199,16 @@ int main(int argc, char *argv[]) {
     }
     if (argc >= 10) {
         try {
-            apply_cutoffs = boost::lexical_cast<bool>(argv[9]);
+            min_intensity = boost::lexical_cast<double>(argv[9]);
         } catch (boost::bad_lexical_cast e) {
-            std::cout << "Invalid apply_cutoffs (Expecting 0 or 1): " << argv[9]
-                      << std::endl;
+            std::cout << "Invalid min_intensity (Expecting numerical): "
+                      << argv[9] << std::endl;
             exit(1);
         }
     }
     if (argc >= 11) {
         try {
-            clean_target_spectra = boost::lexical_cast<bool>(argv[10]);
+            apply_cutoffs = boost::lexical_cast<bool>(argv[10]);
         } catch (boost::bad_lexical_cast e) {
             std::cout << "Invalid apply_cutoffs (Expecting 0 or 1): " << argv[10]
                       << std::endl;
@@ -212,10 +217,19 @@ int main(int argc, char *argv[]) {
     }
     if (argc >= 12) {
         try {
-            quantise_spectra_dec_pl = boost::lexical_cast<int>(argv[11]);
+            clean_target_spectra = boost::lexical_cast<bool>(argv[11]);
+        } catch (boost::bad_lexical_cast e) {
+            std::cout << "Invalid apply_cutoffs (Expecting 0 or 1): " << argv[11]
+                      << std::endl;
+            exit(1);
+        }
+    }
+    if (argc >= 13) {
+        try {
+            quantise_spectra_dec_pl = boost::lexical_cast<int>(argv[12]);
         } catch (boost::bad_lexical_cast e) {
             std::cout << "Invalid quantise_spectra_dec_pl (Expecting integer): "
-                      << argv[11] << std::endl;
+                      << argv[12] << std::endl;
             exit(1);
         }
     }
@@ -300,7 +314,6 @@ int main(int argc, char *argv[]) {
         mit->quantisePredictedSpectra(quantise_spectra_dec_pl);
         mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
       }
-      double min_intensity = 1.0;
       if (apply_cutoffs)
         mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
       else
@@ -377,28 +390,30 @@ int main(int argc, char *argv[]) {
         out << std::endl;
     }
 
-    // Write all the resulting scores to the output file (or stdout)
-    out << "Totals:" << std::endl;
+    if(num_spectra > 1) {
+        // Write all the resulting scores to the output file (or stdout)
+        out << "Totals:" << std::endl;
 
-    // Report the mean and std of each
-    out << std::endl;
-    out << "Recall (mean, std err): ";
-    reportMeanStd(out, rscores);
-    out << std::endl << "Precision (mean, std err): ";
-    reportMeanStd(out, pscores);
-    out << std::endl << "Weighted Recall (mean, std err): ";
-    reportMeanStd(out, wrscores);
-    out << std::endl << "Weighted Precision (mean, std err): ";
-    reportMeanStd(out, wpscores);
-    out << std::endl << "Jaccard (mean, std err): ";
-    reportMeanStd(out, jscores);
-    out << std::endl << "Altered Dot Product (mean, std err): ";
-    reportMeanStd(out, adscores);
-    out << std::endl << "Dot Product (mean, std err): ";
-    reportMeanStd(out, dpscores);
-    out << std::endl << "Original Stein Dot Product (mean, std err): ";
-    reportMeanStd(out, odpscores);
-    out << std::endl;
+        // Report the mean and std of each
+        out << std::endl;
+        out << "Recall (mean, std err): ";
+        reportMeanStd(out, rscores);
+        out << std::endl << "Precision (mean, std err): ";
+        reportMeanStd(out, pscores);
+        out << std::endl << "Weighted Recall (mean, std err): ";
+        reportMeanStd(out, wrscores);
+        out << std::endl << "Weighted Precision (mean, std err): ";
+        reportMeanStd(out, wpscores);
+        out << std::endl << "Jaccard (mean, std err): ";
+        reportMeanStd(out, jscores);
+        out << std::endl << "Altered Dot Product (mean, std err): ";
+        reportMeanStd(out, adscores);
+        out << std::endl << "Dot Product (mean, std err): ";
+        reportMeanStd(out, dpscores);
+        out << std::endl << "Original Stein Dot Product (mean, std err): ";
+        reportMeanStd(out, odpscores);
+        out << std::endl;
+    }
 
     if (measured_is_msp)
         delete measured_msp;
