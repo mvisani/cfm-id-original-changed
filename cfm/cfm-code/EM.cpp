@@ -19,7 +19,6 @@
 
 #include "EM.h"
 #include "mpi.h"
-
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
@@ -425,16 +424,11 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
     double Q = 0.0, prevQ = -DBL_MAX, bestQ = -DBL_MAX;
 
     std::vector<double> grads(param->getNumWeights(), 0.0);
-    std::vector<double> prev_v(param->getNumWeights(), 0.0);
 
-    // for adam and AMSgrad
-    std::vector<double> first_moment_vector(param->getNumWeights(), 0.0);
-    std::vector<double> second_moment_vector(param->getNumWeights(), 0.0);
-    std::vector<double> second_moment_max_vector(param->getNumWeights(), 0.0);
-
-    // for adaDelta
-    std::vector<double> mean_squared_gradients(param->getNumWeights(), 0.0);
-    std::vector<double> mean_squared_delta_x(param->getNumWeights(), 0.0);
+    Solver *solver = nullptr;
+    if (comm->isMaster()) {
+        solver = getSolver(cfg->ga_method, learning_rate);
+    }
 
     //Initial Q and gradient calculation (to determine used indexes)
     if( comm->used_idxs.size() == 0 ){
@@ -516,49 +510,8 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
 
         // Step the parameters
         if (comm->isMaster()) {
-            switch (cfg->ga_method) {
-                case USE_MOMENTUM_FOR_GA:
-                    param->adjustWeightsByGrads_Momentum(grads,
-                                                         ((MasterComms *) comm)->master_used_idxs,
-                                                         learn_rate, cfg->ga_momentum, prev_v);
-                    break;
-                case USE_ADAM_FOR_GA:
-                    param->adjustWeightsByGrads_Adam(grads,
-                                                     ((MasterComms *) comm)->master_used_idxs,
-                                                     learn_rate,
-                                                     cfg->ga_adam_beta_1,
-                                                     cfg->ga_adam_beta_2,
-                                                     cfg->ga_eps,
-                                                     iter,
-                                                     first_moment_vector,
-                                                     second_moment_vector);
-                    break;
-                case USE_AMSGRAD_FOR_GA:
-                    param->adjustWeightsByGrads_AMSgrad(grads,
-                                                        ((MasterComms *) comm)->master_used_idxs,
-                                                        learn_rate,
-                                                        cfg->ga_adam_beta_1,
-                                                        cfg->ga_adam_beta_2,
-                                                        cfg->ga_eps,
-                                                        iter,
-                                                        first_moment_vector,
-                                                        second_moment_vector,
-                                                        second_moment_max_vector);
-                    break;
-                case USE_ADADELTA_FOR_GA:
-                    param->adjustWeightsByGrads_Adadelta(grads,
-                                                         ((MasterComms *) comm)->master_used_idxs,
-                                                         learn_rate,
-                                                         cfg->ga_adadelta_rho,
-                                                         cfg->ga_eps,
-                                                         mean_squared_gradients,
-                                                         mean_squared_delta_x);
-                    break;
-                default:
-                    param->adjustWeightsByGrads_Momentum(grads,
-                                                         ((MasterComms *) comm)->master_used_idxs,
-                                                         learn_rate, cfg->ga_momentum, prev_v);
-            }
+            solver->adjustWeights(grads,((MasterComms *) comm)->master_used_idxs, param);
+            delete  solver;
         }
         comm->broadcastParams(param.get());
 
@@ -858,4 +811,38 @@ void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
             (num_mols + cfg->ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;
     for (int i = num_minibatch_mols; i < idxs.size(); i++)
         initialized_minibatch_flags[idxs[i]] = 0;
+}
+
+Solver *EM::getSolver(int ga_method,  double learning_rate) const {
+    Solver *solver;
+    switch (ga_method) {
+        case USE_ADAM_FOR_GA:
+            solver = new Aadm(param->getNumWeights(),
+                              learning_rate,
+                              cfg->ga_adam_beta_1,
+                              cfg->ga_adam_beta_2,
+                              cfg->ga_eps);
+
+            break;
+        case USE_AMSGRAD_FOR_GA:
+            solver = new AMSgrad(param->getNumWeights(),
+                                 learning_rate,
+                                 cfg->ga_adam_beta_1,
+                                 cfg->ga_adam_beta_2,
+                                 cfg->ga_eps);
+
+            break;
+        case USE_ADADELTA_FOR_GA:
+            solver = new Adadelta(param->getNumWeights(),
+                                  learning_rate,
+                                  cfg->ga_adadelta_rho,
+                                  cfg->ga_eps);
+            break;
+        case USE_MOMENTUM_FOR_GA:
+        default:
+            solver = new Momentum(param->getNumWeights(),
+                                  learning_rate,
+                                  cfg->ga_momentum);
+    }
+    return solver;
 }

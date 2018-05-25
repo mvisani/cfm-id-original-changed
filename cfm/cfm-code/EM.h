@@ -28,6 +28,7 @@ static const int MAX_EM_ITERATIONS = 100;
 #include "NNParam.h"
 #include "Comms.h"
 #include "IPFP.h"
+#include "Solver.h"
 #include <boost/shared_ptr.hpp>
 
 #include <lbfgs.h>
@@ -130,6 +131,7 @@ protected:
 
     void zeroUnusedParams();
 
+    Solver *getSolver(int ga_method, double learning_rate) const;
     int validation_group;
     bool sparse_params;
 };
