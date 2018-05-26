@@ -28,6 +28,7 @@ static const int MAX_EM_ITERATIONS = 100;
 #include "NNParam.h"
 #include "Comms.h"
 #include "IPFP.h"
+#include "Solver.h"
 #include <boost/shared_ptr.hpp>
 
 #include <lbfgs.h>
@@ -114,14 +115,6 @@ protected:
     //Update sufficient statistics based on beliefs
     void recordSufficientStatistics(suft_counts_t &suft, int molidx, MolData *moldata, beliefs_t *beliefs);
 
-    //M-step: Run gradient ascent (using LBFGS package)
-    double updateParametersLBFGS(std::vector<MolData> &data, suft_counts_t &suft);
-
-    lbfgsfloatval_t *convertCurrentParamsToLBFGS(int N);
-
-    void copyLBFGSToParams(const lbfgsfloatval_t *x);
-
-    void copyGradsToLBFGS(lbfgsfloatval_t *g, std::vector<double> &grads, int n);
 
     //Simple gradient ascent
     double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate, int sampling_method);
@@ -138,11 +131,7 @@ protected:
 
     void zeroUnusedParams();
 
-    //tmp pointers for use during LBFGS
-    suft_counts_t *tmp_suft_ptr_lbfgs;
-    std::vector<MolData> *tmp_moldata_ptr_lbfgs;
-    std::vector<int> tmp_minibatch_flags;
-
+    Solver *getSolver(int ga_method, double learning_rate) const;
     int validation_group;
     bool sparse_params;
 };

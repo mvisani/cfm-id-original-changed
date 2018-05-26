@@ -19,7 +19,6 @@
 
 #include "EM.h"
 #include "mpi.h"
-
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
@@ -122,10 +121,9 @@ double EM::run(std::vector<MolData> &data, int group,
             if(mol.getGroup() != validation_group)
                 mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol,cfg->ppm_mass_tol);
                 mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-                //std::cerr << mol.getSpectrum(0)->size() << std::endl;
         }
-
     }
+
     while (iter < MAX_EM_ITERATIONS) {
 
         std::string iter_out_param_filename =
@@ -217,10 +215,7 @@ double EM::run(std::vector<MolData> &data, int group,
         // (M-step)
 
         before = time(nullptr);
-        if (cfg->ga_method == USE_LBFGS_FOR_GA)
-            Q = updateParametersLBFGS(data, suft);
-        else
-            Q = updateParametersGradientAscent(data, suft, learning_rate, sampling_method);
+        Q = updateParametersGradientAscent(data, suft, learning_rate, sampling_method);
 
         after = time(nullptr);
         std::string param_update_time_msg =
@@ -422,211 +417,6 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
     }
 }
 
-static lbfgsfloatval_t lbfgs_evaluate(void *instance, const lbfgsfloatval_t *x,
-                                      lbfgsfloatval_t *g, const int n,
-                                      const lbfgsfloatval_t step) {
-    lbfgsfloatval_t fx = ((EM *) instance)->evaluateLBFGS(x, g, n, step);
-    return fx;
-}
-
-static int lbfgs_progress(void *instance, const lbfgsfloatval_t *x,
-                          const lbfgsfloatval_t *g, const lbfgsfloatval_t fx,
-                          const lbfgsfloatval_t xnorm,
-                          const lbfgsfloatval_t gnorm,
-                          const lbfgsfloatval_t step, int n, int k, int ls) {
-    ((EM *) instance)->progressLBFGS(x, g, fx, xnorm, gnorm, step, n, k, ls);
-    return 0;
-}
-
-double EM::updateParametersLBFGS(std::vector<MolData> &data,
-                                 suft_counts_t &suft) {
-
-    double Q = 0.0;
-    lbfgs_parameter_t lparam;
-    lbfgs_parameter_init(&lparam);
-    lparam.delta = cfg->ga_converge_thresh;
-    lparam.past = 1;
-    lparam.max_iterations = cfg->ga_max_iterations;
-
-    // Initial Q and gradient calculation (to determine used indexes - if we
-    // already have them don't bother)
-    if (comm->used_idxs.empty()) {
-        std::vector<double> grads(param->getNumWeights(), 0.0);
-        auto itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() != validation_group) {
-                Q += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs);
-            }
-        }
-        // Collect the used_idxs from all the processors into the MASTER
-        comm->setMasterUsedIdxs();
-
-        // Copy the used parameters into the LBFGS array
-        if (comm->isMaster())
-            zeroUnusedParams();
-    }
-
-    int N = 0;
-    if (comm->isMaster())
-        N = ((MasterComms *) comm)->master_used_idxs.size();
-    N = comm->broadcastNumUsed(N);
-    if (N > 0.1 * param->getNumWeights())
-        sparse_params = false;
-    lbfgsfloatval_t *x = convertCurrentParamsToLBFGS(N);
-    if (!sparse_params)
-        N = param->getNumWeights();
-
-    // Select molecules to include in gradient mini-batch (will select a new set
-    // at each LBFGS iteration, but for every evaluation).
-    tmp_minibatch_flags.resize(data.size());
-    std::vector<MolData>::iterator itdata = data.begin();
-    for (int molidx = 0; itdata != data.end(); ++itdata, molidx++)
-        tmp_minibatch_flags[molidx] =
-                (itdata->getGroup() !=
-                 validation_group); // Don't include validation molecules
-    if (cfg->ga_minibatch_nth_size > 1) {
-        comm->printToMasterOnly("Selecting MiniBatch for LBFGS");
-        selectMiniBatch(tmp_minibatch_flags);
-    }
-
-    // Run LBFGS
-    tmp_moldata_ptr_lbfgs = &data;
-    tmp_suft_ptr_lbfgs = &suft;
-    lbfgsfloatval_t fx;
-    comm->printToMasterOnly("Running LBFGS...");
-    lbfgs(N, x, &fx, lbfgs_evaluate, lbfgs_progress, this, &lparam);
-
-    // Master converts and broadcasts final param weights and Q to all
-    copyLBFGSToParams(x);
-    if (sparse_params)
-        lbfgs_free(x);
-    Q = -fx;
-    comm->broadcastParams(param.get());
-    Q = comm->broadcastQ(Q);
-
-    return (Q);
-}
-
-lbfgsfloatval_t *EM::convertCurrentParamsToLBFGS(int N) {
-
-    lbfgsfloatval_t *x;
-    if (sparse_params) {
-        x = lbfgs_malloc(N);
-        if (x == nullptr) {
-            std::cout << "ERROR: Failed to allocate a memory block for variables."
-                      << std::endl;
-            throw EMComputationException();
-        }
-
-        // Only fill the actual parameters in the master (the others we can update
-        // at the start of  each evaluate call).
-        if (comm->isMaster()) {
-            std::set<unsigned int>::iterator it =
-                    ((MasterComms *) comm)->master_used_idxs.begin();
-            for (unsigned int i = 0;
-                 it != ((MasterComms *) comm)->master_used_idxs.end(); ++it)
-                x[i++] = param->getWeightAtIdx(*it);
-        }
-    } else
-        x = &((*param->getWeightsPtr())[0]); // If not sparse, just use the existing
-    // param array
-    return x;
-}
-
-void EM::copyGradsToLBFGS(lbfgsfloatval_t *g, std::vector<double> &grads,
-                          int n) {
-
-    if (comm->isMaster()) {
-        if (sparse_params) {
-            std::set<unsigned int>::iterator it =
-                    ((MasterComms *) comm)->master_used_idxs.begin();
-            for (unsigned int i = 0;
-                 it != ((MasterComms *) comm)->master_used_idxs.end(); ++it)
-                g[i++] = -grads[*it];
-        } else {
-            for (int i = 0; i < n; i++)
-                g[i] *= -1;
-        }
-    }
-    comm->broadcastGorX(g, n);
-}
-
-void EM::copyLBFGSToParams(const lbfgsfloatval_t *x) {
-    if (sparse_params && comm->isMaster()) {
-        std::set<unsigned int>::iterator it =
-                ((MasterComms *) comm)->master_used_idxs.begin();
-        for (unsigned int i = 0;
-             it != ((MasterComms *) comm)->master_used_idxs.end(); ++it)
-            param->setWeightAtIdx(x[i++], *it);
-    }
-}
-
-lbfgsfloatval_t EM::evaluateLBFGS(const lbfgsfloatval_t *x, lbfgsfloatval_t *g,
-                                  const int n, const lbfgsfloatval_t step) {
-
-    // Retrieve params from LBFGS and sync between processors
-    copyLBFGSToParams(x);
-    comm->broadcastParams(param.get());
-
-    // Set the location for the computed gradients (new array if sparse, else the
-    // provided g) and initialise
-    double *grad_ptr;
-    std::vector<double> grads;
-    if (sparse_params) {
-        grads.resize(param->getNumWeights(), 0.0);
-        grad_ptr = &grads[0];
-    } else {
-        grad_ptr = g;
-        std::set<unsigned int>::iterator sit = comm->used_idxs.begin();
-        for (; sit != comm->used_idxs.end(); ++sit)
-            *(grad_ptr + *sit) = 0.0;
-    }
-
-    // Compute Q and the gradient
-    double Q = 0.0;
-    auto itdata = tmp_moldata_ptr_lbfgs->begin();
-    for (int molidx = 0; itdata != tmp_moldata_ptr_lbfgs->end();
-         ++itdata, molidx++) {
-        if (tmp_minibatch_flags[molidx])
-            Q += computeAndAccumulateGradient(grad_ptr, molidx, *itdata, *tmp_suft_ptr_lbfgs, false, comm->used_idxs);
-    }
-
-    if (comm->isMaster())
-        Q += addRegularizersAndUpdateGradient(grad_ptr);
-    comm->collectGradsInMaster(grad_ptr);
-    Q = comm->collectQInMaster(Q);
-    Q = comm->broadcastQ(Q);
-
-    // Move the computed gradients into the lbfgs structure (note: only used idxs
-    // are included)
-    copyGradsToLBFGS(g, grads, n);
-    return -Q;
-}
-
-void EM::progressLBFGS(const lbfgsfloatval_t *x, const lbfgsfloatval_t *g,
-                       const lbfgsfloatval_t fx, const lbfgsfloatval_t xnorm,
-                       const lbfgsfloatval_t gnorm, const lbfgsfloatval_t step,
-                       int n, int k, int ls) {
-
-    if (comm->isMaster()) {
-        writeStatus(("LBFGS Iteration " + boost::lexical_cast<std::string>(k) +
-                     ": fx = " + boost::lexical_cast<std::string>(fx))
-                            .c_str());
-        std::cout << "LBFGS Iteration " << k << ": fx = " << fx << std::endl;
-    }
-
-    // Select molecules to include in next gradient mini-batch (will select a new
-    // set at each LBFGS iteration, but not for every evaluation).
-    std::vector<MolData>::iterator itdata = tmp_moldata_ptr_lbfgs->begin();
-    for (int molidx = 0; itdata != tmp_moldata_ptr_lbfgs->end();
-         ++itdata, molidx++)
-        tmp_minibatch_flags[molidx] =
-                (itdata->getGroup() !=
-                 validation_group); // Don't include validation molecules
-    if (cfg->ga_minibatch_nth_size > 1)
-        selectMiniBatch(tmp_minibatch_flags);
-}
-
 double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate, int sampling_method) {
 
     // DBL_MIN is the smallest positive double
@@ -634,16 +424,11 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
     double Q = 0.0, prevQ = -DBL_MAX, bestQ = -DBL_MAX;
 
     std::vector<double> grads(param->getNumWeights(), 0.0);
-    std::vector<double> prev_v(param->getNumWeights(), 0.0);
 
-    // for adam and AMSgrad
-    std::vector<double> first_moment_vector(param->getNumWeights(), 0.0);
-    std::vector<double> second_moment_vector(param->getNumWeights(), 0.0);
-    std::vector<double> second_moment_max_vector(param->getNumWeights(), 0.0);
-
-    // for adaDelta
-    std::vector<double> mean_squared_gradients(param->getNumWeights(), 0.0);
-    std::vector<double> mean_squared_delta_x(param->getNumWeights(), 0.0);
+    Solver *solver = nullptr;
+    if (comm->isMaster()) {
+        solver = getSolver(cfg->ga_method, learning_rate);
+    }
 
     //Initial Q and gradient calculation (to determine used indexes)
     if( comm->used_idxs.size() == 0 ){
@@ -725,49 +510,8 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
 
         // Step the parameters
         if (comm->isMaster()) {
-            switch (cfg->ga_method) {
-                case USE_MOMENTUM_FOR_GA:
-                    param->adjustWeightsByGrads_Momentum(grads,
-                                                         ((MasterComms *) comm)->master_used_idxs,
-                                                         learn_rate, cfg->ga_momentum, prev_v);
-                    break;
-                case USE_ADAM_FOR_GA:
-                    param->adjustWeightsByGrads_Adam(grads,
-                                                     ((MasterComms *) comm)->master_used_idxs,
-                                                     learn_rate,
-                                                     cfg->ga_adam_beta_1,
-                                                     cfg->ga_adam_beta_2,
-                                                     cfg->ga_eps,
-                                                     iter,
-                                                     first_moment_vector,
-                                                     second_moment_vector);
-                    break;
-                case USE_AMSGRAD_FOR_GA:
-                    param->adjustWeightsByGrads_AMSgrad(grads,
-                                                        ((MasterComms *) comm)->master_used_idxs,
-                                                        learn_rate,
-                                                        cfg->ga_adam_beta_1,
-                                                        cfg->ga_adam_beta_2,
-                                                        cfg->ga_eps,
-                                                        iter,
-                                                        first_moment_vector,
-                                                        second_moment_vector,
-                                                        second_moment_max_vector);
-                    break;
-                case USE_ADADELTA_FOR_GA:
-                    param->adjustWeightsByGrads_Adadelta(grads,
-                                                         ((MasterComms *) comm)->master_used_idxs,
-                                                         learn_rate,
-                                                         cfg->ga_adadelta_rho,
-                                                         cfg->ga_eps,
-                                                         mean_squared_gradients,
-                                                         mean_squared_delta_x);
-                    break;
-                default:
-                    param->adjustWeightsByGrads_Momentum(grads,
-                                                         ((MasterComms *) comm)->master_used_idxs,
-                                                         learn_rate, cfg->ga_momentum, prev_v);
-            }
+            solver->adjustWeights(grads,((MasterComms *) comm)->master_used_idxs, param);
+            delete  solver;
         }
         comm->broadcastParams(param.get());
 
@@ -1064,4 +808,38 @@ void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
             (num_mols + cfg->ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;
     for (int i = num_minibatch_mols; i < idxs.size(); i++)
         initialized_minibatch_flags[idxs[i]] = 0;
+}
+
+Solver *EM::getSolver(int ga_method,  double learning_rate) const {
+    Solver *solver;
+    switch (ga_method) {
+        case USE_ADAM_FOR_GA:
+            solver = new Aadm(param->getNumWeights(),
+                              learning_rate,
+                              cfg->ga_adam_beta_1,
+                              cfg->ga_adam_beta_2,
+                              cfg->ga_eps);
+
+            break;
+        case USE_AMSGRAD_FOR_GA:
+            solver = new AMSgrad(param->getNumWeights(),
+                                 learning_rate,
+                                 cfg->ga_adam_beta_1,
+                                 cfg->ga_adam_beta_2,
+                                 cfg->ga_eps);
+
+            break;
+        case USE_ADADELTA_FOR_GA:
+            solver = new Adadelta(param->getNumWeights(),
+                                  learning_rate,
+                                  cfg->ga_adadelta_rho,
+                                  cfg->ga_eps);
+            break;
+        case USE_MOMENTUM_FOR_GA:
+        default:
+            solver = new Momentum(param->getNumWeights(),
+                                  learning_rate,
+                                  cfg->ga_momentum);
+    }
+    return solver;
 }
