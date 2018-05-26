@@ -26,3 +26,5 @@ cfm/cmake-build-relwithdebinfo/
 cfm/\.vs/
 
 cfm/CMakeSettings\.json
+
+\.vs/

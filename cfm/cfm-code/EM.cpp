@@ -963,9 +963,6 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
     for (auto energy : energies) {
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
-        if(!moldata.thetasNanAndInfCheck(energy))
-            std::cerr << "[Warning] NaN " << moldata.getId() << " " << "energy " << energy << std::endl;
-
         // Iterate over from_id (i)
         auto it = fg->getFromIdTMap()->begin();
         for (int from_idx = 0; it != fg->getFromIdTMap()->end(); ++it, from_idx++) {
