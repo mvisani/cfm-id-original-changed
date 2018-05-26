@@ -510,8 +510,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
 
         // Step the parameters
         if (comm->isMaster()) {
-            solver->adjustWeights(grads,((MasterComms *) comm)->master_used_idxs, param);
-            delete  solver;
+            solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
         }
         comm->broadcastParams(param.get());
 
@@ -555,12 +554,14 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
         else
             std::cout << "Gradient ascent converged after " << iter << " iterations"
                       << std::endl;
+        delete solver;
     }
     return Q;
 }
 
 double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                        bool record_used_idxs_only, std::set<unsigned int> &used_idxs, int sampling_method) {
+                                        bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
+                                        int sampling_method) {
 
     double Q = 0.0;
     const FragmentGraph *fg = moldata.getFragmentGraph();
