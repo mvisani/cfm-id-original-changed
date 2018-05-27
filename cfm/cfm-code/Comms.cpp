@@ -125,10 +125,6 @@ void Comms::broadcastInitialParams(Param *param) {
     MPI_Bcast(&((*weights)[0]), weights->size(), MPI_DOUBLE, MASTER, MPI_COMM_WORLD);
 }
 
-void Comms::broadcastGorX(lbfgsfloatval_t *g, int n) {
-    MPI_Bcast(g, n, MPI_DOUBLE, MASTER, MPI_COMM_WORLD);
-}
-
 void WorkerComms::collectGradsInMaster(double *grads) {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait

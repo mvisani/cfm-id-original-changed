@@ -19,7 +19,6 @@
 #define __COMMS_H__
 
 #include "Param.h"
-#include <lbfgs.h>
 #include <string>
 #include <set>
 
@@ -53,8 +52,6 @@ public:
     int collectSumInMaster(int partial);
 
     double broadcastQ(double Q);
-
-    void broadcastGorX(lbfgsfloatval_t *g, int n);
 
     std::set<unsigned int> used_idxs;
     unsigned int num_used;

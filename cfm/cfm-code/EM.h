@@ -31,8 +31,6 @@ static const int MAX_EM_ITERATIONS = 100;
 #include "Solver.h"
 #include <boost/shared_ptr.hpp>
 
-#include <lbfgs.h>
-
 //Sufficient stats, access by transition index for a given molecule
 typedef std::vector<double> suft_t;
 
