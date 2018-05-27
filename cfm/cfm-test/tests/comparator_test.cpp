@@ -30,7 +30,7 @@ bool testComparator(Comparator &cmp, double exp_scores[3], double max_score) {
     std::string pspecfile = "tests/test_data/test_pspec/Test1.txt";
     moldata.readInSpectraFromFile(pspecfile, true);
     for (int i = 0; i < 3; i++)
-        scores[i] = cmp.computeScore(moldata.getSpectrum(i), moldata.getPredictedSpectrum(i));
+        scores[i] = cmp.computeScore(moldata.GetSpectrum(i), moldata.GetPredictedSpectrum(i));
     if (fabs(scores[0] - max_score) > tol || fabs(scores[1] - max_score) > tol || fabs(scores[2] - max_score) > tol) {
         std::cout << "Perfect Matches: Expecting " << max_score << " scores but found " << scores[0] << " " << scores[1]
                   << " " << scores[2] << std::endl;
@@ -44,7 +44,7 @@ bool testComparator(Comparator &cmp, double exp_scores[3], double max_score) {
     pspecfile = "tests/test_data/test_pspec/Test2.txt";
     moldata.readInSpectraFromFile(pspecfile, true);
     for (int i = 0; i < 3; i++)
-        scores[i] = cmp.computeScore(moldata.getSpectrum(i), moldata.getPredictedSpectrum(i));
+        scores[i] = cmp.computeScore(moldata.GetSpectrum(i), moldata.GetPredictedSpectrum(i));
     if (fabs(scores[0] - 0.0) > tol || fabs(scores[1] - 0.0) > tol || fabs(scores[2] - 0.0) > tol) {
         std::cout << "No Match: Expecting 0.0 scores but found " << scores[0] << " " << scores[1] << " " << scores[2]
                   << std::endl;
@@ -58,7 +58,7 @@ bool testComparator(Comparator &cmp, double exp_scores[3], double max_score) {
     pspecfile = "tests/test_data/test_pspec/Test3.txt";
     moldata.readInSpectraFromFile(pspecfile, true);
     for (int i = 0; i < 3; i++)
-        scores[i] = cmp.computeScore(moldata.getSpectrum(i), moldata.getPredictedSpectrum(i));
+        scores[i] = cmp.computeScore(moldata.GetSpectrum(i), moldata.GetPredictedSpectrum(i));
     if (fabs(scores[0] - exp_scores[0]) > tol || fabs(scores[1] - exp_scores[1]) > tol ||
         fabs(scores[2] - exp_scores[2]) > tol) {
         std::cout << "Mixed: Expecting " << std::setprecision(10) << exp_scores[0] << " " << exp_scores[1] << " "

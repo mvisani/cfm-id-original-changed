@@ -23,7 +23,7 @@ predict #				the mass spectra.
 #include <boost/lexical_cast.hpp>
 
 #include "Config.h"
-#include "EM.h"
+#include "EmModel.h"
 
 void parseInputFile(std::vector<std::string> &data, std::string &input_filename,
                     int mpi_rank, int mpi_nump);
@@ -130,19 +130,19 @@ int main(int argc, char *argv[]) {
         try {
             time_t before, after;
             before = time(nullptr);
-            mol->computeFragmentGraphAndReplaceMolsWithFVs(&fc);
+            mol->ComputeFragmentGraphAndReplaceMolsWithFVs(&fc);
             std::ofstream eout;
             eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
             after = time(nullptr);
             eout << mol->getId() << "Done. Time Elaspsed = " << (after - before)
                  << " Seconds";
-            eout << " :Num Frag = " << mol->getFragmentGraph()->getNumFragments();
-            eout << " :Num Trans = " << mol->getFragmentGraph()->getNumTransitions()
+            eout << " :Num Frag = " << mol->GetFragmentGraph()->getNumFragments();
+            eout << " :Num Trans = " << mol->GetFragmentGraph()->getNumTransitions()
                  << std::endl;
             eout.close();
 
             //std::string molFeatureCsvStr = mol->getFVsAsCSVString();
-            std::string molFeatureCsvStr = mol->getFVsAsSparseCSVString();
+            std::string molFeatureCsvStr = mol->GetFVsAsSparseCSVString();
             MPI_File_write_shared(output_file, molFeatureCsvStr.c_str(), molFeatureCsvStr.size(), MPI_CHAR, &status);
 
             success_count++;

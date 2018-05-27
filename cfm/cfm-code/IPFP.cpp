@@ -54,7 +54,7 @@ IPFP::IPFP(MolData *data, config_t *config) {
     //Initialise messages
     down_msgs.resize(cfg->model_depth - 1);
     up_msgs.resize(cfg->model_depth - 1);
-    unsigned int num_fragments = moldata->getFragmentGraph()->getNumFragments();
+    unsigned int num_fragments = moldata->GetFragmentGraph()->getNumFragments();
     for (unsigned int i = 0; i < cfg->model_depth - 1; i++) {
 
         //Initialise all up messages to uniform (since there
@@ -68,8 +68,8 @@ IPFP::IPFP(MolData *data, config_t *config) {
 
 void IPFP::initialiseFactorProbsAndBeliefs() {
 
-    unsigned int num_fragments = moldata->getFragmentGraph()->getNumFragments();
-    unsigned int num_transitions = moldata->getFragmentGraph()->getNumTransitions();
+    unsigned int num_fragments = moldata->GetFragmentGraph()->getNumFragments();
+    unsigned int num_transitions = moldata->GetFragmentGraph()->getNumTransitions();
 
     //Note: copy them all across, regardless whether they are used
     fprobs.tn.resize(num_transitions);
@@ -79,7 +79,7 @@ void IPFP::initialiseFactorProbsAndBeliefs() {
         beliefs.tn[i].resize(cfg->model_depth);
         for (unsigned int d = 0; d < cfg->model_depth; d++) {
             int energy = cfg->map_d_to_energy[d];
-            fprobs.tn[i][d] = moldata->getLogTransitionProbForIdx(energy, i);
+            fprobs.tn[i][d] = moldata->GetLogTransitionProbForIdx(energy, i);
         }
     }
     fprobs.ps.resize(num_fragments);
@@ -89,7 +89,7 @@ void IPFP::initialiseFactorProbsAndBeliefs() {
         beliefs.ps[i].resize(cfg->model_depth);
         for (unsigned int d = 0; d < cfg->model_depth; d++) {
             int energy = cfg->map_d_to_energy[d];
-            fprobs.ps[i][d] = moldata->getLogPersistenceProbForIdx(energy, i);
+            fprobs.ps[i][d] = moldata->GetLogPersistenceProbForIdx(energy, i);
         }
     }
 }
@@ -309,7 +309,7 @@ int IPFP::checkConvergence(bool allow_osc_converge) {
 
 void IPFP::applyEvidenceAndPropagate(unsigned int spec_depth, Message &desired_marginals, Message &actual_marginals) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
 
     //Set the iterator for updating the factor
     Message *msg, tmp_msg(1);
@@ -419,7 +419,7 @@ double IPFP::computeBeliefs() {
     std::vector<double> norms;
     norms.resize(cfg->model_depth);
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
 
     //Compute Persistence Beliefs (and track norms)
     tmp_beliefs.ps.resize(fg->getNumFragments());
@@ -514,7 +514,7 @@ void IPFP::initLogSpecFactor(spec_factor_t &log_spec_factor, const Spectrum *spe
     //Store normpdf( pk mass, ion mass, sigma*sqrt2 )
     static const double pi = boost::math::constants::pi<double>();
     log_spec_factor.resize(spectrum->size());
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
     unsigned int num_fragments = fg->getNumFragments();
     Spectrum::const_iterator itp = spectrum->begin();
     for (unsigned int i = 0; itp != spectrum->end(); ++itp, i++) {
@@ -550,7 +550,7 @@ void IPFP::initPeakTargets(Message &peak_targets, const Spectrum *spectrum) {
 
 void IPFP::computeMarginal(Message &out, unsigned int spec_depth) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
     out.reset(fg->getNumFragments());
 
     Message *msg, tmp_msg(1);
@@ -594,8 +594,8 @@ void IPFP::setDesiredMarginals(std::vector<Message> &desired_margs, std::vector<
     std::vector<spec_factor_t> log_spec_factors(num_spectra);
     for (unsigned int energy = 0; energy < num_spectra; energy++) {
         int spec_idx = cfg->dv_spectrum_indexes[energy];
-        initLogSpecFactor(log_spec_factors[energy], moldata->getSpectrum(spec_idx));
-        initPeakTargets(peak_targets[energy], moldata->getSpectrum(spec_idx));
+        initLogSpecFactor(log_spec_factors[energy], moldata->GetSpectrum(spec_idx));
+        initPeakTargets(peak_targets[energy], moldata->GetSpectrum(spec_idx));
     }
 
     //Set desired marginals

@@ -48,7 +48,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.use_single_energy_cfm = 0;
     cfg.ionization_mode = DEFAULT_IONIZATION_MODE;
     cfg.update_bias_first = 0;
-    cfg.em_init_type = PARAM_DEFAULT_INIT;
+    cfg.param_init_type = PARAM_DEFAULT_INIT;
     cfg.use_lower_energy_params_for_init = 0;
     cfg.include_isotopes = DEFAULT_INCLUDE_ISOTOPES;
     cfg.isotope_thresh = DEFAULT_ISOTOPE_THRESH;
@@ -133,7 +133,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "include_isotopes") cfg.include_isotopes = (int) value;
         else if (name == "isotope_thresh") cfg.isotope_thresh = (double) value;
         else if (name == "ga_method") cfg.ga_method = (int) value;
-        else if (name == "em_init_type") cfg.em_init_type = (int) value;
+        else if (name == "param_init_type") cfg.param_init_type = (int) value;
         else if (name == "use_lower_energy_params_for_init") cfg.use_lower_energy_params_for_init = (int) value;
         else if (name == "theta_function") cfg.theta_function = (int) value;
         else if (name == "theta_nn_hlayer_num_nodes") cfg.theta_nn_hlayer_num_nodes.push_back((int) value);
@@ -219,9 +219,9 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             if (cfg.include_precursor_h_losses_only) std::cout << " from precursor only";
             std::cout << std::endl;
         }
-        if (cfg.em_init_type == PARAM_RANDOM_INIT) std::cout << "Using Random Parameter Initialisation" << std::endl;
-        else if (cfg.em_init_type == PARAM_FULL_ZERO_INIT) std::cout << "Using Full Zero Initialisation" << std::endl;
-        else if (cfg.em_init_type == PARAM_ZERO_INIT)
+        if (cfg.param_init_type == PARAM_RANDOM_INIT) std::cout << "Using Random Parameter Initialisation" << std::endl;
+        else if (cfg.param_init_type == PARAM_FULL_ZERO_INIT) std::cout << "Using Full Zero Initialisation" << std::endl;
+        else if (cfg.param_init_type == PARAM_ZERO_INIT)
             std::cout << "Using Zero Initialisation (non-zero Bias)" << std::endl;
         else
             std::cout << "Warning: Unknown parameter initialization, revering to default mode (full random)!"

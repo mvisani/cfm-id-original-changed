@@ -33,12 +33,12 @@ void MspReaderTest::runTest(){
 	MolData mol1( "NIST2011_1", "InChI=1S/H2/h1H", &cfg );
 	mol1.readInSpectraFromMSP( msp );
 
-	if( mol1.getNumSpectra() != 1 ){
-		std::cout << "Unexpected number of spectra for NIST2011_1: " << mol1.getNumSpectra() <<  std::endl;
+	if(mol1.GetNumSpectra() != 1 ){
+		std::cout << "Unexpected number of spectra for NIST2011_1: " << mol1.GetNumSpectra() <<  std::endl;
 		pass = false;
 	}
 	else{
-		const Spectrum *spec = mol1.getSpectrum(0);
+		const Spectrum *spec = mol1.GetSpectrum(0);
 		if( spec->size() != 2 ){
 			std::cout << "Unexpected number of peaks in spectrum: expecting 2 but found " << spec->size() << std::endl;
 			pass = false;
@@ -58,12 +58,12 @@ void MspReaderTest::runTest(){
 	MolData mol2( "NIST2011_71459", "InChI=1S/H2/h1H", &cfg );
 	mol2.readInSpectraFromMSP( msp );
 
-	if( mol2.getNumSpectra() != 1 ){
-		std::cout << "Unexpected number of spectra for NIST2011_71459: " << mol2.getNumSpectra() <<  std::endl;
+	if(mol2.GetNumSpectra() != 1 ){
+		std::cout << "Unexpected number of spectra for NIST2011_71459: " << mol2.GetNumSpectra() <<  std::endl;
 		pass = false;
 	}
 	else{
-		const Spectrum *spec = mol2.getSpectrum(0);
+		const Spectrum *spec = mol2.GetSpectrum(0);
 		if( spec->size() != 166 ){
 			std::cout << "Unexpected number of peaks in spectrum: expecting 166 but found " << spec->size() << std::endl;
 			pass = false;
@@ -83,12 +83,12 @@ void MspReaderTest::runTest(){
 	MolData mol3( "NIST2011_212964", "InChI=1S/H2/h1H", &cfg );
 	mol3.readInSpectraFromMSP( msp );
 
-	if( mol3.getNumSpectra() != 1 ){
-		std::cout << "Unexpected number of spectra for NIST2011_212964: " << mol3.getNumSpectra() <<  std::endl;
+	if(mol3.GetNumSpectra() != 1 ){
+		std::cout << "Unexpected number of spectra for NIST2011_212964: " << mol3.GetNumSpectra() <<  std::endl;
 		pass = false;
 	}
 	else{
-		const Spectrum *spec = mol3.getSpectrum(0);
+		const Spectrum *spec = mol3.GetSpectrum(0);
 		if( spec->size() != 30 ){
 			std::cout << "Unexpected number of peaks in spectrum: expecting 30 but found " << spec->size() << std::endl;
 			pass = false;
@@ -127,12 +127,12 @@ void MspReaderMultipleEnergiesTest::runTest(){
 	MolData mol1( "Test3", "InChI=1S/H2/h1H", &cfg );
 	mol1.readInSpectraFromMSP( msp );
 
-	if( mol1.getNumSpectra() != 3 ){
-		std::cout << "Unexpected number of spectra for Test1: " << mol1.getNumSpectra() <<  std::endl;
+	if(mol1.GetNumSpectra() != 3 ){
+		std::cout << "Unexpected number of spectra for Test1: " << mol1.GetNumSpectra() <<  std::endl;
 		pass = false;
 	}
 	else{
-		const Spectrum *spec = mol1.getSpectrum(0);
+		const Spectrum *spec = mol1.GetSpectrum(0);
 		if( spec->size() != 2 ){
 			std::cout << "Unexpected number of peaks in spectrum: expecting 2 but found " << spec->size() << std::endl;
 			pass = false;
@@ -144,7 +144,7 @@ void MspReaderMultipleEnergiesTest::runTest(){
 				pass = false;		
 			}
 		}
-		spec = mol1.getSpectrum(1);
+		spec = mol1.GetSpectrum(1);
 		if( spec->size() != 2 ){
 			std::cout << "Unexpected number of peaks in spectrum: expecting 2 but found " << spec->size() << std::endl;
 			pass = false;
@@ -156,7 +156,7 @@ void MspReaderMultipleEnergiesTest::runTest(){
 				pass = false;		
 			}
 		}
-		spec = mol1.getSpectrum(2);
+		spec = mol1.GetSpectrum(2);
 		if( spec->size() != 2 ){
 			std::cout << "Unexpected number of peaks in spectrum: expecting 2 but found " << spec->size() << std::endl;
 			pass = false;
@@ -174,12 +174,12 @@ void MspReaderMultipleEnergiesTest::runTest(){
 	MolData mol3( "Test5", "InChI=1S/H2/h1H", &cfg );
 	mol3.readInSpectraFromMSP( msp );
 
-	if( mol3.getNumSpectra() != 3 ){
-		std::cout << "Unexpected number of spectra for Test5: " << mol3.getNumSpectra() <<  std::endl;
+	if(mol3.GetNumSpectra() != 3 ){
+		std::cout << "Unexpected number of spectra for Test5: " << mol3.GetNumSpectra() <<  std::endl;
 		pass = false;
 	}
 	else{
-		const Spectrum *spec = mol3.getSpectrum(0);
+		const Spectrum *spec = mol3.GetSpectrum(0);
 		if( spec->size() != 2 ){
 			std::cout << "Unexpected number of peaks in spectrum: expecting 2 but found " << spec->size() << std::endl;
 			pass = false;
@@ -191,7 +191,7 @@ void MspReaderMultipleEnergiesTest::runTest(){
 				pass = false;		
 			}
 		}
-		spec = mol3.getSpectrum(1);
+		spec = mol3.GetSpectrum(1);
 		if( spec->size() != 3 ){
 			std::cout << "Unexpected number of peaks in spectrum: expecting 3 but found " << spec->size() << std::endl;
 			pass = false;
@@ -203,7 +203,7 @@ void MspReaderMultipleEnergiesTest::runTest(){
 				pass = false;		
 			}
 		}
-		spec = mol3.getSpectrum(2);
+		spec = mol3.GetSpectrum(2);
 		if( spec->size() != 1 ){
 			std::cout << "Unexpected number of peaks in spectrum: expecting 1 but found " << spec->size() << std::endl;
 			pass = false;

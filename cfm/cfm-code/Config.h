@@ -234,7 +234,7 @@ struct config_t {
     double em_converge_thresh;
     int num_em_restarts;
     int use_lower_energy_params_for_init;
-    int em_init_type;
+    int param_init_type;
 
     //Gradient Ascent Configuration
     double lambda;    //Regularization constant

@@ -77,7 +77,7 @@ void Inference::initTmpFactorProbSizes(factor_probs_t &tmp_log_probs, unsigned i
 
 void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
 
     //Initialise the messages
     down_msgs.resize(config->model_depth);
@@ -91,10 +91,10 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
     const std::vector<int> *tmap = &((*fg->getFromIdTMap())[0]);
     std::vector<int>::const_iterator it = tmap->begin();
     down_msgs[0].reset(fg->getNumFragments());
-    down_msgs[0].addToIdx(0, moldata->getLogPersistenceProbForIdx(energy, 0));
+    down_msgs[0].addToIdx(0, moldata->GetLogPersistenceProbForIdx(energy, 0));
     for (; it != tmap->end(); ++it) {
         const Transition *t = fg->getTransitionAtIdx(*it);
-        down_msgs[0].addToIdx(t->getToId(), moldata->getLogTransitionProbForIdx(energy, *it));
+        down_msgs[0].addToIdx(t->getToId(), moldata->GetLogTransitionProbForIdx(energy, *it));
     }
 
     //Update Factor (F1,F2) => Create Message F2 => Update Factor (F2,F3) ...etc as per MODEL_DEPTH
@@ -108,7 +108,7 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
 
 void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &spec_msg) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
 
     //Initialise the messages
     up_msgs.resize(config->model_depth);
@@ -130,7 +130,7 @@ void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &s
 
 void Inference::createMessage(factor_probs_t &tmp_log_probs, Message &m, Message &prev_m, int direction, int depth) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
     m.reset(fg->getNumFragments());
     for (unsigned int id = 0; id < fg->getNumFragments(); id++) {
 
@@ -158,14 +158,14 @@ void Inference::createMessage(factor_probs_t &tmp_log_probs, Message &m, Message
 
 void Inference::passMessage(factor_probs_t &tmp_log_probs, int direction, int depth, Message &m, int energy) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
     Message::const_iterator it = m.begin();
     for (; it != m.end(); ++it) {
 
         unsigned int idx = it.index();
 
         //Apply to the persistence term (idx -> idx)
-        tmp_log_probs.ps[idx][depth] = moldata->getLogPersistenceProbForIdx(energy, idx) + m.getIdx(idx);
+        tmp_log_probs.ps[idx][depth] = moldata->GetLogPersistenceProbForIdx(energy, idx) + m.getIdx(idx);
 
         //Apply to all the other transitions applicable for this message element
         const std::vector<int> *tmap;
@@ -173,7 +173,7 @@ void Inference::passMessage(factor_probs_t &tmp_log_probs, int direction, int de
         else tmap = &((*fg->getToIdTMap())[idx]);
         std::vector<int>::const_iterator itt = tmap->begin();
         for (; itt != tmap->end(); ++itt)
-            tmp_log_probs.tn[*itt][depth] = moldata->getLogTransitionProbForIdx(energy, *itt) + m.getIdx(idx);
+            tmp_log_probs.tn[*itt][depth] = moldata->GetLogTransitionProbForIdx(energy, *itt) + m.getIdx(idx);
     }
 }
 
@@ -181,7 +181,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
                                                 std::vector<Message> &up_msgs) {
 
     std::vector<double> norms(config->model_depth);
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
 
     //Compute Persistence Beliefs (and track norms)
     beliefs.ps.resize(fg->getNumFragments());
@@ -193,7 +193,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
             double tmp;
             if ((d == 0 && i == 0) || (d > 0 && down_msgs[d - 1].getIdx(i) > -DBL_MAXIMUM)) {
                 int energy = config->map_d_to_energy[d];
-                tmp = moldata->getLogPersistenceProbForIdx(energy, i);
+                tmp = moldata->GetLogPersistenceProbForIdx(energy, i);
                 tmp += up_msgs[d].getIdx(i);
                 if (d > 0) tmp += down_msgs[d - 1].getIdx(i);
                 if (i == 0) norms[d] = tmp;
@@ -214,7 +214,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
             double tmp;
             if ((d == 0 && t->getFromId() == 0) || (d > 0 && down_msgs[d - 1].getIdx(t->getFromId()) > -DBL_MAXIMUM)) {
                 int energy = config->map_d_to_energy[d];
-                tmp = moldata->getLogTransitionProbForIdx(energy, i);
+                tmp = moldata->GetLogTransitionProbForIdx(energy, i);
                 tmp += up_msgs[d].getIdx(t->getToId());
                 if (d > 0) tmp += down_msgs[d - 1].getIdx(t->getFromId());
                 norms[d] = logAdd(norms[d], tmp);
@@ -239,8 +239,8 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
 
 void Inference::createSpectrumMessage(Message &msg, int energy, Message &down_msg) {
 
-    const Spectrum *spectrum = moldata->getSpectrum(energy);
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const Spectrum *spectrum = moldata->GetSpectrum(energy);
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
 
     if (fg->hasIsotopesIncluded()) createSpectrumMessageWithIsotopes(msg, energy, down_msg);
     else {
@@ -282,8 +282,8 @@ void Inference::createSpectrumMessage(Message &msg, int energy, Message &down_ms
 
 void Inference::createSpectrumMessageWithIsotopes(Message &msg, int energy, Message &down_msg) {
 
-    const Spectrum *spectrum = moldata->getSpectrum(energy);
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const Spectrum *spectrum = moldata->GetSpectrum(energy);
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
 
     //Store normpdf( pk mass, ion mass, sigma*sqrt2 )
     static const double pi = boost::math::constants::pi<double>();

@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 	Param *param;
 	if( param_filename == "none" ){
 		std::vector<std::string> fnames;	//empty feature set
-		param = new Param(fnames, moldata.getNumSpectra());
+		param = new Param(fnames, moldata.GetNumSpectra());
 	}else{ 
 		if( cfg.theta_function == NEURAL_NET_THETA_FUNCTION )
 			param = new NNParam( param_filename );
@@ -109,10 +109,10 @@ int main(int argc, char *argv[])
 		param = new Param( param_filename );
 	}
 
-	if( param->getNumEnergyLevels() != moldata.getNumSpectra() ){
+	if( param->getNumEnergyLevels() != moldata.GetNumSpectra() ){
 		std::cout << "Mismatch between parameter set and spectra. Parameters have ";
 		std::cout << param->getNumEnergyLevels() << " energy levels whereas there are ";
-		std::cout << moldata.getNumSpectra() << " spectra" << std::endl;
+		std::cout << moldata.GetNumSpectra() << " spectra" << std::endl;
 		exit(1);
 	}
 
@@ -120,9 +120,9 @@ int main(int argc, char *argv[])
 
 	//Compute the fragmentation graph with transition probabilities
 	FeatureCalculator fc( *param->getFeatureNames() );
-	moldata.computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
-    moldata.computeNormalizedTransitionThetas(*param);
-	moldata.computeTransitionProbabilities();
+	moldata.ComputeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
+	moldata.ComputeNormalizedTransitionThetas(*param);
+	moldata.ComputeLogTransitionProbabilities();
 
 	moldata.removePeaksWithNoFragment( cfg.abs_mass_tol, cfg.ppm_mass_tol );
 
@@ -149,11 +149,11 @@ int main(int argc, char *argv[])
 
 	//Process the beliefs to extract the fragmentation tree that occurred
 	double log_belief_thresh = std::log(0.00001);
-	moldata.computeEvidenceFragmentGraph(&beliefs, log_belief_thresh);
+	moldata.ComputeEvidenceFragmentGraph(&beliefs, log_belief_thresh);
 
 	//Match peaks to fragments in the reduced tree
 	moldata.readInSpectraFromFile( spectrum_file );
-	moldata.annotatePeaks(cfg.abs_mass_tol, cfg.ppm_mass_tol);
+	moldata.AnnotatePeaks(cfg.abs_mass_tol, cfg.ppm_mass_tol);
 
 	//Set up the output stream
 	std::streambuf * buf;
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 	//Output the peak annotations and fragment graph
 	moldata.outputSpectra( out, "Experimental", true );
 	out << std::endl;
-	moldata.getEvidenceFragmentGraph()->writeFullGraph(out);
+    moldata.GetEvidenceFragmentGraph()->writeFullGraph(out);
 
 	delete param;
 	return(0);    

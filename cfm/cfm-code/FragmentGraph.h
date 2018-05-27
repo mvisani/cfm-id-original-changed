@@ -178,6 +178,23 @@ private:
     //(as above, don't use directly, will be moved)
 };
 
+class Path {
+public:
+    Path(std::vector<int> &trans_ids, const int &dst_id) {
+        std::copy(trans_ids.begin(), trans_ids.end(), std::back_inserter(m_trans_ids));
+        m_dst_id = dst_id;
+    };
+
+    ~Path() = default;
+
+    std::vector<int> *GetTransIds() { return &m_trans_ids; };
+
+    int GetDstId() const { return m_dst_id; };
+private:
+    std::vector<int> m_trans_ids;
+    int m_dst_id;
+};
+
 class FragmentGraph {
 public:
     FragmentGraph()
@@ -278,9 +295,17 @@ public:
     void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                    std::vector<std::vector<double>> &thetas, double explore_weight);
 
+    void ComputePathes(int depth);
+
+    // Get Path from 3 x std of given mass
+    void GetPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol);
+
+
 protected:
     std::vector<Fragment> fragments;
     std::vector<Transition> transitions;
+    std::vector<Path> pathes;
+    std::multimap<double, int> mass_path_map;
     tmap_t from_id_tmap; // Mapping between from_id and transitions with that from_id
     tmap_t to_id_tmap; // Mapping between to_id and transitions with that to_id
     bool include_isotopes;
@@ -323,6 +348,8 @@ protected:
     bool getPruningTransitionIds(int fg_id, std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
                                  std::vector<int> &removed_transitions_ids, std::map<int, int> &visited,
                                  bool aggressive);
+
+    void ComputePathFromFrag(int frag_id, std::vector<int> &trans_ids, int depth);
 };
 
 class EvidenceFragmentGraph : public FragmentGraph {
@@ -354,7 +381,6 @@ public:
 
     void setFlagsForDirectPaths(std::vector<int> &direct_flags, unsigned int fidx,
                                 std::vector<int> &annotated_flags) const;
-
 
 private:
     std::vector<EvidenceFragment> fragments;

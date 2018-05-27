@@ -1391,11 +1391,11 @@ void FeaturesTestMetlinExample::runTest(){
 	cfg.fg_depth = 1; cfg.include_h_losses = true; 
 	MolData mol( id, smiles_Metlin_21361, 0, &cfg );
 
-	mol.computeFragmentGraph(&fc);
-	mol.computeFeatureVectors(&fc);
+	mol.ComputeFragmentGraph(&fc);
+    mol.ComputeFeatureVectors(&fc);
 
 	//Transition 0: Check that the features are as expected
-	const FeatureVector *fv = mol.getFeatureVectorForIdx(0);
+	const FeatureVector *fv = mol.GetFeatureVectorForIdx(0);
 	if( fv->getNumSetFeatures() != 11 ){
 		std::cout << "Unexpected number of non-zero features " << fv->getNumSetFeatures();
 		pass = false;

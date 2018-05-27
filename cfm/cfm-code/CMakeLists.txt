@@ -15,7 +15,7 @@ set(BASE_HEADERS FragmentGraph.h Feature.h Config.h Spectrum.h
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Features FEATURES_SRC_DIR)
 
-set(TRAIN_HEADERS Comms.h EM.h EM_NN.h Solver.h)
+set(TRAIN_HEADERS Comms.h ModelBase.h EmModel.h EmNNModel.h Solver.h)
 
 set(BASE_SRC_FILES FragmentGraph.cpp
         Feature.cpp
@@ -39,8 +39,9 @@ set(BASE_SRC_FILES FragmentGraph.cpp
         Comparators.cpp)
 
 set(TRAIN_SRC_FILES Comms.cpp
-        EM.cpp
-        EM_NN.cpp
+        ModelBase.cpp
+        EmModel.cpp
+        EmNNModel.cpp
         Solver.cpp)
 
 if (INCLUDE_TRAIN)
@@ -50,12 +51,12 @@ if (INCLUDE_TRAIN)
             ${LPSOLVE_LIBRARY} ${LBFGS_LIBRARY} ${MPI_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 else ()
     set(SRC_FILES ${BASE_SRC_FILES})
-    set(HEADER_FILES ${BASE_HEADERS})
+    set(HEADER_FILES ${BASE_HEADERS} DirectModel.cpp DirectModel.h)
     set(REQUIRED_LIBS ${RDKIT_LIBRARIES} ${Boost_LIBRARIES}
             ${LPSOLVE_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 endif ()
 
-add_library(cfm-code STATIC ${SRC_FILES} ${HEADER_FILES})
+add_library(cfm-code STATIC ${SRC_FILES} ${HEADER_FILES} DirectModel.cpp DirectModel.h)
 target_link_libraries(cfm-code ${REQUIRED_LIBS})
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ISOTOPE.DAT

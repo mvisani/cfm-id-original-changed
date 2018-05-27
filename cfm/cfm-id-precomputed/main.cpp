@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
     Identifier identifier(&param, &cfg, cmp, 0.0);
 
     //Rank the candidates
-    identifier.rankPrecomputedCandidatesForSpecMatch(candidates, targetData.getSpectra());
+    identifier.rankPrecomputedCandidatesForSpecMatch(candidates, targetData.GetSpectra());
 
     //Keep only the num_highest
     if (num_highest > 0 && num_highest < (int) candidates.size()) candidates.resize(num_highest);

@@ -17,13 +17,13 @@
 # of the cfm source tree.
 #########################################################################*/
 
-#include "EM.h"
+#include "EmModel.h"
 #include "mpi.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
 
-EM::EM(config_t *a_cfg, FeatureCalculator *an_fc,
+EmModel::EmModel(config_t *a_cfg, FeatureCalculator *an_fc,
        std::string &a_status_filename, std::string initial_params_filename) {
     cfg = a_cfg;
     fc = an_fc;
@@ -47,46 +47,14 @@ EM::EM(config_t *a_cfg, FeatureCalculator *an_fc,
     sparse_params = true;
 }
 
-void EM::initComms() {
-    // Initialise the communicator
-    int mpi_rank, mpi_nump;
-    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &mpi_nump);
-    if (mpi_rank == MASTER)
-        comm = new MasterComms();
-    else
-        comm = new WorkerComms();
+EmModel::~EmModel() { delete comm; }
+
+void EmModel::computeThetas(MolData *moldata) {
+    moldata->ComputeNormalizedTransitionThetas(*param);
 }
 
-EM::~EM() { delete comm; }
-
-void EM::writeStatus(const char *msg) {
-
-    std::ofstream out;
-    out.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
-    out << msg << std::endl;
-    out.close();
-}
-
-void EM::writeParamsToFile(std::string &filename) {
-    param->saveToFile(filename);
-}
-
-void EM::initParams() {
-    if (cfg->em_init_type == PARAM_FULL_ZERO_INIT)
-        param->fullZeroInit();
-    else if (cfg->em_init_type == PARAM_ZERO_INIT)
-        param->zeroInit();
-    else
-        param->randomInit();
-}
-
-void EM::computeThetas(MolData *moldata) {
-    moldata->computeNormalizedTransitionThetas(*param);
-}
-
-double EM::run(std::vector<MolData> &data, int group,
-               std::string &out_param_filename) {
+double EmModel::TrainModel(std::vector<MolData> &molDataSet, int group,
+                           std::string &out_param_filename) {
 
     unused_zeroed = 0;
     int iter = 0;
@@ -117,9 +85,9 @@ double EM::run(std::vector<MolData> &data, int group,
     int count_no_progress = 0;
 
     if (cfg->add_noise) {
-        for (auto &mol : data) {
-            if (mol.getGroup() != validation_group)
-                mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
+        for (auto &mol : molDataSet) {
+            if (mol.GetGroup() != validation_group)
+                mol.AddNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
             mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
         }
     }
@@ -139,17 +107,17 @@ double EM::run(std::vector<MolData> &data, int group,
 
         // Reset sufficient counts
         suft_counts_t suft;
-        initSuft(suft, data);
+        initSuft(suft, molDataSet);
 
         int num_converged = 0, num_nonconverged = 0;
         int tot_numc = 0, total_numnonc = 0;
         before = time(nullptr);
 
         // Do the inference part (E-step)
-        itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
+        itdata = molDataSet.begin();
+        for (int molidx = 0; itdata != molDataSet.end(); ++itdata, molidx++) {
 
-            if (!itdata->hasComputedGraph())
+            if (!itdata->HasComputedGraph())
                 continue; // If we couldn't compute it's graph for some reason..
             if (itdata->hasEmptySpectrum()) {
                 std::cout << "Warning: No peaks with explanatory fragment found for "
@@ -159,13 +127,13 @@ double EM::run(std::vector<MolData> &data, int group,
                 // or missing spectra.
             }
 
-            //if (itdata->getGroup() == validation_group)
+            //if (itdata->GetGroup() == validation_group)
             //    continue;
 
             MolData *moldata = &(*itdata);
 
             computeThetas(moldata);
-            moldata->computeTransitionProbabilities();
+            moldata->ComputeLogTransitionProbabilities();
 
             // Apply the peak evidence, compute the beliefs and record the sufficient
             // statistics
@@ -215,7 +183,7 @@ double EM::run(std::vector<MolData> &data, int group,
         // (M-step)
 
         before = time(nullptr);
-        Q = updateParametersGradientAscent(data, suft, learning_rate, sampling_method);
+        Q = updateParametersGradientAscent(molDataSet, suft, learning_rate, sampling_method);
 
         after = time(nullptr);
         std::string param_update_time_msg =
@@ -240,13 +208,13 @@ double EM::run(std::vector<MolData> &data, int group,
                 std::cout << "[INFO]Using MiniBatch and/or Sampling, Compute the final Q" << std::endl;
         }
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
-        for (itdata = data.begin(); itdata != data.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() == validation_group) {
-                valQ += computeQ(molidx, *itdata, suft);
+        for (itdata = molDataSet.begin(); itdata != molDataSet.end(); ++itdata, molidx++) {
+            if (itdata->GetGroup() == validation_group) {
+                valQ += ComputeQ(molidx, *itdata, suft);
                 numvalmols++;
             } else if (cfg->ga_minibatch_nth_size > 1 ||
                        sampling_method != USE_NO_SAMPLING) {
-                Q += computeQ(molidx, *itdata, suft);
+                Q += ComputeQ(molidx, *itdata, suft);
                 numnonvalmols++;
             } else
                 numnonvalmols++;
@@ -348,23 +316,23 @@ double EM::run(std::vector<MolData> &data, int group,
     return bestQ;
 }
 
-void EM::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
+void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
 
     // Resize the suft structure for each molecule
     auto num_mols = data.size();
     suft.values.resize(num_mols);
     for (unsigned int i = 0; i < num_mols; i++) {
-        const FragmentGraph *fg = data[i].getFragmentGraph();
+        const FragmentGraph *fg = data[i].GetFragmentGraph();
         int len = fg->getNumTransitions() + fg->getNumFragments();
-        int num_spectra = data[i].getNumSpectra();
+        int num_spectra = data[i].GetNumSpectra();
         suft.values[i].resize(len * num_spectra);
     }
 }
 
-void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
+void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
                                     MolData *moldata, beliefs_t *beliefs) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    const FragmentGraph *fg = moldata->GetFragmentGraph();
 
     unsigned int num_transitions = fg->getNumTransitions();
     unsigned int num_fragments = fg->getNumFragments();
@@ -415,7 +383,7 @@ void EM::recordSufficientStatistics(suft_counts_t &suft, int molidx,
     }
 }
 
-double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
+double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
                                           int sampling_method) {
 
     // DBL_MIN is the smallest positive double
@@ -435,8 +403,8 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
             std::cout << "[M-Step] Initial Calculation ...";
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() != validation_group)
-                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0);
+            if (itdata->GetGroup() != validation_group)
+                ComputeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0);
         }
         /*if( comm->isMaster() )
             Q += addRegularizers( &grads[0] );
@@ -483,7 +451,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             // Don't include validation molecules
-            minibatch_flags[molidx] = (itdata->getGroup() != validation_group);
+            minibatch_flags[molidx] = (itdata->GetGroup() != validation_group);
         }
 
         if (cfg->ga_minibatch_nth_size > 1) {
@@ -496,7 +464,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (minibatch_flags[molidx]) {
                 //std::cout << itdata->getId() << " Start" << std::endl;
-                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, false, comm->used_idxs, sampling_method);
+                ComputeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, false, comm->used_idxs, sampling_method);
                 //std::cout << itdata->getId() << " Finished" << std::endl;
             }
 
@@ -518,7 +486,7 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
         itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (minibatch_flags[molidx])
-                Q += computeQ(molidx, *itdata, suft);
+                Q += ComputeQ(molidx, *itdata, suft);
         }
         if (comm->isMaster())
             Q += addRegularizersAndUpdateGradient(nullptr);
@@ -558,18 +526,18 @@ double EM::updateParametersGradientAscent(std::vector<MolData> &data, suft_count
     return Q;
 }
 
-double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                        bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                        int sampling_method) {
+double EmModel::ComputeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
+                                             bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
+                                             int sampling_method) {
 
     double Q = 0.0;
-    const FragmentGraph *fg = moldata.getFragmentGraph();
+    const FragmentGraph *fg = moldata.GetFragmentGraph();
     unsigned int num_transitions = fg->getNumTransitions();
     unsigned int num_fragments = fg->getNumFragments();
 
     int offset = num_transitions;
 
-    if (!moldata.hasComputedGraph())
+    if (!moldata.HasComputedGraph())
         return Q;
 
     suft_t *suft_values = &(suft.values[molidx]);
@@ -586,11 +554,11 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
         std::set<int> selected_trans_id;
         if (!record_used_idxs_only && sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
 
-            int num_frags = moldata.getSpectrum(energy)->size();
+            int num_frags = moldata.GetSpectrum(energy)->size();
             int num_iterations = cfg->ga_graph_sampling_k * num_frags;
             if (cfg->ga_use_sqaured_iter_num)
                 num_iterations = num_iterations * (energy + 1) * (energy + 1);
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
+            moldata.GetSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
         }
 
 
@@ -600,7 +568,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 
             if (record_used_idxs_only) {
                 for (auto trans_id : *frag_trans_map) {
-                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
+                    const FeatureVector *fv = moldata.GetFeatureVectorForIdx(trans_id);
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         used_idxs.insert(*fv_it + grad_offset);
                     }
@@ -622,17 +590,17 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
                 // Calculate the denominator of the sum terms
                 double denom = 1.0;
                 for (auto trans_id : sampled_ids)
-                    denom += exp(moldata.getThetaForIdx(energy, trans_id));
+                    denom += exp(moldata.GetThetaForIdx(energy, trans_id));
 
                 // Complete the innermost sum terms	(sum over j')
                 std::map<unsigned int, double> sum_terms;
 
                 for (auto trans_id : sampled_ids) {
-                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
+                    const FeatureVector *fv = moldata.GetFeatureVectorForIdx(trans_id);
 
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         auto fv_idx = *fv_it;
-                        double val = exp(moldata.getThetaForIdx(energy, trans_id)) / denom;
+                        double val = exp(moldata.GetThetaForIdx(energy, trans_id)) / denom;
                         if (sum_terms.find(fv_idx) != sum_terms.end())
                             sum_terms[fv_idx] += val;
                         else
@@ -646,7 +614,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
                 for (auto trans_id : sampled_ids) {
                     double nu = (*suft_values)[trans_id + suft_offset];
                     nu_sum += nu;
-                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
+                    const FeatureVector *fv = moldata.GetFeatureVectorForIdx(trans_id);
 
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         auto fv_idx = *fv_it;
@@ -656,7 +624,7 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
                             used_idxs.insert(fv_idx + grad_offset);
 
                     }
-                    Q += nu * (moldata.getThetaForIdx(energy, trans_id) - log(denom));
+                    Q += nu * (moldata.GetThetaForIdx(energy, trans_id) - log(denom));
                 }
 
                 // Accumulate the last term of each transition and the
@@ -675,26 +643,26 @@ double EM::computeAndAccumulateGradient(double *grads, int molidx, MolData &mold
 
     // Compute the latest transition thetas
     if (!record_used_idxs_only)
-        moldata.computeNormalizedTransitionThetas(*param);
+        moldata.ComputeNormalizedTransitionThetas(*param);
 
     return Q;
 }
 
-double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
+double EmModel::ComputeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     double Q = 0.0;
-    const FragmentGraph *fg = moldata.getFragmentGraph();
+    const FragmentGraph *fg = moldata.GetFragmentGraph();
     unsigned int num_transitions = fg->getNumTransitions();
     unsigned int num_fragments = fg->getNumFragments();
 
     int offset = num_transitions;
 
-    if (!moldata.hasComputedGraph())
+    if (!moldata.HasComputedGraph())
         return Q;
 
 
     // Compute the latest transition thetas
-    moldata.computeNormalizedTransitionThetas(*param);
+    moldata.ComputeNormalizedTransitionThetas(*param);
     suft_t *suft_values = &(suft.values[molidx]);
 
     // Collect energies to compute
@@ -713,12 +681,12 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
             // Calculate the denominator of the sum terms
             double denom = 1.0;
             for (auto itt : *it)
-                denom += exp(moldata.getThetaForIdx(energy, itt));
+                denom += exp(moldata.GetThetaForIdx(energy, itt));
 
             // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
             for (auto itt : *it) {
                 double nu = (*suft_values)[itt + suft_offset];
-                Q += nu * (moldata.getThetaForIdx(energy, itt) - log(denom));
+                Q += nu * (moldata.GetThetaForIdx(energy, itt) - log(denom));
             }
 
             // Accumulate the last term of each transition and the
@@ -740,7 +708,7 @@ double EM::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 }
 
 
-double EM::addRegularizersAndUpdateGradient(double *grads) {
+double EmModel::addRegularizersAndUpdateGradient(double *grads) {
 
     double Q = 0.0;
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
@@ -762,82 +730,4 @@ double EM::addRegularizersAndUpdateGradient(double *grads) {
             *(grads + energy * weights_per_energy) += cfg->lambda * bias;
     }
     return Q;
-}
-
-
-void EM::zeroUnusedParams() {
-
-    unsigned int i;
-    for (i = 0; i < param->getNumWeights(); i++) {
-        if (((MasterComms *) comm)->master_used_idxs.find(i) ==
-            ((MasterComms *) comm)->master_used_idxs.end())
-            param->setWeightAtIdx(0.0, i);
-    }
-}
-
-void EM::getEnergiesLevels(std::vector<unsigned int> &energies) {
-    unsigned int energy;
-    int prev_energy = -1;
-    for (unsigned int d = 0; d < cfg->model_depth; d++) {
-        energy = cfg->map_d_to_energy[d];
-        if (energy != prev_energy)
-            energies.push_back(energy);
-        prev_energy = energy;
-    }
-}
-
-
-void EM::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
-
-    // The flags are initialized to 1's for selectable molecules, so set unwanted
-    // molecule flags to 0
-    int num_mols = initialized_minibatch_flags.size();
-    std::vector<int> idxs(num_mols);
-    int count = 0;
-    for (int i = 0; i < num_mols; i++)
-        if (initialized_minibatch_flags[i])
-            idxs[count++] = i;
-    idxs.resize(count);
-
-
-    std::shuffle(idxs.begin(), idxs.end(), util_rng);
-
-    int num_minibatch_mols =
-            (num_mols + cfg->ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;
-    for (int i = num_minibatch_mols; i < idxs.size(); i++)
-        initialized_minibatch_flags[idxs[i]] = 0;
-}
-
-Solver *EM::getSolver(int ga_method, double learning_rate) const {
-    Solver *solver;
-    switch (ga_method) {
-        case USE_ADAM_FOR_GA:
-            solver = new Aadm(param->getNumWeights(),
-                              learning_rate,
-                              cfg->ga_adam_beta_1,
-                              cfg->ga_adam_beta_2,
-                              cfg->ga_eps);
-
-            break;
-        case USE_AMSGRAD_FOR_GA:
-            solver = new AMSgrad(param->getNumWeights(),
-                                 learning_rate,
-                                 cfg->ga_adam_beta_1,
-                                 cfg->ga_adam_beta_2,
-                                 cfg->ga_eps);
-
-            break;
-        case USE_ADADELTA_FOR_GA:
-            solver = new Adadelta(param->getNumWeights(),
-                                  learning_rate,
-                                  cfg->ga_adadelta_rho,
-                                  cfg->ga_eps);
-            break;
-        case USE_MOMENTUM_FOR_GA:
-        default:
-            solver = new Momentum(param->getNumWeights(),
-                                  learning_rate,
-                                  cfg->ga_momentum);
-    }
-    return solver;
 }

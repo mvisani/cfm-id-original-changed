@@ -22,8 +22,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
-#include "EM.h"
-#include "EM_NN.h"
+#include "EmModel.h"
+#include "EmNNModel.h"
 
 void parseInputFile(std::vector<MolData> &data, std::string &input_filename, int mpi_rank, int mpi_nump, config_t *cfg);
 
@@ -162,7 +162,7 @@ int main(int argc, char *argv[]) {
     for (; mit != data.end(); ++mit) {
         try {
             //If we're not training, only load the ones we'll be testing
-            if ((mit->getGroup() >= min_group && mit->getGroup() <= max_group) || !no_train) {
+            if ((mit->GetGroup() >= min_group && mit->GetGroup() <= max_group) || !no_train) {
                 if (mit->getId() == next_id) {
                     mit->readInFVFragmentGraphFromStream(*fv_ifs);
                     unsigned int id_size;
@@ -176,20 +176,20 @@ int main(int argc, char *argv[]) {
                 } else {
                     time_t before, after;
                     before = time(nullptr);
-                    mit->computeFragmentGraphAndReplaceMolsWithFVs(&fc);
+                    mit->ComputeFragmentGraphAndReplaceMolsWithFVs(&fc);
                     std::ofstream eout;
                     eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
                     after = time(nullptr);
                     eout << "ID: " << mit->getId() << " is Done. Time Elaspsed = " << (after - before) << " Seconds ";
-                    eout << " :Num Frag = " << mit->getFragmentGraph()->getNumFragments();
-                    eout << " :Num Trans = " << mit->getFragmentGraph()->getNumTransitions() << std::endl;
+                    eout << " :Num Frag = " << mit->GetFragmentGraph()->getNumFragments();
+                    eout << " :Num Trans = " << mit->GetFragmentGraph()->getNumTransitions() << std::endl;
                     eout.close();
                 }
                 unsigned int id_size = mit->getId().size();
                 if (min_group == 0) {
                     fv_out.write(reinterpret_cast<const char *>(&id_size), sizeof(id_size));
                     fv_out.write(&(mit->getId()[0]), id_size);
-                    mit->writeFVFragmentGraphToStream(
+                    mit->WriteFVFragmentGraphToStream(
                             fv_out);    //We always write it, in case we haven't already computed all of them
                 }
                 success_count++;
@@ -243,7 +243,7 @@ int main(int argc, char *argv[]) {
     //Create the MSP lookup
     if (spectra_in_msp) msp = new MspReader(peakfile_dir_or_msp.c_str(), "");
     for (mit = data.begin(); mit != data.end(); ++mit) {
-        if ((mit->getGroup() >= min_group && mit->getGroup() <= max_group) || !no_train) {
+        if ((mit->GetGroup() >= min_group && mit->GetGroup() <= max_group) || !no_train) {
             if (spectra_in_msp)
                 mit->readInSpectraFromMSP(*msp);
             else {
@@ -308,11 +308,11 @@ int main(int argc, char *argv[]) {
         else
             param = new Param(param_filename);
         for (mit = data.begin(); mit != data.end(); ++mit) {
-            if (mit->getGroup() != group) continue;
-            if (!mit->hasComputedGraph()) continue;    //If we couldn't compute it's graph for some reason..
+            if (mit->GetGroup() != group) continue;
+            if (!mit->HasComputedGraph()) continue;    //If we couldn't compute it's graph for some reason..
 
             //Predicted spectrum
-            mit->computePredictedSpectra(*param, false);
+            mit->ComputePredictedSpectra(*param, false);
 
             if (spectra_in_msp) mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
             else {
@@ -352,16 +352,16 @@ trainCombinedEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalcul
     //Run EM multiple times with random restarts, taking the final one with the best Q
     double prev_Q = -DBL_MAX;
     for (int repeat = start_repeat; repeat < cfg.num_em_restarts; repeat++) {
-        EM *em;
+        EmModel *em;
         std::string repeat_filename = param_filename + boost::lexical_cast<std::string>(repeat);
         std::string out_filename = repeat_filename;
         if (!boost::filesystem::exists(repeat_filename)) repeat_filename = "";
         if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION)
-            em = new EM_NN(&cfg, &fc, status_filename, repeat_filename);
+            em = new EmNNModel(&cfg, &fc, status_filename, repeat_filename);
         else
-            em = new EM(&cfg, &fc, status_filename, repeat_filename);
+            em = new EmModel(&cfg, &fc, status_filename, repeat_filename);
 
-        double Q = em->run(data, group, out_filename);
+        double Q = em->TrainModel(data, group, out_filename);
         if (Q > prev_Q) {
             if (mpi_rank == MASTER) {
                 std::cout << "Found better Q!" << std::endl;
@@ -400,18 +400,18 @@ trainSingleEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalculat
             }
             for (int repeat = start_repeat; repeat < se_cfg.num_em_restarts; repeat++) {
 
-                EM *em;
+                EmModel *em;
                 std::string repeat_filename = eparam_filename + boost::lexical_cast<std::string>(repeat);
                 std::string out_filename = repeat_filename;
                 if (!boost::filesystem::exists(repeat_filename)) repeat_filename = "";
                 else if (energy > 0 && cfg.use_lower_energy_params_for_init)
                     repeat_filename = prev_eparam_filename + boost::lexical_cast<std::string>(repeat);
                 if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION)
-                    em = new EM_NN(&se_cfg, &fc, status_filename, repeat_filename);
+                    em = new EmNNModel(&se_cfg, &fc, status_filename, repeat_filename);
                 else
-                    em = new EM(&se_cfg, &fc, status_filename, repeat_filename);
+                    em = new EmModel(&se_cfg, &fc, status_filename, repeat_filename);
 
-                double Q = em->run(data, group, out_filename);
+                double Q = em->TrainModel(data, group, out_filename);
                 if (Q > prev_Q) {
                     if (mpi_rank == MASTER) {
                         std::cout << "Found better Q!" << std::endl;

@@ -29,8 +29,8 @@ void SpectrumQuantiseTest::runTest(){
 
 	//3 Decimal places
 	moldata.readInSpectraFromFile(specfile, true);
-	moldata.quantisePredictedSpectra(3);
-	const Spectrum *spec = moldata.getPredictedSpectrum(1);
+    moldata.QuantisePredictedSpectra(3);
+	const Spectrum *spec = moldata.GetPredictedSpectrum(1);
 	if( spec->size() != 7 ){
 		std::cout << "Unexpected number of peaks in 3 decimal place spectrum: expected 7 but found " << spec->size() << std::endl;
 		pass = false;
@@ -50,8 +50,8 @@ void SpectrumQuantiseTest::runTest(){
 
 	//2 Decimal places
 	moldata.readInSpectraFromFile(specfile, true);
-	moldata.quantisePredictedSpectra(2);
-	spec = moldata.getPredictedSpectrum(1);
+    moldata.QuantisePredictedSpectra(2);
+	spec = moldata.GetPredictedSpectrum(1);
 	if( spec->size() != 6 ){
 		std::cout << "Unexpected number of peaks in 2 decimal place spectrum: expected 6 but found " << spec->size() << std::endl;
 		pass = false;	
@@ -71,8 +71,8 @@ void SpectrumQuantiseTest::runTest(){
 
 	//0 Decimal places
 	moldata.readInSpectraFromFile(specfile, true);
-	moldata.quantisePredictedSpectra(0);
-	spec = moldata.getPredictedSpectrum(1);
+    moldata.QuantisePredictedSpectra(0);
+	spec = moldata.GetPredictedSpectrum(1);
 	if( spec->size() != 4 ){
 		std::cout << "Unexpected number of peaks in 0 decimal place spectrum: expected 4 but found " << spec->size() << std::endl;
 		pass = false;	
@@ -112,7 +112,7 @@ void SpectrumCleanTest::runTest(){
 
 	//Check that there is one peak over intensity 10.0 within 0.1 of 113.07 in each spectrum
 	for( int energy = 0; energy < 3; energy++ ){
-		const Spectrum *spec = moldata.getSpectrum(energy);
+		const Spectrum *spec = moldata.GetSpectrum(energy);
 		Spectrum::const_iterator it = spec->begin();
 		int count = 0;
 		for( ; it != spec->end(); ++it )
