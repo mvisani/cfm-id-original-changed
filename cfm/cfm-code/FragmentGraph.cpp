@@ -111,8 +111,7 @@ bool FragmentGraph::getPruningTransitionIds(int fg_id, std::vector<Spectrum> &sp
                 removed_transitions_ids.push_back(trans_id);
             }
         }
-    }
-    else if (fg_id < from_id_tmap.size() && aggressive) {
+    } else if (fg_id < from_id_tmap.size() && aggressive) {
         for (auto trans_id : from_id_tmap[fg_id]) {
             auto to_id = transitions[trans_id].getToId();
             bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol, removed_transitions_ids,
@@ -168,7 +167,8 @@ void FragmentGraph::removeLonelyFrags() {
 }
 
 void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
-                                                              std::vector<std::vector<double>> &thetas, double explore_weight) {
+                                                              std::vector<std::vector<double>> &thetas,
+                                                              double explore_weight) {
 
     std::vector<std::discrete_distribution<int>> discrete_distributions;
 

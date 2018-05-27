@@ -69,8 +69,8 @@ void FingerPrintFeature::getRemoveAtomIdxByDisatnce(
 }
 
 void FingerPrintFeature::getRemoveAtomIdxByCount(romol_ptr_t mol, const RDKit::Atom *root,
-                             std::vector<unsigned int> &remove_atom_ids,
-                             int count) const {
+                                                 std::vector<unsigned int> &remove_atom_ids,
+                                                 int count) const {
     std::queue<const RDKit::Atom *> atom_queue;
     std::queue<int> distance_queue;
     atom_queue.push(root);
@@ -105,7 +105,7 @@ void FingerPrintFeature::getRemoveAtomIdxByCount(romol_ptr_t mol, const RDKit::A
             // if we have not visit this node before
             // and this node is in the visit list
             if (nbr_atom != curr) {
-                std::string  sorting_key = getSortingLabel(mol, nbr_atom, curr, 1);
+                std::string sorting_key = getSortingLabel(mol, nbr_atom, curr, 1);
                 child_visit_order.insert(
                         std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
             }

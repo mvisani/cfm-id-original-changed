@@ -38,7 +38,7 @@ typedef std::pair<std::string, std::string> symbol_pair_t;
 // Exception to throw when the input feature configuration file is invalid
 class InvalidConfigException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         return "Invalid Feature Configuration File";
     }
 };
@@ -48,15 +48,15 @@ private:
     std::string message_;
 
 public:
-    FeatureCalculationException(const std::string &message) throw()
+    FeatureCalculationException(const std::string &message) noexcept
             : message_(message) {};
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         std::cout << "Error computing feature vector: " << message_ << std::endl;
         return message_.c_str();
     }
 
-    ~FeatureCalculationException() throw() {};
+    ~FeatureCalculationException() noexcept {};
 };
 
 // Structure to hold a sparse computed feature vector
@@ -89,6 +89,7 @@ public:
     unsigned int getNumSetFeatures() const { return fv.size(); };
 
     void printDebugInfo() const;
+
 private:
     std::vector<feature_t> fv;
     unsigned int fv_idx;

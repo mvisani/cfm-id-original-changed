@@ -21,7 +21,6 @@
 #include "IPFP.h"
 
 #include <boost/math/constants/constants.hpp>
-#include <boost/math/distributions.hpp>
 
 //Big log negative value that will effectively result in zero probability
 static const double NULL_PROB = -1000000000000.0;

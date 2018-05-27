@@ -25,7 +25,7 @@
 //Exception to throw when the input feature vector configuration doesn't match the parameters
 class ParamFeatureMismatchException : public std::exception {
 
-    virtual const char *what() const throw() {
+    const char *what() const noexcept override {
         return "Mismatch between feature vector length and num parameters";
     }
 };
@@ -41,7 +41,7 @@ public:
     Param(Param &param_instance);
 
     //Constructor for loading parameters from file
-    Param(std::string &filename);
+    explicit Param(std::string &filename);
 
     //Append a set of parameters to the current parameters
     //Either all energy levels to the next slot (if energy < 0),
@@ -64,9 +64,6 @@ public:
 
     //Set the value of a weight
     void setWeightAtIdx(double value, int index) { weights[index] = value; };
-
-    //Print the current parameters to the given output stream
-    void reportParameters(std::ostream &out);
 
     //Save parameters to file
     virtual void saveToFile(std::string &filename);

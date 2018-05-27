@@ -24,7 +24,7 @@ class FunctionalGroupFeature : public Feature {
 protected:
     void addFunctionalGroupFeaturesFromAtom(std::vector<int> &tmp_full_fv,
                                             const RDKit::Atom *atom,
-                                            const romol_ptr_t mol,
+                                            romol_ptr_t mol,
                                             const RDKit::Atom *prev_atom,
                                             int max_depth, int depth,
                                             bool extra) const;

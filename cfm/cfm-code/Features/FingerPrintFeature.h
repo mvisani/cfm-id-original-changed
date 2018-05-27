@@ -33,15 +33,12 @@ protected:
                                     int distance) const;
 
     void getRemoveAtomIdxByCount(romol_ptr_t mol, const RDKit::Atom *root,
-                                    std::vector<unsigned int> &remove_atom_ids,
-                                    int count) const;
+                                 std::vector<unsigned int> &remove_atom_ids,
+                                 int count) const;
 
     // remove atoms from mol in given list
     void removeAtomInTheList(RDKit::RWMol &mol,
                              std::vector<unsigned int> &remove_atom_ids) const;
-
-    // replace bond type with orig bond type
-    void replaceWithOrigBondType(RDKit::RWMol &mol) const;
 
     void addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
                                      unsigned int finger_print_size, unsigned int limitation_param,
@@ -61,14 +58,6 @@ protected:
                                                 bool include_adjacency_matrix) const;
 
 private:
-    // void getAtomsWithRange(int range);
-
-    // void getAtomVisitOrderDFS(const romol_ptr_t mol, const RDKit::Atom *atom,
-    //                          const RDKit::Atom *prev_atom, int range,
-    //                          std::vector<unsigned int> &visited) const;
-    enum Bfs_Stop_Logic {
-        RANGE_ONLY = 0, SIZE_ONLY, RANGE_OR_SIZE
-    };
 
     void getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit::Atom *root,
                               std::vector<unsigned int> &visit_order, int num_atoms,
@@ -76,19 +65,6 @@ private:
 
     std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
                                 const RDKit::Atom *parent_atom, int depth) const;
-
-    /*
-    std::string
-    getSortingLabels(const romol_ptr_t mol, const RDKit::Atom *atom,
-                     const RDKit::Atom *prev_atom, int range,
-                     std::unordered_set<unsigned int> &visited,
-                     std::map<unsigned int, std::string> &sorting_labels) const;
-    */
-    /*void addMorganFingerPrint(FeatureVector &fv,
-                              const RootedROMolPtr *mol,
-                              const RDKit::Atom *root,
-                              const unsigned int path_range,
-                              const int radius) const;*/
 
     void addMorganFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
                               const RDKit::Atom *root,

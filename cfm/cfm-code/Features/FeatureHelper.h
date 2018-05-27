@@ -29,15 +29,15 @@ private:
     std::string message_;
 
 public:
-    FeatureHelperException(const std::string &message) throw()
+    explicit FeatureHelperException(const std::string &message) noexcept
             : message_(message) {};
 
-    virtual const char *what() const throw() {
+    const char *what() const noexcept override {
         std::cout << "Error in FeatureHelper: " << message_ << std::endl;
         return message_.c_str();
     }
 
-    ~FeatureHelperException() throw() {};
+    ~FeatureHelperException() noexcept override = default;;
 };
 
 class FeatureHelper {
@@ -49,7 +49,7 @@ public:
             exec_flags[i] = 0;
     };
 
-    FeatureHelper(FeatureCalculator *fc) {
+    explicit FeatureHelper(FeatureCalculator *fc) {
         exec_flags.resize(6);
         exec_flags[0] = fc->includesFeature("GasteigerCharges");
         exec_flags[1] = fc->includesFeature("HydrogenMovement") ||
@@ -157,6 +157,6 @@ private:
     void labelFunctionalGroups(RDKit::RWMol *rwmol,
                                bool extra); // Not static because it uses fparams.
 
-    RDKit::FragCatParams *fparams;
-    RDKit::FragCatParams *xfparams;
+    RDKit::FragCatParams *fparams = nullptr;
+    RDKit::FragCatParams *xfparams = nullptr;
 };

@@ -29,7 +29,7 @@ void QuadraticFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion,
         // feature x feature matrix is included (minus bias row/col)
         //- the offset gives the index for the first used feature in each row.
         int offset = n + (*it1 - 2) * (*it1 - 1) / 2;
-        for (auto it2 =std::next(fv.getFeatureBegin()); it2 != it1; ++it2)
+        for (auto it2 = std::next(fv.getFeatureBegin()); it2 != it1; ++it2)
             quadratic_indexes.push_back(offset + *it2 - 1);
     }
     // Add the features

@@ -58,7 +58,7 @@ int RingFeatures::calcRootDistance(const RootedROMolPtr *mol) const {
     std::set<int> seen_idxs;
     std::queue<item_t> queue;
     queue.push(item_t(mol->root, 0));
-    while (queue.size() > 0) {
+    while (!queue.empty()) {
         item_t item = queue.front();
         RDKit::Atom *at = item.first;
         int depth = item.second;

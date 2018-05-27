@@ -39,7 +39,7 @@ double getMassTol(double abs_tol, double ppm_tol, double mass);
 //to the root atoms (i.e. the atoms that were at either end of a broken bond)
 class RootedROMolPtr {
 public:
-    RootedROMolPtr() {};    //Default Constructor
+    RootedROMolPtr() = default;;    //Default Constructor
     RootedROMolPtr(romol_ptr_t a_mol, RDKit::Atom *a_root, RDKit::Atom *an_other_root) :
             mol(a_mol), root(a_root), other_root(an_other_root) {};
     romol_ptr_t mol;
@@ -85,11 +85,11 @@ inline double logAdd(double log_x, double log_y) {
     return rval;
 }
 
-void softmax(std::vector<double>& weight, std::vector<double>& prob);
+void softmax(std::vector<double> &weight, std::vector<double> &prob);
 
 // Init static members
-static std::random_device   util_rd;
-static std::mt19937         util_rng(util_rd());
-static std::uniform_real_distribution<double> util_uniform_dist(0,1.0);
+static std::random_device util_rd;
+static std::mt19937 util_rng(util_rd());
+static std::uniform_real_distribution<double> util_uniform_dist(0, 1.0);
 
 #endif // __UTIL_H__

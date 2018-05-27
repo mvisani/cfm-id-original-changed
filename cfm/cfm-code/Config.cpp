@@ -20,24 +20,23 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <cfloat>
 
 void initDefaultConfig(config_t &cfg) {
 
     cfg.lambda = DEFAULT_LAMBDA;
     cfg.ga_method = USE_LBFGS_FOR_GA;
-    cfg.converge_count_thresh = DEFAULT_CONVERGE_COUNT_THRESH;
+    //cfg.converge_count_thresh = DEFAULT_CONVERGE_COUNT_THRESH;
     cfg.em_converge_thresh = DEFAULT_EM_CONVERGE_THRESH;
     cfg.ga_converge_thresh = DEFAULT_GA_CONVERGE_THRESH;
     cfg.model_depth = DEFAULT_MODEL_DEPTH;
     cfg.abs_mass_tol = DEFAULT_ABS_MASS_TOL;
     cfg.ppm_mass_tol = DEFAULT_PPM_MASS_TOL;
     cfg.num_em_restarts = DEFAULT_NUM_EM_RESTARTS;
-    cfg.line_search_alpha = DEFAULT_LINE_SEARCH_ALPHA;
-    cfg.line_search_beta = DEFAULT_LINE_SEARCH_BETA;
+    //cfg.line_search_alpha = DEFAULT_LINE_SEARCH_ALPHA;
+    //cfg.line_search_beta = DEFAULT_LINE_SEARCH_BETA;
     cfg.starting_step_size = DEFAULT_LEARNING_RATE;
     cfg.decay_rate = DEFAULT_DECAY_RATE;
-    cfg.max_search_count = DEFAULT_MAX_SEARCH_COUNT;
+    //cfg.max_search_count = DEFAULT_MAX_SEARCH_COUNT;
     cfg.spectrum_depths.clear();
     cfg.spectrum_weights.clear();
     cfg.dv_spectrum_indexes.clear();
@@ -80,9 +79,9 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_use_sqaured_iter_num = DEFAULT_NOT_USE_SQUARD_ITER;
     cfg.ga_use_sqrt_prob = DEFAULT_NOT_USE_SQRT_PROB;
     cfg.aggressive_graph_pruning = false;
-	cfg.reset_sampling = false;
-	cfg.reset_sampling_lr_ratio = 1.0;
-	cfg.add_noise = false;
+    cfg.reset_sampling = false;
+    cfg.reset_sampling_lr_ratio = 1.0;
+    cfg.add_noise = false;
     cfg.noise_max = 0.1;
     cfg.noise_sum = 10;
 }
@@ -108,7 +107,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
         if (name == "lambda") cfg.lambda = value;
         else if (name == "ionization_mode") cfg.ionization_mode = (int) value;
-        else if (name == "converge_count_thresh") cfg.converge_count_thresh = (int) value;
+        //else if (name == "converge_count_thresh") cfg.converge_count_thresh = (int) value;
         else if (name == "em_converge_thresh") cfg.em_converge_thresh = value;
         else if (name == "ga_converge_thresh") cfg.ga_converge_thresh = value;
         else if (name == "update_bias_first") cfg.update_bias_first = (int) value;
@@ -118,11 +117,11 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "abs_mass_tol") cfg.abs_mass_tol = (double) value;
         else if (name == "ppm_mass_tol") cfg.ppm_mass_tol = (double) value;
         else if (name == "num_em_restarts") cfg.num_em_restarts = (int) value;
-        else if (name == "line_search_alpha") cfg.line_search_alpha = (double) value;
-        else if (name == "line_search_beta") cfg.line_search_beta = (double) value;
+        //else if (name == "line_search_alpha") cfg.line_search_alpha = (double) value;
+        //else if (name == "line_search_beta") cfg.line_search_beta = (double) value;
         else if (name == "starting_step_size") cfg.starting_step_size = (double) value;
         else if (name == "decay_rate") cfg.decay_rate = (double) value;
-        else if (name == "max_search_count") cfg.max_search_count = (int) value;
+        //else if (name == "max_search_count") cfg.max_search_count = (int) value;
         else if (name == "fg_depth") cfg.fg_depth = (int) value;
         else if (name == "allow_frag_detours") cfg.allow_frag_detours = (int) value;
         else if (name == "do_prelim_bfs") cfg.do_prelim_bfs = (int) value;
@@ -145,27 +144,27 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_adam_beta_1") cfg.ga_adam_beta_1 = (double) value;
         else if (name == "ga_adam_beta_2") cfg.ga_adam_beta_2 = (double) value;
         else if (name == "ga_eps") cfg.ga_eps = (double) value;
-        else if (name == "ga_adadelta_rho") cfg.ga_adadelta_rho = (double)value;
-        else if (name == "ga_decay_method") cfg.ga_decay_method = (int)value;
-        else if (name == "exp_decay_k") cfg.exp_decay_k = (double)value;
-        else if (name == "step_decay_drop") cfg.step_decay_drop = (double)value;
-        else if (name == "step_decay_epochs_drop") cfg.step_decay_epochs_drop = (double)value;
+        else if (name == "ga_adadelta_rho") cfg.ga_adadelta_rho = (double) value;
+        else if (name == "ga_decay_method") cfg.ga_decay_method = (int) value;
+        else if (name == "exp_decay_k") cfg.exp_decay_k = (double) value;
+        else if (name == "step_decay_drop") cfg.step_decay_drop = (double) value;
+        else if (name == "step_decay_epochs_drop") cfg.step_decay_epochs_drop = (double) value;
         else if (name == "obs_function") cfg.obs_function = (int) value;
         else if (name == "include_h_losses") cfg.include_h_losses = (int) value;
         else if (name == "include_precursor_h_losses_only") cfg.include_precursor_h_losses_only = (int) value;
         else if (name == "fragraph_compute_timeout_in_secs") cfg.fragraph_compute_timeout_in_secs = (int) value;
         else if (name == "ga_sampling_selection_threshold") cfg.ga_sampling_selection_threshold = value;
-        else if (name == "use_graph_pruning") cfg.use_graph_pruning = (int)value;
+        else if (name == "use_graph_pruning") cfg.use_graph_pruning = (int) value;
         else if (name == "ga_use_best_q") cfg.ga_use_best_q = (int) value;
         else if (name == "ga_sampling_method") cfg.ga_sampling_method = (int) value;
         else if (name == "ga_graph_sampling_k") cfg.ga_graph_sampling_k = (int) value;
-        else if (name == "ga_use_sqaured_iter_num") cfg.ga_use_sqaured_iter_num = (int)value;
-        else if (name == "aggressive_graph_pruning") cfg.aggressive_graph_pruning = (bool)value;
-		else if (name == "reset_sampling") cfg.reset_sampling = (bool)value;
-		else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double)value;
-        else if (name == "add_noise") cfg.add_noise = (bool)value;
-        else if (name == "noise_max") cfg.noise_max = (double)value;
-        else if (name == "noise_sum") cfg.noise_sum = (double)value;
+        else if (name == "ga_use_sqaured_iter_num") cfg.ga_use_sqaured_iter_num = (int) value;
+        else if (name == "aggressive_graph_pruning") cfg.aggressive_graph_pruning = (bool) value;
+        else if (name == "reset_sampling") cfg.reset_sampling = (bool) value;
+        else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double) value;
+        else if (name == "add_noise") cfg.add_noise = (bool) value;
+        else if (name == "noise_max") cfg.noise_max = (double) value;
+        else if (name == "noise_sum") cfg.noise_sum = (double) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -231,25 +230,23 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         std::cout << "EM Restart Times: " << cfg.num_em_restarts << std::endl;
         std::cout << "Using EM Convergence Threshold " << cfg.em_converge_thresh << std::endl;
         std::cout << "Using Lambda " << cfg.lambda << std::endl;
-   
-        if(USE_LBFGS_FOR_GA == cfg.ga_method)
+
+        if (USE_LBFGS_FOR_GA == cfg.ga_method)
             std::cout << "Using LBFGS package for gradient ascent" << std::endl;
-        else if(USE_MOMENTUM_FOR_GA == cfg.ga_method ) {
+        else if (USE_MOMENTUM_FOR_GA == cfg.ga_method) {
             std::cout << "Using simple gradient ascent implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
                       << " decay rate " << cfg.decay_rate
                       << std::endl;
-        }
-        else if(USE_ADADELTA_FOR_GA == cfg.ga_method) {
+        } else if (USE_ADADELTA_FOR_GA == cfg.ga_method) {
             std::cout << "Using AdaDelta implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " decay rate " << cfg.decay_rate
-                      <<  " eps " << cfg.ga_eps
+                      << " eps " << cfg.ga_eps
                       << std::endl;
-        }
-        else if(USE_ADAM_FOR_GA == cfg.ga_method || USE_AMSGRAD_FOR_GA == cfg.ga_method) {
+        } else if (USE_ADAM_FOR_GA == cfg.ga_method || USE_AMSGRAD_FOR_GA == cfg.ga_method) {
             if (USE_ADAM_FOR_GA == cfg.ga_method)
                 std::cout << "Using ADAM implementation" << std::endl;
-            else if( USE_AMSGRAD_FOR_GA == cfg.ga_method)
+            else if (USE_AMSGRAD_FOR_GA == cfg.ga_method)
                 std::cout << "Using AMSgrad implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " beta1  " << cfg.ga_adam_beta_1
                       << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_eps
@@ -258,15 +255,15 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
         std::cout << "Using GA max iterations " << cfg.ga_max_iterations << std::endl;
         std::cout << "Using GA Convergence Threshold " << cfg.ga_converge_thresh << std::endl;
-        std::cout << "Using GA mini batch taking 1 in " << cfg.ga_minibatch_nth_size << " of processor data" << std::endl;
+        std::cout << "Using GA mini batch taking 1 in " << cfg.ga_minibatch_nth_size << " of processor data"
+                  << std::endl;
 
-        switch (cfg.ga_decay_method)
-        {
+        switch (cfg.ga_decay_method) {
             case USE_DEFAULT_DECAY:
                 std::cout << "Using Time Based Learning Rate Decay Method. decay rate " << cfg.decay_rate << std::endl;
                 break;
             case USE_EXP_DECAY:
-                std::cout << "Using Exponential Learning Rate Decay Method. k " << cfg.exp_decay_k <<  std::endl;
+                std::cout << "Using Exponential Learning Rate Decay Method. k " << cfg.exp_decay_k << std::endl;
                 break;
             case USE_STEP_DECAY:
                 std::cout << "Using Step Decay Learning Rate Method. drop " << cfg.step_decay_drop << " epochs drop: "
@@ -276,36 +273,37 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             default:
                 std::cout << "NOT Using Decay Method" << std::endl;
         }
-        if(cfg.ga_use_best_q)
+        if (cfg.ga_use_best_q)
             std::cout << "Using Best Q instead of Prev Q in GA" << std::endl;
         std::cout << "Using Random Sampling with threshold: " << cfg.ga_sampling_selection_threshold << std::endl;
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
-        if(cfg.use_graph_pruning != DEFAULT_NOT_USE_GRAPH_PRUNING) {
+        if (cfg.use_graph_pruning != DEFAULT_NOT_USE_GRAPH_PRUNING) {
             std::cout << "Using graph pruning" << std::endl;
             std::cout << "Using aggressive graph pruning: " << cfg.aggressive_graph_pruning << std::endl;
-			std::cout << "Reset_sampling: " << cfg.reset_sampling << std::endl;
-			std::cout << "reset_sampling_lr_rati: " << cfg.reset_sampling_lr_ratio << std::endl;
+            std::cout << "Reset_sampling: " << cfg.reset_sampling << std::endl;
+            std::cout << "reset_sampling_lr_rati: " << cfg.reset_sampling_lr_ratio << std::endl;
         }
 
-        switch (cfg.ga_sampling_method)
-        {
+        switch (cfg.ga_sampling_method) {
             case USE_RANDOM_SAMPLING:
-                std::cout << "Using Random Sampling on transitions with ratio=" << cfg.ga_sampling_selection_threshold << std::endl;
+                std::cout << "Using Random Sampling on transitions with ratio=" << cfg.ga_sampling_selection_threshold
+                          << std::endl;
                 break;
             case USE_GRAPH_RANDOM_SAMPLING:
-                std::cout << "Using Graph Random Sampling on transitions with K=" << cfg.ga_graph_sampling_k << " And Selection Prob=" << cfg.ga_sampling_selection_threshold << std::endl;
+                std::cout << "Using Graph Random Sampling on transitions with K=" << cfg.ga_graph_sampling_k
+                          << " And Selection Prob=" << cfg.ga_sampling_selection_threshold << std::endl;
                 break;
-			case USE_GRAPH_RANDOM_WALK_SAMPLING:
-				std::cout << "Using Graph Random Walk Sampling on transitions with K=" << cfg.ga_graph_sampling_k << std::endl;
-				break;
+            case USE_GRAPH_RANDOM_WALK_SAMPLING:
+                std::cout << "Using Graph Random Walk Sampling on transitions with K=" << cfg.ga_graph_sampling_k
+                          << std::endl;
+                break;
             case USE_NO_SAMPLING:
             default:
                 std::cout << "NOT Using Sampling Method" << std::endl;
         }
         if (cfg.allow_frag_detours) {
             std::cout << "Allowing fragmentation detours " << std::endl;
-        }
-        else {
+        } else {
             std::cout << "Disallowing fragmentation detours ";
             if (cfg.do_prelim_bfs) std::cout << "with preliminary breadth-first search" << std::endl;
             else std::cout << "without preliminary breadth-first search" << std::endl;

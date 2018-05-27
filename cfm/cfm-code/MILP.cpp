@@ -26,8 +26,8 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     //Uses lp_solve: based on demonstration code provided.
     unsigned int numunbroken;
     int broken, fragidx, origval;
-    int Ncol, *colno = NULL, i, ret = 0, output_max_e = 0;
-    REAL *row = NULL;
+    int Ncol, *colno = nullptr, i, ret = 0, output_max_e = 0;
+    REAL *row = nullptr;
     lprec *lp;
 
     // Variables are: num electron pairs
@@ -39,13 +39,13 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     int num_atoms = mol->getNumAtoms();
     Ncol = num_bonds * 3 + num_atoms;
     lp = make_lp(0, Ncol);
-    if (lp == NULL)
+    if (lp == nullptr)
         ret = 1; /* couldn't construct a new model... */
 
     if (ret == 0) {
         colno = (int *) malloc(Ncol * sizeof(*colno));
         row = (REAL *) malloc(Ncol * sizeof(*row));
-        if ((colno == NULL) || (row == NULL))
+        if ((colno == nullptr) || (row == nullptr))
             ret = 2;
     }
 
@@ -296,9 +296,9 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     output_bmax[2 * num_bonds + 1] = hloss_idx[1];
 
     // Free allocated memory
-    if (row != NULL) free(row);
-    if (colno != NULL) free(colno);
-    if (lp != NULL) delete_lp(lp);
+    if (row != nullptr) free(row);
+    if (colno != nullptr) free(colno);
+    if (lp != nullptr) delete_lp(lp);
 
     return output_max_e;
 }
@@ -306,15 +306,15 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 //Helper function - allows traversal of a ring one bond at a time
 RDKit::Bond *MILP::getNextBondInRing(RDKit::Bond *bond, RDKit::Atom *atom, std::vector<int> &ring_bond_flags) {
 
-    RDKit::ROMol::OBOND_ITER_PAIR ip;
-    ip = atom->getOwningMol().getAtomBonds(atom);
+    //RDKit::ROMol::OBOND_ITER_PAIR ip;
+    auto ip = atom->getOwningMol().getAtomBonds(atom);
     RDKit::ROMol::OEDGE_ITER it = ip.first;
     for (; it != ip.second; ++it) {
         int idx = (*mol)[*it].get()->getIdx();    //There must be a better way...
         if (ring_bond_flags[idx] && idx != bond->getIdx())
             return atom->getOwningMol().getBondWithIdx(idx);
     }
-    return NULL;    //Error@!
+    return nullptr;    //Error@!
 }
 
 void MILP::printConstraint(int num_terms, int *colno, bool ge, int val) {

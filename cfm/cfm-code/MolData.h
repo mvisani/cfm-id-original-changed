@@ -173,7 +173,8 @@ public:
     void computePredictedSpectra(Param &param, bool postprocess = false,
                                  bool use_existing_thetas = false);
 
-    void postprocessPredictedSpectra(double perc_thresh = 80.0 , int min_peaks = 5 , int max_peaks = 30, double min_intensity = 0.0);
+    void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 5, int max_peaks = 30,
+                                     double min_intensity = 0.0);
 
     void quantisePredictedSpectra(int num_dec_places);
 
@@ -195,11 +196,12 @@ public:
     std::string getFVsAsSparseCSVString();
 
     void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
-                                               double explore_weight);
+                                           double explore_weight);
 
     bool thetasNanAndInfCheck(int energy_level);
 
     void addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
+
     ~MolData();
 
 protected

@@ -43,7 +43,7 @@ struct config_t;
 //Exception to throw when the input feature configuration file is invalid 
 class UnknownIPFPAlgorithmException : public std::exception {
 
-    virtual const char *what() const throw() {
+    const char *what() const noexcept override {
         return "Unknown algorithm id in IPFP belief calculation";
     }
 };
@@ -101,8 +101,6 @@ private:
     int runGEMA();
 
     int runIPFPwithOscAdjust();
-
-    void recalculateTargets(int last_iter);
 
     void initLogSpecFactor(spec_factor_t &log_spec_factor, const Spectrum *spectrum);
 

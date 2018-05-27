@@ -48,6 +48,5 @@ void IonicFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion,
     fv.addFeature(ion_pos); // Ion has positive ionic fragment
     fv.addFeature(nl_neg);  // NL has negative ionic fragment
     fv.addFeature(ion_neg); // Ion has negative ionic fragment
-    fv.addFeature(
-            !(nl_pos || nl_pos || ion_neg || ion_pos)); // No ionic fragments anywhere
+    fv.addFeature(!(nl_pos || nl_neg || ion_neg || ion_pos)); // No ionic fragments anywhere
 }

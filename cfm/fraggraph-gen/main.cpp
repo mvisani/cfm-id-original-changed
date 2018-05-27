@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 	cfg.fg_depth = max_depth;
 	cfg.include_h_losses = true; 
 
-	time_t before = time( NULL );
+	time_t before = time( nullptr );
 
 	//Run the fragmentation procedure
 	std::vector<std::string> feature_names;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 	moldata.computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
 	const FragmentGraph *graph = moldata.getFragmentGraph();
 
-	time_t after = time( NULL );
+	time_t after = time( nullptr );
 
 	//Write to output
 	if( fullgraph ) graph->writeFullGraph( out );

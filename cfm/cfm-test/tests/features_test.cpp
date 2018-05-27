@@ -86,7 +86,7 @@ void FeaturesTestBreakAtomPair::runTest(){
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
 
 	//Non-Ring Break C-N
-	RDKit::Atom *null_atom = NULL;
+	RDKit::Atom *null_atom = nullptr;
 	romol_ptr_t ion = createMolPtr("C");
 	initMolProps(ion);
 	RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom);
@@ -191,7 +191,7 @@ void FeaturesTestRootPairs::runTest(){
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
 
 	//Non-ring "C-N,C-N,C-X"
-	RDKit::Atom *null_atom = NULL;
+	RDKit::Atom *null_atom = nullptr;
 	romol_ptr_t ion = createMolPtr("C(N)(B)N");
 	romol_ptr_t nl = createMolPtr("C");
 	initMolProps(ion);
@@ -303,7 +303,7 @@ void FeaturesTestRootTriples::runTest(){
 	romol_ptr_t nl = createMolPtr("C(BC)C(N)N");
 	initMolProps(ion);
 	initMolProps(nl);
-	RDKit::Atom *null_atom = NULL;
+	RDKit::Atom *null_atom = nullptr;
 	RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
 	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom ); 
 
@@ -400,7 +400,7 @@ void FeaturesTestGasteigerCharges::runTest(){
 	std::vector<std::string> fnames;
 	fnames.push_back("GasteigerCharges"); //IonRootTriples should work the same
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
-	RDKit::Atom *null_atom = NULL;
+	RDKit::Atom *null_atom = nullptr;
 
 	//Non-ring (-0.33042488,-0.00652530)
 	romol_ptr_t ion = createMolPtr("C");
@@ -469,7 +469,7 @@ FeaturesTestHydrogenMovement::FeaturesTestHydrogenMovement(){
 void FeaturesTestHydrogenMovement::runTest(){
 	
 	bool pass = true;
-	RDKit::Atom *null_atom = NULL;
+	RDKit::Atom *null_atom = nullptr;
 	std::vector<std::string> fnames;
 	fnames.push_back("HydrogenMovement"); //IonRootTriples should work the same
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
@@ -1284,7 +1284,7 @@ void FeaturesTestQuadraticFeatures::runTest(){
 	//Simple initial vector with 3 bits set (indexes: 0,3,80 )
 	romol_ptr_t ion= createMolPtr("C");
 	initMolProps(ion);	
-	RDKit::Atom *null_atom = NULL;
+	RDKit::Atom *null_atom = nullptr;
 	RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
 	double h_movement = 3.00452;
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OriginalMass", 16.0 - h_movement);

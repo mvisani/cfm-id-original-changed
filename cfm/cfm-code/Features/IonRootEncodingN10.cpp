@@ -18,7 +18,7 @@ param.cpp.
 #include "IonRootEncodingN10.h"
 
 void IonRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                    const RootedROMolPtr *nl) const {
+                                 const RootedROMolPtr *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 

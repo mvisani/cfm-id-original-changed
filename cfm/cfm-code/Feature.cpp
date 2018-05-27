@@ -261,24 +261,22 @@ void FeatureVector::addFeatureAtIdx(double value, unsigned int idx) {
 }
 
 void FeatureVector::addFeatures(const std::vector<double> &values) {
-    for (const auto & value: values) {
+    for (const auto &value: values) {
         this->addFeature(value);
     }
 }
 
 void FeatureVector::addFeatures(const std::vector<int> &values) {
-    for (const auto & value: values) {
+    for (const auto &value: values) {
         this->addFeature((double) value);
     }
 }
 
 // print debug info
-void FeatureVector::printDebugInfo() const
-{
+void FeatureVector::printDebugInfo() const {
     std::cout << "fv_idx : " << fv_idx << std::endl;
-    std::cout << "fv_vector_size: " << fv.size()  << std::endl;
-    for(int i = 0; i < fv.size(); i ++)
-    {
+    std::cout << "fv_vector_size: " << fv.size() << std::endl;
+    for (int i = 0; i < fv.size(); i++) {
         std::cout << fv[i] << " ";
     }
     std::cout << std::endl;
@@ -326,8 +324,7 @@ const std::vector<std::string> &Feature::OKSymbolsLess() {
     return x;
 }
 
-unsigned int Feature::GetSizeOfOKSymbolsLess() const
-{
+unsigned int Feature::GetSizeOfOKSymbolsLess() const {
     return OKSymbolsLess().size();
 }
 

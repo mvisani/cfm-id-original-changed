@@ -16,7 +16,6 @@
 
 #include <cmath>
 #include "Comparators.h"
-#include <boost/math/distributions.hpp>
 
 void
 Comparator::getMatchingPeakPairs(std::vector<peak_pair_t> &peak_pairs, const Spectrum *p, const Spectrum *q) const {
@@ -47,7 +46,8 @@ Comparator::getMatchingPeakPairs(std::vector<peak_pair_t> &peak_pairs, const Spe
             double best_val = 0.0;
             if (fabs(itp->mass - itq->mass) < mass_tol) {
                 best_val = dp_vals[i - 1][j - 1] + 0.5 * (itp->intensity +
-                                                          itq->intensity);    //Weight the match by the average intensity of the two peaks
+                                                          itq->intensity);
+                //Weight the match by the average intensity of the two peaks
             }
 
             //Check for better values without matching

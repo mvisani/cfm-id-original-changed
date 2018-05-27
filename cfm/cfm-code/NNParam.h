@@ -29,7 +29,7 @@ typedef std::vector<double> azd_vals_t;
 //Exception to throw when the activation function id is unknown
 class NNParamActivationFunctionIdException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         return "Unknown activation function";
     }
 };
@@ -38,7 +38,7 @@ class NNParamActivationFunctionIdException : public std::exception {
 //information but doesn't
 class NNParamFileReadException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         return "Couldn't find neural net configuration information in param file";
     }
 };

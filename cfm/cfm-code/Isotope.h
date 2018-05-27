@@ -28,7 +28,7 @@
 
 class EmptyIsotopeSpectrumException : public std::exception {
 
-    virtual const char *what() const throw() {
+    const char *what() const noexcept override {
         return "Error in isotope spectrum generation: - no peaks generated above threshold.";
     }
 };
@@ -53,7 +53,7 @@ typedef std::vector<SuperAtomList> SuperAtomData;  // index: element_number
 //Exception to throw when something goes wrong during the isotope calculation
 class IsotopeCalculationException : public std::exception {
 
-    virtual const char *what() const throw() {
+    const char *what() const noexcept override {
         return "Exception occurred computing isotope peaks";
     }
 };

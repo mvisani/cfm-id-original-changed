@@ -20,7 +20,7 @@ public:
     virtual void adjustWeights(std::vector<double> &grads, std::vector<double> &weights,
                                std::set<unsigned int> &used_idxs)=0;
 
-    void setLearningRate(const double lr) { this->learning_rate = lr;};
+    void setLearningRate(const double lr) { this->learning_rate = lr; };
 
 protected:
     double learning_rate;

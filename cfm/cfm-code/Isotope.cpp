@@ -142,34 +142,33 @@ void IsotopeCalculator::init_data(const char *filename) {
     while (getline(f, line)) {
         std::istringstream ist(line);
         std::string element;
-        switch (state) {
-            case 0: // new element
-                ist >> element;
-                em[element] = elemindex;
-                sad.push_back(SuperAtomList(1));
-                sad.back().reserve(8); // reserve room for 8 superatoms
-                elemindex++;
-                state = 1;
-                break;
-            case 1: // isotope
-                ipeak p;
-                Pattern &idist = sad.back()[0];
-                if (ist >> p.mass >> p.rel_area) {
-                    // fill the gaps in the patterns with zero abundancy peaks
-                    if (idist.size() > 0) {
-                        double prevmass = idist.back().mass;
-                        for (int i = 0; i < int(p.mass - prevmass - 0.5); i++) {
-                            ipeak filler;
-                            filler.mass = DUMMY_MASS;
-                            filler.rel_area = 0;
-                            idist.push_back(filler);
-                        }
+        if(0 == state){
+            ist >> element;
+            em[element] = elemindex;
+            sad.push_back(SuperAtomList(1));
+            sad.back().reserve(8); // reserve room for 8 superatoms
+            elemindex++;
+            state = 1;
+
+        }
+        else if(state == 1){
+            ipeak p;
+            Pattern &idist = sad.back()[0];
+            if (ist >> p.mass >> p.rel_area) {
+                // fill the gaps in the patterns with zero abundancy peaks
+                if (idist.size() > 0) {
+                    double prevmass = idist.back().mass;
+                    for (int i = 0; i < int(p.mass - prevmass - 0.5); i++) {
+                        ipeak filler;
+                        filler.mass = DUMMY_MASS;
+                        filler.rel_area = 0;
+                        idist.push_back(filler);
                     }
-                    // insert the peak
-                    idist.push_back(p);
-                } else
-                    state = 0; // no more isotope data
-                break;
+                }
+                // insert the peak
+                idist.push_back(p);
+            } else
+                state = 0; // no more isotope data
         }
     }
     f.close();

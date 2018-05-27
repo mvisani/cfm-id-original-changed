@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 
 void concatBeliefs(beliefs_t *all_beliefs, beliefs_t *beliefs){
 
-	if( all_beliefs->ps.size() == 0 ){
+	if(all_beliefs->ps.empty()){
 		all_beliefs->ps.reserve( beliefs->ps.size() );
 		all_beliefs->tn.reserve( beliefs->tn.size() );
 		all_beliefs->ps.insert(all_beliefs->ps.end(), beliefs->ps.begin(), beliefs->ps.end() );

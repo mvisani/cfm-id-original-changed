@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
 
     //Fragment Graph Computation (or load from file)
     time_t before_fg, after_fg;
-    before_fg = time(NULL);
+    before_fg = time(nullptr);
     if (mpi_rank == MASTER) std::cout << "Computing fragmentation graphs and features..";
     std::vector<MolData>::iterator mit = data.begin();
     int success_count = 0, except_count = 0;
@@ -175,11 +175,11 @@ int main(int argc, char *argv[]) {
 
                 } else {
                     time_t before, after;
-                    before = time(NULL);
+                    before = time(nullptr);
                     mit->computeFragmentGraphAndReplaceMolsWithFVs(&fc);
                     std::ofstream eout;
                     eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
-                    after = time(NULL);
+                    after = time(nullptr);
                     eout << "ID: " << mit->getId() << " is Done. Time Elaspsed = " << (after - before) << " Seconds ";
                     eout << " :Num Frag = " << mit->getFragmentGraph()->getNumFragments();
                     eout << " :Num Trans = " << mit->getFragmentGraph()->getNumTransitions() << std::endl;
@@ -207,7 +207,7 @@ int main(int argc, char *argv[]) {
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    after_fg = time(NULL);
+    after_fg = time(nullptr);
     if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
     std::cout << mpi_rank << ": " << success_count << " successfully computed. " << except_count << " exceptions."
               << std::endl;
@@ -266,7 +266,7 @@ int main(int argc, char *argv[]) {
         if (mpi_rank == MASTER) std::cout << "Running EM to train parameters for Group " << group << std::endl;
 
         time_t before, after;
-        before = time(NULL);
+        before = time(nullptr);
         std::string param_filename = "tmp_data/param_output";
         param_filename += boost::lexical_cast<std::string>(group);
         param_filename += ".log";
@@ -280,7 +280,7 @@ int main(int argc, char *argv[]) {
         if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
 
         if (mpi_rank == MASTER) {
-            after = time(NULL);
+            after = time(nullptr);
             std::cout << "EM: Time Elaspsed = " << (after - before) << " Seconds";
         }
 

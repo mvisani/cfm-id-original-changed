@@ -80,7 +80,7 @@ void FeatureHelper::labelFunctionalGroups(RDKit::RWMol *rwmol, bool extra) {
         std::vector<RDKit::MatchVectType>::const_iterator mat_it =
                 fgpMatches.begin();
         for (; mat_it != fgpMatches.end(); ++mat_it) {
-            RDKit::MatchVectType::const_iterator it = (*mat_it).begin();
+            auto it = (*mat_it).begin();
             for (; it != (*mat_it).end(); ++it)
                 atom_fgidxs[it->second].push_back(idx);
         }
@@ -90,7 +90,7 @@ void FeatureHelper::labelFunctionalGroups(RDKit::RWMol *rwmol, bool extra) {
     RDKit::ROMol::AtomIterator ai;
     for (ai = rwmol->beginAtoms(); ai != rwmol->endAtoms(); ++ai) {
         // Add an additional function group to indicate 'No Functional Groups'
-        if (atom_fgidxs[(*ai)->getIdx()].size() == 0)
+        if (atom_fgidxs[(*ai)->getIdx()].empty())
             atom_fgidxs[(*ai)->getIdx()].push_back(num_grps);
         (*ai)->setProp(prop_name, atom_fgidxs[(*ai)->getIdx()]);
     }
@@ -137,19 +137,19 @@ void FeatureHelper::labelAromatics(RDKit::RWMol *rwmol) {
     }
 
     // If any are found, label all the bonds within them
-    if (double_aromatic_idxs.size() == 0)
+    if (double_aromatic_idxs.empty())
         return;
 
     // Consider each ring...
     RDKit::RingInfo::VECT_INT_VECT brings = rinfo->bondRings();
-    RDKit::RingInfo::VECT_INT_VECT::iterator bit = brings.begin();
+    auto bit = brings.begin();
     for (; bit != brings.end(); ++bit) {
 
         // Check for a double aromatic bond within the ring
         bool hasDblArom = false;
         RDKit::RingInfo::INT_VECT::iterator it;
         for (it = bit->begin(); it != bit->end(); ++it) {
-            std::vector<int>::iterator ii = double_aromatic_idxs.begin();
+            auto ii = double_aromatic_idxs.begin();
             for (; ii != double_aromatic_idxs.end(); ++ii)
                 if (*ii == *it)
                     hasDblArom = true;

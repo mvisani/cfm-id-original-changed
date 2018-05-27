@@ -22,7 +22,6 @@ void NLRootMatrixFP::compute(FeatureVector &fv, const RootedROMolPtr *NL,
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
-    unsigned int distance_to_root = 2;
     unsigned int num_atoms = 10;
     bool include_adjacency_matrix = true;
 

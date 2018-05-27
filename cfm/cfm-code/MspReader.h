@@ -23,14 +23,14 @@
 
 class MspReadException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         return "Could not read msp file.";
     }
 };
 
 class MspIdException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         return "Could not find id in msp file.";
     }
 };

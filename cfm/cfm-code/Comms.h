@@ -59,7 +59,7 @@ public:
     std::set<unsigned int> used_idxs;
     unsigned int num_used;
 
-    virtual ~Comms() {}
+    virtual ~Comms() = default;
 
 protected:
     int mpi_rank;
@@ -69,29 +69,29 @@ protected:
 class WorkerComms : public Comms {
 
 public:
-    void setMasterUsedIdxs();
+    void setMasterUsedIdxs() override;
 
-    void collectGradsInMaster(double *grads);
+    void collectGradsInMaster(double *grads) override;
 
-    void broadcastParams(Param *param);
+    void broadcastParams(Param *param) override;
 
-    void printToMasterOnly(const char *msg) {};    //Do nothing
+    void printToMasterOnly(const char *msg) override {};    //Do nothing
 };
 
 class MasterComms : public Comms {
 
 public:
-    void setMasterUsedIdxs();
+    void setMasterUsedIdxs() override;
 
-    void collectGradsInMaster(double *grads);
+    void collectGradsInMaster(double *grads) override;
 
-    void broadcastParams(Param *param);
+    void broadcastParams(Param *param) override;
 
     std::set<unsigned int> master_used_idxs;
     std::vector<std::set<unsigned int> > worker_used_idxs;
     std::vector<unsigned int> worker_num_used;
 
-    void printToMasterOnly(const char *msg);
+    void printToMasterOnly(const char *msg) override;
 };
 
 #endif // __COMMS_H__

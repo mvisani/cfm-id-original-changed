@@ -82,7 +82,7 @@ static const double DEFAULT_ADADELTA_LEARNING_RATE = 1.0;
 static const double DEFAULT_ADADELTA_RHO = 0.95;
 
 // EPS
-static const  double DEFAULT_EPS = 1e-8;
+static const double DEFAULT_EPS = 1e-8;
 
 //Whether or not gradient ascent should be stochastic
 static const int DEFAULT_STOCHASTIC_GA = 0;
@@ -199,8 +199,8 @@ struct config_t {
     double ga_sampling_selection_threshold;
     int use_graph_pruning;
     bool aggressive_graph_pruning;
-	bool reset_sampling;
-	double reset_sampling_lr_ratio;
+    bool reset_sampling;
+    double reset_sampling_lr_ratio;
     int ga_sampling_method;
     int ga_graph_sampling_k;
     int ga_use_sqrt_prob;
@@ -240,10 +240,8 @@ struct config_t {
     double lambda;    //Regularization constant
     int ga_method;
     int ga_decay_method;
-    int converge_count_thresh;
     double ga_converge_thresh;
-    double line_search_alpha;
-    double line_search_beta;
+
     double starting_step_size;
     int ga_max_iterations;
     int ga_use_best_q;

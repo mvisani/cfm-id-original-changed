@@ -3,8 +3,8 @@
 #
 # FragmentGraph.h
 #
-# Description: 	FragmentGraph class for holding the results of a generated
-#				fragment graph.
+# Description: FragmentGraph class for holding the results of a generated
+#               fragment graph.
 #
 # Copyright (c) 2013, Felicity Allen
 # All rights reserved.
@@ -131,9 +131,9 @@ public:
 
     int getToId() const { return to_id; };
 
-    void setFromId(const int id) {  from_id = id; };
+    void setFromId(const int id) { from_id = id; };
 
-    void setToId(const int id) {  to_id = id; };
+    void setToId(const int id) { to_id = id; };
 
     const std::string *getNLSmiles() const { return &nl_smiles; };
 
@@ -222,7 +222,7 @@ public:
     // !cfg.allow_frag_detours)
     void removeDetours();
 
-    // Write the Fragments only to file (formerly the backtrack output - without
+    virtual // Write the Fragments only to file (formerly the backtrack output - without
     // extra details)
     void writeFragmentsOnly(std::ostream &out) const;
 
@@ -245,7 +245,7 @@ public:
         return &(transitions[index]);
     };
 
-    const Fragment *getFragmentAtIdx(int index) const {
+    virtual const Fragment *getFragmentAtIdx(int index) const {
         return &(fragments[index]);
     };
 
@@ -277,9 +277,6 @@ public:
     // Function do some not so random selection
     void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                    std::vector<std::vector<double>> &thetas, double explore_weight);
-
-    // Get a list of transitions ids , Full random walk
-    // void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy, std::mt19937 &rng);
 
 protected:
     std::vector<Fragment> fragments;
@@ -313,10 +310,10 @@ protected:
     int findMatchingTransition(int from_id, int to_id);
 
     // Function to remove give transitions and update id maps
-    void removeTransitions( std::vector<int>& input_ids);
+    void removeTransitions(std::vector<int> &input_ids);
 
     // Function to remove give fragments and update id maps
-    void removeFragments(std::vector<int>& input_ids);
+    void removeFragments(std::vector<int> &input_ids);
 
     // Function to remove lonely frags in the tree
     // where there is no trans lead or from those frags
@@ -324,7 +321,8 @@ protected:
 
     // Function do get list of transitions can be removed
     bool getPruningTransitionIds(int fg_id, std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
-		std::vector<int> &removed_transitions_ids, std::map<int, int>& visited, bool aggressive);
+                                 std::vector<int> &removed_transitions_ids, std::map<int, int> &visited,
+                                 bool aggressive);
 };
 
 class EvidenceFragmentGraph : public FragmentGraph {

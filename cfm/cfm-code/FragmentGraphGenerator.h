@@ -29,28 +29,28 @@ static const int MAX_TRANSITIONS_PER_MOLECULE = 1000000;
 
 class FragmentGraphGenerationException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         return "Error during fragment graph generation, unable to proceed.";
     }
 };
 
 class IonizationException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         return "Error during molecule ionization, unable to proceed.";
     }
 };
 
 class FragmentGraphMaxSizeExceededException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         return "Molecule exceeded maximum number of fragments or transitions, unable to proceed.";
     }
 };
 
 class FragmentGraphTimeoutException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         return "Molecule fragment graph computation exceeded timeout, unable to proceed.";
     }
 };
@@ -72,7 +72,7 @@ public:
     //Destructor
     ~FragmentGraphGenerator() { delete fh; };
 
-    //Start a graph. Compute can then add to this graph, but it is the caller's
+    virtual //Start a graph. Compute can then add to this graph, but it is the caller's
     //responsibility to delete it
     FragmentGraph *createNewGraph(config_t *cfg);
 

@@ -243,7 +243,7 @@ void MolData::annotatePeaks(double abs_tol, double ppm_tol,
         for (int pkidx = 0; it != spectra[energy].end(); ++it, pkidx++) {
 
             double mass_tol = getMassTol(abs_tol, ppm_tol, it->mass);
-            int num_fragments = ev_fg->getNumFragments();
+            // int num_fragments = ev_fg->getNumFragments();
             for (int fidx = 0; fidx < num_fragments; fidx++) {
 
                 const EvidenceFragment *f = ev_fg->getFragmentAtIdx(fidx);
@@ -344,7 +344,7 @@ void MolData::computeNormalizedTransitionThetas(Param &param) {
         for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
             thetas[energy][i] = param.computeTheta(*fvs[i], energy);
 
-        double max_val = *std::max_element(thetas[energy].begin(),thetas[energy].end());
+        double max_val = *std::max_element(thetas[energy].begin(), thetas[energy].end());
         for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
             thetas[energy][i] -= max_val;
     }
@@ -462,7 +462,7 @@ void MolData::pruneGraphBySpectra(double abs_tol, double ppm_tol, bool aggressiv
     fg->pruneGraphBySpectra(spectra, abs_tol, ppm_tol, removed_transitions_ids, aggressive);
 
     // remove fvs
-    std::sort(removed_transitions_ids.begin(),removed_transitions_ids.end());
+    std::sort(removed_transitions_ids.begin(), removed_transitions_ids.end());
     //Remove transitions, and record a mapping of old->new transition ids
     unsigned int next_id = 0;
     unsigned int id_idx = 0;
@@ -815,15 +815,15 @@ MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_
     fg->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, energy, thetas, explore_weight);
 }
 
-void MolData::addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol){
-    for(auto & spectrum: spectra){
-        spectrum.addNoise(max_intensity, total_intensity,  abs_tol, ppm_tol);
+void MolData::addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol) {
+    for (auto &spectrum: spectra) {
+        spectrum.addNoise(max_intensity, total_intensity, abs_tol, ppm_tol);
     }
 }
 
-bool MolData::thetasNanAndInfCheck(int energy_level){
+bool MolData::thetasNanAndInfCheck(int energy_level) {
 
-    for(auto&theta: thetas[energy_level]) {
+    for (auto &theta: thetas[energy_level]) {
         if (boost::math::isnan(theta))
             return false;
         if (boost::math::isinf(theta))

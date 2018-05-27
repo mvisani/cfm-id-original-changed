@@ -67,17 +67,10 @@ public:
 
     //This is public so the test can access it....there must be a better way?
     virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                                bool record_used_idxs_only, std::set<unsigned int> &used_idxs, int sampling_method = 0);
+                                                bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
+                                                int sampling_method = 0);
 
     virtual double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
-
-    //For use by LBFGS only (public for this reason).
-    lbfgsfloatval_t
-    evaluateLBFGS(const lbfgsfloatval_t *x, lbfgsfloatval_t *g, const int n, const lbfgsfloatval_t step);
-
-    void progressLBFGS(const lbfgsfloatval_t *x, const lbfgsfloatval_t *g, const lbfgsfloatval_t fx,
-                       const lbfgsfloatval_t xnorm, const lbfgsfloatval_t gnorm, const lbfgsfloatval_t step, int n,
-                       int k, int ls);
 
     //Select mini batch (exposed publicly for testing...)
     void selectMiniBatch(std::vector<int> &initialized_minibatch_flags);
@@ -117,7 +110,8 @@ protected:
 
 
     //Simple gradient ascent
-    double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate, int sampling_method);
+    double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
+                                          int sampling_method);
 
     //Helper functions
 
@@ -132,6 +126,7 @@ protected:
     void zeroUnusedParams();
 
     Solver *getSolver(int ga_method, double learning_rate) const;
+
     int validation_group;
     bool sparse_params;
 };

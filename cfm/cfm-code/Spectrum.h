@@ -29,7 +29,7 @@ static bool sort_annotations_by_score(const annotation_t &u, const annotation_t 
 
 class Peak {
 public:
-    Peak() {};
+    Peak() = default;;
 
     Peak(double a_mass, double an_intensity, bool noise_flag = false) :
             mass(a_mass), intensity(an_intensity), is_noise(noise_flag) {};

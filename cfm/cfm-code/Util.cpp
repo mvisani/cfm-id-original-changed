@@ -22,6 +22,7 @@
 #include <GraphMol/PeriodicTable.h>
 #include <GraphMol/AtomIterators.h>
 #include <INCHI-API/inchi.h>
+
 double getMassTol(double abs_tol, double ppm_tol, double mass) {
     double mass_tol = (mass / 1000000.0) * ppm_tol;
     if (mass_tol < abs_tol) mass_tol = abs_tol;
@@ -57,7 +58,7 @@ RDKit::Atom *getLabeledAtom(romol_ptr_t mol, const char *label) {
         if (root) break;
     }
     if (root) return *ai;
-    else return NULL;
+    else return nullptr;
 }
 
 int moleculeHasSingleRadical(const RDKit::ROMol *romol) {
@@ -103,20 +104,20 @@ romol_ptr_t createMolPtr(const char *smiles_or_inchi) {
         rwmol = RDKit::InchiToMol(smiles_or_inchi, rv);
     } else
         rwmol = RDKit::SmilesToMol(smiles_or_inchi);
-    RDKit::ROMol *mol = static_cast<RDKit::ROMol *>(rwmol);
+    auto *mol = static_cast<RDKit::ROMol *>(rwmol);
     addIonicChargeLabels(mol);
     return romol_ptr_t(mol);
 }
 
-void softmax(std::vector<double>& weights, std::vector<double>& probs) {
+void softmax(std::vector<double> &weights, std::vector<double> &probs) {
     probs.clear();
     double sum = 0.0;
-    for(auto weight : weights){
+    for (auto weight : weights) {
         double tmp = std::exp(weight);
         probs.push_back(tmp);
         sum += tmp;
     }
-    for(auto &prob: probs){
+    for (auto &prob: probs) {
         prob /= sum;
     }
 }

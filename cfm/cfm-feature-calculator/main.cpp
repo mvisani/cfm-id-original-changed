@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
 
     // Fragment Graph Computation (or load from file)
     time_t before_fg, after_fg;
-    before_fg = time(NULL);
+    before_fg = time(nullptr);
     if (mpi_rank == MASTER)
         std::cout << "Computing fragmentation graphs and features..";
 

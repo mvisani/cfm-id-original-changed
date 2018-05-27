@@ -199,8 +199,8 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
                                       int remaining_ring_breaks) {
 
     //Check Timeout
-    if (parentid < 0) start_time = time(NULL);
-    time_t current_time = time(NULL);
+    if (parentid < 0) start_time = time(nullptr);
+    time_t current_time = time(nullptr);
     if (cfg->fragraph_compute_timeout_in_secs > 0) {
         if ((current_time - start_time) > cfg->fragraph_compute_timeout_in_secs)
             throw FragmentGraphTimeoutException();

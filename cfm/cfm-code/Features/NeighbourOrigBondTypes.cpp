@@ -32,7 +32,8 @@ void addNeighbourOrigBondFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
 
     std::vector<int> seen_types(6, 0);
     int feature_offset = fv.getTotalLength();
-    RDKit::ROMol::ADJ_ITER_PAIR itp = mol->mol->getAtomNeighbors(mol->root);
+    //RDKit::ROMol::ADJ_ITER_PAIR
+    auto itp = mol->mol->getAtomNeighbors(mol->root);
     for (; itp.first != itp.second; ++itp.first) {
         RDKit::Bond *bond =
                 mol->mol->getBondBetweenAtoms(*itp.first, mol->root->getIdx());

@@ -25,7 +25,7 @@
 
 class InvalidInferenceException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         return "Error during inference calculation, unable to proceed.";
     }
 };

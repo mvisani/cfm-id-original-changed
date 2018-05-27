@@ -26,7 +26,7 @@
 
 class ComparatorException : public std::exception {
 
-    virtual const char *what() const throw() {
+    virtual const char *what() const noexcept {
         return "Unsorted or unnormalized spectra detected in comparator - cannot proceed.";
     }
 };

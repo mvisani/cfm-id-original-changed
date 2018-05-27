@@ -26,5 +26,5 @@ public:
     };
 
     void compute(FeatureVector &fv, const RootedROMolPtr *NL,
-                 const RootedROMolPtr *nl) const;
+                 const RootedROMolPtr *nl) const override;
 };
