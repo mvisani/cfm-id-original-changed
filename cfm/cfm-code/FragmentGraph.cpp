@@ -704,9 +704,9 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
     }
 }
 
-void FragmentGraph::ComputePathes(int depth) {
+void FragmentGraph::computePathes(int depth) {
     //Clear Path Cache
-    pathes.clear();
+    paths.clear();
     mass_path_map.clear();
 
     int root_frag_id = 0;
@@ -717,8 +717,8 @@ void FragmentGraph::ComputePathes(int depth) {
 void FragmentGraph::ComputePathFromFrag(int frag_id, std::vector<int> &trans_ids, int depth) {
     if(!trans_ids.empty()) {
 
-        pathes.push_back(Path(trans_ids, frag_id));
-        mass_path_map.insert(std::pair<double,int>(fragments[frag_id].getMass(), pathes.size()-1));
+        paths.push_back(Path(trans_ids, frag_id, fragments[frag_id].getMass()));
+        mass_path_map.insert(std::pair<double,int>(fragments[frag_id].getMass(), paths.size()-1));
     }
 
     if (depth > 0 && frag_id < from_id_tmap.size()) {
@@ -735,7 +735,7 @@ void FragmentGraph::ComputePathFromFrag(int frag_id, std::vector<int> &trans_ids
     }
 }
 
-void FragmentGraph::GetPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol) {
+void FragmentGraph::getPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol) {
 
     // Get Pathes within mass tols
     auto lower_bound = mass_path_map.lower_bound(mass_tol - mass_tol);
@@ -744,7 +744,7 @@ void FragmentGraph::GetPathes(std::vector<Path> &selected_pathes, double mass, d
 
     for(auto it = lower_bound; it != upper_bound; ++it) {
         int path_id = it->second;
-        selected_pathes.push_back(pathes[path_id]);
+        selected_pathes.push_back(paths[path_id]);
     }
 }
 

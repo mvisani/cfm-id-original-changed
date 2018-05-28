@@ -206,10 +206,10 @@ int main(int argc, char *argv[]) {
                 fgen = new LikelyFragmentGraphGenerator(nn_param, &cfg, prob_thresh_for_prune);
             else
                 fgen = new LikelyFragmentGraphGenerator(param, &cfg, prob_thresh_for_prune);
-            it->ComputeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
+            it->computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
 
             //Predict the spectra (and post-process, use existing thetas)
-            it->ComputePredictedSpectra(*param, apply_postprocessing, true);
+            it->computePredictedSpectra(*param, apply_postprocessing, true);
         }
         catch (RDKit::MolSanitizeException e) {
             std::cout << "Could not sanitize input: " << it->getSmilesOrInchi() << std::endl;
@@ -254,7 +254,7 @@ int main(int argc, char *argv[]) {
         if (output_mode == NO_OUTPUT_MODE) {
             it->outputSpectra(*out, "Predicted", do_annotate);
             *out << std::endl;
-            if (do_annotate) it->GetFragmentGraph()->writeFragmentsOnly(*out);
+            if (do_annotate) it->getFragmentGraph()->writeFragmentsOnly(*out);
         } else if (output_mode == MSP_OUTPUT_MODE) it->writePredictedSpectraToMspFileStream(*out);
         else if (output_mode == MGF_OUTPUT_MODE) it->writePredictedSpectraToMgfFileStream(*out);
 

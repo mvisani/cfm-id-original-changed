@@ -3,153 +3,102 @@
 //
 
 #include "DirectModel.h"
+#include <boost/math/distributions/normal.hpp>
+#include <boost/math/distributions/exponential.hpp>
 
-double DirectModel::ComputeAndAccumulateGradient(double *grads, MolData &moldata,
-                                                 bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                                 int sampling_method) {
-    double Q = 0.0;
-    const FragmentGraph *fg = moldata.GetFragmentGraph();
-    unsigned int num_transitions = fg->getNumTransitions();
-    unsigned int num_fragments = fg->getNumFragments();
+void DirectModel::computeAndAccumulateGradient(double *grads, MolData &moldata,
+                                               bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
+                                               int sampling_method) {
 
-    int offset = num_transitions;
+    double q = 0.0;
+    if (!moldata.hasComputedGraph())
+        return;
 
-    if (!moldata.HasComputedGraph())
-        return Q;
+    moldata.computeLogTransitionProbabilities();
 
     // Collect energies to compute
     std::vector<unsigned int> energies;
     getEnergiesLevels(energies);
 
     // Compute the gradients
-    for (auto energy : energies) {
-        unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
-        unsigned int suft_offset = energy * (num_transitions + num_fragments);
+    for (auto energy_level : energies) {
 
-        std::set<int> selected_trans_id;
-        if (!record_used_idxs_only && sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
+        for(const auto & peak : *moldata.getSpectrum(energy_level)){
+            // get intensity or height of the spectrum
+            double intensity = peak.intensity;
+            // get possible path to this peak
+            // anything out of mass tol range will not be considered
+            std::vector<Path> paths;
+            double mass_tol = getMassTol(cfg->abs_mass_tol,cfg->ppm_mass_tol,peak.mass);
+            moldata.getPathes(paths, peak.mass, mass_tol);
 
-            int num_frags = moldata.GetSpectrum(energy)->size();
-            int num_iterations = cfg->ga_graph_sampling_k * num_frags;
-            if (cfg->ga_use_sqaured_iter_num)
-                num_iterations = num_iterations * (energy + 1) * (energy + 1);
-            moldata.GetSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
-        }
-
-        // Iterate over from_id (i)
-        auto frag_trans_map = fg->getFromIdTMap()->begin();
-        for (int from_idx = 0; frag_trans_map != fg->getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
-
-            if (record_used_idxs_only) {
-                for (auto trans_id : *frag_trans_map) {
-                    const FeatureVector *fv = moldata.GetFeatureVectorForIdx(trans_id);
-                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                        used_idxs.insert(*fv_it + grad_offset);
+            int num_transitions = moldata.getFragmentGraph()->getNumTransitions();
+            for(auto & path: paths){
+                // mean is the peak mass
+                // std is the mass tol
+                boost::math::normal_distribution<double> normal_dist(peak.mass, mass_tol);
+                for(auto & trans_id : *path.getTransIds()){
+                    if(trans_id < num_transitions){
+                        q += moldata.getLogTransitionProbForIdx(energy_level, trans_id);
+                    } else {
+                        q += moldata.getLogPersistenceProbForIdx(energy_level, trans_id);
                     }
                 }
-            } else {
-                //Do some random selection
-                /*std::vector<int> sampled_ids;
-                if (sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
-                    for (auto id: *frag_trans_map) {
-                        if (selected_trans_id.find(id) != selected_trans_id.end()) {
-                            sampled_ids.push_back(id);
-                        }
-                    }
-                } else
-                    sampled_ids = *frag_trans_map;
-
-
-
-                // Calculate the denominator of the sum terms
-                double denom = 1.0;
-                for (auto trans_id : sampled_ids)
-                    denom += exp(moldata.getThetaForIdx(energy, trans_id));
-
-                // Complete the innermost sum terms	(sum over j')
-                std::map<unsigned int, double> sum_terms;
-
-                for (auto trans_id : sampled_ids) {
-                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
-
-                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                        auto fv_idx = *fv_it;
-                        double val = exp(moldata.getThetaForIdx(energy, trans_id)) / denom;
-                        if (sum_terms.find(fv_idx) != sum_terms.end())
-                            sum_terms[fv_idx] += val;
-                        else
-                            sum_terms[fv_idx] = val;
-                    }
-
-                }
-
-                // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
-                double nu_sum = 0.0;
-                for (auto trans_id : sampled_ids) {
-                    double nu = (*suft_values)[trans_id + suft_offset];
-                    nu_sum += nu;
-                    const FeatureVector *fv = moldata.GetFeatureVectorForIdx(trans_id);
-
-                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                        auto fv_idx = *fv_it;
-                        *(grads + fv_idx + grad_offset) += nu;
-
-                        if (record_used_idxs_only)
-                            used_idxs.insert(fv_idx + grad_offset);
-
-                    }
-                    Q += nu * (moldata.GetThetaForIdx(energy, trans_id) - log(denom));
-                }
-
-                // Accumulate the last term of each transition and the
-                // persistence (i = j) terms of the gradient and Q
-                double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
-                for (auto &sit: sum_terms) {
-                    *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
-
-                    if (record_used_idxs_only)
-                        used_idxs.insert(sit.first + grad_offset);
-                }
-                Q -= nu * log(denom);*/
+                // add observation term
+                q = log(boost::math::pdf(normal_dist, path.getDstMass()));
             }
+            q *= intensity;
         }
     }
 
     // Compute the latest transition thetas
     if (!record_used_idxs_only)
-        moldata.ComputeNormalizedTransitionThetas(*param);
-
-    return Q;
+        moldata.computeNormalizedTransitionThetas(*param);
 }
 
-double DirectModel::ComputeQ(MolData &moldata) {
-    double Q = 0.0;
-    moldata.ComputeLogTransitionProbabilities();
-    // TODO FIX eng level
-    int energy_level = 0;
-    for(const auto & peak : *moldata.GetSpectrum(energy_level)){
-        // get intensity or height of the specturm
-        double intensity = peak.intensity;
-        double path_log_prob = 0;
-        // get possible path to this peak
-        // anything out of mass tol range will not be considered
-        std::vector<Path> pathes;
-        double mass_tol = getMassTol(cfg->abs_mass_tol,cfg->ppm_mass_tol,peak.mass);
-        moldata.GetPathes(pathes,peak.mass, mass_tol);
+double DirectModel::computeQ(MolData &moldata) {
 
-        int num_transitions = moldata.GetFragmentGraph()->getNumTransitions();
-        for(auto & path: pathes){
-            for(auto & trans_id : *path.GetTransIds()){
-                if(trans_id < num_transitions){
-                    Q += moldata.GetLogTransitionProbForIdx(energy_level, trans_id);
-                } else {
-                    Q += moldata.GetLogPersistenceProbForIdx(energy_level, trans_id);
+    double q = 0.0;
+    if (!moldata.hasComputedGraph())
+        return q;
+
+    moldata.computeLogTransitionProbabilities();
+
+    // Collect energies to compute
+    std::vector<unsigned int> energies;
+    getEnergiesLevels(energies);
+
+    // Compute the gradients
+    for (auto energy_level : energies) {
+        for(const auto & peak : *moldata.getSpectrum(energy_level)) {
+            // get intensity or height of the spectrum
+            double intensity = peak.intensity;
+            // get possible path to this peak
+            // anything out of mass tol range will not be considered
+            std::vector<Path> paths;
+            double mass_tol = getMassTol(cfg->abs_mass_tol, cfg->ppm_mass_tol, peak.mass);
+            moldata.getPathes(paths, peak.mass, mass_tol);
+
+            int num_transitions = moldata.getFragmentGraph()->getNumTransitions();
+            for (auto &path: paths) {
+                // mean is the peak mass
+                // std is the mass tol
+                boost::math::normal_distribution<double> normal_dist(peak.mass, mass_tol);
+                for (auto &trans_id : *path.getTransIds()) {
+                    if (trans_id < num_transitions) {
+                        q += moldata.getLogTransitionProbForIdx(energy_level, trans_id);
+                    } else {
+                        q += moldata.getLogPersistenceProbForIdx(energy_level, trans_id);
+                    }
                 }
+                // add observation term
+                q = log(boost::math::pdf(normal_dist, path.getDstMass()));
             }
+            q *= intensity;
         }
-        Q *= intensity;
     }
-    return Q;
+    // return negative log likehood
+    return -q;
 }
 
 double DirectModel::addRegularizersAndUpdateGradient(double *grads) {
@@ -161,7 +110,7 @@ double DirectModel::updateParametersGradientAscent(std::vector<MolData> &data,
     return 0.0;
 }
 
-double DirectModel::TrainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename) {
+double DirectModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename) {
     unused_zeroed = 0;
     int iter = 0;
 
@@ -191,8 +140,8 @@ double DirectModel::TrainModel(std::vector<MolData> &molDataSet, int group, std:
 
     if (cfg->add_noise) {
         for (auto &mol : molDataSet) {
-            if (mol.GetGroup() != validation_group)
-                mol.AddNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
+            if (mol.getGroup() != validation_group)
+                mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
             mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
         }
     }
@@ -233,12 +182,12 @@ double DirectModel::TrainModel(std::vector<MolData> &molDataSet, int group, std:
 
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
         for (auto molData = molDataSet.begin(); molData != molDataSet.end(); ++molData, molidx++) {
-            if (molData->GetGroup() == validation_group) {
-                valQ += ComputeQ(*molData);
+            if (molData->getGroup() == validation_group) {
+                valQ += computeQ(*molData);
                 numvalmols++;
             } else if (cfg->ga_minibatch_nth_size > 1 ||
                        sampling_method != USE_NO_SAMPLING) {
-                Q += ComputeQ(*molData);
+                Q += computeQ(*molData);
                 numnonvalmols++;
             } else
                 numnonvalmols++;

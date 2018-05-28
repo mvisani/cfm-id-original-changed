@@ -181,7 +181,7 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
 	//Set some arbitrary suft values
 	suft.values.resize(1);
 
-	const FragmentGraph *fg = moldata.GetFragmentGraph();
+	const FragmentGraph *fg = moldata.getFragmentGraph();
 	unsigned int N = fg->getNumTransitions() + fg->getNumFragments();
 	suft.values[0].assign(3*N, 0.0);
 	suft.values[0][1] = 0.5;
@@ -204,8 +204,8 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
 	FeatureCalculator fc_null(fnames); 
 	std::string null_str = "null";
 	EmModel em(&cfg, &fc_null, null_str, param_filename );
-	double Q_only = em.ComputeQ(0, moldata, suft);
-	double Q = em.ComputeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs);
+	double Q_only = em.computeQ(0, moldata, suft);
+	double Q = em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs);
 	
 	//Check Q
 	if( fabs(Q - -3.823 )  > tol ){

@@ -54,46 +54,46 @@ public:
               graph_computed(false), ev_graph_computed(false), cfg(a_cfg) {};
 
     // Access functions
-    const FragmentGraph *GetFragmentGraph() const { return fg; };
+    const FragmentGraph *getFragmentGraph() const { return fg; };
 
 
-    bool HasComputedGraph() const { return graph_computed; };
+    bool hasComputedGraph() const { return graph_computed; };
 
-    const EvidenceFragmentGraph *GetEvidenceFragmentGraph() const {
+    const EvidenceFragmentGraph *getEvidenceFragmentGraph() const {
         return ev_fg;
     };
 
-    const Spectrum *GetSpectrum(int energy) const { return &(spectra[energy]); };
+    const Spectrum *getSpectrum(int energy) const { return &(spectra[energy]); };
 
-    const std::vector<Spectrum> *GetSpectra() const { return &spectra; };
+    const std::vector<Spectrum> *getSpectra() const { return &spectra; };
 
-    const Spectrum *GetPredictedSpectrum(int energy) const {
+    const Spectrum *getPredictedSpectrum(int energy) const {
         return &(predicted_spectra[energy]);
     };
 
-    unsigned int GetNumSpectra() const { return spectra.size(); };
+    unsigned int getNumSpectra() const { return spectra.size(); };
 
-    unsigned int GetNumPredictedSpectra() const {
+    unsigned int getNumPredictedSpectra() const {
         return predicted_spectra.size();
     };
 
-    const FeatureVector *GetFeatureVectorForIdx(int index) const {
+    const FeatureVector *getFeatureVectorForIdx(int index) const {
         return fvs[index];
     };
 
-    double GetThetaForIdx(int energy, int index) const {
+    double getThetaForIdx(int energy, int index) const {
         return thetas[energy][index];
     };
 
-    double GetLogTransitionProbForIdx(int energy, int index) const {
+    double getLogTransitionProbForIdx(int energy, int index) const {
         return log_probs[energy][index];
     };
 
-    double GetLogPersistenceProbForIdx(int energy, int index) const {
+    double getLogPersistenceProbForIdx(int energy, int index) const {
         return log_probs[energy][fg->getNumTransitions() + index];
     };
 
-    int GetGroup() const { return group; };
+    int getGroup() const { return group; };
 
     void setGroup(int val) { group = val; };
 
@@ -137,25 +137,24 @@ public:
     void outputSpectra(std::ostream &out, const char *spec_type,
                        bool do_annotate = false);
 
-    // More memory efficient alternative to calling ComputeFragmentGraph and
-    // then ComputeFeatureVectors with deleteMols = true
-    void ComputeFragmentGraphAndReplaceMolsWithFVs(FeatureCalculator *fc,
+    // More memory efficient alternative to calling computeFragmentGraph and
+    // then computeFeatureVectors with deleteMols = true
+    void computeFragmentGraphAndReplaceMolsWithFVs(FeatureCalculator *fc,
                                                    bool retain_smiles = false);
 
     // Save/load state functions
-    void ReadInFVFragmentGraph(std::string &fv_filename);
+    void readInFVFragmentGraph(std::string &fv_filename);
 
     void readInFVFragmentGraphFromStream(std::istream &ifs);
 
-    void WriteFVFragmentGraph(std::string &fv_filename);
+    void writeFVFragmentGraph(std::string &fv_filename);
 
-    void WriteFVFragmentGraphToStream(std::ofstream &out);
+    void writeFVFragmentGraphToStream(std::ofstream &out);
 
-    // Replaces ComputeFragmentGraph, ComputeFeatureVectors and
-    // ComputeNormalizedTransitionThetas  below (delteMols = true), pruning according to
+    // Replaces computeFragmentGraph, computeFeatureVectors and
+    // computeNormalizedTransitionThetas  below (delteMols = true), pruning according to
     // prob_thresh_for_prune value.
-    void
-    ComputeLikelyFragmentGraphAndSetThetas(LikelyFragmentGraphGenerator &fgen,
+    void computeLikelyFragmentGraphAndSetThetas(LikelyFragmentGraphGenerator &fgen,
                                            double prob_thresh_for_prune,
                                            bool retain_smiles = false);
 
@@ -163,45 +162,46 @@ public:
     // since each one assumes all previous have already been called.
     void ComputeFragmentGraph();
 
-    void ComputeFragmentGraph(
-            FeatureCalculator *fc); // Use this option if computing features next
-    void ComputeFeatureVectors(FeatureCalculator *fc, bool deleteMols = false);
+    void computeFragmentGraph( FeatureCalculator *fc);
 
-    void ComputeNormalizedTransitionThetas(Param &param);
+    // Use this option if computing features next
+    void computeFeatureVectors(FeatureCalculator *fc, bool deleteMols = false);
 
-    void ComputeLogTransitionProbabilities();
+    void computeNormalizedTransitionThetas(Param &param);
 
-    void ComputePredictedSpectra(Param &param, bool postprocess = false,
+    void computeLogTransitionProbabilities();
+
+    void computePredictedSpectra(Param &param, bool postprocess = false,
                                  bool use_existing_thetas = false);
 
-    void PostprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 5, int max_peaks = 30,
+    void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 5, int max_peaks = 30,
                                      double min_intensity = 0.0);
 
-    void QuantisePredictedSpectra(int num_dec_places);
+    void quantisePredictedSpectra(int num_dec_places);
 
-    void QuantiseMeasuredSpectra(int num_dec_places);
+    void quantiseMeasuredSpectra(int num_dec_places);
 
     // Function to compute a much reduced fragment graph containing only those
     // fragmentations as actually occur in the spectra, based on a computed set of
     // beliefs  thresholding inclusion in the graph by the provided belief_thresh
     // value (log domain)
-    void ComputeEvidenceFragmentGraph(beliefs_t *beliefs,
+    void computeEvidenceFragmentGraph(beliefs_t *beliefs,
                                       double log_belief_thresh);
 
-    void AnnotatePeaks(double abs_tol, double ppm_tol,
+    void annotatePeaks(double abs_tol, double ppm_tol,
                        bool prune_deadends = true);
 
 
     // Functions to dump all fvs to a csv file
     // one fv per line
-    std::string GetFVsAsSparseCSVString();
+    std::string getFVsAsSparseCSVString();
 
-    void GetSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                            double explore_weight);
 
-    void AddNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
+    void addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
 
-    void GetPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol) const;
+    void getPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol) const;
 
     ~MolData();
 

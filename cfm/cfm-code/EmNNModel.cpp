@@ -52,7 +52,7 @@ void EmNNModel::initParams() {
 }
 
 void EmNNModel::computeThetas(MolData *moldata) {
-    moldata->ComputeNormalizedTransitionThetas(*nn_param);
+    moldata->computeNormalizedTransitionThetas(*nn_param);
 }
 
 void EmNNModel::writeParamsToFile(std::string &filename) {
@@ -60,12 +60,12 @@ void EmNNModel::writeParamsToFile(std::string &filename) {
 }
 
 //Gradient Computation using Backpropagation
-double EmNNModel::ComputeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
+double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
                                                bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
                                                int sampling_method) {
 
     double Q = 0.0;
-    const FragmentGraph *fg = moldata.GetFragmentGraph();
+    const FragmentGraph *fg = moldata.getFragmentGraph();
     unsigned int num_transitions = fg->getNumTransitions();
     unsigned int num_fragments = fg->getNumFragments();
 
@@ -73,7 +73,7 @@ double EmNNModel::ComputeAndAccumulateGradient(double *grads, int molidx, MolDat
     unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();
     int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
 
-    if (!moldata.HasComputedGraph()) return Q;
+    if (!moldata.hasComputedGraph()) return Q;
 
     suft_t *suft_values = &(suft.values[molidx]);
 
@@ -99,11 +99,11 @@ double EmNNModel::ComputeAndAccumulateGradient(double *grads, int molidx, MolDat
         std::set<int> selected_trans_id;
         if (!record_used_idxs_only && sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
 
-            int num_frags = moldata.GetSpectrum(energy)->size();
+            int num_frags = moldata.getSpectrum(energy)->size();
             int num_iterations = cfg->ga_graph_sampling_k * num_frags;
             if (cfg->ga_use_sqaured_iter_num)
                 num_iterations = num_iterations * (energy + 1) * (energy + 1);
-            moldata.GetSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
         }
 
         //Iterate over from_id (i)
@@ -134,7 +134,7 @@ double EmNNModel::ComputeAndAccumulateGradient(double *grads, int molidx, MolDat
             std::vector<const FeatureVector *> fvs(num_trans_from_id);
             std::vector<double> nu_terms(num_trans_from_id + 1);
             for (int idx = 0; it != from_id_map->end(); ++it, idx++) {
-                fvs[idx] = moldata.GetFeatureVectorForIdx(*it);
+                fvs[idx] = moldata.getFeatureVectorForIdx(*it);
                 double theta = nn_param->computeTheta(*fvs[idx], energy, z_values[idx], a_values[idx]);
                 denom += exp(theta);
                 nu_terms[idx] = (*suft_values)[*it + suft_offset];
@@ -183,10 +183,10 @@ double EmNNModel::ComputeAndAccumulateGradient(double *grads, int molidx, MolDat
     return Q;
 }
 
-double EmNNModel::ComputeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
+double EmNNModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     double Q = 0.0;
-    const FragmentGraph *fg = moldata.GetFragmentGraph();
+    const FragmentGraph *fg = moldata.getFragmentGraph();
     unsigned int num_transitions = fg->getNumTransitions();
     unsigned int num_fragments = fg->getNumFragments();
 
@@ -194,7 +194,7 @@ double EmNNModel::ComputeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
     unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();
     int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
 
-    if (!moldata.HasComputedGraph()) return Q;
+    if (!moldata.hasComputedGraph()) return Q;
 
     suft_t *suft_values = &(suft.values[molidx]);
 
@@ -228,7 +228,7 @@ double EmNNModel::ComputeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
             std::vector<const FeatureVector *> fvs(num_trans_from_id);
             std::vector<double> nu_terms(num_trans_from_id + 1);
             for (int idx = 0; it != from_id_map->end(); ++it, idx++) {
-                fvs[idx] = moldata.GetFeatureVectorForIdx(*it);
+                fvs[idx] = moldata.getFeatureVectorForIdx(*it);
                 double theta = nn_param->computeTheta(*fvs[idx], energy);
                 denom += exp(theta);
                 nu_terms[idx] = (*suft_values)[*it + suft_offset];

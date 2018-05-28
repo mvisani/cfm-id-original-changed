@@ -91,19 +91,19 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
                 fgen = new LikelyFragmentGraphGenerator(nn_param, cfg, prob_thresh_for_prune);
             else
                 fgen = new LikelyFragmentGraphGenerator(param, cfg, prob_thresh_for_prune);
-            moldata.ComputeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, cfg->include_isotopes);
-            double precursor_mass = moldata.GetFragmentGraph()->getFragmentAtIdx(0)->getMass();
+            moldata.computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, cfg->include_isotopes);
+            double precursor_mass = moldata.getFragmentGraph()->getFragmentAtIdx(0)->getMass();
 
             //Predict the spectra (and post-process, use existing thetas)
-            moldata.ComputePredictedSpectra(*param, false, true);
+            moldata.computePredictedSpectra(*param, false, true);
             if (output_all_scores) std::cout << *it->getId() << ":";
 
             score = 0.0;
             for (int postprocess = 0; postprocess <= 1; postprocess++) {
 
-                if (postprocess) moldata.PostprocessPredictedSpectra();
+                if (postprocess) moldata.postprocessPredictedSpectra();
                 if (abs_mass_tol == 0.5 && !postprocess)
-                    moldata.QuantisePredictedSpectra(0);    //Integer precision data, combine integer masses.
+                    moldata.quantisePredictedSpectra(0);    //Integer precision data, combine integer masses.
 
                 if (postprocess == (int) post_process_spectra) {
 
@@ -114,7 +114,7 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
                     //Compute the score for the current candidate:
                     // - The score is the sum of the comparison scores between all the target and predicted spectra
                     for (unsigned int energy = 0; energy < target_spectra->size(); energy++) {
-                        score += cmp->computeScore(&((*target_spectra)[energy]), moldata.GetPredictedSpectrum(energy));
+                        score += cmp->computeScore(&((*target_spectra)[energy]), moldata.getPredictedSpectrum(energy));
                     }
                 }
 
@@ -124,7 +124,7 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
                     double tmp_score = 0.0;
                     for (unsigned int energy = 0; energy < target_spectra->size(); energy++) {
                         tmp_score += itc->computeScore(&((*target_spectra)[energy]),
-                                                       moldata.GetPredictedSpectrum(energy));
+                                                       moldata.getPredictedSpectrum(energy));
                     }
                     std::cout << " " << tmp_score;
                 }
@@ -177,7 +177,7 @@ void Identifier::rankPrecomputedCandidatesForSpecMatch(std::vector<PrecomputedCa
             MolData moldata(it->getId()->c_str(), it->getSmilesOrInchi()->c_str(), cfg);
             moldata.readInSpectraFromFile(it->getSpectrumFilename()->c_str(), true);
             for (unsigned int energy = 0; energy < target_spectra->size(); energy++)
-                score += cmp->computeScore(&((*target_spectra)[energy]), moldata.GetPredictedSpectrum(energy));
+                score += cmp->computeScore(&((*target_spectra)[energy]), moldata.getPredictedSpectrum(energy));
         } else {
             for (unsigned int energy = 0; energy < target_spectra->size(); energy++)
                 score += cmp->computeScore(&((*target_spectra)[energy]), &(*it->getSpectra())[energy]);

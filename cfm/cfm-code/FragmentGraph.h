@@ -180,19 +180,23 @@ private:
 
 class Path {
 public:
-    Path(std::vector<int> &trans_ids, const int &dst_id) {
+    Path(std::vector<int> &trans_ids, const int &dst_id, const double &dist_mass) {
         std::copy(trans_ids.begin(), trans_ids.end(), std::back_inserter(m_trans_ids));
         m_dst_id = dst_id;
+        m_dist_mass = dist_mass;
     };
 
     ~Path() = default;
 
-    std::vector<int> *GetTransIds() { return &m_trans_ids; };
+    std::vector<int> *getTransIds() { return &m_trans_ids; };
 
-    int GetDstId() const { return m_dst_id; };
+    int getDstId() const { return m_dst_id; };
+
+    double getDstMass() const { return m_dist_mass; };
 private:
     std::vector<int> m_trans_ids;
     int m_dst_id;
+    double m_dist_mass;
 };
 
 class FragmentGraph {
@@ -295,16 +299,16 @@ public:
     void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                    std::vector<std::vector<double>> &thetas, double explore_weight);
 
-    void ComputePathes(int depth);
+    void computePathes(int depth);
 
     // Get Path from 3 x std of given mass
-    void GetPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol);
+    void getPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol);
 
 
 protected:
     std::vector<Fragment> fragments;
     std::vector<Transition> transitions;
-    std::vector<Path> pathes;
+    std::vector<Path> paths;
     std::multimap<double, int> mass_path_map;
     tmap_t from_id_tmap; // Mapping between from_id and transitions with that from_id
     tmap_t to_id_tmap; // Mapping between to_id and transitions with that to_id

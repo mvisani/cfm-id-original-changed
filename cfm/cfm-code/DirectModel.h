@@ -23,13 +23,13 @@ class DirectModel: public ModelBase {
 
 public:
     //This is public so the test can access it....there must be a better way?
-    virtual double ComputeAndAccumulateGradient(double *grads, MolData &moldata,
-                                                bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                                int sampling_method);
+    virtual void computeAndAccumulateGradient(double *grads, MolData &moldata,
+                                              bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
+                                              int sampling_method);
 
-    virtual double ComputeQ(MolData &moldata);
+    virtual double computeQ(MolData &moldata);
 
-    double TrainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename) override;
+    double trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename) override;
 
     // function to add Regularization term for Q
     // update grads is updated if a ptr is passed

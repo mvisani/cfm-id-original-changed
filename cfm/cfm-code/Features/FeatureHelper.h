@@ -85,13 +85,6 @@ public:
                         fc->includesFeature("NLExtraFunctionalGroupFeatures");
 
         if (exec_flags[4]) {
-            // fparams = new RDKit::FragCatParams( 0, 20,
-            // "cfmid_functional_groups.csv" );
-            // std::string fgrps_serial = fparams->Serialize();
-            // std::ofstream of;
-            // of.open("functional_groups_serial.txt");
-            // of << fgrps_serial << std::endl;
-            // of.close();
             fparams = new RDKit::FragCatParams(FGRPS_PICKLE);
             if (fparams->getNumFuncGroups() != NUM_FGRPS)
                 throw FeatureHelperException(

@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
     std::cout << "TARGET ID: " << target_id << std::endl;
 
     //Rank the candidates
-    identifier->rankCandidatesForSpecMatch(candidates, targetData.GetSpectra(), output_msp_or_mgf,
+    identifier->rankCandidatesForSpecMatch(candidates, targetData.getSpectra(), output_msp_or_mgf,
                                            apply_postprocessing == 1);
     delete identifier;
 

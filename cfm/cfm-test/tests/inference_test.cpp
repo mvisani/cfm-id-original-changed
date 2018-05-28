@@ -42,7 +42,7 @@ public:
 			thetas[energy][1] = 2.456735772821304;	//0->2
 			thetas[energy][2] = 0.0;	//2->3
 		}
-        ComputeLogTransitionProbabilities();
+        computeLogTransitionProbabilities();
 
 		//Set the spectra
 		spectra.resize(3);
@@ -66,14 +66,14 @@ public:
 		std::vector<std::string> fnames;
 		fnames.push_back("BreakAtomPair");
 		FeatureCalculator fc(fnames);
-		ComputeFragmentGraphAndReplaceMolsWithFVs(&fc);
+        computeFragmentGraphAndReplaceMolsWithFVs(&fc);
 
 		//Randomly set the theta values
 		thetas.resize(1);
 		thetas[0].resize( fg->getNumTransitions() );
 		for( int i = 0; i < fg->getNumTransitions(); i++ )
 			thetas[0][i] = (double(std::rand())/double(RAND_MAX) -  0.5)*3;
-        ComputeLogTransitionProbabilities();
+        computeLogTransitionProbabilities();
 
 		//Load a very simple spectrum
 		spectra.resize(1);
@@ -203,7 +203,7 @@ bool runInferenceTestCompareVsIPFP( MolData &moldata, config_t &cfg ){
     beliefs_t *ipfp_beliefs = ipfp.calculateBeliefs();
 
 	//Compare the two
-	const FragmentGraph *frg = moldata.GetFragmentGraph();
+	const FragmentGraph *frg = moldata.getFragmentGraph();
 
 	//Compare the results
 	for( unsigned int i = 0; i < frg->getNumTransitions(); i++ ){

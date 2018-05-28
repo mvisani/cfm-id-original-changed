@@ -1313,21 +1313,21 @@ void FVFragGraphSaveAndLoadState::runTest(){
 		std::vector<std::string> fnames;
 		fnames.push_back( "BreakAtomPair" ); fnames.push_back( "RingFeatures" );  fnames.push_back( "HydrogenRemoval" );
 		FeatureCalculator fc( fnames );
-        morig.ComputeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
+		morig.computeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
 
 		//Save state
 		std::string fvfilename = "tmp_fv_file.fg";
 		if( boost::filesystem::exists( fvfilename ) )
 			boost::filesystem::remove( fvfilename );
-		morig.WriteFVFragmentGraph(fvfilename);
+		morig.writeFVFragmentGraph(fvfilename);
 
 		//Load state into another moldata object
 		MolData mload("Test ID", smiles_or_inchi.c_str(), &cfg );
-		mload.ReadInFVFragmentGraph(fvfilename);
+		mload.readInFVFragmentGraph(fvfilename);
 
 		//Compare orig vs loaded
-		const FragmentGraph *fgorig = morig.GetFragmentGraph();
-		const FragmentGraph *fgload = mload.GetFragmentGraph();
+		const FragmentGraph *fgorig = morig.getFragmentGraph();
+		const FragmentGraph *fgload = mload.getFragmentGraph();
 		if( fgorig->getNumFragments() != fgload->getNumFragments() || fgorig->getNumTransitions() != fgload->getNumTransitions() ){
 			std::cout << "Mismatch in fragment graph dimensions: " << std::endl;
 			pass = false;
@@ -1370,8 +1370,8 @@ void FVFragGraphSaveAndLoadState::runTest(){
 				pass = false;
 				break;			
 			}
-			const FeatureVector *fv1 = morig.GetFeatureVectorForIdx(i);
-			const FeatureVector *fv2 = mload.GetFeatureVectorForIdx(i);
+			const FeatureVector *fv1 = morig.getFeatureVectorForIdx(i);
+			const FeatureVector *fv2 = mload.getFeatureVectorForIdx(i);
 			if( fv1->getTotalLength() != fv2->getTotalLength() || fv1->getNumSetFeatures() != fv2->getNumSetFeatures() ){
 				std::cout << "Mismatch in feature vector dimensions idx: " << i << std::endl;
 				pass = false;

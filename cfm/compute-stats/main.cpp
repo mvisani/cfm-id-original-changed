@@ -289,7 +289,7 @@ int main(int argc, char *argv[]) {
         std::vector<MolData>::iterator mit;
         for (mit = data.begin(); mit != data.end(); ++mit) {
 
-            if (group_to_compute != -1 && mit->GetGroup() != group_to_compute)
+            if (group_to_compute != -1 && mit->getGroup() != group_to_compute)
                 continue;
 
             double mw = 0.0;
@@ -320,40 +320,40 @@ int main(int argc, char *argv[]) {
                 mit->readInSpectraFromFile(pred_spec_file, true);
             }
             if (quantise_spectra_dec_pl >= 0) {
-                mit->QuantisePredictedSpectra(quantise_spectra_dec_pl);
-                mit->QuantiseMeasuredSpectra(quantise_spectra_dec_pl);
+                mit->quantisePredictedSpectra(quantise_spectra_dec_pl);
+                mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
             }
             if (apply_cutoffs)
-                mit->PostprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
+                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
             else
-                mit->PostprocessPredictedSpectra(cumulative_intensity_thresh, 0, 1000000, min_intensity);
+                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0, 1000000, min_intensity);
 
             //num_spectra = mit->GetNumSpectra();
             if (clean_target_spectra)
                 mit->cleanSpectra(0.1, 10.0);
 
-            out << "\t" << mit->GetSpectrum(i)->size() << "\t"
-                << mit->GetPredictedSpectrum(i)->size() << "\t";
+            out << "\t" << mit->getSpectrum(i)->size() << "\t"
+                << mit->getPredictedSpectrum(i)->size() << "\t";
             energy_rscores[idx] =
-                    rcmp.computeScore(mit->GetSpectrum(i), mit->GetPredictedSpectrum(i));
+                    rcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             rscores[idx] += norm * energy_rscores[idx];
             energy_pscores[idx] =
-                    pcmp.computeScore(mit->GetSpectrum(i), mit->GetPredictedSpectrum(i));
+                    pcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             pscores[idx] += norm * energy_pscores[idx];
             energy_wrscores[idx] =
-                    wrcmp.computeScore(mit->GetSpectrum(i), mit->GetPredictedSpectrum(i));
+                    wrcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             wrscores[idx] += norm * energy_wrscores[idx];
             energy_wpscores[idx] =
-                    wpcmp.computeScore(mit->GetSpectrum(i), mit->GetPredictedSpectrum(i));
+                    wpcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             wpscores[idx] += norm * energy_wpscores[idx];
             energy_jscores[idx] =
-                    jcmp.computeScore(mit->GetSpectrum(i), mit->GetPredictedSpectrum(i));
+                    jcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             jscores[idx] += norm * energy_jscores[idx];
             energy_dpscores[idx] =
-                    dot.computeScore(mit->GetSpectrum(i), mit->GetPredictedSpectrum(i));
+                    dot.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             dpscores[idx] += norm * energy_dpscores[idx];
             energy_odpscores[idx] =
-                    odot.computeScore(mit->GetSpectrum(i), mit->GetPredictedSpectrum(i));
+                    odot.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             odpscores[idx] += norm * energy_odpscores[idx];
             out << mit->getId() << "\t" << energy_rscores[idx] << "\t"
                 << energy_pscores[idx] << "\t" << energy_wrscores[idx] << "\t"

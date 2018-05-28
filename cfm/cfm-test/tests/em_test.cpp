@@ -95,7 +95,7 @@ void EMTestSelfProduction::runTest() {
         std::string id = "TestMol", smiles = "NCCCN";
         std::string spec_file = "tests/test_data/example_spectra.txt";
         data.push_back(MolData(id, smiles, 0, &cfg));
-        data[0].ComputeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
+        data[0].computeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
         data[0].readInSpectraFromFile(spec_file);
 
         //Run EM
@@ -105,7 +105,7 @@ void EMTestSelfProduction::runTest() {
             std::string status_file = "tmp_status_file.log";
             std::string tmp_file = "tmp.log";
             EmModel em(&cfg, &fc, status_file);
-            double Q = em.TrainModel(data, 1, tmp_file);
+            double Q = em.trainModel(data, 1, tmp_file);
             if (Q > best_Q) {
                 em.writeParamsToFile(param_filename);
                 best_Q = Q;
@@ -114,14 +114,14 @@ void EMTestSelfProduction::runTest() {
 
         //Predict the output spectra
         Param param(param_filename);
-        data[0].ComputePredictedSpectra(param);
-        data[0].PostprocessPredictedSpectra(100.0, 0, 100000);
+        data[0].computePredictedSpectra(param);
+        data[0].postprocessPredictedSpectra(100.0, 0, 100000);
 
         //Compare the original and predicted spectra - should be able to overfit
         //very close to the actual values since training on same (and only same) mol
-        for (unsigned int energy = 0; energy < data[0].GetNumSpectra(); energy++) {
-            const Spectrum *orig_spec = data[0].GetSpectrum(energy);
-            const Spectrum *predicted_spec = data[0].GetPredictedSpectrum(energy);
+        for (unsigned int energy = 0; energy < data[0].getNumSpectra(); energy++) {
+            const Spectrum *orig_spec = data[0].getSpectrum(energy);
+            const Spectrum *predicted_spec = data[0].getPredictedSpectrum(energy);
             pass &= compareSpectra(orig_spec, predicted_spec, cfg.abs_mass_tol, cfg.ppm_mass_tol, intensity_tol);
         }
     }
@@ -168,7 +168,7 @@ void EMTestSingleEnergySelfProduction::runTest() {
     std::string id = "TestMol", smiles = "NCCCN";
     std::string spec_file = "tests/test_data/example_spectra.txt";
     data.push_back(MolData(id, smiles, 0, &orig_cfg));
-    data[0].ComputeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
+    data[0].computeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
     data[0].readInSpectraFromFile(spec_file);
 
     Param *final_params;
@@ -181,7 +181,7 @@ void EMTestSingleEnergySelfProduction::runTest() {
         std::string status_file = "tmp_status_file.log";
         std::string tmp_file = "tmp.log";
         EmModel em(&cfg, &fc, status_file);
-        double Q = em.TrainModel(data, 1, tmp_file);
+        double Q = em.trainModel(data, 1, tmp_file);
         std::string param_filename = "tmp_param_output.log";
         em.writeParamsToFile(param_filename);
 
@@ -193,14 +193,14 @@ void EMTestSingleEnergySelfProduction::runTest() {
     }
 
     //Predict the output spectra
-    data[0].ComputePredictedSpectra(*final_params);
-    data[0].PostprocessPredictedSpectra(100.0, 0, 1000);
+    data[0].computePredictedSpectra(*final_params);
+    data[0].postprocessPredictedSpectra(100.0, 0, 1000);
 
     //Compare the original and predicted spectra - should be able to overfit
     //very close to the actual values since training on same (and only same) mol
-    for (unsigned int energy = 0; energy < data[0].GetNumSpectra(); energy++) {
-        const Spectrum *orig_spec = data[0].GetSpectrum(energy);
-        const Spectrum *predicted_spec = data[0].GetPredictedSpectrum(energy);
+    for (unsigned int energy = 0; energy < data[0].getNumSpectra(); energy++) {
+        const Spectrum *orig_spec = data[0].getSpectrum(energy);
+        const Spectrum *predicted_spec = data[0].getPredictedSpectrum(energy);
         pass &= compareSpectra(orig_spec, predicted_spec, orig_cfg.abs_mass_tol, orig_cfg.ppm_mass_tol, intensity_tol);
 
     }
@@ -257,7 +257,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     std::string id = "TestMol", smiles = "NCCCN";
     std::string spec_file = "tests/test_data/example_spectra.txt";
     data.push_back(MolData(id, smiles, 0, &orig_cfg));
-    data[0].ComputeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
+    data[0].computeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
     data[0].readInSpectraFromFile(spec_file);
 
     NNParam *final_params;
@@ -274,7 +274,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
             std::string status_file = "tmp_status_file.log";
             std::string tmp_file = "tmp.log";
             EmNNModel em(&cfg, &fc, status_file);
-            double Q = em.TrainModel(data, 1, tmp_file);
+            double Q = em.trainModel(data, 1, tmp_file);
             Qs.push_back(Q);
 
             if (Q > best_Q) {
@@ -294,14 +294,14 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     }
 
     //Predict the output spectra
-    data[0].ComputePredictedSpectra(*final_params);
-    data[0].PostprocessPredictedSpectra(100.0, 0, 1000);
+    data[0].computePredictedSpectra(*final_params);
+    data[0].postprocessPredictedSpectra(100.0, 0, 1000);
 
     //Compare the original and predicted spectra - should be able to overfit
     //very close to the actual values since training on same (and only same) mol
-    for (unsigned int energy = 0; energy < data[0].GetNumSpectra(); energy++) {
-        const Spectrum *orig_spec = data[0].GetSpectrum(energy);
-        const Spectrum *predicted_spec = data[0].GetPredictedSpectrum(energy);
+    for (unsigned int energy = 0; energy < data[0].getNumSpectra(); energy++) {
+        const Spectrum *orig_spec = data[0].getSpectrum(energy);
+        const Spectrum *predicted_spec = data[0].getPredictedSpectrum(energy);
         pass &= compareSpectra(orig_spec, predicted_spec, orig_cfg.abs_mass_tol, orig_cfg.ppm_mass_tol, intensity_tol);
 
     }
@@ -362,7 +362,7 @@ void EMTestSingleEnergyIsotopeSelfProduction::runTest() {
     //Prepare some simple data
     std::vector<MolData> data;
     data.push_back(IsotopeTestMol(&orig_cfg));
-    data[0].ComputeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
+    data[0].computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
 
     Param *final_params;
 
@@ -373,19 +373,19 @@ void EMTestSingleEnergyIsotopeSelfProduction::runTest() {
     std::string status_file = "tmp_status_file.log";
     std::string tmp_file = "tmp.log";
     EmModel em(&cfg, &fc, status_file);
-    double Q = em.TrainModel(data, 1, tmp_file);
+    double Q = em.trainModel(data, 1, tmp_file);
     std::string param_filename = "tmp_param_output.log";
     em.writeParamsToFile(param_filename);
     final_params = new Param(param_filename);
 
     //Predict the output spectra
-    data[0].ComputePredictedSpectra(*final_params);
-    data[0].PostprocessPredictedSpectra(100.0, 0, 1000);
+    data[0].computePredictedSpectra(*final_params);
+    data[0].postprocessPredictedSpectra(100.0, 0, 1000);
 
     //Compare the original and predicted spectra - should be able to overfit
     //very close to the actual values since training on same (and only same) mol
-    const Spectrum *orig_spec = data[0].GetSpectrum(0);
-    const Spectrum *predicted_spec = data[0].GetPredictedSpectrum(0);
+    const Spectrum *orig_spec = data[0].getSpectrum(0);
+    const Spectrum *predicted_spec = data[0].getPredictedSpectrum(0);
     pass &= compareSpectra(orig_spec, predicted_spec, orig_cfg.abs_mass_tol, orig_cfg.ppm_mass_tol, intensity_tol);
 
     passed = pass;
@@ -418,7 +418,7 @@ void EMTestLBFGSvsOriginalGradientAscent::runTest() {
     data.push_back(MolData(id2, smiles2, 0, &cfg));
     data.push_back(MolData(id3, smiles3, 0, &cfg));
     for (int i = 0; i < 3; i++) {
-        data[i].ComputeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
+        data[i].computeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
         data[i].readInSpectraFromFile(spec_file);
     }
 
@@ -426,14 +426,14 @@ void EMTestLBFGSvsOriginalGradientAscent::runTest() {
     std::string status_file = "tmp_status_file.log";
     std::string tmp_file = "tmp.log";
     EmModel em1(&cfg, &fc, status_file);
-    double orig_Q = em1.TrainModel(data, 1, tmp_file);
+    double orig_Q = em1.trainModel(data, 1, tmp_file);
     std::cout << "Original Q = " << orig_Q << std::endl;
 
     std::cout << "Running EM using LBFGS gradient ascent algorithm" << std::endl;
     cfg.ga_method = USE_LBFGS_FOR_GA;
     cfg.ga_converge_thresh = 0.00001;
     EmModel em2(&cfg, &fc, status_file);
-    double lbfgs_Q = em2.TrainModel(data, 1, tmp_file);
+    double lbfgs_Q = em2.trainModel(data, 1, tmp_file);
 
     std::cout << "Original Q: " << orig_Q << " LBFGS Q: " << lbfgs_Q << std::endl;
     if (orig_Q - lbfgs_Q > tol) {
@@ -475,14 +475,14 @@ bool runMultiProcessorEMTest(config_t &cfg) {
         data.push_back(MolData(id2, smiles2, 0, &cfg));
         data.push_back(MolData(id3, smiles3, 0, &cfg));
         for (int i = 0; i < 3; i++) {
-            data[i].ComputeFragmentGraphAndReplaceMolsWithFVs(&fc, &cfg);
+            data[i].computeFragmentGraphAndReplaceMolsWithFVs(&fc, &cfg);
             data[i].readInSpectraFromFile(spec_file);
         }
     }
     std::string status_file = "tmp_status_file.log";
     std::string tmp_file = "tmp.log";
     EmModel em1(&cfg, &fc, status_file);
-    double all_master_Q = em1.TrainModel(data, 1, tmp_file);
+    double all_master_Q = em1.trainModel(data, 1, tmp_file);
     std::cout << "Q = " << all_master_Q << std::endl;
 
     //Now run the same molecules on 3 separate processes
@@ -492,11 +492,11 @@ bool runMultiProcessorEMTest(config_t &cfg) {
     if (mpi_rank == MASTER) data.push_back(MolData(id1, smiles1, 0, &cfg));
     else if (mpi_rank == 1) data.push_back(MolData(id2, smiles2, 0, &cfg));
     else if (mpi_rank == 2) data.push_back(MolData(id3, smiles3, 0, &cfg));
-    data[0].ComputeFragmentGraph(&fc);
-    data[0].ComputeFeatureVectors(&fc);
+    data[0].computeFragmentGraph(&fc);
+    data[0].computeFeatureVectors(&fc);
     data[0].readInSpectraFromFile(spec_file);
     EmModel em2(&cfg, &fc, status_file);
-    double separated_Q = em2.TrainModel(data, 1, tmp_file);
+    double separated_Q = em2.trainModel(data, 1, tmp_file);
     std::cout << "Q = " << separated_Q << std::endl;
 
     //Check that the output Q values are the same
@@ -637,7 +637,7 @@ void EMTestBiasPreLearning::runTest() {
     std::string id = "TestMol", smiles = "NCCCN";
     std::string spec_file = "tests/test_data/example_spectra.txt";
     data.push_back(MolData(id, smiles, 0, &orig_cfg));
-    data[0].ComputeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
+    data[0].computeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
     data[0].readInSpectraFromFile(spec_file);
 
 
@@ -655,7 +655,7 @@ void EMTestBiasPreLearning::runTest() {
         std::string status_file = "tmp_status_file.log";
         std::string tmp_file = "tmp.log";
         EmModel em(&cfg, &fc, status_file);
-        double Q = em.TrainModel(data, 1, tmp_file);
+        double Q = em.trainModel(data, 1, tmp_file);
         std::string param_filename = "tmp_param_output.log";
         em.writeParamsToFile(param_filename);
         Param *comb_params = new Param(param_filename);
@@ -668,7 +668,7 @@ void EMTestBiasPreLearning::runTest() {
         before = after;
         cfg.update_bias_first = 1;
         EmModel em2(&cfg, &fc, status_file);
-        Q = em2.TrainModel(data, 1, tmp_file);
+        Q = em2.trainModel(data, 1, tmp_file);
         em2.writeParamsToFile(param_filename);
         Param *sep_params = new Param(param_filename);
         after = time(nullptr);

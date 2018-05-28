@@ -400,7 +400,7 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	//Set some arbitrary suft values
 	suft.values.resize(1);
 
-	const FragmentGraph *fg = moldata.GetFragmentGraph();
+	const FragmentGraph *fg = moldata.getFragmentGraph();
 	unsigned int N = fg->getNumTransitions() + fg->getNumFragments();
 	suft.values[0].assign(3*N, 0.0);
 	suft.values[0][0] = 0.2; suft.values[0][1] = 0.3; suft.values[0][2] = 0.5; suft.values[0][3] = 0.0; suft.values[0][4] = 0.0;
@@ -415,8 +415,8 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	FeatureCalculator fc_null(fnames); 
 	std::string null_str = "null";
 	EmNNModel em(&cfg, &fc_null, null_str, param_filename );
-	double Qonly  = em.ComputeQ(0, moldata, suft);
-	double Q = em.ComputeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, USE_NO_SAMPLING);
+	double Qonly  = em.computeQ(0, moldata, suft);
+	double Q = em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, USE_NO_SAMPLING);
 
 	//Check Q
 	double theta1 = 12.0, theta2 = 10.0;

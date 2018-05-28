@@ -161,14 +161,14 @@ void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
     // replaceWithOrigBondType(part);
 
     // Get finger prints with size
-    ExplicitBitVect *fingerPrint = RDKit::RDKFingerprintMol(
+    ExplicitBitVect *finger_print = RDKit::RDKFingerprintMol(
             part, finger_print_min_path, finger_print_max_path, finger_print_size);
 
-    for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
-        fv.addFeature((*fingerPrint)[i]);
+    for (unsigned int i = 0; i < finger_print->getNumBits(); ++i) {
+        fv.addFeature((*finger_print)[i]);
     }
 
-    delete fingerPrint;
+    delete finger_print;
 }
 
 void FingerPrintFeature::addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
@@ -209,15 +209,15 @@ void FingerPrintFeature::addMorganFingerPrint(
     // replaceWithOrigBondType(part);
 
     // Get finger prints with size
-    ExplicitBitVect *fingerPrint =
+    ExplicitBitVect *finger_print =
             RDKit::MorganFingerprints::getFingerprintAsBitVect(part, radius,
                                                                finger_print_size);
 
-    for (unsigned int i = 0; i < fingerPrint->getNumBits(); ++i) {
-        fv.addFeature((*fingerPrint)[i]);
+    for (unsigned int i = 0; i < finger_print->getNumBits(); ++i) {
+        fv.addFeature((*finger_print)[i]);
     }
 
-    delete fingerPrint;
+    delete finger_print;
 }
 
 void FingerPrintFeature::addMorganFingerPrintFeatures(
@@ -368,16 +368,16 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv, cons
     // add bound type
     for (auto bi = mol->mol->beginBonds(); bi != mol->mol->endBonds(); ++bi) {
         // for each bond find two atoms
-        unsigned int beginIdx = (*bi)->getBeginAtomIdx();
-        unsigned int endIdx = (*bi)->getEndAtomIdx();
+        unsigned int begin_idx = (*bi)->getBeginAtomIdx();
+        unsigned int end_idx = (*bi)->getEndAtomIdx();
         int bond_type = FeatureHelper::getBondTypeAsInt(*bi);
 
         // if atoms in the list
-        if (visit_order_map.find(beginIdx) != visit_order_map.end() &&
-            visit_order_map.find(endIdx) != visit_order_map.end()) {
-            adjacency_matrix[visit_order_map[beginIdx]][visit_order_map[endIdx]] =
+        if (visit_order_map.find(begin_idx) != visit_order_map.end() &&
+            visit_order_map.find(end_idx) != visit_order_map.end()) {
+            adjacency_matrix[visit_order_map[begin_idx]][visit_order_map[end_idx]] =
                     bond_type;
-            adjacency_matrix[visit_order_map[endIdx]][visit_order_map[beginIdx]] =
+            adjacency_matrix[visit_order_map[end_idx]][visit_order_map[begin_idx]] =
                     bond_type;
         }
     }

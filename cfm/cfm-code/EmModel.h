@@ -38,9 +38,9 @@ struct suft_counts_t {
     std::vector<suft_t> values;
 };
 
-class EMComputationException : public std::exception {
+class EmComputationException : public std::exception {
 
-    virtual const char *what() const throw() override {
+    virtual const char *what() const noexcept override {
         return "Error during EM, unable to proceed.";
     }
 };
@@ -57,14 +57,14 @@ public:
 
     //Run the EM algorithm on the supplied data (except the specified group),
     //return the final likelihood value.
-    double TrainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename) override;
+    double trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename) override;
 
     //This is public so the test can access it....there must be a better way?
-    virtual double ComputeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
+    virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
                                                 bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
                                                 int sampling_method = 0);
 
-    virtual double ComputeQ(int molidx, MolData &moldata, suft_counts_t &suft);
+    virtual double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
 
 protected:
 

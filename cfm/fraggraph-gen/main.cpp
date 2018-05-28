@@ -87,8 +87,8 @@ int main(int argc, char *argv[])
 	feature_names.push_back(std::string("BreakAtomPair"));
 	FeatureCalculator fc( feature_names );
 	MolData moldata("FRAGGRAPH-GEN", smiles_or_inchi.c_str(), &cfg);
-    moldata.ComputeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
-	const FragmentGraph *graph = moldata.GetFragmentGraph();
+	moldata.computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
+	const FragmentGraph *graph = moldata.getFragmentGraph();
 
 	time_t after = time( nullptr );
 
