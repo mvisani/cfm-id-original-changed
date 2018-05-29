@@ -16,7 +16,7 @@ if (RDKIT_INCLUDE_DIR AND RDKIT_LIBRARIES)
 
 else ()
 
-    if (NOT RDKIT_INCLUDE_DIR)
+    if (NOT RDKIT_INCLUDE_DIR OR NOT RDKIT_INCLUDE_EXT_DIR)
         if (WIN32)
             find_path(RDKIT_INCLUDE_DIR GraphMol/RDKitBase.h
                     PATHS
@@ -74,9 +74,13 @@ else ()
         endif ()
         if (RDKIT_INCLUDE_DIR)
             message(STATUS "Found RDKit include files at ${RDKIT_INCLUDE_DIR}")
+        else()
+            message(STATUS "Can NOT Found RDKit include files at ${RDKIT_INCLUDE_DIR}")
         endif ()
         if (RDKIT_INCLUDE_EXT_DIR)
             message(STATUS "Found RDKit include files at ${RDKIT_INCLUDE_EXT_DIR}")
+        else()
+            message(STATUS "Can NOT Found RDKit include files at ${RDKIT_INCLUDE_EXT_DIR}")
         endif ()
     endif ()
 

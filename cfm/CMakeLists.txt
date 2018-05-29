@@ -51,6 +51,7 @@ endif ()
 # LPSolve
 set(LPSOLVE_INCLUDE_DIR "" CACHE STRING "Where are the LPSolve headers?")
 set(LPSOLVE_LIBRARY_DIR "" CACHE STRING "Where are the LPSolve libraries?")
+message(STATUS "Search For lPsolve lib at ${LPSOLVE_LIBRARY_DIR} and headers at ${LPSOLVE_INCLUDE_DIR} ")
 include_directories(${LPSOLVE_INCLUDE_DIR})
 link_directories(${LPSOLVE_LIBRARY_DIR})
 find_library(LPSOLVE_LIBRARY NAMES lpsolve55 PATHS ${LPSOLVE_LIBRARY_DIR})
