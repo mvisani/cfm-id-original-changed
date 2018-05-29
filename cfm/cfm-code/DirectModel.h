@@ -1,10 +1,11 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# EM.h
+# ModelBase.h
 #
-# Description: 	Class to apply Direact GA algorithm to derive
+# Description: 	Class to apply Direct GA algorithm to derive
 #				model parameters.
+# TODO： This still working in progress
 #
 # Copyright (c) 2013, Felicity Allen
 # All rights reserved.
