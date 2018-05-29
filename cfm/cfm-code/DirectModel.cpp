@@ -9,12 +9,13 @@
 void DirectModel::computeAndAccumulateGradient(double *grads, MolData &moldata,
                                                bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
                                                int sampling_method) {
-
-    double q = 0.0;
     if (!moldata.hasComputedGraph())
         return;
 
     moldata.computeLogTransitionProbabilities();
+	const FragmentGraph *fg = moldata.getFragmentGraph();
+	unsigned int num_transitions = fg->getNumTransitions();
+	unsigned int num_fragments = fg->getNumFragments();
 
     // Collect energies to compute
     std::vector<unsigned int> energies;
@@ -22,6 +23,7 @@ void DirectModel::computeAndAccumulateGradient(double *grads, MolData &moldata,
 
     // Compute the gradients
     for (auto energy_level : energies) {
+		unsigned int grad_offset = energy_level * param->getNumWeightsPerEnergyLevel();
 
         for(const auto & peak : *moldata.getSpectrum(energy_level)){
             // get intensity or height of the spectrum
@@ -39,15 +41,25 @@ void DirectModel::computeAndAccumulateGradient(double *grads, MolData &moldata,
                 boost::math::normal_distribution<double> normal_dist(peak.mass, mass_tol);
                 for(auto & trans_id : *path.getTransIds()){
                     if(trans_id < num_transitions){
-                        q += moldata.getLogTransitionProbForIdx(energy_level, trans_id);
+						const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
+						for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+							auto fv_idx = *fv_it;
+
+						}
                     } else {
-                        q += moldata.getLogPersistenceProbForIdx(energy_level, trans_id);
+                        //q += moldata.getLogPersistenceProbForIdx(energy_level, trans_id);
+						const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
+						//double thete = moldata.getThetaForIdx(trans_id);
+						for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+							auto fv_idx = *fv_it;
+
+						}
                     }
                 }
                 // add observation term
-                q = log(boost::math::pdf(normal_dist, path.getDstMass()));
+                // log(boost::math::pdf(normal_dist, path.getDstMass()));
             }
-            q *= intensity;
+
         }
     }
 
