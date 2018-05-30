@@ -126,6 +126,12 @@ public:
     Transition(int a_from_id, int a_to_id, const std::string *a_nl_smiles)
             : from_id(a_from_id), to_id(a_to_id), nl_smiles(*a_nl_smiles) {};
 
+    ~Transition(){
+        if(feature_vector != nullptr)
+            delete  feature_vector;
+
+    };
+
     // Access Functions
     int getFromId() const { return from_id; };
 
@@ -151,14 +157,18 @@ public:
         ion = RootedROMolPtr();
     };
 
-    FeatureVector *getTmpFV() const { return tmp_fv; };
+    FeatureVector *getFeatureVector() const { return feature_vector; };
 
-    void setTmpFV(FeatureVector *an_fv_ptr) { tmp_fv = an_fv_ptr; };
+    void setFeatureVector(FeatureVector *an_fv_ptr) { feature_vector = an_fv_ptr; };
 
     const std::vector<double> *getTmpThetas() const { return &tmp_thetas; };
 
     void setTmpThetas(const std::vector<double> *a_thetas) {
         tmp_thetas = *a_thetas;
+    };
+
+    void computeFeatureVector(FeatureCalculator *fc){
+        feature_vector = fc->computeFV(getIon(), getNeutralLoss());
     };
 
 private:
@@ -169,7 +179,7 @@ private:
     RootedROMolPtr ion; // We store the ion on the transition to
     // allow for different roots - the fragment stores
     // only an unrooted shared pointer.
-    FeatureVector *tmp_fv; // Temporary storage for the feature vector pointer
+    FeatureVector *feature_vector; // Temporary storage for the feature vector pointer
     // while we compute the fragment graph (don't use this
     // directly - it will be moved up into the MolData)
     std::vector<double> tmp_thetas;
@@ -290,26 +300,24 @@ public:
         return include_h_losses_precursor_only;
     };
 
-    // Functions to delete shared romol pointers for ion and nl mols
-    void deleteMolsForTransitionAtIdx(int index);
-
-    void clearAllSmiles();
-
     // Tree pruning
     // Function to do branching cutting
-    void pruneGraphBySpectra(std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
-                             std::vector<int> &removed_transitions_ids, bool aggressive);
+    void pruneGraphBySpectra(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
+                                 bool aggressive);
 
     // Get a list of transitions ids , with weighted prob
     // Function do some not so random selection
     void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                    std::vector<std::vector<double>> &thetas, double explore_weight);
 
-    void computePathes(int depth);
+    void computePaths(int depth);
 
     // Get Path from 3 x std of given mass
-    void getPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol);
+    void getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol);
 
+    void clearAllSmiles();
+
+    void computeFeatureVectors(FeatureCalculator *fc, bool delete_mols);
 
 protected:
     std::vector<Fragment*> fragments;
@@ -319,23 +327,27 @@ protected:
     tmap_t from_id_tmap; // Mapping between from_id and transitions with that from_id
     tmap_t to_id_tmap; // Mapping between to_id and transitions with that to_id
 
-    // for each engery level;
-    std::vector<tmap_t> from_id_tmaps_per_engery;
-    std::vector<tmap_t> to_id_tmaps_per_engery;
-    std::vector<std::vector<Fragment*>> fragments_per_engery;
-    std::vector<std::vector<Transition*>> transitions_per_engery;
+    // only used when do tree pruning
+    struct ComputationalFragmentTree {
+        ComputationalFragmentTree( const std::vector<Fragment*> &fragments,
+                                   const std::vector<Transition*> &transitions,
+                                   const tmap_t from_id_tmap,
+                                   const tmap_t to_id_tmap)
+                : fragments(fragments), transitions(transitions), from_id_tmap(from_id_tmap), to_id_tmap(to_id_tmap) {
+        };
+        std::vector<Fragment*> fragments;
+        std::vector<Transition*> transitions;
+        tmap_t from_id_tmap;
+        tmap_t to_id_tmap;
+    };
+
+    std::map<int, ComputationalFragmentTree> trees_per_energy;
 
     bool include_isotopes;
     IsotopeCalculator *isotope;
     bool allow_frag_detours;
     bool include_h_losses;
     bool include_h_losses_precursor_only;
-
-    // current fragments and current transitions
-    // used for tree pruning
-    // all pointers are owned by fragments and transitions
-    //std::vector<Fragment*> current_fragments;
-    //std::vector<Transition*> current_transitions;
 
     // Mapping from rounded mass to list of fragment ids,
     // to enable fast check for existing fragments
@@ -372,7 +384,7 @@ protected:
                                  std::vector<int> &removed_transitions_ids, std::map<int, int> &visited,
                                  bool aggressive);
 
-    void ComputePathFromFrag(int frag_id, std::vector<int> &trans_ids, int depth);
+    void computePathFromFrag(int frag_id, std::vector<int> &trans_ids, int depth);
 };
 
 class EvidenceFragmentGraph : public FragmentGraph {

@@ -206,12 +206,9 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
             throw FragmentGraphTimeoutException();
     }
 
-
-
     //Add the node to the graph, and return a fragment id: note, no mols or fv will be set,
     //but the precomputed theta value will be used instead
-    int id = -1;
-    id = current_graph->addToGraphWithThetas(node, node.getAllTmpThetas(), parentid);
+    int id = current_graph->addToGraphWithThetas(node, node.getAllTmpThetas(), parentid);
 
     //Reached max depth?
     if (remaining_depth <= 0) return;

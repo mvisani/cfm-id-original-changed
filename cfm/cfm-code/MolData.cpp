@@ -42,10 +42,10 @@ void MolData::readInFVFragmentGraphFromStream(std::istream &ifs) {
     fg->readFeatureVectorGraph(ifs);
 
     // Copy all the feature vector pointers up into the mol data
-    fvs.resize(fg->getNumTransitions());
+    /*fvs.resize(fg->getNumTransitions());
     for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
-        fvs[i] = fg->getTransitionAtIdx(i)->getTmpFV();
-
+        fvs[i] = fg->getTransitionAtIdx(i)->getFeatureVector();
+    */
     graph_computed = 1;
 }
 
@@ -112,9 +112,9 @@ void MolData::computeFragmentGraphAndReplaceMolsWithFVs(FeatureCalculator *fc,
     computeGraphWithGenerator(fgen);
 
     // Copy all the feature vector pointers up into the mol data
-    fvs.resize(fg->getNumTransitions());
+    /*fvs.resize(fg->getNumTransitions());
     for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
-        fvs[i] = fg->getTransitionAtIdx(i)->getTmpFV();
+        fvs[i] = fg->getTransitionAtIdx(i)->getFeatureVector();*/
 
     // Delete all the fragment smiles (we only need these while we're computing
     // the graph)
@@ -319,18 +319,8 @@ void MolData::annotatePeaks(double abs_tol, double ppm_tol,
     }
 }
 
-void MolData::computeFeatureVectors(FeatureCalculator *fc, bool deleteMols) {
-
-    fvs.resize(fg->getNumTransitions());
-    for (unsigned int i = 0; i < fg->getNumTransitions(); i++) {
-        const Transition *t = fg->getTransitionAtIdx(i);
-        fvs[i] = fc->computeFV(t->getIon(), t->getNeutralLoss());
-        if (deleteMols)
-            fg->deleteMolsForTransitionAtIdx(i);
-    }
-    if (!deleteMols)
-        return;
-    fg->clearAllSmiles();
+void MolData::computeFeatureVectors(FeatureCalculator *fc, bool delete_mols) {
+    fg->computeFeatureVectors(fc, delete_mols);
 }
 
 void MolData::computeNormalizedTransitionThetas(Param &param) {
@@ -342,7 +332,7 @@ void MolData::computeNormalizedTransitionThetas(Param &param) {
         // Compute the theta value for each feature vector
         thetas[energy].resize(fg->getNumTransitions());
         for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
-            thetas[energy][i] = param.computeTheta(*fvs[i], energy);
+            thetas[energy][i] = param.computeTheta(*(fg->getTransitionAtIdx(i)->getFeatureVector()), energy);
 
         double max_val = *std::max_element(thetas[energy].begin(), thetas[energy].end());
         for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
@@ -457,28 +447,8 @@ void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
         it->clean(abs_tol, ppm_tol);
 }
 
-void MolData::pruneGraphBySpectra(double abs_tol, double ppm_tol, bool aggressive) {
-    std::vector<int> removed_transitions_ids;
-    fg->pruneGraphBySpectra(spectra, abs_tol, ppm_tol, removed_transitions_ids, aggressive);
-
-    // remove fvs
-    std::sort(removed_transitions_ids.begin(), removed_transitions_ids.end());
-    //Remove transitions, and record a mapping of old->new transition ids
-    unsigned int next_id = 0;
-    unsigned int id_idx = 0;
-    for (int i = 0; i < fvs.size(); i++) {
-        bool need_remove = (id_idx < removed_transitions_ids.size());
-        if (need_remove)
-            need_remove = (need_remove && (removed_transitions_ids[id_idx] == i));
-        // if deleting
-        if (need_remove) {
-            ++id_idx;
-        } else {
-            fvs[next_id] = fvs[i];
-            next_id++;
-        }
-    }
-    fvs.resize(next_id);
+void MolData::pruneGraphBySpectra(int energy_level, double abs_tol, double ppm_tol, bool aggressive) {
+    fg->pruneGraphBySpectra(spectra, energy_level, abs_tol, ppm_tol, aggressive);
 }
 
 void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
@@ -822,7 +792,7 @@ void MolData::addNoise(double max_intensity, double total_intensity, double abs_
 }
 
 void MolData::getPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol) const {
-    fg->getPathes(selected_pathes, mass, mass_tol);
+    fg->getPaths(selected_pathes, mass, mass_tol);
 }
 
 MolData::~MolData() {
@@ -833,7 +803,7 @@ MolData::~MolData() {
         delete ev_fg;
 
     // Delete any computed feature vectors
-    std::vector<FeatureVector *>::iterator it = fvs.begin();
+    /*std::vector<FeatureVector *>::iterator it = fvs.begin();
     for (; it != fvs.end(); ++it)
-        delete *it;
+        delete *it;*/
 }

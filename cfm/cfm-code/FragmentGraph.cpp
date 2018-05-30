@@ -129,10 +129,17 @@ bool FragmentGraph::getPruningTransitionIds(int frag_id, std::vector<Spectrum> &
 }
 
 void
-FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
-                                   std::vector<int> &removed_transitions_ids, bool aggressive) {
+FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
+                                   bool aggressive) {
+
+    /*if(trees_per_energy.find(energy_level) == trees_per_energy.end()) {
+        ComputationalFragmentTree cft(fragments,transitions,from_id_tmap,to_id_tmap);
+        trees_per_energy[energy_level] = (cft);
+    }*/
+
     int frag_id = 0;
     std::map<int, int> visited;
+    std::vector<int> removed_transitions_ids;
     // Get trans ids to remove
     getPruningTransitionIds(frag_id, spectra, abs_tol, ppm_tol, removed_transitions_ids, visited, aggressive);
 
@@ -385,7 +392,7 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         FeatureVector *fv;
         try {
             fv = fc->computeFV(t->getIon(), t->getNeutralLoss());
-            t->setTmpFV(fv);
+            t->setFeatureVector(fv);
         }
         catch (FeatureCalculationException fe) {
             //If we couldn't compute the feature vector, set a dummy feature vector with bias only.
@@ -630,7 +637,7 @@ void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isot
         int toid = (*itt)->getToId();
         out.write(reinterpret_cast<const char *>(&fromid), sizeof(fromid));
         out.write(reinterpret_cast<const char *>(&toid), sizeof(toid));
-        FeatureVector *fv = (*itt)->getTmpFV();
+        FeatureVector *fv = (*itt)->getFeatureVector();
         unsigned int num_set = fv->getNumSetFeatures();
         unsigned int fv_len = fv->getTotalLength();
         out.write(reinterpret_cast<const char *>(&num_set), sizeof(num_set));
@@ -691,7 +698,7 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
         if (fv->getTotalLength() != fv_len)
             fv->addFeatureAtIdx(0.0, fv_len - 1);
         transitions.push_back(new Transition(fromid, toid, &null));
-        transitions[i]->setTmpFV(fv);
+        transitions[i]->setFeatureVector(fv);
     }
 
     //Create from_id and to_id maps
@@ -704,17 +711,17 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
     }
 }
 
-void FragmentGraph::computePathes(int depth) {
+void FragmentGraph::computePaths(int depth) {
     //Clear Path Cache
     /*paths.clear();
     mass_path_map.clear();
 
     int root_frag_id = 0;
     std::vector<int> trans_ids; //(1, SELF_TRANS_ID);
-    ComputePathFromFrag(root_frag_id, trans_ids, depth);*/
+    computePathFromFrag(root_frag_id, trans_ids, depth);*/
 }
 
-void FragmentGraph::ComputePathFromFrag(int frag_id, std::vector<int> &trans_ids, int depth) {
+void FragmentGraph::computePathFromFrag(int frag_id, std::vector<int> &trans_ids, int depth) {
     /*if(!trans_ids.empty()) {
 
         paths.push_back(Path(trans_ids, frag_id, fragments[frag_id]->getMass()));
@@ -730,12 +737,12 @@ void FragmentGraph::ComputePathFromFrag(int frag_id, std::vector<int> &trans_ids
         }
         // self trans
         trans_ids.push_back(transitions.size() + frag_id + 1);
-        ComputePathFromFrag(frag_id, trans_ids, depth - 1);
+        computePathFromFrag(frag_id, trans_ids, depth - 1);
         trans_ids.pop_back();
     }*/
 }
 
-void FragmentGraph::getPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol) {
+void FragmentGraph::getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol) {
 
     // Get Pathes within mass tols
     /*auto lower_bound = mass_path_map.lower_bound(mass_tol - mass_tol);
@@ -747,6 +754,20 @@ void FragmentGraph::getPathes(std::vector<Path> &selected_pathes, double mass, d
         selected_pathes.push_back(paths[path_id]);
     }*/
 }
+
+
+void FragmentGraph::computeFeatureVectors(FeatureCalculator *fc, bool delete_mols) {
+    for(auto & transition: transitions){
+        transition->computeFeatureVector(fc);
+        if(delete_mols){
+            transition->deleteIon();
+            transition->deleteNeutralLoss();
+
+        }
+    }
+    if(delete_mols)
+        clearAllSmiles();
+};
 
 void EvidenceFragmentGraph::writeFragmentsOnly(std::ostream &out) const {
 
@@ -773,11 +794,6 @@ void EvidenceFragmentGraph::writeFullGraph(std::ostream &out) const {
         out << (*itt)->getToId() << " ";
         out << *(*itt)->getNLSmiles() << std::endl;
     }
-}
-
-void FragmentGraph::deleteMolsForTransitionAtIdx(int index) {
-    transitions[index]->deleteNeutralLoss();
-    transitions[index]->deleteIon();
 }
 
 void FragmentGraph::clearAllSmiles() {

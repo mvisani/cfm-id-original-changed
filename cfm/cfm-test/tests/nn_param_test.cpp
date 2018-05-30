@@ -344,10 +344,11 @@ public:
 		fg->addToGraph( FragmentTreeNode( createMolPtr("C=CC[NH3+]"), basic_nl,-1, -1, &fh, nn_param_null_eloc), 0 ); //id = 2, 0 -> 2
 		graph_computed = true;
 
-		fvs.resize( 2 ); 
+		//TODO FIX THIS
+		/*fvs.resize( 2 );
 		fvs[0] = new FeatureVector(); fvs[0]->addFeatureAtIdx(1.0, 0); fvs[0]->addFeatureAtIdx(1.0, 2); fvs[0]->addFeatureAtIdx(1.0, 5);
 		fvs[1] = new FeatureVector(); fvs[1]->addFeatureAtIdx(1.0, 0); fvs[1]->addFeatureAtIdx(1.0, 3); fvs[1]->addFeatureAtIdx(1.0, 5);
-
+		*/
 	}
 };
 

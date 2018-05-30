@@ -78,7 +78,8 @@ public:
     };
 
     const FeatureVector *getFeatureVectorForIdx(int index) const {
-        return fvs[index];
+        return getTransitionAtIdx(index)->getFeatureVector();
+        //return fvs[index];
     };
 
     double getThetaForIdx(int energy, int index) const {
@@ -118,7 +119,7 @@ public:
     };
 
     // Spectrum Related Functions
-    void pruneGraphBySpectra(double abs_tol, double ppm_tol, bool aggressive);
+    void pruneGraphBySpectra(int energy_level, double abs_tol, double ppm_tol, bool aggressive);
 
     void removePeaksWithNoFragment(double abs_tol, double ppm_tol);
 
@@ -165,7 +166,7 @@ public:
     void computeFragmentGraph( FeatureCalculator *fc);
 
     // Use this option if computing features next
-    void computeFeatureVectors(FeatureCalculator *fc, bool deleteMols = false);
+    void computeFeatureVectors(FeatureCalculator *fc, bool delete_mols = false);
 
     void computeNormalizedTransitionThetas(Param &param);
 
@@ -235,7 +236,7 @@ protected
     bool ev_graph_computed;
     std::vector<Spectrum> spectra;
     std::vector<Spectrum> predicted_spectra;
-    std::vector<FeatureVector *> fvs;
+    //std::vector<FeatureVector *> fvs;
     std::vector<std::vector<double>> thetas;
     std::vector<std::vector<double>> log_probs;
     config_t *cfg;
