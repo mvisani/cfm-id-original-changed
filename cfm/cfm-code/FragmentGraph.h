@@ -217,6 +217,12 @@ public:
     ~FragmentGraph() {
         if (include_isotopes)
             delete isotope;
+        for (auto & fragment : fragments) {
+            delete (fragment);
+        }
+        for (auto & transition : transitions) {
+            delete (transition);
+        }
     };
 
     // Add a fragment node to the graph (should be the only way to modify the
@@ -243,9 +249,9 @@ public:
     // !cfg.allow_frag_detours)
     void removeDetours();
 
-    virtual // Write the Fragments only to file (formerly the backtrack output - without
+    // Write the Fragments only to file (formerly the backtrack output - without
     // extra details)
-    void writeFragmentsOnly(std::ostream &out) const;
+    virtual void writeFragmentsOnly(std::ostream &out) const;
 
     // Write the FragmentGraph to file (formerly the transition output - without
     // feature details)
@@ -263,11 +269,11 @@ public:
     unsigned int getNumFragments() const { return fragments.size(); };
 
     const Transition *getTransitionAtIdx(int index) const {
-        return &(transitions[index]);
+        return transitions[index];
     };
 
     virtual const Fragment *getFragmentAtIdx(int index) const {
-        return &(fragments[index]);
+        return  fragments[index];
     };
 
     const tmap_t *getFromIdTMap() const { return &from_id_tmap; };
@@ -306,8 +312,8 @@ public:
 
 
 protected:
-    std::vector<Fragment> fragments;
-    std::vector<Transition> transitions;
+    std::vector<Fragment*> fragments;
+    std::vector<Transition*> transitions;
     std::vector<Path> paths;
     std::multimap<double, int> mass_path_map;
     tmap_t from_id_tmap; // Mapping between from_id and transitions with that from_id
@@ -317,6 +323,12 @@ protected:
     bool allow_frag_detours;
     bool include_h_losses;
     bool include_h_losses_precursor_only;
+
+    // current fragments and current transitions
+    // used for tree pruning
+    // all pointers are owned by fragments and transitions
+    //std::vector<Fragment*> current_fragments;
+    //std::vector<Transition*> current_transitions;
 
     // Mapping from rounded mass to list of fragment ids,
     // to enable fast check for existing fragments

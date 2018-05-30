@@ -203,8 +203,27 @@ public:
 
     void getPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol) const;
 
-    ~MolData();
+    unsigned int getNumTransitions() const {
+        return fg->getNumTransitions();
+    };
+    unsigned int getNumFragments() const {
+        return fg->getNumFragments();
+    };
+    const Transition *getTransitionAtIdx(int index) const {
+        return fg->getTransitionAtIdx(index);
+    };
+    virtual const Fragment *getFragmentAtIdx(int index) const {
+        return  fg->getFragmentAtIdx(index);
+    };
+    const tmap_t *getFromIdTMap() const {
+        return fg->getFromIdTMap();
+    };
 
+    const tmap_t *getToIdTMap() const {
+        return fg->getToIdTMap();
+    };
+
+    ~MolData();
 protected
     : // These items are protected rather than private for access during tests.
     int group;
@@ -222,7 +241,7 @@ protected
     config_t *cfg;
 
     // General utilty functions
-    void ComputeGraphWithGenerator(FragmentGraphGenerator &fgen);
+    void computeGraphWithGenerator(FragmentGraphGenerator &fgen);
 
     void getEnumerationSpectraMasses(std::vector<double> &output_masses);
 
@@ -234,7 +253,7 @@ protected
     void translatePeaksFromMsgToSpectraWithIsotopes(Spectrum &out_spec,
                                                     Message *msg);
 
-    void ComputeFragmentEvidenceValues(std::vector<double> &evidence,
+    void computeFragmentEvidenceValues(std::vector<double> &evidence,
                                        int frag_idx, const beliefs_t *beliefs);
 };
 

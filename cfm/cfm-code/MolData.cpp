@@ -74,7 +74,7 @@ void MolData::writeFVFragmentGraph(std::string &fv_filename) {
     }
 }
 
-void MolData::ComputeGraphWithGenerator(FragmentGraphGenerator &fgen) {
+void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
 
     fg = fgen.createNewGraph(cfg);
     FragmentTreeNode *startnode =
@@ -94,13 +94,13 @@ void MolData::ComputeFragmentGraph() {
     // Note: Do not use this if you want to compute fvs after - FeatureHelper will
     // not have run correctly. Use other computeFragmentGraph instead.
     FragmentGraphGenerator fgen;
-    ComputeGraphWithGenerator(fgen);
+    computeGraphWithGenerator(fgen);
 }
 
 void MolData::computeFragmentGraph(FeatureCalculator *fc) {
 
     FragmentGraphGenerator fgen(fc, false);
-    ComputeGraphWithGenerator(fgen);
+    computeGraphWithGenerator(fgen);
 }
 
 void MolData::computeFragmentGraphAndReplaceMolsWithFVs(FeatureCalculator *fc,
@@ -109,7 +109,7 @@ void MolData::computeFragmentGraphAndReplaceMolsWithFVs(FeatureCalculator *fc,
     // Compute the fragment graph, replacing the transition molecules with feature
     // vectors
     FragmentGraphGenerator fgen(fc);
-    ComputeGraphWithGenerator(fgen);
+    computeGraphWithGenerator(fgen);
 
     // Copy all the feature vector pointers up into the mol data
     fvs.resize(fg->getNumTransitions());
@@ -168,7 +168,7 @@ void MolData::computeEvidenceFragmentGraph(beliefs_t *beliefs,
     Transition null_t;
     std::vector<int> id_lookup(num_fragments, -1);
     std::vector<double> main_ev;
-    ComputeFragmentEvidenceValues(main_ev, 0, beliefs);
+    computeFragmentEvidenceValues(main_ev, 0, beliefs);
     id_lookup[0] = ev_fg->addToGraphDirectNoCheck(
             EvidenceFragment(*(fg->getFragmentAtIdx(0)), -1, main_ev), &null_t, -1);
 
@@ -186,7 +186,7 @@ void MolData::computeEvidenceFragmentGraph(beliefs_t *beliefs,
                 int from_id = id_lookup[t->getFromId()];
                 if (id_lookup[t->getToId()] == -1) {
                     std::vector<double> evidence;
-                    ComputeFragmentEvidenceValues(evidence, t->getToId(), beliefs);
+                    computeFragmentEvidenceValues(evidence, t->getToId(), beliefs);
                     int to_id = ev_fg->addToGraphDirectNoCheck(
                             EvidenceFragment(*f, -1, evidence), t, from_id);
                     id_lookup[t->getToId()] = to_id;
@@ -200,7 +200,7 @@ void MolData::computeEvidenceFragmentGraph(beliefs_t *beliefs,
     ev_graph_computed = 1;
 }
 
-void MolData::ComputeFragmentEvidenceValues(std::vector<double> &evidence,
+void MolData::computeFragmentEvidenceValues(std::vector<double> &evidence,
                                             int frag_idx,
                                             const beliefs_t *beliefs) {
 

@@ -92,7 +92,7 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
             else
                 fgen = new LikelyFragmentGraphGenerator(param, cfg, prob_thresh_for_prune);
             moldata.computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, cfg->include_isotopes);
-            double precursor_mass = moldata.getFragmentGraph()->getFragmentAtIdx(0)->getMass();
+            double precursor_mass = moldata.getFragmentAtIdx(0)->getMass();
 
             //Predict the spectra (and post-process, use existing thetas)
             moldata.computePredictedSpectra(*param, false, true);

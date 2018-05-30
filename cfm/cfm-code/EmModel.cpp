@@ -322,8 +322,8 @@ void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
     auto num_mols = data.size();
     suft.values.resize(num_mols);
     for (unsigned int i = 0; i < num_mols; i++) {
-        const FragmentGraph *fg = data[i].getFragmentGraph();
-        int len = fg->getNumTransitions() + fg->getNumFragments();
+        //const FragmentGraph *fg = data[i].getFragmentGraph();
+        int len = data[i].getNumTransitions() + data[i].getNumFragments();
         int num_spectra = data[i].getNumSpectra();
         suft.values[i].resize(len * num_spectra);
     }
@@ -332,17 +332,17 @@ void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
 void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
                                     MolData *moldata, beliefs_t *beliefs) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
+    //const FragmentGraph *fg = moldata->getFragmentGraph();
 
-    unsigned int num_transitions = fg->getNumTransitions();
-    unsigned int num_fragments = fg->getNumFragments();
+    unsigned int num_transitions = moldata->getNumTransitions();
+    unsigned int num_fragments = moldata->getNumFragments();
 
     int len_offset = num_transitions + num_fragments;
 
     // Accumulate the Sufficient Statistics
     for (unsigned int i = 0; i < num_transitions; i++) {
 
-        const Transition *t = fg->getTransitionAtIdx(i);
+        const Transition *t = moldata->getTransitionAtIdx(i);
 
         double belief = 0.0;
         int energy = cfg->map_d_to_energy[0];
@@ -531,9 +531,9 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
                                              int sampling_method) {
 
     double q = 0.0;
-    const FragmentGraph *fg = moldata.getFragmentGraph();
-    unsigned int num_transitions = fg->getNumTransitions();
-    unsigned int num_fragments = fg->getNumFragments();
+    //const FragmentGraph *fg = moldata.getFragmentGraph();
+    unsigned int num_transitions = moldata.getNumTransitions();
+    unsigned int num_fragments = moldata.getNumFragments();
 
     int offset = num_transitions;
 
@@ -563,8 +563,8 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
 
 
         // Iterate over from_id (i)
-        auto frag_trans_map = fg->getFromIdTMap()->begin();
-        for (int from_idx = 0; frag_trans_map != fg->getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
+        auto frag_trans_map = moldata.getFromIdTMap()->begin();
+        for (int from_idx = 0; frag_trans_map != moldata.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
 
             if (record_used_idxs_only) {
                 for (auto trans_id : *frag_trans_map) {
@@ -615,7 +615,6 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
                     double nu = (*suft_values)[trans_id + suft_offset];
                     nu_sum += nu;
                     const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
-
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         auto fv_idx = *fv_it;
                         *(grads + fv_idx + grad_offset) += nu;
@@ -651,9 +650,9 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
 double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     double q = 0.0;
-    const FragmentGraph *fg = moldata.getFragmentGraph();
-    unsigned int num_transitions = fg->getNumTransitions();
-    unsigned int num_fragments = fg->getNumFragments();
+    //const FragmentGraph *fg = moldata.getFragmentGraph();
+    unsigned int num_transitions = moldata.getNumTransitions();
+    unsigned int num_fragments = moldata.getNumFragments();
 
     int offset = num_transitions;
 
@@ -675,8 +674,8 @@ double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         // Iterate over from_id (i)
-        auto it = fg->getFromIdTMap()->begin();
-        for (int from_idx = 0; it != fg->getFromIdTMap()->end(); ++it, from_idx++) {
+        auto it = moldata.getFromIdTMap()->begin();
+        for (int from_idx = 0; it != moldata.getFromIdTMap()->end(); ++it, from_idx++) {
 
             // Calculate the denominator of the sum terms
             double denom = 1.0;

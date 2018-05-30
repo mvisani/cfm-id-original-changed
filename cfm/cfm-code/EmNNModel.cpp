@@ -65,9 +65,9 @@ double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolDat
                                                int sampling_method) {
 
     double Q = 0.0;
-    const FragmentGraph *fg = moldata.getFragmentGraph();
-    unsigned int num_transitions = fg->getNumTransitions();
-    unsigned int num_fragments = fg->getNumFragments();
+    //const FragmentGraph *fg = moldata.getFragmentGraph();
+    unsigned int num_transitions = moldata.getNumTransitions();
+    unsigned int num_fragments = moldata.getNumFragments();
 
     int offset = num_transitions;
     unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();
@@ -107,7 +107,7 @@ double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolDat
         }
 
         //Iterate over from_id (i)
-        const tmap_t *from_map = fg->getFromIdTMap();
+        const tmap_t *from_map = moldata.getFromIdTMap();
         for (int from_idx = 0; from_idx < num_fragments; from_idx++) {
 
             const std::vector<int> *from_id_map = &(*from_map)[from_idx];
@@ -186,9 +186,9 @@ double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolDat
 double EmNNModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     double Q = 0.0;
-    const FragmentGraph *fg = moldata.getFragmentGraph();
-    unsigned int num_transitions = fg->getNumTransitions();
-    unsigned int num_fragments = fg->getNumFragments();
+    //const FragmentGraph *fg = moldata.getFragmentGraph();
+    unsigned int num_transitions = moldata.getNumTransitions();
+    unsigned int num_fragments = moldata.getNumFragments();
 
     int offset = num_transitions;
     unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();
@@ -216,7 +216,7 @@ double EmNNModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         //Iterate over from_id (i)
-        const tmap_t *from_map = fg->getFromIdTMap();
+        const tmap_t *from_map = moldata.getFromIdTMap();
         for (int from_idx = 0; from_idx < num_fragments; from_idx++) {
 
             const std::vector<int> *from_id_map = &(*from_map)[from_idx];
