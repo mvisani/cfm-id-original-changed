@@ -706,16 +706,16 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
 
 void FragmentGraph::computePathes(int depth) {
     //Clear Path Cache
-    paths.clear();
+    /*paths.clear();
     mass_path_map.clear();
 
     int root_frag_id = 0;
     std::vector<int> trans_ids; //(1, SELF_TRANS_ID);
-    ComputePathFromFrag(root_frag_id, trans_ids, depth);
+    ComputePathFromFrag(root_frag_id, trans_ids, depth);*/
 }
 
 void FragmentGraph::ComputePathFromFrag(int frag_id, std::vector<int> &trans_ids, int depth) {
-    if(!trans_ids.empty()) {
+    /*if(!trans_ids.empty()) {
 
         paths.push_back(Path(trans_ids, frag_id, fragments[frag_id]->getMass()));
         mass_path_map.insert(std::pair<double,int>(fragments[frag_id]->getMass(), paths.size()-1));
@@ -732,20 +732,20 @@ void FragmentGraph::ComputePathFromFrag(int frag_id, std::vector<int> &trans_ids
         trans_ids.push_back(transitions.size() + frag_id + 1);
         ComputePathFromFrag(frag_id, trans_ids, depth - 1);
         trans_ids.pop_back();
-    }
+    }*/
 }
 
 void FragmentGraph::getPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol) {
 
     // Get Pathes within mass tols
-    auto lower_bound = mass_path_map.lower_bound(mass_tol - mass_tol);
+    /*auto lower_bound = mass_path_map.lower_bound(mass_tol - mass_tol);
     auto upper_bound = mass_path_map.upper_bound(mass_tol + mass_tol);
     std::vector<std::shared_ptr<Path>> rev;
 
     for(auto it = lower_bound; it != upper_bound; ++it) {
         int path_id = it->second;
         selected_pathes.push_back(paths[path_id]);
-    }
+    }*/
 }
 
 void EvidenceFragmentGraph::writeFragmentsOnly(std::ostream &out) const {

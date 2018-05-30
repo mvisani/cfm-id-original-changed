@@ -314,10 +314,17 @@ public:
 protected:
     std::vector<Fragment*> fragments;
     std::vector<Transition*> transitions;
-    std::vector<Path> paths;
-    std::multimap<double, int> mass_path_map;
+    /*std::vector<Path> paths;
+    std::multimap<double, int> mass_path_map;*/
     tmap_t from_id_tmap; // Mapping between from_id and transitions with that from_id
     tmap_t to_id_tmap; // Mapping between to_id and transitions with that to_id
+
+    // for each engery level;
+    std::vector<tmap_t> from_id_tmaps_per_engery;
+    std::vector<tmap_t> to_id_tmaps_per_engery;
+    std::vector<std::vector<Fragment*>> fragments_per_engery;
+    std::vector<std::vector<Transition*>> transitions_per_engery;
+
     bool include_isotopes;
     IsotopeCalculator *isotope;
     bool allow_frag_detours;
