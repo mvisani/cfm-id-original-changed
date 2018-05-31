@@ -282,7 +282,11 @@ public:
         return transitions[index];
     };
 
-    virtual const Fragment *getFragmentAtIdx(int index) const {
+    void addFeatureVectorAtIdx(int index, FeatureVector * feature_vector) const {
+        transitions[index]->setFeatureVector(feature_vector);
+    };
+
+    const Fragment *getFragmentAtIdx(int index) const {
         return  fragments[index];
     };
 

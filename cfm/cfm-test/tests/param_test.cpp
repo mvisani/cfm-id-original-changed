@@ -121,19 +121,20 @@ public:
 		fg->addToGraph( FragmentTreeNode( createMolPtr("[C+]#N"), basic_nl,-1, -1, &fh, param_null_eloc), 3 ); //id = 5, 3->5
 		graph_computed = true;
 
-		// TODO : FIX THIS
 		//Add a simple feature vector to each transition
-		/*unsigned int num_trans = fg->getNumTransitions();
-		fvs.resize( num_trans ); 
+		unsigned int num_trans = fg->getNumTransitions();
+		//fvs.resize( num_trans );
 		for( unsigned int i = 0; i < num_trans; i++ ){
-			fvs[i] = new FeatureVector();
-			fvs[i]->addFeature(1.0);			//Bias term
-			fvs[i]->addFeatureAtIdx(0.0, 10);	//Resize to 11 (Using HydrogenMovement feature to initialise params)
+			auto fv = new FeatureVector();
+			fv->addFeature(1.0);			//Bias term
+			fv->addFeatureAtIdx(0.0, 10);	//Resize to 11 (Using HydrogenMovement feature to initialise params)
+			//Transition 0->2
+			//Transition 2->3
+			//Transition 2->4
+			if(i == 1 || i == 3 || i == 4)
+				fv->addFeatureAtIdx(1.0,1);
+			fg->addFeatureVectorAtIdx(i, fv);
 		}
-		fvs[1]->addFeatureAtIdx(1.0,1);	//Transition 0->2
-		fvs[3]->addFeatureAtIdx(1.0,1); //Transition 2->3
-		fvs[4]->addFeatureAtIdx(1.0,1); //Transition 2->4*/
-
 	}
 };
 
