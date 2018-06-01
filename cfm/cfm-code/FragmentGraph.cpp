@@ -290,11 +290,10 @@ int FragmentGraph::findMatchingTransition(int from_id, int to_id) {
 //Write the Fragments only to file (formerly the backtrack output - without extra details)
 void FragmentGraph::writeFragmentsOnly(std::ostream &out) const {
 
-    auto it = fragments.begin();
-    for (; it != fragments.end(); ++it) {
-        out << (*it)->getId() << " ";
-        out << std::setprecision(10) << (*it)->getMass() << " ";
-        out << (*it)->getIonSmiles() << std::endl;
+    for (auto & it : fragments) {
+        out << it->getId() << " ";
+        out << std::setprecision(10) <<  it->getMass() << " ";
+        out << *(it->getIonSmiles()) << std::endl;
     }
 }
 
@@ -826,10 +825,10 @@ void EvidenceFragmentGraph::addTransition(int from_id, int to_id, const std::str
 
 void EvidenceFragmentGraph::writeFragmentsOnly(std::ostream &out) const {
 
-    for (auto it = fragments.begin(); it != fragments.end(); ++it) {
-        out << it->getId() << " ";
-        out << std::setprecision(10) << it->getMass() << " ";
-        out << *it->getIonSmiles() << std::endl;
+    for (auto & it : fragments) {
+        out << it.getId() << " ";
+        out << std::setprecision(10) << it.getMass() << " ";
+        out << *(it.getIonSmiles()) << std::endl;
     }
 }
 
