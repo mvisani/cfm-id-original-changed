@@ -129,14 +129,14 @@ int FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 void
 FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parentid, int remaining_ring_breaks) {
 
-    if (current_graph->getNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
-        || current_graph->getNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
+    if (current_graph->getOriginalNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
+        || current_graph->getOriginalNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
         std::cout << "Maximum number of fragments or transitions exceeded." << std::endl;
         throw FragmentGraphMaxSizeExceededException();
     }
 
     if (verbose)
-        std::cout << current_graph->getNumFragments() << ":" << RDKit::MolToSmiles(*node.ion.get()) << std::endl;
+        std::cout << current_graph->getOriginalNumFragments() << ":" << RDKit::MolToSmiles(*node.ion.get()) << std::endl;
 
     //Add the node to the graph, and return a fragment id
     int id = -1;
