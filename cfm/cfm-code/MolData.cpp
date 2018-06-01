@@ -133,6 +133,7 @@ void MolData::computeLikelyFragmentGraphAndSetThetas(
     fgen.compute(*startnode, cfg->fg_depth, -1, 0.0, cfg->max_ring_breaks);
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
+    fg->createNewGraphForComputation();
     delete startnode;
     graph_computed = true;
 

@@ -178,7 +178,7 @@ private:
     RootedROMolPtr ion; // We store the ion on the transition to
     // allow for different roots - the fragment stores
     // only an unrooted shared pointer.
-    FeatureVector *feature_vector; // Temporary storage for the feature vector pointer
+    FeatureVector *feature_vector = nullptr; //storage for the feature vector pointer
     // while we compute the fragment graph (don't use this
     // directly - it will be moved up into the MolData)
     std::vector<double> tmp_thetas;
@@ -299,15 +299,15 @@ public:
     void createNewGraphForComputation();
 
     // For current graph in use
-    unsigned int getNumTransitions() const {
+    virtual unsigned int getNumTransitions() const {
         return current_graph->transitions.size();
     };
 
-    unsigned int getNumFragments() const {
+    virtual unsigned int getNumFragments() const {
         return current_graph->fragments.size();
     };
 
-    const Transition *getTransitionAtIdx(int index) const {
+    virtual const Transition *getTransitionAtIdx(int index) const {
         return current_graph->transitions[index];
     };
 
@@ -420,8 +420,6 @@ public:
         return &(fragments[index]);
     };
 
-    unsigned int getNumFragments() const { return fragments.size(); };
-
     void writeFragmentsOnly(std::ostream &out) const;
 
     void writeFullGraph(std::ostream &out) const;
@@ -441,6 +439,19 @@ public:
 
     void setFlagsForDirectPaths(std::vector<int> &direct_flags, unsigned int fidx,
                                 std::vector<int> &annotated_flags) const;
+
+    // Access functions, override base functions
+    unsigned int getNumTransitions() const override{
+        return transitions.size();
+    };
+
+    unsigned int getNumFragments() const override{
+        return fragments.size();
+    };
+
+    const Transition *getTransitionAtIdx(int index) const override{
+        return transitions[index];
+    };
 
 private:
     std::vector<EvidenceFragment> fragments;

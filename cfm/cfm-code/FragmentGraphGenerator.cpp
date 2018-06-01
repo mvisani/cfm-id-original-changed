@@ -252,8 +252,10 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
         Transition tmp_t(-1, -1, itt->nl, itt->ion);
         FeatureVector *fv = fc->computeFV(tmp_t.getIon(), tmp_t.getNeutralLoss());
         for (int engy = cfg->spectrum_depths.size() - 1; engy >= 0; engy--) {
-            if (is_nn_params) itt->setTmpTheta(nnparam->computeTheta(*fv, engy), engy);
-            else itt->setTmpTheta(param->computeTheta(*fv, engy), engy);
+            if (is_nn_params)
+                itt->setTmpTheta(nnparam->computeTheta(*fv, engy), engy);
+            else
+                itt->setTmpTheta(param->computeTheta(*fv, engy), engy);
         }
         delete fv;
     }
