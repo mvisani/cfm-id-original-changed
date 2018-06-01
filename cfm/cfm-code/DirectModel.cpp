@@ -122,7 +122,7 @@ double DirectModel::updateParametersGradientAscent(std::vector<MolData> &data,
     return 0.0;
 }
 
-double DirectModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename) {
+double DirectModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename, int energy_level) {
     unused_zeroed = 0;
     int iter = 0;
 

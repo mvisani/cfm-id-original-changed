@@ -57,7 +57,8 @@ public:
 
     //Run the EM algorithm on the supplied data (except the specified group),
     //return the final likelihood value.
-    double trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename) override;
+    double
+    trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename, int energy_level) override;
 
     //This is public so the test can access it....there must be a better way?
     virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,

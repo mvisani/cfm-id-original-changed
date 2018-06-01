@@ -243,6 +243,9 @@ public:
         return fg->hasIsotopesIncluded();
     }
 
+    void createNewGraphForComputation() {
+        fg->createNewGraphForComputation();
+    }
     ~MolData();
 protected
     : // These items are protected rather than private for access during tests.

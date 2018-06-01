@@ -63,7 +63,8 @@ public:
     virtual void writeParamsToFile(std::string &filename);
 
     // abstract function
-    virtual double trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename) = 0;
+    virtual double
+    trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename, int energy_level) = 0;
 
     //Select mini batch (exposed publicly for testing...)
     void selectMiniBatch(std::vector<int> &initialized_minibatch_flags);

@@ -105,7 +105,7 @@ void EMTestSelfProduction::runTest() {
             std::string status_file = "tmp_status_file.log";
             std::string tmp_file = "tmp.log";
             EmModel em(&cfg, &fc, status_file);
-            double Q = em.trainModel(data, 1, tmp_file);
+            double Q = em.trainModel(data, 1, tmp_file, 0);
             if (Q > best_Q) {
                 em.writeParamsToFile(param_filename);
                 best_Q = Q;
@@ -181,7 +181,7 @@ void EMTestSingleEnergySelfProduction::runTest() {
         std::string status_file = "tmp_status_file.log";
         std::string tmp_file = "tmp.log";
         EmModel em(&cfg, &fc, status_file);
-        double Q = em.trainModel(data, 1, tmp_file);
+        double Q = em.trainModel(data, 1, tmp_file, 0);
         std::string param_filename = "tmp_param_output.log";
         em.writeParamsToFile(param_filename);
 
@@ -274,7 +274,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
             std::string status_file = "tmp_status_file.log";
             std::string tmp_file = "tmp.log";
             EmNNModel em(&cfg, &fc, status_file);
-            double Q = em.trainModel(data, 1, tmp_file);
+            double Q = em.trainModel(data, 1, tmp_file, 0);
             Qs.push_back(Q);
 
             if (Q > best_Q) {
@@ -373,7 +373,7 @@ void EMTestSingleEnergyIsotopeSelfProduction::runTest() {
     std::string status_file = "tmp_status_file.log";
     std::string tmp_file = "tmp.log";
     EmModel em(&cfg, &fc, status_file);
-    double Q = em.trainModel(data, 1, tmp_file);
+    double Q = em.trainModel(data, 1, tmp_file, 0);
     std::string param_filename = "tmp_param_output.log";
     em.writeParamsToFile(param_filename);
     final_params = new Param(param_filename);
@@ -426,14 +426,14 @@ void EMTestLBFGSvsOriginalGradientAscent::runTest() {
     std::string status_file = "tmp_status_file.log";
     std::string tmp_file = "tmp.log";
     EmModel em1(&cfg, &fc, status_file);
-    double orig_Q = em1.trainModel(data, 1, tmp_file);
+    double orig_Q = em1.trainModel(data, 1, tmp_file, 0);
     std::cout << "Original Q = " << orig_Q << std::endl;
 
     std::cout << "Running EM using LBFGS gradient ascent algorithm" << std::endl;
     cfg.ga_method = USE_LBFGS_FOR_GA;
     cfg.ga_converge_thresh = 0.00001;
     EmModel em2(&cfg, &fc, status_file);
-    double lbfgs_Q = em2.trainModel(data, 1, tmp_file);
+    double lbfgs_Q = em2.trainModel(data, 1, tmp_file, 0);
 
     std::cout << "Original Q: " << orig_Q << " LBFGS Q: " << lbfgs_Q << std::endl;
     if (orig_Q - lbfgs_Q > tol) {
@@ -482,7 +482,7 @@ bool runMultiProcessorEMTest(config_t &cfg) {
     std::string status_file = "tmp_status_file.log";
     std::string tmp_file = "tmp.log";
     EmModel em1(&cfg, &fc, status_file);
-    double all_master_Q = em1.trainModel(data, 1, tmp_file);
+    double all_master_Q = em1.trainModel(data, 1, tmp_file, 0);
     std::cout << "Q = " << all_master_Q << std::endl;
 
     //Now run the same molecules on 3 separate processes
@@ -496,7 +496,7 @@ bool runMultiProcessorEMTest(config_t &cfg) {
     data[0].computeFeatureVectors(&fc);
     data[0].readInSpectraFromFile(spec_file);
     EmModel em2(&cfg, &fc, status_file);
-    double separated_Q = em2.trainModel(data, 1, tmp_file);
+    double separated_Q = em2.trainModel(data, 1, tmp_file, 0);
     std::cout << "Q = " << separated_Q << std::endl;
 
     //Check that the output Q values are the same
@@ -655,7 +655,7 @@ void EMTestBiasPreLearning::runTest() {
         std::string status_file = "tmp_status_file.log";
         std::string tmp_file = "tmp.log";
         EmModel em(&cfg, &fc, status_file);
-        double Q = em.trainModel(data, 1, tmp_file);
+        double Q = em.trainModel(data, 1, tmp_file, 0);
         std::string param_filename = "tmp_param_output.log";
         em.writeParamsToFile(param_filename);
         Param *comb_params = new Param(param_filename);
@@ -668,7 +668,7 @@ void EMTestBiasPreLearning::runTest() {
         before = after;
         cfg.update_bias_first = 1;
         EmModel em2(&cfg, &fc, status_file);
-        Q = em2.trainModel(data, 1, tmp_file);
+        Q = em2.trainModel(data, 1, tmp_file, 0);
         em2.writeParamsToFile(param_filename);
         Param *sep_params = new Param(param_filename);
         after = time(nullptr);

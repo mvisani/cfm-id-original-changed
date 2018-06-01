@@ -30,7 +30,8 @@ public:
 
     virtual double computeQ(MolData &moldata);
 
-    double trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename) override;
+    double
+    trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename, int energy_level) override;
 
     // function to add Regularization term for Q
     // update grads is updated if a ptr is passed

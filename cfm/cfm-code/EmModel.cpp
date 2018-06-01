@@ -53,8 +53,8 @@ void EmModel::computeThetas(MolData *moldata) {
     moldata->computeNormalizedTransitionThetas(*param);
 }
 
-double EmModel::trainModel(std::vector<MolData> &molDataSet, int group,
-                           std::string &out_param_filename) {
+double
+EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename, int energy_level) {
 
     unused_zeroed = 0;
     int iter = 0;
@@ -84,13 +84,27 @@ double EmModel::trainModel(std::vector<MolData> &molDataSet, int group,
 
     int count_no_progress = 0;
 
-    if (cfg->add_noise) {
-        for (auto &mol : molDataSet) {
+
+    for (auto &mol : molDataSet) {
+        if (cfg->add_noise) {
             if (mol.getGroup() != validation_group)
                 mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
             mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
         }
+
+        if(cfg->use_graph_pruning ){
+            if(cfg->use_single_energy_cfm){
+                mol.createNewGraphForComputation();
+                mol.pruneGraphBySpectra(energy_level, cfg->abs_mass_tol, cfg->ppm_mass_tol, cfg->aggressive_graph_pruning);
+            }
+            else{
+                mol.pruneGraphBySpectra(-1, cfg->abs_mass_tol, cfg->ppm_mass_tol, cfg->aggressive_graph_pruning);
+            }
+
+        }
+
     }
+
 
     while (iter < MAX_EM_ITERATIONS) {
 

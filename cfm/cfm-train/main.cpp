@@ -252,10 +252,6 @@ int main(int argc, char *argv[]) {
             }
 
             mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
-            if(cfg.use_graph_pruning){
-                mit->pruneGraphBySpectra(0, cfg.abs_mass_tol, cfg.ppm_mass_tol, cfg.aggressive_graph_pruning);
-            }
-
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
@@ -361,7 +357,7 @@ trainCombinedEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalcul
         else
             em = new EmModel(&cfg, &fc, status_filename, repeat_filename);
 
-        double Q = em->trainModel(data, group, out_filename);
+        double Q = em->trainModel(data, group, out_filename, -1);
         if (Q > prev_Q) {
             if (mpi_rank == MASTER) {
                 std::cout << "Found better Q!" << std::endl;
@@ -411,7 +407,7 @@ trainSingleEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalculat
                 else
                     em = new EmModel(&se_cfg, &fc, status_filename, repeat_filename);
 
-                double Q = em->trainModel(data, group, out_filename);
+                double Q = em->trainModel(data, group, out_filename, energy);
                 if (Q > prev_Q) {
                     if (mpi_rank == MASTER) {
                         std::cout << "Found better Q!" << std::endl;
