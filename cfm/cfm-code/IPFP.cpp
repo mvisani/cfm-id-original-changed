@@ -54,7 +54,7 @@ IPFP::IPFP(MolData *data, config_t *config) {
     //Initialise messages
     down_msgs.resize(cfg->model_depth - 1);
     up_msgs.resize(cfg->model_depth - 1);
-    unsigned int num_fragments = moldata->getFragmentGraph()->getNumFragments();
+    unsigned int num_fragments = moldata->getNumFragments();
     for (unsigned int i = 0; i < cfg->model_depth - 1; i++) {
 
         //Initialise all up messages to uniform (since there
@@ -68,8 +68,8 @@ IPFP::IPFP(MolData *data, config_t *config) {
 
 void IPFP::initialiseFactorProbsAndBeliefs() {
 
-    unsigned int num_fragments = moldata->getFragmentGraph()->getNumFragments();
-    unsigned int num_transitions = moldata->getFragmentGraph()->getNumTransitions();
+    unsigned int num_fragments = moldata->getNumFragments();
+    unsigned int num_transitions = moldata->getNumTransitions();
 
     //Note: copy them all across, regardless whether they are used
     fprobs.tn.resize(num_transitions);
@@ -309,8 +309,7 @@ int IPFP::checkConvergence(bool allow_osc_converge) {
 
 void IPFP::applyEvidenceAndPropagate(unsigned int spec_depth, Message &desired_marginals, Message &actual_marginals) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
-
+    
     //Set the iterator for updating the factor
     Message *msg, tmp_msg(1);
     if (spec_depth > 0) msg = &(down_msgs[spec_depth - 1]);
@@ -336,10 +335,10 @@ void IPFP::applyEvidenceAndPropagate(unsigned int spec_depth, Message &desired_m
         fprobs.ps[idx][spec_depth] = tmp;
 
         //Transitions
-        std::vector<int>::const_iterator itt = (*fg->getFromIdTMap())[idx].begin();
-        for (; itt != (*fg->getFromIdTMap())[idx].end(); ++itt) {
+        std::vector<int>::const_iterator itt = (*moldata->getFromIdTMap())[idx].begin();
+        for (; itt != (*moldata->getFromIdTMap())[idx].end(); ++itt) {
 
-            const Transition *t = fg->getTransitionAtIdx(*itt);
+            const Transition *t = moldata->getTransitionAtIdx(*itt);
             double tmp = beliefs.tn[*itt][spec_depth];
             tmp += desired_marginals.getIdx(t->getToId());
             tmp -= actual_marginals.getIdx(t->getToId());
@@ -355,7 +354,7 @@ void IPFP::applyEvidenceAndPropagate(unsigned int spec_depth, Message &desired_m
     //Propagate up to the top (update outgoing messages)
     for (int d = spec_depth - 1; d >= 0; d--) {
         it = down_msgs[d].begin();
-        up_msgs[d].reset(fg->getNumFragments());
+        up_msgs[d].reset(moldata->getNumFragments());
         for (; it != down_msgs[d].end(); ++it) {
 
             unsigned int idx = it.index();
@@ -367,9 +366,9 @@ void IPFP::applyEvidenceAndPropagate(unsigned int spec_depth, Message &desired_m
             } else up_msgs[d].addToIdx(idx, fprobs.ps[idx][d + 1]);
 
             //Transitions
-            std::vector<int>::const_iterator itt = (*fg->getFromIdTMap())[idx].begin();
-            for (; itt != (*fg->getFromIdTMap())[idx].end(); ++itt) {
-                const Transition *t = fg->getTransitionAtIdx(*itt);
+            std::vector<int>::const_iterator itt = (*moldata->getFromIdTMap())[idx].begin();
+            for (; itt != (*moldata->getFromIdTMap())[idx].end(); ++itt) {
+                const Transition *t = moldata->getTransitionAtIdx(*itt);
                 double tmp;
                 if ((unsigned int) d < cfg->model_depth - 2) {
                     double up_val = up_msgs[d + 1].getIdx(t->getToId());
@@ -385,7 +384,7 @@ void IPFP::applyEvidenceAndPropagate(unsigned int spec_depth, Message &desired_m
 
         //Use a copy of the old down msg to get the used_idxs before resetting it
         Message old_down_msg = down_msgs[d];
-        down_msgs[d].reset(fg->getNumFragments());
+        down_msgs[d].reset(moldata->getNumFragments());
         for (it = old_down_msg.begin(); it != old_down_msg.end(); ++it) {
 
             unsigned int idx = it.index();
@@ -398,9 +397,9 @@ void IPFP::applyEvidenceAndPropagate(unsigned int spec_depth, Message &desired_m
                 down_msgs[d].addToIdx(idx, fprobs.ps[idx][d]);
 
             //Transitions
-            std::vector<int>::const_iterator itt = (*fg->getToIdTMap())[idx].begin();
-            for (; itt != (*fg->getToIdTMap())[idx].end(); ++itt) {
-                const Transition *t = fg->getTransitionAtIdx(*itt);
+            std::vector<int>::const_iterator itt = (*moldata->getToIdTMap())[idx].begin();
+            for (; itt != (*moldata->getToIdTMap())[idx].end(); ++itt) {
+                const Transition *t = moldata->getTransitionAtIdx(*itt);
                 if (d > 0) {
                     double down_val = down_msgs[d - 1].getIdx(t->getFromId());
                     down_msgs[d].addToIdx(idx, fprobs.tn[*itt][d] + down_val);
@@ -419,11 +418,10 @@ double IPFP::computeBeliefs() {
     std::vector<double> norms;
     norms.resize(cfg->model_depth);
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
-
+    
     //Compute Persistence Beliefs (and track norms)
-    tmp_beliefs.ps.resize(fg->getNumFragments());
-    for (unsigned int i = 0; i < fg->getNumFragments(); i++) {
+    tmp_beliefs.ps.resize(moldata->getNumFragments());
+    for (unsigned int i = 0; i < moldata->getNumFragments(); i++) {
         tmp_beliefs.ps[i].resize(cfg->model_depth);
 
         for (unsigned int d = 0; d < cfg->model_depth; d++) {
@@ -448,9 +446,9 @@ double IPFP::computeBeliefs() {
     }
 
     //Compute Transition Beliefs (and track norms)
-    tmp_beliefs.tn.resize(fg->getNumTransitions());
-    for (unsigned int i = 0; i < fg->getNumTransitions(); i++) {
-        const Transition *t = fg->getTransitionAtIdx(i);
+    tmp_beliefs.tn.resize(moldata->getNumTransitions());
+    for (unsigned int i = 0; i < moldata->getNumTransitions(); i++) {
+        const Transition *t = moldata->getTransitionAtIdx(i);
         tmp_beliefs.tn[i].resize(cfg->model_depth);
 
         for (unsigned int d = 0; d < cfg->model_depth; d++) {
@@ -514,8 +512,7 @@ void IPFP::initLogSpecFactor(spec_factor_t &log_spec_factor, const Spectrum *spe
     //Store normpdf( pk mass, ion mass, sigma*sqrt2 )
     static const double pi = boost::math::constants::pi<double>();
     log_spec_factor.resize(spectrum->size());
-    const FragmentGraph *fg = moldata->getFragmentGraph();
-    unsigned int num_fragments = fg->getNumFragments();
+        unsigned int num_fragments = moldata->getNumFragments();
     Spectrum::const_iterator itp = spectrum->begin();
     for (unsigned int i = 0; itp != spectrum->end(); ++itp, i++) {
 
@@ -528,7 +525,7 @@ void IPFP::initLogSpecFactor(spec_factor_t &log_spec_factor, const Spectrum *spe
         double norm = -0.5 * std::log(4 * pi * peak_sigma * peak_sigma);
         double denom = 0.25 / (peak_sigma * peak_sigma);
         for (unsigned int j = 0; j < num_fragments; j++) {
-            const Fragment *fgt = fg->getFragmentAtIdx(j);
+            const Fragment *fgt = moldata->getFragmentAtIdx(j);
             double tmp_mass_diff = fgt->getMass() - itp->mass;
             if (fabs(tmp_mass_diff) <= 3 * peak_sigma) {
                 if (cfg->obs_function == UNIFORM_OBS_FUNCTION) log_spec_factor[i][j] = norm;
@@ -550,8 +547,7 @@ void IPFP::initPeakTargets(Message &peak_targets, const Spectrum *spectrum) {
 
 void IPFP::computeMarginal(Message &out, unsigned int spec_depth) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
-    out.reset(fg->getNumFragments());
+        out.reset(moldata->getNumFragments());
 
     Message *msg, tmp_msg(1);
     if (spec_depth > 0) msg = &(down_msgs[spec_depth - 1]);
@@ -569,9 +565,9 @@ void IPFP::computeMarginal(Message &out, unsigned int spec_depth) {
         out.addToIdx(idx, beliefs.ps[idx][spec_depth]);
 
         //Transition terms
-        std::vector<int>::const_iterator itt = (*fg->getFromIdTMap())[idx].begin();
-        for (; itt != (*fg->getFromIdTMap())[idx].end(); ++itt) {
-            const Transition *t = fg->getTransitionAtIdx(*itt);
+        std::vector<int>::const_iterator itt = (*moldata->getFromIdTMap())[idx].begin();
+        for (; itt != (*moldata->getFromIdTMap())[idx].end(); ++itt) {
+            const Transition *t = moldata->getTransitionAtIdx(*itt);
             out.addToIdx(t->getToId(), beliefs.tn[*itt][spec_depth]);
         }
     }

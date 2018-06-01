@@ -202,7 +202,14 @@ public:
 
     void addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
 
-    void getPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol) const;
+    void getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol) const;
+
+    unsigned int getOriginalNumTransitions() const {
+        return fg->getOriginalNumTransitions();
+    };
+    unsigned int getOriginalNumFragments() const {
+        return fg->getOriginalNumFragments();
+    };
 
     unsigned int getNumTransitions() const {
         return fg->getNumTransitions();
@@ -223,6 +230,18 @@ public:
     const tmap_t *getToIdTMap() const {
         return fg->getToIdTMap();
     };
+
+    void writeFullGraph(std::ostream &out) const {
+        fg->writeFullGraph(out);
+    };
+
+    void writeFragmentsOnly(std::ostream &out) const{
+        fg->writeFragmentsOnly(out);
+    }
+
+    bool hasIsotopesIncluded() const{
+        return fg->hasIsotopesIncluded();
+    }
 
     ~MolData();
 protected

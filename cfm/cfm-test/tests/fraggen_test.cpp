@@ -1326,16 +1326,16 @@ void FVFragGraphSaveAndLoadState::runTest(){
 		mload.readInFVFragmentGraph(fvfilename);
 
 		//Compare orig vs loaded
-		const FragmentGraph *fgorig = morig.getFragmentGraph();
-		const FragmentGraph *fgload = mload.getFragmentGraph();
-		if( fgorig->getNumFragments() != fgload->getNumFragments() || fgorig->getNumTransitions() != fgload->getNumTransitions() ){
+		//const FragmentGraph *fgorig = morig.getFragmentGraph();
+		//const FragmentGraph *fgload = mload.getFragmentGraph();
+		if( morig.getNumFragments() != mload.getNumFragments() || morig.getNumTransitions() != mload.getNumTransitions() ){
 			std::cout << "Mismatch in fragment graph dimensions: " << std::endl;
 			pass = false;
 			break;
 		}
-		for( int i = 0; i < fgorig->getNumFragments(); i++ ){
-			const Fragment *f1 = fgorig->getFragmentAtIdx(i);
-			const Fragment *f2 = fgload->getFragmentAtIdx(i);
+		for( int i = 0; i < morig.getNumFragments(); i++ ){
+			const Fragment *f1 = morig.getFragmentAtIdx(i);
+			const Fragment *f2 = mload.getFragmentAtIdx(i);
 			if( f1->getId() != f2->getId() || fabs(f1->getMass() - f2->getMass() ) > tol ){
 				std::cout << "Mismatch in fragments at idx: " << i << std::endl;
 				pass = false;
@@ -1362,9 +1362,9 @@ void FVFragGraphSaveAndLoadState::runTest(){
 			}
 		}
 		if( !pass ) break;
-		for( int i = 0; i < fgorig->getNumTransitions(); i++ ){
-			const Transition *t1 = fgorig->getTransitionAtIdx(i);
-			const Transition *t2 = fgload->getTransitionAtIdx(i);
+		for( int i = 0; i < morig.getNumTransitions(); i++ ){
+			const Transition *t1 = morig.getTransitionAtIdx(i);
+			const Transition *t2 = mload.getTransitionAtIdx(i);
 			if( t1->getFromId() != t2->getFromId() || t1->getToId() != t2->getToId() ){
 				std::cout << "Mismatch in transtions at idx: " << i << std::endl;
 				pass = false;
@@ -1392,10 +1392,10 @@ void FVFragGraphSaveAndLoadState::runTest(){
 		if( !pass ) break;
 
 		//Check the tmaps
-		const tmap_t *fromidmap1 = fgorig->getFromIdTMap();
-		const tmap_t *fromidmap2 = fgload->getFromIdTMap();
-		const tmap_t *toidmap1 = fgorig->getToIdTMap();
-		const tmap_t *toidmap2 = fgload->getToIdTMap();
+		const tmap_t *fromidmap1 = morig.getFromIdTMap();
+		const tmap_t *fromidmap2 = mload.getFromIdTMap();
+		const tmap_t *toidmap1 = morig.getToIdTMap();
+		const tmap_t *toidmap2 = mload.getToIdTMap();
 		if( fromidmap1->size() != fromidmap2->size() || toidmap1->size() != toidmap2->size()){
 			std::cout << "Mismatch in tmap dimensions" << std::endl;
 			pass = false;			

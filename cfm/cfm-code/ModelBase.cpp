@@ -40,7 +40,7 @@ void ModelBase::writeStatus(const char *msg) {
     out.close();
 }
 
-void ModelBase::writeParamsToFile(std::__cxx11::string &filename) {
+void ModelBase::writeParamsToFile(std::string &filename) {
     param->saveToFile(filename);
 }
 

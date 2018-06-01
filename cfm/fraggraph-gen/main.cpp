@@ -88,18 +88,17 @@ int main(int argc, char *argv[])
 	FeatureCalculator fc( feature_names );
 	MolData moldata("FRAGGRAPH-GEN", smiles_or_inchi.c_str(), &cfg);
 	moldata.computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
-	const FragmentGraph *graph = moldata.getFragmentGraph();
 
 	time_t after = time( nullptr );
 
 	//Write to output
-	if( fullgraph ) graph->writeFullGraph( out );
-	else graph->writeFragmentsOnly( out );
+	if( fullgraph ) moldata.writeFullGraph( out );
+	else moldata.writeFragmentsOnly( out );
 
 	//If we're not writing output to stdout, report the statistics of the graph.
 	if(!to_stdout){
 		std::cout << std::endl << "Output written to " << output_filename << std::endl;
-		std::cout << "Depth " << max_depth << ": " << graph->getNumFragments() << " Fragments, " << graph->getNumTransitions() << " Transitions";
+		std::cout << "Depth " << max_depth << ": " << moldata.getOriginalNumFragments() << " Fragments, " << moldata.getOriginalNumTransitions() << " Transitions";
 		std::cout << ". Time Elaspsed = " << (after - before) << " Seconds" << std::endl;
 	}
 

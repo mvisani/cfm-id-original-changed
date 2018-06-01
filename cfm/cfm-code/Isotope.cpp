@@ -253,9 +253,9 @@ void IsotopeCalculator::calculate(Pattern &tmp, Pattern &result, FormMap &fm, do
     // take charge into account
     for (Pattern::iterator i = result.begin(); i != result.end(); ++i) {
         if (charge > 0)
-            (*i).mass = (*i).mass / abs(charge) - MASS_ELECTRON;
+            (*i).mass = (*i).mass / std::abs(charge) - MASS_ELECTRON;
         else if (charge < 0)
-            (*i).mass = (*i).mass / abs(charge) + MASS_ELECTRON;
+            (*i).mass = (*i).mass / std::abs(charge) + MASS_ELECTRON;
     }
 }
 

@@ -254,7 +254,7 @@ int main(int argc, char *argv[]) {
         if (output_mode == NO_OUTPUT_MODE) {
             it->outputSpectra(*out, "Predicted", do_annotate);
             *out << std::endl;
-            if (do_annotate) it->getFragmentGraph()->writeFragmentsOnly(*out);
+            if (do_annotate) it->writeFragmentsOnly(*out);
         } else if (output_mode == MSP_OUTPUT_MODE) it->writePredictedSpectraToMspFileStream(*out);
         else if (output_mode == MGF_OUTPUT_MODE) it->writePredictedSpectraToMgfFileStream(*out);
 

@@ -22,6 +22,7 @@ public:
 
     void setLearningRate(const double lr) { this->learning_rate = lr; };
 
+    virtual ~Solver() = default;
 protected:
     double learning_rate;
 };

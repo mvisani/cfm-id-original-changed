@@ -32,7 +32,6 @@
 #include "Isotope.h"
 
 typedef std::vector<std::vector<int>> tmap_t;
-
 // Class for storing the base fragment state for our model
 class Fragment {
 
@@ -41,12 +40,12 @@ public:
     // not needed and takes more space.
     Fragment() {};
 
-    Fragment(std::string &a_ion_smiles, std::string &a_reduced_smiles, int an_id,
+    Fragment(std::string &a_ion_smiles,std::string &a_reduced_smiles, int an_id,
              double a_mass)
             : id(an_id), ion_smiles(a_ion_smiles), reduced_smiles(a_reduced_smiles),
               mass(a_mass), depth(-1) {};
 
-    Fragment(std::string &a_ion_smiles, std::string &a_reduced_smiles, int an_id,
+    Fragment(std::string &a_ion_smiles,std::string &a_reduced_smiles, int an_id,
              double a_mass, Spectrum &a_isotope_spec)
             : id(an_id), ion_smiles(a_ion_smiles), reduced_smiles(a_reduced_smiles),
               mass(a_mass), isotope_spectrum(a_isotope_spec), depth(-1) {};
@@ -70,8 +69,8 @@ public:
     const std::string *getIonSmiles() const { return &ion_smiles; };
 
     void clearSmiles() {
-        reduced_smiles = std::string();
-        ion_smiles = std::string();
+        reduced_smiles =std::string();
+        ion_smiles =std::string();
     };
 
     void setDepth(int a_depth) { depth = a_depth; };
@@ -80,9 +79,9 @@ public:
 
 protected:
     int id;
-    std::string
+   std::string
             reduced_smiles; // Reduced version of the smiles string (just backbone)
-    std::string ion_smiles; // Full ion smiles (for writing out if called for)
+   std::string ion_smiles; // Full ion smiles (for writing out if called for)
     double mass;
     Spectrum isotope_spectrum;
     int depth; // Depth -1 means hasn't been set yet.
@@ -228,11 +227,12 @@ public:
         if (include_isotopes)
             delete isotope;
         for (auto & fragment : fragments) {
-            delete (fragment);
+            delete fragment;
         }
         for (auto & transition : transitions) {
-            delete (transition);
+            delete transition;
         }
+        current_graph.reset();
     };
 
     // Add a fragment node to the graph (should be the only way to modify the
@@ -255,10 +255,6 @@ public:
     int addToGraphWithThetas(const FragmentTreeNode &node,
                              const std::vector<double> *thetas, int parentid);
 
-    // Function to remove detour transitions from the graph (used if
-    // !cfg.allow_frag_detours)
-    void removeDetours();
-
     // Write the Fragments only to file (formerly the backtrack output - without
     // extra details)
     virtual void writeFragmentsOnly(std::ostream &out) const;
@@ -274,25 +270,13 @@ public:
     void readFeatureVectorGraph(std::istream &out);
 
     // Access functions
-    unsigned int getNumTransitions() const { return transitions.size(); };
+    unsigned int getOriginalNumTransitions() const { return transitions.size(); };
 
-    unsigned int getNumFragments() const { return fragments.size(); };
-
-    const Transition *getTransitionAtIdx(int index) const {
-        return transitions[index];
-    };
+    unsigned int getOriginalNumFragments() const { return fragments.size(); };
 
     void addFeatureVectorAtIdx(int index, FeatureVector * feature_vector) const {
         transitions[index]->setFeatureVector(feature_vector);
     };
-
-    const Fragment *getFragmentAtIdx(int index) const {
-        return  fragments[index];
-    };
-
-    const tmap_t *getFromIdTMap() const { return &from_id_tmap; };
-
-    const tmap_t *getToIdTMap() const { return &to_id_tmap; };
 
     bool hasIsotopesIncluded() const { return include_isotopes; };
 
@@ -304,25 +288,52 @@ public:
         return include_h_losses_precursor_only;
     };
 
-    // Tree pruning
-    // Function to do branching cutting
-    void pruneGraphBySpectra(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
-                                 bool aggressive);
-
-    // Get a list of transitions ids , with weighted prob
-    // Function do some not so random selection
-    void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
-                                                   std::vector<std::vector<double>> &thetas, double explore_weight);
-
-    void computePaths(int depth);
-
+    /*void computePaths(int depth);
     // Get Path from 3 x std of given mass
-    void getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol);
+    void getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol);*/
 
     void clearAllSmiles();
 
     void computeFeatureVectors(FeatureCalculator *fc, bool delete_mols);
 
+    void createNewGraphForComputation();
+
+    // For current graph in use
+    unsigned int getNumTransitions() const {
+        return current_graph->transitions.size();
+    };
+
+    unsigned int getNumFragments() const {
+        return current_graph->fragments.size();
+    };
+
+    const Transition *getTransitionAtIdx(int index) const {
+        return current_graph->transitions[index];
+    };
+
+    const Fragment *getFragmentAtIdx(int index) const {
+        return  current_graph->fragments[index];
+    };
+
+    const tmap_t *getFromIdTMap() const {
+        return &current_graph->from_id_tmap;
+    };
+
+    const tmap_t *getToIdTMap() const {
+        return &current_graph->to_id_tmap;
+    };
+
+    // Function to remove detour transitions from the graph (used if
+    // !cfg.allow_frag_detours)
+    void removeDetours();
+
+    void pruneGraph(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
+                    bool aggressive);
+
+    // Get a list of transitions ids , with weighted prob
+    // Function do some not so random selection
+    void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
+                                                   std::vector<std::vector<double>> &thetas, double explore_weight);
 protected:
     std::vector<Fragment*> fragments;
     std::vector<Transition*> transitions;
@@ -332,20 +343,45 @@ protected:
     tmap_t to_id_tmap; // Mapping between to_id and transitions with that to_id
 
     // only used when do tree pruning
-    struct ComputationalFragmentTree {
-        ComputationalFragmentTree( const std::vector<Fragment*> &fragments,
-                                   const std::vector<Transition*> &transitions,
-                                   const tmap_t from_id_tmap,
-                                   const tmap_t to_id_tmap)
-                : fragments(fragments), transitions(transitions), from_id_tmap(from_id_tmap), to_id_tmap(to_id_tmap) {
-        };
+    struct ComputationalFragmenGraph {
+            ComputationalFragmenGraph(const std::vector<Fragment*>& fragments,
+                                       const std::vector<Transition*>& transitions,
+                                       const tmap_t& from_id_tmap,
+                                       const tmap_t& to_id_tmap)
+                   : fragments(fragments), transitions(transitions),
+                     from_id_tmap(from_id_tmap), to_id_tmap(to_id_tmap) {};
+
+        // Function to remove give transitions and update id maps
+        void removeTransitions(std::vector<int> &input_ids);
+
+        // Function to remove give fragments and update id maps
+        void removeFragments(std::vector<int> &input_ids);
+
+        // Function to remove lonely frags in the tree
+        // where there is no trans lead or from those frags
+        void removeLonelyFrags();
+
+        // Function do get list of transitions can be removed
+        bool getPruningTransitionIds(int fg_id, std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
+                                             std::vector<int> &removed_transitions_ids, std::map<int, bool> &visited, bool aggressive);
+
+        // Tree pruning
+        // Function to do branching cutting
+        void pruneGraphBySpectra(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
+                                 bool aggressive);
+
+        // Get a list of transitions ids , with weighted prob
+        // Function do some not so random selection
+        void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
+                                                       std::vector<std::vector<double>> &thetas, double explore_weight);
+
         std::vector<Fragment*> fragments;
         std::vector<Transition*> transitions;
         tmap_t from_id_tmap;
         tmap_t to_id_tmap;
     };
 
-    std::map<int, ComputationalFragmentTree> trees_per_energy;
+    std::unique_ptr<ComputationalFragmenGraph> current_graph;
 
     bool include_isotopes;
     IsotopeCalculator *isotope;
@@ -372,21 +408,6 @@ protected:
     // Find the id for an existing transition that matches the input ids
     // or -1 in the case where no such transition is found
     int findMatchingTransition(int from_id, int to_id);
-
-    // Function to remove give transitions and update id maps
-    void removeTransitions(std::vector<int> &input_ids);
-
-    // Function to remove give fragments and update id maps
-    void removeFragments(std::vector<int> &input_ids);
-
-    // Function to remove lonely frags in the tree
-    // where there is no trans lead or from those frags
-    void removeLonelyFrags();
-
-    // Function do get list of transitions can be removed
-    bool getPruningTransitionIds(int fg_id, std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
-                                 std::vector<int> &removed_transitions_ids, std::map<int, int> &visited,
-                                 bool aggressive);
 
     void computePathFromFrag(int frag_id, std::vector<int> &trans_ids, int depth);
 };
@@ -424,5 +445,4 @@ public:
 private:
     std::vector<EvidenceFragment> fragments;
 };
-
 #endif // __FRAGTREE_H__

@@ -56,277 +56,6 @@ Transition::Transition(int a_from_id, int a_to_id, const RootedROMolPtr &a_nl, c
     nl_smiles = RDKit::MolToSmiles(*(nl.mol.get()));
 }
 
-//Function to remove detour transitions from the graph (used if !cfg.allow_frag_detours)
-void FragmentGraph::removeDetours() {
-
-    std::vector<int> remove_ids;
-
-    // Get a list of  transitions need to be removed
-    for (int i = 0; i < transitions.size(); i++) {
-        /*Transition *t = transitions[i];
-        Fragment *f_parent = fragments[t->getFromId()];
-        Fragment *f_child = fragments[t->getToId()];*/
-        int from_id =  transitions[i]->getFromId();
-        int to_id = transitions[i]->getToId();
-        if (fragments[from_id]->getDepth() >= fragments[to_id]->getDepth())
-            remove_ids.push_back(i);
-    }
-    removeTransitions(remove_ids);
-}
-
-bool FragmentGraph::getPruningTransitionIds(int frag_id, std::vector<Spectrum> &spectra, double abs_tol, double ppm_tol,
-                                            std::vector<int> &removed_transitions_ids, std::map<int, int> &visited,
-                                            bool aggressive) {
-
-    if (visited.find(frag_id) == visited.end())
-        return visited[frag_id];
-
-    //first thing , check if we need save this node by itself
-    bool need_save = false;
-    for (auto &spectrum : spectra) {
-        need_save = need_save || spectrum.hasPeakByMassWithinTol(fragments[frag_id]->getMass(), abs_tol, ppm_tol);
-        if (need_save)
-            break;
-    }
-
-    // if there is transitions from this fragments
-    // that means this is not a leaf node
-    if (frag_id < from_id_tmap.size() && !aggressive) {
-        bool save_child = false;
-        for (auto trans_id : from_id_tmap[frag_id]) {
-            auto to_id = transitions[trans_id]->getToId();
-            bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol, removed_transitions_ids,
-                                                           visited, aggressive);
-            // if any child node need save
-            // parent node need save
-            save_child = (save_child || child_need_save);
-            need_save = (need_save || child_need_save);
-        }
-
-
-        // if all my child does not happen, and myself does not happen
-        // that means we only need learn to this node and stop
-        if (!save_child) {
-            for (auto trans_id : from_id_tmap[frag_id]) {
-                removed_transitions_ids.push_back(trans_id);
-            }
-        }
-    } else if (frag_id < from_id_tmap.size() && aggressive) {
-        for (auto trans_id : from_id_tmap[frag_id]) {
-            auto to_id = transitions[trans_id]->getToId();
-            bool child_need_save = getPruningTransitionIds(to_id, spectra, abs_tol, ppm_tol, removed_transitions_ids,
-                                                           visited, aggressive);
-            // if remove child
-            // we also need remove transition to that child
-            if (!child_need_save)
-                removed_transitions_ids.push_back(trans_id);
-            need_save = (need_save || child_need_save);
-        }
-    }
-
-    visited[frag_id] = need_save;
-    return need_save;
-}
-
-void
-FragmentGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
-                                   bool aggressive) {
-
-    /*if(trees_per_energy.find(energy_level) == trees_per_energy.end()) {
-        ComputationalFragmentTree cft(fragments,transitions,from_id_tmap,to_id_tmap);
-        trees_per_energy[energy_level] = (cft);
-    }*/
-
-    int frag_id = 0;
-    std::map<int, int> visited;
-    std::vector<int> removed_transitions_ids;
-    // Get trans ids to remove
-    getPruningTransitionIds(frag_id, spectra, abs_tol, ppm_tol, removed_transitions_ids, visited, aggressive);
-
-    // remove transitions
-    removeTransitions(removed_transitions_ids);
-
-    // once trans are gone
-    // remove all node has no edge in the graph
-    removeLonelyFrags();
-}
-
-void FragmentGraph::removeLonelyFrags() {
-    // once trans are gone
-    // remove all node has no edge in the graph
-    std::vector<int> removed_fragmentation_ids;
-    std::vector<bool> removed_fragmentation_flag(fragments.size(), true);
-    for (auto &trans : transitions) {
-        int from_id = trans->getFromId();
-        int to_id = trans->getToId();
-
-        if (from_id >= 0 && from_id < removed_fragmentation_flag.size())
-            removed_fragmentation_flag[from_id] = false;
-        if (to_id >= 0 && to_id < removed_fragmentation_flag.size())
-            removed_fragmentation_flag[to_id] = false;
-    }
-    for (int i = 0; i < removed_fragmentation_flag.size(); ++i) {
-        if (removed_fragmentation_flag[i])
-            removed_fragmentation_ids.push_back(i);
-    }
-    //std::cout << "Pruned Fragmentations " << removed_fragmentation_ids.size() << std::endl;
-    removeFragments(removed_fragmentation_ids);
-}
-
-void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
-                                                              std::vector<std::vector<double>> &thetas,
-                                                              double explore_weight) {
-
-    std::vector<std::discrete_distribution<int>> discrete_distributions;
-
-    for (auto &frag_trans_ids: from_id_tmap) {
-
-        // Init weights and prob vector
-        std::vector<double> probs;
-        std::vector<double> weights;
-
-        for (auto &trans_id : frag_trans_ids) {
-            weights.push_back(thetas[energy][trans_id]);
-        }
-
-        // Append 0.0 for i -> i
-        // exp(0.0) = 1.0
-        weights.push_back(0.0);
-
-        // Apply softmax
-        softmax(weights, probs);
-
-        // add to discrete_distributions
-        discrete_distributions.emplace_back(std::discrete_distribution<int>(probs.begin(), probs.end()));
-    }
-
-    int num_iter = 0;
-    std::discrete_distribution<int> explore_coin({1.0, explore_weight});
-
-    while (num_iter <= max_num_iter) {
-        // init queue and add root
-        std::queue<int> fgs;
-        // a coin , one out 3 chance we just go explore
-
-        fgs.push(0);
-        while (!fgs.empty()) {
-
-            // get current id
-            int frag_id = fgs.front();
-            fgs.pop();
-
-            // if there is somewhere to go
-            if (!from_id_tmap[frag_id].empty()) {
-                // add a uct style random select
-                int selected_idx;
-                int coin = explore_coin(util_rng);
-                //std::cerr << coin << std::endl;
-                if (coin == 1) {
-                    std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size());
-                    selected_idx = dis(util_rng);
-                } else {
-                    selected_idx = discrete_distributions[frag_id](util_rng);
-                }
-                if (selected_idx < from_id_tmap[frag_id].size()) {
-                    // go to child
-                    int selected_trans_id = from_id_tmap[frag_id][selected_idx];
-                    fgs.push(transitions[selected_trans_id]->getToId());
-                    selected_ids.insert(selected_trans_id);
-
-                } else if (selected_idx == from_id_tmap[frag_id].size()) {
-                    // select the same node again
-                    // fgs.push(frag_id);
-                    // There is none zero chance we are going to trapped in this fever
-                } else {
-                    std::cerr << "Sampling Out of Boundary" << std::endl;
-                }
-            }
-        }
-        num_iter++;
-    }
-}
-
-//Function to remove frags from the graph
-void FragmentGraph::removeFragments(std::vector<int> &input_ids) {
-
-    std::vector<int> id_map(fragments.size());;    //Map old id to new id (or -1 if deleting)
-    //Remove fragments, and record a mapping of old->new transition ids
-    unsigned int next_id = 0;
-    unsigned int id_idx = 0;
-    for (int orig_idx = 0; orig_idx < fragments.size(); orig_idx++) {
-        bool need_remove = (id_idx < input_ids.size());
-        if (need_remove)
-            need_remove = (need_remove && (input_ids[id_idx] == orig_idx));
-        // if deleting
-        if (need_remove) {
-            ++id_idx;
-        } else {
-            fragments[next_id] = fragments[orig_idx];
-            from_id_tmap[next_id] = from_id_tmap[orig_idx];
-            to_id_tmap[next_id] = to_id_tmap[orig_idx];
-
-            for (auto &trans: transitions) {
-                if (trans->getToId() == orig_idx) {
-                    trans->setToId(next_id);
-                }
-                if (trans->getFromId() == orig_idx) {
-                    trans->setFromId(next_id);
-                }
-            }
-            next_id++;
-        }
-    }
-    fragments.resize(next_id);
-    to_id_tmap.resize(next_id);
-    from_id_tmap.resize(next_id);
-}
-
-//Function to remove given transitions from the graph
-void FragmentGraph::removeTransitions(std::vector<int> &input_ids) {
-
-    std::sort(input_ids.begin(), input_ids.end());
-    //std::cout << transitions.size() << std::endl;
-    std::vector<int> id_map(transitions.size());    //Map old id to new id (or -1 if deleting)
-    //Remove transitions, and record a mapping of old->new transition ids
-    unsigned int next_id = 0;
-    unsigned int id_idx = 0;
-    for (int i = 0; i < transitions.size(); i++) {
-        bool need_remove = (id_idx < input_ids.size());
-        if (need_remove)
-            need_remove = (need_remove && (input_ids[id_idx] == i));
-        // if deleting
-        if (need_remove) {
-            id_map[i] = -1;
-            ++id_idx;
-        } else {
-            transitions[next_id] = transitions[i];
-            id_map[i] = next_id++;
-        }
-    }
-    transitions.resize(next_id);
-    //std::cout << transitions.size() << std::endl;
-
-    //Update the id maps
-    for (int i = 0; i < fragments.size(); i++) {
-
-        //Update the To Id Tmap
-        unsigned int count = 0;
-        for (int j = 0; j < to_id_tmap[i].size(); j++) {
-            if (id_map[to_id_tmap[i][j]] >= 0)
-                to_id_tmap[i][count++] = id_map[to_id_tmap[i][j]];
-        }
-        to_id_tmap[i].resize(count);
-
-        //Update the From Id Tmap
-        count = 0;
-        for (int j = 0; j < from_id_tmap[i].size(); j++) {
-            if (id_map[from_id_tmap[i][j]] >= 0)
-                from_id_tmap[i][count++] = id_map[from_id_tmap[i][j]];
-        }
-        from_id_tmap[i].resize(count);
-    }
-}
-
 //Add a fragment node to the graph (should be the only way to modify the graph)
 //	-- Add a fragment, or return an id, if it already exists
 //  -- Add a transition to this fragment, based on the provided parent fragment id
@@ -440,24 +169,6 @@ int FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std:
     return id;
 }
 
-//Direct constructor that bipasses the mols altogether and directly sets the nl_smiles
-int EvidenceFragmentGraph::addToGraphDirectNoCheck(const EvidenceFragment &fragment, const Transition *transition,
-                                                   int parentid) {
-
-    auto id = fragments.size();
-    fragments.push_back(EvidenceFragment(fragment, id));
-    from_id_tmap.resize(id + 1);
-    to_id_tmap.resize(id + 1);
-    if (parentid >= 0) addTransition(parentid, id, transition->getNLSmiles());
-    return id;
-}
-
-void EvidenceFragmentGraph::addTransition(int from_id, int to_id, const std::string *nl_smiles) {
-    auto idx = transitions.size();
-    transitions.push_back(new Transition(from_id, to_id, nl_smiles));
-    from_id_tmap[from_id].push_back(idx);
-    to_id_tmap[to_id].push_back(idx);
-}
 
 int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass) {
 
@@ -711,15 +422,15 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
     }
 }
 
-void FragmentGraph::computePaths(int depth) {
+/*void FragmentGraph::computePaths(int depth) {
     //Clear Path Cache
-    /*paths.clear();
+    paths.clear();
     mass_path_map.clear();
 
     int root_frag_id = 0;
     std::vector<int> trans_ids; //(1, SELF_TRANS_ID);
-    computePathFromFrag(root_frag_id, trans_ids, depth);*/
-}
+    computePathFromFrag(root_frag_id, trans_ids, depth);
+}*/
 
 void FragmentGraph::computePathFromFrag(int frag_id, std::vector<int> &trans_ids, int depth) {
     /*if(!trans_ids.empty()) {
@@ -742,18 +453,18 @@ void FragmentGraph::computePathFromFrag(int frag_id, std::vector<int> &trans_ids
     }*/
 }
 
-void FragmentGraph::getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol) {
+/*void FragmentGraph::getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol) {
 
     // Get Pathes within mass tols
-    /*auto lower_bound = mass_path_map.lower_bound(mass_tol - mass_tol);
+    auto lower_bound = mass_path_map.lower_bound(mass_tol - mass_tol);
     auto upper_bound = mass_path_map.upper_bound(mass_tol + mass_tol);
     std::vector<std::shared_ptr<Path>> rev;
 
     for(auto it = lower_bound; it != upper_bound; ++it) {
         int path_id = it->second;
         selected_pathes.push_back(paths[path_id]);
-    }*/
-}
+    }
+}*/
 
 
 void FragmentGraph::computeFeatureVectors(FeatureCalculator *fc, bool delete_mols) {
@@ -769,10 +480,353 @@ void FragmentGraph::computeFeatureVectors(FeatureCalculator *fc, bool delete_mol
         clearAllSmiles();
 };
 
+//Function to remove detour transitions from the graph (used if !cfg.allow_frag_detours)
+void FragmentGraph::removeDetours() {
+    std::vector<int> remove_ids;
+    // Get a list of  transitions need to be removed
+    for (int i = 0; i < transitions.size(); i++) {
+        int from_id =  transitions[i]->getFromId();
+        int to_id = transitions[i]->getToId();
+        if (fragments[from_id]->getDepth() >= fragments[to_id]->getDepth())
+            remove_ids.push_back(i);
+    }
+
+    // Copy and pasted code
+    // this is urgly but seems there is better way
+    std::sort(remove_ids.begin(), remove_ids.end());
+    //std::cout << transitions.size() << std::endl;
+    std::vector<int> id_map(transitions.size());    //Map old id to new id (or -1 if deleting)
+    //Remove transitions, and record a mapping of old->new transition ids
+    unsigned int next_id = 0;
+    unsigned int id_idx = 0;
+    for (int i = 0; i < transitions.size(); i++) {
+        bool need_remove = (id_idx < remove_ids.size());
+        if (need_remove)
+            need_remove = (need_remove && (remove_ids[id_idx] == i));
+        // if deleting
+        if (need_remove) {
+            id_map[i] = -1;
+            ++id_idx;
+        } else {
+            transitions[next_id] = transitions[i];
+            id_map[i] = next_id++;
+        }
+    }
+    transitions.resize(next_id);
+
+    //Update the id maps
+    for (int i = 0; i < fragments.size(); i++) {
+
+        //Update the To Id Tmap
+        unsigned int count = 0;
+        for (int j = 0; j < to_id_tmap[i].size(); j++) {
+            if (id_map[to_id_tmap[i][j]] >= 0)
+                to_id_tmap[i][count++] = id_map[to_id_tmap[i][j]];
+        }
+        to_id_tmap[i].resize(count);
+
+        //Update the From Id Tmap
+        count = 0;
+        for (int j = 0; j < from_id_tmap[i].size(); j++) {
+            if (id_map[from_id_tmap[i][j]] >= 0)
+                from_id_tmap[i][count++] = id_map[from_id_tmap[i][j]];
+        }
+        from_id_tmap[i].resize(count);
+    }
+}
+
+bool FragmentGraph::ComputationalFragmenGraph::getPruningTransitionIds(int frag_id, std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
+                                                                       std::vector<int> &removed_transitions_ids, std::map<int, bool> &visited, bool aggressive) {
+
+    if (visited.find(frag_id) == visited.end())
+        return visited[frag_id];
+
+    //first thing , check if we need save this node by itself
+    bool need_save = false;
+    if(energy_level > 0) {
+        need_save = need_save || spectra[energy_level].hasPeakByMassWithinTol(fragments[frag_id]->getMass(), abs_tol, ppm_tol);
+    } else{
+        for (auto &spectrum : spectra) {
+            need_save = need_save || spectrum.hasPeakByMassWithinTol(fragments[frag_id]->getMass(), abs_tol, ppm_tol);
+            if (need_save)
+                break;
+        }
+    }
+    // if there is transitions from this fragments
+    // that means this is not a leaf node
+    if (frag_id < from_id_tmap.size() && !aggressive) {
+        bool save_child = false;
+        for (auto trans_id : from_id_tmap[frag_id]) {
+            auto to_id = transitions[trans_id]->getToId();
+            bool child_need_save = getPruningTransitionIds(to_id, spectra, 0, abs_tol, ppm_tol, removed_transitions_ids,
+                                                           visited, aggressive);
+            // if any child node need save
+            // parent node need save
+            save_child = (save_child || child_need_save);
+            need_save = (need_save || child_need_save);
+        }
+
+
+        // if all my child does not happen, and myself does not happen
+        // that means we only need learn to this node and stop
+        if (!save_child) {
+            for (auto trans_id : from_id_tmap[frag_id]) {
+                removed_transitions_ids.push_back(trans_id);
+            }
+        }
+    } else if (frag_id < from_id_tmap.size() && aggressive) {
+        for (auto trans_id : from_id_tmap[frag_id]) {
+            auto to_id = transitions[trans_id]->getToId();
+            bool child_need_save = getPruningTransitionIds(to_id, spectra, 0, abs_tol, ppm_tol, removed_transitions_ids,
+                                                           visited, aggressive);
+            // if remove child
+            // we also need remove transition to that child
+            if (!child_need_save)
+                removed_transitions_ids.push_back(trans_id);
+            need_save = (need_save || child_need_save);
+        }
+    }
+
+    visited[frag_id] = need_save;
+    return need_save;
+}
+
+void FragmentGraph::pruneGraph(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
+                               bool aggressive){
+    current_graph->pruneGraphBySpectra(spectra,energy_level,abs_tol,ppm_tol,aggressive);
+}
+
+void FragmentGraph::createNewGraphForComputation() {
+    if(!current_graph)
+        current_graph.reset();
+    current_graph = std::unique_ptr<ComputationalFragmenGraph>(
+            new ComputationalFragmenGraph(fragments,transitions,from_id_tmap,to_id_tmap));
+};
+
+void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
+                                                                                         std::vector<std::vector<double>> &thetas,
+                                                                                         double explore_weight) {
+    current_graph->getSampledTransitionIdsWeightedRandomWalk(selected_ids,max_num_iter,energy,thetas,explore_weight);
+}
+void FragmentGraph::ComputationalFragmenGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
+                                   bool aggressive) {
+
+    int frag_id = 0;
+    std::map<int, bool> visited;
+    std::vector<int> removed_transitions_ids;
+    // Get trans ids to remove
+    getPruningTransitionIds(frag_id, spectra, energy_level, abs_tol, ppm_tol, removed_transitions_ids, visited, aggressive);
+
+    // remove transitions
+    removeTransitions(removed_transitions_ids);
+
+    // once trans are gone
+    // remove all node has no edge in the graph
+    removeLonelyFrags();
+}
+
+void FragmentGraph::ComputationalFragmenGraph::removeLonelyFrags() {
+    // once trans are gone
+    // remove all node has no edge in the graph
+    std::vector<int> removed_fragmentation_ids;
+    std::vector<bool> removed_fragmentation_flag(fragments.size(), true);
+    for (auto &trans : transitions) {
+        int from_id = trans->getFromId();
+        int to_id = trans->getToId();
+
+        if (from_id >= 0 && from_id < removed_fragmentation_flag.size())
+            removed_fragmentation_flag[from_id] = false;
+        if (to_id >= 0 && to_id < removed_fragmentation_flag.size())
+            removed_fragmentation_flag[to_id] = false;
+    }
+    for (int i = 0; i < removed_fragmentation_flag.size(); ++i) {
+        if (removed_fragmentation_flag[i])
+            removed_fragmentation_ids.push_back(i);
+    }
+    //std::cout << "Pruned Fragmentations " << removed_fragmentation_ids.size() << std::endl;
+    removeFragments(removed_fragmentation_ids);
+}
+
+void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
+                                                              std::vector<std::vector<double>> &thetas,
+                                                              double explore_weight) {
+
+    std::vector<std::discrete_distribution<int>> discrete_distributions;
+
+    for (auto &frag_trans_ids: from_id_tmap) {
+
+        // Init weights and prob vector
+        std::vector<double> probs;
+        std::vector<double> weights;
+
+        for (auto &trans_id : frag_trans_ids) {
+            weights.push_back(thetas[energy][trans_id]);
+        }
+
+        // Append 0.0 for i -> i
+        // exp(0.0) = 1.0
+        weights.push_back(0.0);
+
+        // Apply softmax
+        softmax(weights, probs);
+
+        // add to discrete_distributions
+        discrete_distributions.emplace_back(std::discrete_distribution<int>(probs.begin(), probs.end()));
+    }
+
+    int num_iter = 0;
+    std::discrete_distribution<int> explore_coin({1.0, explore_weight});
+
+    while (num_iter <= max_num_iter) {
+        // init queue and add root
+        std::queue<int> fgs;
+        // a coin , one out 3 chance we just go explore
+
+        fgs.push(0);
+        while (!fgs.empty()) {
+
+            // get current id
+            int frag_id = fgs.front();
+            fgs.pop();
+
+            // if there is somewhere to go
+            if (!from_id_tmap[frag_id].empty()) {
+                // add a uct style random select
+                int selected_idx;
+                int coin = explore_coin(util_rng);
+                //std::cerr << coin << std::endl;
+                if (coin == 1) {
+                    std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size());
+                    selected_idx = dis(util_rng);
+                } else {
+                    selected_idx = discrete_distributions[frag_id](util_rng);
+                }
+                if (selected_idx < from_id_tmap[frag_id].size()) {
+                    // go to child
+                    int selected_trans_id = from_id_tmap[frag_id][selected_idx];
+                    fgs.push(transitions[selected_trans_id]->getToId());
+                    selected_ids.insert(selected_trans_id);
+
+                } else if (selected_idx == from_id_tmap[frag_id].size()) {
+                    // select the same node again
+                    // fgs.push(frag_id);
+                    // There is none zero chance we are going to trapped in this fever
+                } else {
+                    std::cerr << "Sampling Out of Boundary" << std::endl;
+                }
+            }
+        }
+        num_iter++;
+    }
+}
+void FragmentGraph::ComputationalFragmenGraph::removeFragments(std::vector<int> &input_ids) {
+
+    std::vector<int> id_map(fragments.size());;    //Map old id to new id (or -1 if deleting)
+    //Remove fragments, and record a mapping of old->new transition ids
+    unsigned int next_id = 0;
+    unsigned int id_idx = 0;
+    for (int orig_idx = 0; orig_idx < fragments.size(); orig_idx++) {
+        bool need_remove = (id_idx < input_ids.size());
+        if (need_remove)
+            need_remove = (need_remove && (input_ids[id_idx] == orig_idx));
+        // if deleting
+        if (need_remove) {
+            ++id_idx;
+        } else {
+            fragments[next_id] = fragments[orig_idx];
+            from_id_tmap[next_id] = from_id_tmap[orig_idx];
+            to_id_tmap[next_id] = to_id_tmap[orig_idx];
+
+            for (auto &trans: transitions) {
+                if (trans->getToId() == orig_idx) {
+                    trans->setToId(next_id);
+                }
+                if (trans->getFromId() == orig_idx) {
+                    trans->setFromId(next_id);
+                }
+            }
+            next_id++;
+        }
+    }
+    fragments.resize(next_id);
+    to_id_tmap.resize(next_id);
+    from_id_tmap.resize(next_id);
+}
+
+//Function to remove given transitions from the graph
+void FragmentGraph::ComputationalFragmenGraph::removeTransitions(std::vector<int> &input_ids) {
+
+    std::sort(input_ids.begin(), input_ids.end());
+    //std::cout << transitions.size() << std::endl;
+    std::vector<int> id_map(transitions.size());    //Map old id to new id (or -1 if deleting)
+    //Remove transitions, and record a mapping of old->new transition ids
+    unsigned int next_id = 0;
+    unsigned int id_idx = 0;
+    for (int i = 0; i < transitions.size(); i++) {
+        bool need_remove = (id_idx < input_ids.size());
+        if (need_remove)
+            need_remove = (need_remove && (input_ids[id_idx] == i));
+        // if deleting
+        if (need_remove) {
+            id_map[i] = -1;
+            ++id_idx;
+        } else {
+            transitions[next_id] = transitions[i];
+            id_map[i] = next_id++;
+        }
+    }
+    transitions.resize(next_id);
+
+    //Update the id maps
+    for (int i = 0; i < fragments.size(); i++) {
+
+        //Update the To Id Tmap
+        unsigned int count = 0;
+        for (int j = 0; j < to_id_tmap[i].size(); j++) {
+            if (id_map[to_id_tmap[i][j]] >= 0)
+                to_id_tmap[i][count++] = id_map[to_id_tmap[i][j]];
+        }
+        to_id_tmap[i].resize(count);
+
+        //Update the From Id Tmap
+        count = 0;
+        for (int j = 0; j < from_id_tmap[i].size(); j++) {
+            if (id_map[from_id_tmap[i][j]] >= 0)
+                from_id_tmap[i][count++] = id_map[from_id_tmap[i][j]];
+        }
+        from_id_tmap[i].resize(count);
+    }
+}
+
+void FragmentGraph::clearAllSmiles() {
+    for (auto fragment: fragments) {
+        fragment->clearSmiles();
+    }
+};
+
+
+//Direct constructor that bipasses the mols altogether and directly sets the nl_smiles
+int EvidenceFragmentGraph::addToGraphDirectNoCheck(const EvidenceFragment &fragment, const Transition *transition,
+                                                   int parentid) {
+
+    auto id = fragments.size();
+    fragments.push_back(EvidenceFragment(fragment, id));
+    from_id_tmap.resize(id + 1);
+    to_id_tmap.resize(id + 1);
+    if (parentid >= 0) addTransition(parentid, id, transition->getNLSmiles());
+    return id;
+}
+
+void EvidenceFragmentGraph::addTransition(int from_id, int to_id, const std::string *nl_smiles) {
+    auto idx = transitions.size();
+    transitions.push_back(new Transition(from_id, to_id, nl_smiles));
+    from_id_tmap[from_id].push_back(idx);
+    to_id_tmap[to_id].push_back(idx);
+}
+
 void EvidenceFragmentGraph::writeFragmentsOnly(std::ostream &out) const {
 
-    std::vector<EvidenceFragment>::const_iterator it = fragments.begin();
-    for (; it != fragments.end(); ++it) {
+    for (auto it = fragments.begin(); it != fragments.end(); ++it) {
         out << it->getId() << " ";
         out << std::setprecision(10) << it->getMass() << " ";
         out << *it->getIonSmiles() << std::endl;
@@ -795,12 +849,6 @@ void EvidenceFragmentGraph::writeFullGraph(std::ostream &out) const {
         out << *(*itt)->getNLSmiles() << std::endl;
     }
 }
-
-void FragmentGraph::clearAllSmiles() {
-    for (auto fragment: fragments) {
-        fragment->clearSmiles();
-    }
-};
 
 bool EvidenceFragmentGraph::fragmentIsRedundant(unsigned int fidx, std::vector<int> &annotated_flags,
                                                 std::vector<int> &direct_flags) const {
@@ -826,7 +874,3 @@ void EvidenceFragmentGraph::setFlagsForDirectPaths(std::vector<int> &direct_flag
         setFlagsForDirectPaths(direct_flags, cidx, annotated_flags);
     }
 }
-
-
-
-

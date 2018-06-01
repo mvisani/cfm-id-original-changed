@@ -136,8 +136,8 @@ int main(int argc, char *argv[]) {
             after = time(nullptr);
             eout << mol->getId() << "Done. Time Elaspsed = " << (after - before)
                  << " Seconds";
-            eout << " :Num Frag = " << mol->getFragmentGraph()->getNumFragments();
-            eout << " :Num Trans = " << mol->getFragmentGraph()->getNumTransitions()
+            eout << " :Num Frag = " << mol->getNumFragments();
+            eout << " :Num Trans = " << mol->getNumTransitions()
                  << std::endl;
             eout.close();
 

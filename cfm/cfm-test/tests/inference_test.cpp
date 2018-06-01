@@ -203,12 +203,12 @@ bool runInferenceTestCompareVsIPFP( MolData &moldata, config_t &cfg ){
     beliefs_t *ipfp_beliefs = ipfp.calculateBeliefs();
 
 	//Compare the two
-	const FragmentGraph *frg = moldata.getFragmentGraph();
+	//const FragmentGraph *frg = moldata.getFragmentGraph();
 
 	//Compare the results
-	for( unsigned int i = 0; i < frg->getNumTransitions(); i++ ){
+	for( unsigned int i = 0; i < moldata.getNumTransitions(); i++ ){
 
-		const Transition *t = frg->getTransitionAtIdx(i);
+		const Transition *t = moldata.getTransitionAtIdx(i);
 
 		//F1 Marginal Probabilities
 		if( t->getFromId() == 0 ){	//main ion is always id = 0
@@ -235,7 +235,7 @@ bool runInferenceTestCompareVsIPFP( MolData &moldata, config_t &cfg ){
 	}
 
 	//Persistence
-	for( unsigned int i = 0; i < frg->getNumFragments(); i++ ){
+	for( unsigned int i = 0; i < moldata.getNumFragments(); i++ ){
 		
 		//F1 Marginal Probabilities
 		if( i == 0 ){	//main ion is always id = 0

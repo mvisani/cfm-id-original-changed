@@ -13,9 +13,9 @@ void DirectModel::computeAndAccumulateGradient(double *grads, MolData &moldata,
         return;
 
     moldata.computeLogTransitionProbabilities();
-	const FragmentGraph *fg = moldata.getFragmentGraph();
-	unsigned int num_transitions = fg->getNumTransitions();
-	unsigned int num_fragments = fg->getNumFragments();
+	//const FragmentGraph *fg = moldata.getFragmentGraph();
+	unsigned int num_transitions = moldata.getNumTransitions();
+	unsigned int num_fragments = moldata.getNumFragments();
 
     // Collect energies to compute
     std::vector<unsigned int> energies;
@@ -32,9 +32,9 @@ void DirectModel::computeAndAccumulateGradient(double *grads, MolData &moldata,
             // anything out of mass tol range will not be considered
             std::vector<Path> paths;
             double mass_tol = getMassTol(cfg->abs_mass_tol,cfg->ppm_mass_tol,peak.mass);
-            moldata.getPathes(paths, peak.mass, mass_tol);
+            moldata.getPaths(paths, peak.mass, mass_tol);
 
-            int num_transitions = moldata.getFragmentGraph()->getNumTransitions();
+            int num_transitions = moldata.getNumTransitions();
             for(auto & path: paths){
                 // mean is the peak mass
                 // std is the mass tol
@@ -89,9 +89,9 @@ double DirectModel::computeQ(MolData &moldata) {
             // anything out of mass tol range will not be considered
             std::vector<Path> paths;
             double mass_tol = getMassTol(cfg->abs_mass_tol, cfg->ppm_mass_tol, peak.mass);
-            moldata.getPathes(paths, peak.mass, mass_tol);
+            moldata.getPaths(paths, peak.mass, mass_tol);
 
-            int num_transitions = moldata.getFragmentGraph()->getNumTransitions();
+            int num_transitions = moldata.getNumTransitions();
             for (auto &path: paths) {
                 // mean is the peak mass
                 // std is the mass tol

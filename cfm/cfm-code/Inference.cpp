@@ -77,23 +77,22 @@ void Inference::initTmpFactorProbSizes(factor_probs_t &tmp_log_probs, unsigned i
 
 void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
-
+    
     //Initialise the messages
     down_msgs.resize(config->model_depth);
 
     //Create the tmp factor probs
     factor_probs_t tmp_log_probs;
-    initTmpFactorProbSizes(tmp_log_probs, fg->getNumFragments(), fg->getNumTransitions(), config->model_depth);
+    initTmpFactorProbSizes(tmp_log_probs, moldata->getNumFragments(), moldata->getNumTransitions(), config->model_depth);
 
     //Factor (F0,F1) => Create F1 Message
     int energy = config->map_d_to_energy[0];
-    const std::vector<int> *tmap = &((*fg->getFromIdTMap())[0]);
+    const std::vector<int> *tmap = &((*moldata->getFromIdTMap())[0]);
     std::vector<int>::const_iterator it = tmap->begin();
-    down_msgs[0].reset(fg->getNumFragments());
+    down_msgs[0].reset(moldata->getNumFragments());
     down_msgs[0].addToIdx(0, moldata->getLogPersistenceProbForIdx(energy, 0));
     for (; it != tmap->end(); ++it) {
-        const Transition *t = fg->getTransitionAtIdx(*it);
+        const Transition *t = moldata->getTransitionAtIdx(*it);
         down_msgs[0].addToIdx(t->getToId(), moldata->getLogTransitionProbForIdx(energy, *it));
     }
 
@@ -108,14 +107,13 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
 
 void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &spec_msg) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
-
+    
     //Initialise the messages
     up_msgs.resize(config->model_depth);
 
     //Create the tmp factor probs
     factor_probs_t tmp_log_probs;
-    initTmpFactorProbSizes(tmp_log_probs, fg->getNumFragments(), fg->getNumTransitions(), config->model_depth);
+    initTmpFactorProbSizes(tmp_log_probs, moldata->getNumFragments(), moldata->getNumTransitions(), config->model_depth);
 
     //Apply spectrum message
     up_msgs[config->model_depth - 1] = spec_msg;
@@ -130,14 +128,13 @@ void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &s
 
 void Inference::createMessage(factor_probs_t &tmp_log_probs, Message &m, Message &prev_m, int direction, int depth) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
-    m.reset(fg->getNumFragments());
-    for (unsigned int id = 0; id < fg->getNumFragments(); id++) {
+        m.reset(moldata->getNumFragments());
+    for (unsigned int id = 0; id < moldata->getNumFragments(); id++) {
 
         //Going up or down?
         const std::vector<int> *tmap;
-        if (direction == DOWN) tmap = &((*fg->getToIdTMap())[id]);
-        else tmap = &((*fg->getFromIdTMap())[id]);
+        if (direction == DOWN) tmap = &((*moldata->getToIdTMap())[id]);
+        else tmap = &((*moldata->getFromIdTMap())[id]);
 
         //Marginalize out the upper/lower variable
         double log_sum = -DBL_MAXIMUM;
@@ -146,7 +143,7 @@ void Inference::createMessage(factor_probs_t &tmp_log_probs, Message &m, Message
 
         std::vector<int>::const_iterator itt = tmap->begin();
         for (; itt != tmap->end(); ++itt) {
-            const Transition *t = fg->getTransitionAtIdx(*itt);
+            const Transition *t = moldata->getTransitionAtIdx(*itt);
             if ((direction == DOWN && prev_m.getIdx(t->getFromId()) > -DBL_MAXIMUM) ||
                 (direction == UP && prev_m.getIdx(t->getToId()) > -DBL_MAXIMUM)) {
                 log_sum = logAdd(log_sum, tmp_log_probs.tn[*itt][depth]);
@@ -158,8 +155,7 @@ void Inference::createMessage(factor_probs_t &tmp_log_probs, Message &m, Message
 
 void Inference::passMessage(factor_probs_t &tmp_log_probs, int direction, int depth, Message &m, int energy) {
 
-    const FragmentGraph *fg = moldata->getFragmentGraph();
-    Message::const_iterator it = m.begin();
+        Message::const_iterator it = m.begin();
     for (; it != m.end(); ++it) {
 
         unsigned int idx = it.index();
@@ -169,8 +165,8 @@ void Inference::passMessage(factor_probs_t &tmp_log_probs, int direction, int de
 
         //Apply to all the other transitions applicable for this message element
         const std::vector<int> *tmap;
-        if (direction == DOWN) tmap = &((*fg->getFromIdTMap())[idx]);
-        else tmap = &((*fg->getToIdTMap())[idx]);
+        if (direction == DOWN) tmap = &((*moldata->getFromIdTMap())[idx]);
+        else tmap = &((*moldata->getToIdTMap())[idx]);
         std::vector<int>::const_iterator itt = tmap->begin();
         for (; itt != tmap->end(); ++itt)
             tmp_log_probs.tn[*itt][depth] = moldata->getLogTransitionProbForIdx(energy, *itt) + m.getIdx(idx);
@@ -181,11 +177,10 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
                                                 std::vector<Message> &up_msgs) {
 
     std::vector<double> norms(config->model_depth);
-    const FragmentGraph *fg = moldata->getFragmentGraph();
-
+    
     //Compute Persistence Beliefs (and track norms)
-    beliefs.ps.resize(fg->getNumFragments());
-    for (unsigned int i = 0; i < fg->getNumFragments(); i++) {
+    beliefs.ps.resize(moldata->getNumFragments());
+    for (unsigned int i = 0; i < moldata->getNumFragments(); i++) {
         beliefs.ps[i].resize(config->model_depth);
 
         for (unsigned int d = 0; d < config->model_depth; d++) {
@@ -204,9 +199,9 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
     }
 
     //Compute Transition Beliefs (and track norms)
-    beliefs.tn.resize(fg->getNumTransitions());
-    for (unsigned int i = 0; i < fg->getNumTransitions(); i++) {
-        const Transition *t = fg->getTransitionAtIdx(i);
+    beliefs.tn.resize(moldata->getNumTransitions());
+    for (unsigned int i = 0; i < moldata->getNumTransitions(); i++) {
+        const Transition *t = moldata->getTransitionAtIdx(i);
         beliefs.tn[i].resize(config->model_depth);
 
         for (unsigned int d = 0; d < config->model_depth; d++) {
@@ -240,13 +235,12 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
 void Inference::createSpectrumMessage(Message &msg, int energy, Message &down_msg) {
 
     const Spectrum *spectrum = moldata->getSpectrum(energy);
-    const FragmentGraph *fg = moldata->getFragmentGraph();
-
-    if (fg->hasIsotopesIncluded()) createSpectrumMessageWithIsotopes(msg, energy, down_msg);
+    
+    if (moldata->hasIsotopesIncluded()) createSpectrumMessageWithIsotopes(msg, energy, down_msg);
     else {
         //Store normpdf( pk mass, ion mass, sigma*sqrt2 )
         static const double pi = boost::math::constants::pi<double>();
-        int num_fragments = fg->getNumFragments();
+        int num_fragments = moldata->getNumFragments();
         msg.reset(num_fragments);
 
         Spectrum::const_iterator pk = spectrum->begin();
@@ -264,7 +258,7 @@ void Inference::createSpectrumMessage(Message &msg, int energy, Message &down_ms
             double denom = 0.25 / (peak_sigma * peak_sigma);
             for (unsigned int j = 0; j < num_fragments; j++) {
                 if (down_msg.getIdx(j) < -10000.0) continue;    //Disallow fragments we can't get to in the model.
-                const Fragment *fgt = fg->getFragmentAtIdx(j);
+                const Fragment *fgt = moldata->getFragmentAtIdx(j);
                 double mass_diff = fabs(fgt->getMass() - pk->mass);
                 if (mass_diff > 3 * peak_sigma) continue;    //Disallow fragments from explaining distant peaks
                 //(problematic in the absence of a better explanation)
@@ -283,11 +277,10 @@ void Inference::createSpectrumMessage(Message &msg, int energy, Message &down_ms
 void Inference::createSpectrumMessageWithIsotopes(Message &msg, int energy, Message &down_msg) {
 
     const Spectrum *spectrum = moldata->getSpectrum(energy);
-    const FragmentGraph *fg = moldata->getFragmentGraph();
-
+    
     //Store normpdf( pk mass, ion mass, sigma*sqrt2 )
     static const double pi = boost::math::constants::pi<double>();
-    int num_fragments = fg->getNumFragments();
+    int num_fragments = moldata->getNumFragments();
     msg.reset(num_fragments);
 
     Spectrum::const_iterator pk = spectrum->begin();
@@ -304,7 +297,7 @@ void Inference::createSpectrumMessageWithIsotopes(Message &msg, int energy, Mess
         double denom = 0.25 / (peak_sigma * peak_sigma);
         for (unsigned int j = 0; j < num_fragments; j++) {
             if (down_msg.getIdx(j) < -10000.0) continue;    //Disallow fragments we can't get to in the model.
-            const Fragment *fgt = fg->getFragmentAtIdx(j);
+            const Fragment *fgt = moldata->getFragmentAtIdx(j);
 
             const Spectrum *iso_spectrum = fgt->getIsotopeSpectrum();
             Spectrum::const_iterator ipk = iso_spectrum->begin();

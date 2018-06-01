@@ -46,7 +46,7 @@ void MolData::readInFVFragmentGraphFromStream(std::istream &ifs) {
     for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
         fvs[i] = fg->getTransitionAtIdx(i)->getFeatureVector();
     */
-    graph_computed = 1;
+    graph_computed = true;
 }
 
 void MolData::readInFVFragmentGraph(std::string &fv_filename) {
@@ -80,14 +80,13 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
     if (cfg->do_prelim_bfs && !cfg->allow_frag_detours && cfg->fg_depth > 1)
-        fgen.compute(
-                *startnode, 1, -1,
-                cfg->max_ring_breaks); // Initial breadth-first to depth 1 (faster?)
+        fgen.compute(*startnode, 1, -1, cfg->max_ring_breaks); // Initial breadth-first to depth 1 (faster?)
     fgen.compute(*startnode, cfg->fg_depth, -1, cfg->max_ring_breaks);
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
+    fg->createNewGraphForComputation();
     delete startnode;
-    graph_computed = 1;
+    graph_computed = true;
 }
 
 void MolData::ComputeFragmentGraph() {
@@ -135,7 +134,7 @@ void MolData::computeLikelyFragmentGraphAndSetThetas(
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
     delete startnode;
-    graph_computed = 1;
+    graph_computed = true;
 
     // Copy all the theta values up into the mol data and delete the tmp thetas
     const unsigned int num_levels = cfg->spectrum_depths.size();
@@ -197,7 +196,7 @@ void MolData::computeEvidenceFragmentGraph(beliefs_t *beliefs,
             }
         }
     }
-    ev_graph_computed = 1;
+    ev_graph_computed = true;
 }
 
 void MolData::computeFragmentEvidenceValues(std::vector<double> &evidence,
@@ -448,7 +447,7 @@ void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
 }
 
 void MolData::pruneGraphBySpectra(int energy_level, double abs_tol, double ppm_tol, bool aggressive) {
-    fg->pruneGraphBySpectra(spectra, energy_level, abs_tol, ppm_tol, aggressive);
+    //fg->pruneGraphBySpectra(spectra, energy_level, abs_tol, ppm_tol, aggressive);
 }
 
 void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
@@ -791,8 +790,8 @@ void MolData::addNoise(double max_intensity, double total_intensity, double abs_
     }
 }
 
-void MolData::getPathes(std::vector<Path> &selected_pathes, double mass, double mass_tol) const {
-    fg->getPaths(selected_pathes, mass, mass_tol);
+void MolData::getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol) const {
+    //fg->getPaths(selected_pathes, mass, mass_tol);
 }
 
 MolData::~MolData() {

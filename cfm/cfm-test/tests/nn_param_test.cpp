@@ -408,8 +408,8 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	//Set some arbitrary suft values
 	suft.values.resize(1);
 
-	const FragmentGraph *fg = moldata.getFragmentGraph();
-	unsigned int N = fg->getNumTransitions() + fg->getNumFragments();
+	//const FragmentGraph *fg = moldata.getFragmentGraph();
+	unsigned int N = moldata.getNumTransitions() + moldata.getNumFragments();
 	suft.values[0].assign(3*N, 0.0);
 	suft.values[0][0] = 0.2; suft.values[0][1] = 0.3; suft.values[0][2] = 0.5; suft.values[0][3] = 0.0; suft.values[0][4] = 0.0;
 	suft.values[0][N] = 0.9; suft.values[0][N+1] = 0.05; suft.values[0][N+2] = 0.05; suft.values[0][N+3] = 0.0; suft.values[0][N+4] = 0.0;

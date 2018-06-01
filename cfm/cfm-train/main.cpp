@@ -181,8 +181,8 @@ int main(int argc, char *argv[]) {
                     eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
                     after = time(nullptr);
                     eout << "ID: " << mit->getId() << " is Done. Time Elaspsed = " << (after - before) << " Seconds ";
-                    eout << " :Num Frag = " << mit->getFragmentGraph()->getNumFragments();
-                    eout << " :Num Trans = " << mit->getFragmentGraph()->getNumTransitions() << std::endl;
+                    eout << " :Num Frag = " << mit->getOriginalNumFragments();
+                    eout << " :Num Trans = " << mit->getOriginalNumTransitions() << std::endl;
                     eout.close();
                 }
                 unsigned int id_size = mit->getId().size();
