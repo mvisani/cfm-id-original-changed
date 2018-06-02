@@ -448,7 +448,7 @@ void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
 }
 
 void MolData::pruneGraphBySpectra(int energy_level, double abs_tol, double ppm_tol, bool aggressive) {
-    //fg->pruneGraphBySpectra(spectra, energy_level, abs_tol, ppm_tol, aggressive);
+    fg->pruneGraph(spectra, energy_level, abs_tol, ppm_tol, aggressive);
 }
 
 void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
@@ -782,7 +782,7 @@ void
 MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                            double explore_weight) {
 
-    fg->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, energy, thetas, explore_weight);
+    fg->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, thetas[energy], explore_weight);
 }
 
 void MolData::addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol) {

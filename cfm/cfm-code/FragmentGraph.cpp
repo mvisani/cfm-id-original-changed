@@ -602,10 +602,9 @@ void FragmentGraph::createNewGraphForComputation() {
             new ComputationalFragmenGraph(fragments,transitions,from_id_tmap,to_id_tmap));
 };
 
-void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
-                                                                                         std::vector<std::vector<double>> &thetas,
-                                                                                         double explore_weight) {
-    current_graph->getSampledTransitionIdsWeightedRandomWalk(selected_ids,max_num_iter,energy,thetas,explore_weight);
+void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter,
+                                                              std::vector<double> &thetas, double explore_weight) {
+    current_graph->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, thetas, explore_weight);
 }
 void FragmentGraph::ComputationalFragmenGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
                                    bool aggressive) {
@@ -646,9 +645,10 @@ void FragmentGraph::ComputationalFragmenGraph::removeLonelyFrags() {
     removeFragments(removed_fragmentation_ids);
 }
 
-void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
-                                                              std::vector<std::vector<double>> &thetas,
-                                                              double explore_weight) {
+void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids,
+                                                                                         int max_num_iter,
+                                                                                         std::vector<double> &thetas,
+                                                                                         double explore_weight) {
 
     std::vector<std::discrete_distribution<int>> discrete_distributions;
 
@@ -659,7 +659,7 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
         std::vector<double> weights;
 
         for (auto &trans_id : frag_trans_ids) {
-            weights.push_back(thetas[energy][trans_id]);
+            weights.push_back(thetas[trans_id]);
         }
 
         // Append 0.0 for i -> i
