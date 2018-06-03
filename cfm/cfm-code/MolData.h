@@ -153,7 +153,7 @@ public:
     void writeFVFragmentGraphToStream(std::ofstream &out);
 
     // Replaces computeFragmentGraph, computeFeatureVectors and
-    // computeNormalizedTransitionThetas  below (delteMols = true), pruning according to
+    // computeTransitionThetas  below (delteMols = true), pruning according to
     // prob_thresh_for_prune value.
     void computeLikelyFragmentGraphAndSetThetas(LikelyFragmentGraphGenerator &fgen,
                                            double prob_thresh_for_prune,
@@ -169,7 +169,7 @@ public:
 
     void computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols = false);
 
-    void computeNormalizedTransitionThetas(Param &param);
+    void computeTransitionThetas(Param &param);
 
     void computeLogTransitionProbabilities();
 

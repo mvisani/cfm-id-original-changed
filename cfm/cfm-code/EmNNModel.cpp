@@ -52,7 +52,7 @@ void EmNNModel::initParams() {
 }
 
 void EmNNModel::computeThetas(MolData *moldata) {
-    moldata->computeNormalizedTransitionThetas(*nn_param);
+    moldata->computeTransitionThetas(*nn_param);
 }
 
 void EmNNModel::writeParamsToFile(std::string &filename) {

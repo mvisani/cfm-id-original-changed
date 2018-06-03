@@ -323,7 +323,7 @@ void MolData::computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool 
     fg->computeFeatureVectors(fc, tree_depth, delete_mols);
 }
 
-void MolData::computeNormalizedTransitionThetas(Param &param) {
+void MolData::computeTransitionThetas(Param &param) {
 
     const unsigned int num_levels = param.getNumEnergyLevels();
     thetas.resize(num_levels);
@@ -333,10 +333,6 @@ void MolData::computeNormalizedTransitionThetas(Param &param) {
         thetas[energy].resize(fg->getNumTransitions());
         for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
             thetas[energy][i] = param.computeTheta(*(fg->getTransitionAtIdx(i)->getFeatureVector()), energy);
-
-        double max_val = *std::max_element(thetas[energy].begin(), thetas[energy].end());
-        for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
-            thetas[energy][i] -= max_val;
     }
 }
 
@@ -482,7 +478,7 @@ void MolData::computePredictedSpectra(Param &param, bool postprocess,
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
-        computeNormalizedTransitionThetas(param);
+        computeTransitionThetas(param);
     computeLogTransitionProbabilities();
 
     // Run forward inference
@@ -524,7 +520,7 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
-        computeNormalizedTransitionThetas(param);
+        computeTransitionThetas(param);
     computeLogTransitionProbabilities();
 
     // Generate and collect the peak results

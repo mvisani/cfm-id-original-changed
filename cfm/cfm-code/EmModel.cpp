@@ -50,7 +50,7 @@ EmModel::EmModel(config_t *a_cfg, FeatureCalculator *an_fc,
 EmModel::~EmModel() { delete comm; }
 
 void EmModel::computeThetas(MolData *moldata) {
-    moldata->computeNormalizedTransitionThetas(*param);
+    moldata->computeTransitionThetas(*param);
 }
 
 double
@@ -653,7 +653,7 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
 
     // Compute the latest transition thetas
     if (!record_used_idxs_only)
-        moldata.computeNormalizedTransitionThetas(*param);
+        moldata.computeTransitionThetas(*param);
 
     return q;
 }
@@ -672,7 +672,7 @@ double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
 
     // Compute the latest transition thetas
-    moldata.computeNormalizedTransitionThetas(*param);
+    moldata.computeTransitionThetas(*param);
     suft_t *suft_values = &(suft.values[molidx]);
 
     // Collect energies to compute

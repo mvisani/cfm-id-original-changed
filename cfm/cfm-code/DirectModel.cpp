@@ -65,7 +65,7 @@ void DirectModel::computeAndAccumulateGradient(double *grads, MolData &moldata,
 
     // Compute the latest transition thetas
     if (!record_used_idxs_only)
-        moldata.computeNormalizedTransitionThetas(*param);
+        moldata.computeTransitionThetas(*param);
 }
 
 double DirectModel::computeQ(MolData &moldata) {
