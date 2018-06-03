@@ -18,8 +18,8 @@ param.cpp.
 #include "RingFeatures.h"
 #include <queue>
 
-void RingFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                           const RootedROMolPtr *nl) const {
+void
+RingFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const {
 
     // Non-Ring break
     int ring_break;

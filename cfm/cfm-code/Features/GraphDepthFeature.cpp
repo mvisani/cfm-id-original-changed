@@ -1,7 +1,8 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# NLRootEncoding.cpp
+# GraphDepthFeature.cpp
+#
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
 param.cpp.
@@ -14,17 +15,12 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-#include "NLRootEncodingN10.h"
+#include "GraphDepthFeature.h"
 
-void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *NL,
-                                const RootedROMolPtr *nl, const int depth) const {
-    int ring_break;
-    nl->mol.get()->getProp("IsRingBreak", ring_break);
-
-    unsigned int min_path = 1;
-    unsigned int max_path = 3;
-    unsigned int atom_count = 10;
-    unsigned finger_print_size = 512;
-
-    addRDKitFingerPrintFeatures(fv, NL, finger_print_size, atom_count, ring_break, false, min_path, max_path);
+void GraphDepthFeature::compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                                const RootedROMolPtr *nl, int depth) const{
+    std::vector<int> features(this->size,0);
+    if(depth < features.size())
+        features[depth] = 1;
+    fv.addFeatures(features);
 }

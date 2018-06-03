@@ -99,8 +99,7 @@ private:
 class Feature {
 
 public:
-    virtual void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                         const RootedROMolPtr *nl) const = 0;
+    virtual void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const = 0;
 
     unsigned int getSize() const { return size; };
 
@@ -145,7 +144,7 @@ public:
     // Compute the feature vector for the input ion and nl (with labeled Root
     // atoms)
     // - NB: responsibility of caller to delete.
-    FeatureVector *computeFV(const RootedROMolPtr *ion, const RootedROMolPtr *nl);
+    FeatureVector *computeFeatureVector(const RootedROMolPtr *ion, const RootedROMolPtr *nl, int tree_depth);
 
     bool includesFeature(const std::string &fname);
 

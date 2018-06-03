@@ -19,7 +19,9 @@
 #include <GraphMol/PeriodicTable.h>
 #include <GraphMol/AtomIterators.h>
 
-void HydrogenRemoval::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void
+HydrogenRemoval::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,
+                         int depth) const {
 
     double h_movement = 0.0;
 

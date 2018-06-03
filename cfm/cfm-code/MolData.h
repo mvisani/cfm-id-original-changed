@@ -166,7 +166,8 @@ public:
     void computeFragmentGraph( FeatureCalculator *fc);
 
     // Use this option if computing features next
-    void computeFeatureVectors(FeatureCalculator *fc, bool delete_mols = false);
+
+    void computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols = false);
 
     void computeNormalizedTransitionThetas(Param &param);
 

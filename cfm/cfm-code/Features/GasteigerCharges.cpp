@@ -34,7 +34,9 @@ int GasteigerCharges::discretizeGasteigerCharge(double gc) const {
     else return 5;
 }
 
-void GasteigerCharges::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void
+GasteigerCharges::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,
+                          const int depth) const {
 
     //Collect the charges from the root atoms
     int ring_break;

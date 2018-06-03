@@ -18,7 +18,7 @@ param.cpp.
 #include "NLRootEncodingMorganD3.h"
 
 void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *NL,
-                                     const RootedROMolPtr *nl) const {
+                                     const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 

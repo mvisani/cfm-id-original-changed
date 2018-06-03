@@ -19,8 +19,9 @@ param.cpp.
 #include <GraphMol/MolOps.h>
 #include <GraphMol/RingInfo.h>
 
-void ExtraRingFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                const RootedROMolPtr *nl) const {
+void
+ExtraRingFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,
+                           int depth) const {
 
     // Not a ring break
     int ring_break;

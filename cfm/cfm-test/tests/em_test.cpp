@@ -493,7 +493,7 @@ bool runMultiProcessorEMTest(config_t &cfg) {
     else if (mpi_rank == 1) data.push_back(MolData(id2, smiles2, 0, &cfg));
     else if (mpi_rank == 2) data.push_back(MolData(id3, smiles3, 0, &cfg));
     data[0].computeFragmentGraph(&fc);
-    data[0].computeFeatureVectors(&fc);
+    data[0].computeFeatureVectors(&fc, 0, false);
     data[0].readInSpectraFromFile(spec_file);
     EmModel em2(&cfg, &fc, status_file);
     double separated_Q = em2.trainModel(data, 1, tmp_file, 0);

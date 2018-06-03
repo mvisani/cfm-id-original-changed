@@ -19,7 +19,7 @@ param.cpp.
 
 void NLNeighbourMMFFAtomType::compute(FeatureVector &fv,
                                       const RootedROMolPtr *ion,
-                                      const RootedROMolPtr *nl) const {
+                                      const RootedROMolPtr *nl, const int depth) const {
     int offset = fv.getTotalLength() - 1;
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);

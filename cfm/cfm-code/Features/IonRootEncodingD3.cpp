@@ -17,8 +17,8 @@ param.cpp.
 #########################################################################*/
 #include "IonRootEncodingD3.h"
 
-void IonRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                const RootedROMolPtr *nl) const {
+void IonRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,
+                                int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 

@@ -18,8 +18,9 @@ param.cpp.
 
 #include "QuadraticFeatures.h"
 
-void QuadraticFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                const RootedROMolPtr *nl) const {
+void
+QuadraticFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,
+                           int depth) const {
     // Compute quadratic feature indexes for all existing features
     int n = fv.getTotalLength();
     std::vector<int> quadratic_indexes;

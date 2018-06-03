@@ -166,8 +166,8 @@ public:
         tmp_thetas = *a_thetas;
     };
 
-    void computeFeatureVector(FeatureCalculator *fc){
-        feature_vector = fc->computeFV(getIon(), getNeutralLoss());
+    void computeFeatureVector(FeatureCalculator *fc, int tree_depth) {
+        feature_vector = fc->computeFeatureVector(getIon(), getNeutralLoss(), tree_depth);
     };
 
 private:
@@ -247,8 +247,8 @@ public:
 
     // As for previous function, but delete the mols in the transition and compute
     // and store a feature vector instead
-    int addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid,
-                                      FeatureCalculator *fc);
+    int addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid, FeatureCalculator *fc,
+                                      int depth);
 
     // As for previous function, but don't store the mols in the transition and
     // insert the pre-computed thetas instead
@@ -294,7 +294,7 @@ public:
 
     void clearAllSmiles();
 
-    void computeFeatureVectors(FeatureCalculator *fc, bool delete_mols);
+    void computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols);
 
     void createNewGraphForComputation();
 

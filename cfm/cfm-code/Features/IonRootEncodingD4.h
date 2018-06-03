@@ -25,6 +25,6 @@ public:
         name = "IonRootEncodingD4";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                 const RootedROMolPtr *nl) const override;
+    void
+    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
 };

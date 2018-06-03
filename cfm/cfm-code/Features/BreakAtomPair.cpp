@@ -16,7 +16,8 @@
 #########################################################################*/
 #include "BreakAtomPair.h"
 
-void BreakAtomPair::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void
+BreakAtomPair::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const {
 
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);

@@ -17,7 +17,7 @@ param.cpp.
 #include "NLRootEncodingD4.h"
 
 void NLRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *NL,
-                               const RootedROMolPtr *nl) const {
+                               const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 

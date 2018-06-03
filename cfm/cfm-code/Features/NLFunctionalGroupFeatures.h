@@ -26,6 +26,6 @@ public:
         name = "NLFunctionalGroupFeatures";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                 const RootedROMolPtr *nl) const override;
+    void
+    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
 };

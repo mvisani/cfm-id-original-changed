@@ -80,8 +80,8 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
     if (cfg->do_prelim_bfs && !cfg->allow_frag_detours && cfg->fg_depth > 1)
-        fgen.compute(*startnode, 1, -1, cfg->max_ring_breaks); // Initial breadth-first to depth 1 (faster?)
-    fgen.compute(*startnode, cfg->fg_depth, -1, cfg->max_ring_breaks);
+        fgen.compute(*startnode, 1, 0, -1, cfg->max_ring_breaks); // Initial breadth-first to depth 1 (faster?)
+    fgen.compute(*startnode, cfg->fg_depth, 0, -1, cfg->max_ring_breaks);
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
     fg->createNewGraphForComputation();
@@ -130,7 +130,7 @@ void MolData::computeLikelyFragmentGraphAndSetThetas(
     fg = fgen.createNewGraph(cfg);
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
-    fgen.compute(*startnode, cfg->fg_depth, -1, 0.0, cfg->max_ring_breaks);
+    fgen.compute(*startnode, cfg->fg_depth, 0, -1, 0.0, cfg->max_ring_breaks);
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
     fg->createNewGraphForComputation();
@@ -319,8 +319,8 @@ void MolData::annotatePeaks(double abs_tol, double ppm_tol,
     }
 }
 
-void MolData::computeFeatureVectors(FeatureCalculator *fc, bool delete_mols) {
-    fg->computeFeatureVectors(fc, delete_mols);
+void MolData::computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols) {
+    fg->computeFeatureVectors(fc, tree_depth, delete_mols);
 }
 
 void MolData::computeNormalizedTransitionThetas(Param &param) {

@@ -25,6 +25,5 @@ public:
         name = "NLRootEncodingMorganD3";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *NL,
-                 const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, const int depth) const override;
 };

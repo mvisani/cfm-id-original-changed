@@ -64,6 +64,7 @@ the feature
 #include "Features/NLRootMatrixFP.h"
 #include "Features/IonRootMatrixSimpleFP.h"
 #include "Features/NLRootMatrixSimpleFP.h"
+#include "Features/GraphDepthFeature.h"
 
 const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
 
@@ -112,6 +113,7 @@ const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
         cogs.push_back(new IonRootMatrixFP());
         cogs.push_back(new NLRootMatrixSimpleFP());
         cogs.push_back(new IonRootMatrixSimpleFP());
+        cogs.push_back(new GraphDepthFeature());
         initialised = true;
     }
     return cogs;
@@ -212,8 +214,7 @@ unsigned int FeatureCalculator::getNumFeatures() {
     return count;
 }
 
-FeatureVector *FeatureCalculator::computeFV(const RootedROMolPtr *ion,
-                                            const RootedROMolPtr *nl) {
+FeatureVector *FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedROMolPtr *nl, int tree_depth) {
 
     FeatureVector *fv = new FeatureVector();
 
@@ -224,7 +225,7 @@ FeatureVector *FeatureCalculator::computeFV(const RootedROMolPtr *ion,
     std::vector<int>::iterator it = used_feature_idxs.begin();
     for (; it != used_feature_idxs.end(); ++it) {
         try {
-            featureCogs()[*it].compute(*fv, ion, nl);
+            featureCogs()[*it].compute(*fv, ion, nl, tree_depth);
         } catch (std::exception e) {
             std::cout << "Could not compute " << featureCogs()[*it].getName()
                       << std::endl;

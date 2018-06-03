@@ -93,7 +93,8 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
 }
 
 //As for previous function, but delete the mols in the transition and compute and store a feature vector instead
-int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid, FeatureCalculator *fc) {
+int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid, FeatureCalculator *fc,
+                                                 int depth) {
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
@@ -120,7 +121,7 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         Transition *t = transitions.back();
         FeatureVector *fv;
         try {
-            fv = fc->computeFV(t->getIon(), t->getNeutralLoss());
+            fv = fc->computeFeatureVector(t->getIon(), t->getNeutralLoss(), depth);
             t->setFeatureVector(fv);
         }
         catch (FeatureCalculationException fe) {
@@ -466,9 +467,9 @@ void FragmentGraph::computePathFromFrag(int frag_id, std::vector<int> &trans_ids
 }*/
 
 
-void FragmentGraph::computeFeatureVectors(FeatureCalculator *fc, bool delete_mols) {
+void FragmentGraph::computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols) {
     for(auto & transition: transitions){
-        transition->computeFeatureVector(fc);
+        transition->computeFeatureVector(fc, tree_depth);
         if(delete_mols){
             transition->deleteIon();
             transition->deleteNeutralLoss();

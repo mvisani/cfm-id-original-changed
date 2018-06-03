@@ -19,7 +19,7 @@ param.cpp.
 
 void IonRootTriplesIncludeBond::compute(FeatureVector &fv,
                                         const RootedROMolPtr *ion,
-                                        const RootedROMolPtr *nl) const {
+                                        const RootedROMolPtr *nl, int depth) const {
 
     int ring_break;
     const int path_len = 3;

@@ -85,12 +85,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     int count_no_progress = 0;
 
     for (auto &mol : molDataSet) {
-        if (cfg->add_noise) {
-            if (mol.getGroup() != validation_group)
-                mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
-            mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-        }
-
         if(cfg->use_graph_pruning ){
             if(cfg->use_single_energy_cfm){
                 mol.createNewGraphForComputation();
@@ -99,6 +93,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             else{
                 mol.pruneGraphBySpectra(-1, cfg->abs_mass_tol, cfg->ppm_mass_tol, cfg->aggressive_graph_pruning);
             }
+        }
+
+        if (cfg->add_noise) {
+            if (mol.getGroup() != validation_group)
+                mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
+            mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
         }
     }
 
