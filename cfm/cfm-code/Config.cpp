@@ -24,7 +24,7 @@
 void initDefaultConfig(config_t &cfg) {
 
     cfg.lambda = DEFAULT_LAMBDA;
-    cfg.ga_method = USE_LBFGS_FOR_GA;
+    cfg.ga_method = USE_ADAM_FOR_GA;
     //cfg.converge_count_thresh = DEFAULT_CONVERGE_COUNT_THRESH;
     cfg.em_converge_thresh = DEFAULT_EM_CONVERGE_THRESH;
     cfg.ga_converge_thresh = DEFAULT_GA_CONVERGE_THRESH;
@@ -82,8 +82,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.reset_sampling = false;
     cfg.reset_sampling_lr_ratio = 1.0;
     cfg.add_noise = false;
-    cfg.noise_max = 0.1;
-    cfg.noise_sum = 10;
+    cfg.noise_max = 1.0;
+    cfg.noise_sum = 5;
 }
 
 
