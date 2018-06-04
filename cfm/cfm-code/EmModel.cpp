@@ -413,8 +413,8 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
     }
 }
 
-double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double &learning_rate,
-                                               int sampling_method) {
+double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
+                                          int sampling_method) {
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
