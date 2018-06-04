@@ -65,14 +65,18 @@ void ModelBase::getEnergiesLevels(std::vector<unsigned int> &energies) {
     }
 }
 
-void ModelBase::setMiniBatchFlags(std::vector<int> &initialized_minibatch_flags, int num_batch) {
+void ModelBase::setMiniBatchFlags(std::vector<int> &minibatch_flags, int num_batch) {
 
-    std::random_device rdev;
-    std::mt19937 rgen(rdev());
-    std::uniform_int_distribution<int> idist(0,num_batch-1); //(inclusive, inclusive)
-    for(auto & flag: initialized_minibatch_flags){
-        flag = idist(rgen);
+    int idx = 0;
+    for(auto & flag: minibatch_flags){
+        flag = idx;
+        idx ++;
+        if(idx == num_batch)
+            idx = 0;
     }
+    std::random_shuffle(minibatch_flags.begin(),minibatch_flags.end());
+    //int num_per_batch = minibatch_flags.size() / num_batch;
+
     // The flags are initialized to 1's for selectable molecules, so set unwanted
     // molecule flags to 0
     /*int num_mols = initialized_minibatch_flags.size();

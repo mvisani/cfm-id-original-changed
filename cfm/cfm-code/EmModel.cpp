@@ -212,12 +212,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double val_q = 0.0;
         // Compute the final Q (with all molecules, in case only some were used in
         // the mini-batch)
-        if (cfg->ga_minibatch_nth_size > 1 ||
+        /*if (cfg->ga_minibatch_nth_size > 1 ||
             sampling_method != USE_NO_SAMPLING) {
             q = 0;
             if (comm->isMaster())
                 std::cout << "[INFO]Using MiniBatch and/or Sampling, Compute the final Q" << std::endl;
-        }
+        }*/
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
         double jaccard = 0.0;
         for (itdata = molDataSet.begin(); itdata != molDataSet.end(); ++itdata, molidx++) {
@@ -239,11 +239,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                         jaccard += cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
                 //}
                 delete cmp;
-            } else if (cfg->ga_minibatch_nth_size > 1 ||
+            } /*else if (cfg->ga_minibatch_nth_size > 1 ||
                        sampling_method != USE_NO_SAMPLING) {
                 q += computeQ(molidx, *itdata, suft);
                 numnonvalmols++;
-            } else
+            } */
+            else
                 numnonvalmols++;
         }
 
