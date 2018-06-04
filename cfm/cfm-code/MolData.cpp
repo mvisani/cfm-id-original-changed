@@ -89,7 +89,7 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
     graph_computed = true;
 }
 
-void MolData::ComputeFragmentGraph() {
+void MolData::computeFragmentGraph() {
     // Note: Do not use this if you want to compute fvs after - FeatureHelper will
     // not have run correctly. Use other computeFragmentGraph instead.
     FragmentGraphGenerator fgen;

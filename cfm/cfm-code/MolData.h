@@ -161,7 +161,7 @@ public:
 
     // Note that the following should be called in this order
     // since each one assumes all previous have already been called.
-    void ComputeFragmentGraph();
+    void computeFragmentGraph();
 
     void computeFragmentGraph( FeatureCalculator *fc);
 

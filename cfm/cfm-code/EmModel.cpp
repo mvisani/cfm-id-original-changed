@@ -16,12 +16,12 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-
-#include "EmModel.h"
 #include "mpi.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
+#include "EmModel.h"
+#include "Comparators.h"
 
 EmModel::EmModel(config_t *a_cfg, FeatureCalculator *an_fc,
        std::string &a_status_filename, std::string initial_params_filename) {
@@ -106,9 +106,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     while (iter < MAX_EM_ITERATIONS) {
 
         std::string iter_out_param_filename =
-                out_param_filename + "_" + boost::lexical_cast<std::string>(iter);
+                out_param_filename + "_" + std::to_string(iter);
 
-        std::string msg = "EM Iteration " + boost::lexical_cast<std::string>(iter);
+        std::string msg = "EM Iteration " + std::to_string(iter);
         if (comm->isMaster())
             writeStatus(msg.c_str());
         comm->printToMasterOnly(msg.c_str());
@@ -172,9 +172,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             total_numnonc = comm->collectSumInMaster(num_nonconverged);
             tot_numc = comm->collectSumInMaster(num_converged);
             std::string cvg_msg =
-                    "Num Converged: " + boost::lexical_cast<std::string>(tot_numc);
+                    "Num Converged: " + std::to_string(tot_numc);
             std::string noncvg_msg = "Num Non-Converged: " +
-                                     boost::lexical_cast<std::string>(total_numnonc);
+                                     std::to_string(total_numnonc);
             if (comm->isMaster()) {
                 writeStatus(cvg_msg.c_str());
                 writeStatus(noncvg_msg.c_str());
@@ -184,7 +184,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
         std::string estep_time_msg =
                 "[E-Step]Completed E-step processing: Time Elapsed = " +
-                boost::lexical_cast<std::string>(after - before) + " seconds";
+                std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(estep_time_msg.c_str());
         comm->printToMasterOnly(estep_time_msg.c_str());
@@ -199,7 +199,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         after = time(nullptr);
         std::string param_update_time_msg =
                 "[M-Step]Completed M-step param update: Time Elapsed = " +
-                boost::lexical_cast<std::string>(after - before) + " seconds";
+                std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(param_update_time_msg.c_str());
         comm->printToMasterOnly(param_update_time_msg.c_str());
@@ -219,10 +219,22 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 std::cout << "[INFO]Using MiniBatch and/or Sampling, Compute the final Q" << std::endl;
         }
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
+        double jaccard = 0.0;
         for (itdata = molDataSet.begin(); itdata != molDataSet.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
                 val_q += computeQ(molidx, *itdata, suft);
                 numvalmols++;
+                Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
+                itdata->computePredictedSpectra(*param, true, false);
+                //if(energy_level >= 0)
+                //    jaccard += cmp->computeScore(itdata->getSpectrum(energy_level),itdata->getPredictedSpectrum(energy_level));
+                //else{
+                    std::vector<unsigned int> energies;
+                    getEnergiesLevels(energies);
+                    for(auto & energy: energies)
+                        jaccard += cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
+                //}
+                delete cmp;
             } else if (cfg->ga_minibatch_nth_size > 1 ||
                        sampling_method != USE_NO_SAMPLING) {
                 q += computeQ(molidx, *itdata, suft);
@@ -235,7 +247,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         after = time(nullptr);
         std::string q_time_msg =
                 "[M-Step] Finished Q compute: Time Elapsed = " +
-                boost::lexical_cast<std::string>(after - before) + " seconds";
+                std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(q_time_msg.c_str());
 
@@ -250,21 +262,23 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
         numvalmols = comm->collectSumInMaster(numvalmols);
         numnonvalmols = comm->collectSumInMaster(numnonvalmols);
-
+        jaccard = comm->collectQInMaster(jaccard);
         // Check for convergence
         double qratio = fabs((q - prev_q) / q);
         double best_q_ratio = fabs((q - best_q) / q);
         if (comm->isMaster()) {
-            std::string qdif_str = "[M-Step] Q_ratio= " + boost::lexical_cast<std::string>(qratio) + " prev_Q=" +
-                                   boost::lexical_cast<std::string>(prev_q) + "\n";
-            qdif_str = "Best_Q_ratio= " + boost::lexical_cast<std::string>(best_q_ratio) + " best_Q=" +
-                       boost::lexical_cast<std::string>(best_q) + "\n";
+            std::string qdif_str = "[M-Step] Q_ratio= " + std::to_string(qratio) + " prev_Q=" +
+                                   std::to_string(prev_q) + "\n";
+            
+            qdif_str += "Best_Q_ratio= " + std::to_string(best_q_ratio) + " best_Q=" +
+                       std::to_string(best_q) + "\n";
 
-            qdif_str += "Q=" + boost::lexical_cast<std::string>(q) +
-                        " ValidationQ=" + boost::lexical_cast<std::string>(val_q) + " ";
+            qdif_str += "Q=" + std::to_string(q) +
+                        " ValidationQ=" + std::to_string(val_q) + " ";
             qdif_str +=
-                    "Q_avg=" + boost::lexical_cast<std::string>(q / numnonvalmols) +
-                    " ValidationQ_avg=" + boost::lexical_cast<std::string>(val_q / numvalmols) + " ";
+                    "Q_avg=" + std::to_string(q / numnonvalmols) +
+                    " ValidationQ_avg=" + std::to_string(val_q / numvalmols)
+                    + " Validatio Jaccard_avg=" +  std::to_string(jaccard / numvalmols) + " ";
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
         }
@@ -291,7 +305,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             // Write the params
             if (comm->isMaster()) {
                 std::string progress_str = "[M-Step] Found Better Q: "
-                                           + boost::lexical_cast<std::string>(best_q) + " Write to File";
+                                           + std::to_string(best_q) + " Write to File";
                 comm->printToMasterOnly(progress_str.c_str());
                 writeParamsToFile(iter_out_param_filename);
                 writeParamsToFile(out_param_filename);
@@ -309,7 +323,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 count_no_progress = 0;
             } else {
                 comm->printToMasterOnly(("EM Converged after " +
-                                         boost::lexical_cast<std::string>(iter) +
+                                         std::to_string(iter) +
                                          " iterations")
                                                 .c_str());
                 break;
@@ -320,7 +334,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
     if (iter >= MAX_EM_ITERATIONS)
         comm->printToMasterOnly(("Warning: EM did not converge after " +
-                                 boost::lexical_cast<std::string>(iter) +
+                                 std::to_string(iter) +
                                  " iterations.")
                                         .c_str());
 
