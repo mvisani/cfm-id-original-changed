@@ -82,7 +82,7 @@ protected:
 
 
     //Simple gradient ascent
-    double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
+    double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double &learning_rate,
                                           int sampling_method);
 
     //Helper functions
