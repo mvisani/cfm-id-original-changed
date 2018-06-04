@@ -257,14 +257,14 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             writeStatus(q_time_msg.c_str());
 
         val_q = comm->collectQInMaster(val_q);
-        if (cfg->ga_minibatch_nth_size > 1 ||
+        /*if (cfg->ga_minibatch_nth_size > 1 ||
             sampling_method != USE_NO_SAMPLING) {
             if (comm->isMaster()) {
                 q += addRegularizersAndUpdateGradient(nullptr);
             }
             q = comm->collectQInMaster(q);
             q = comm->broadcastQ(q);
-        }
+        }*/
         numvalmols = comm->collectSumInMaster(numvalmols);
         numnonvalmols = comm->collectSumInMaster(numnonvalmols);
         jaccard = comm->collectQInMaster(jaccard);
@@ -467,12 +467,12 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         // adjust learning rate
         double learn_rate = learning_rate; //cfg->starting_step_size * learn_mult;
-        if (USE_DEFAULT_DECAY == cfg->ga_decay_method)
+        /*if (USE_DEFAULT_DECAY == cfg->ga_decay_method)
             learn_rate *= 1.0 / (1.0 + cfg->decay_rate * (iter - 1));
         else if (USE_EXP_DECAY == cfg->ga_decay_method)
             learn_rate *= std::exp(-cfg->exp_decay_k * iter);
         else if (USE_STEP_DECAY == cfg->ga_decay_method)
-            learn_rate *= std::pow(cfg->step_decay_drop, std::floor(iter / cfg->step_decay_epochs_drop));
+            learn_rate *= std::pow(cfg->step_decay_drop, std::floor(iter / cfg->step_decay_epochs_drop));*/
 
         if (iter > 1)
             prev_q = q;
