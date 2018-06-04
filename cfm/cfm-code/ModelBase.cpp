@@ -65,11 +65,17 @@ void ModelBase::getEnergiesLevels(std::vector<unsigned int> &energies) {
     }
 }
 
-void ModelBase::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
+void ModelBase::setMiniBatchFlags(std::vector<int> &initialized_minibatch_flags, int num_batch) {
 
+    std::random_device rdev;
+    std::mt19937 rgen(rdev());
+    std::uniform_int_distribution<int> idist(0,num_batch-1); //(inclusive, inclusive)
+    for(auto & flag: initialized_minibatch_flags){
+        flag = idist(rgen);
+    }
     // The flags are initialized to 1's for selectable molecules, so set unwanted
     // molecule flags to 0
-    int num_mols = initialized_minibatch_flags.size();
+    /*int num_mols = initialized_minibatch_flags.size();
     std::vector<int> idxs(num_mols);
     int count = 0;
     for (int i = 0; i < num_mols; i++)
@@ -83,7 +89,7 @@ void ModelBase::selectMiniBatch(std::vector<int> &initialized_minibatch_flags) {
     int num_minibatch_mols =
             (num_mols + cfg->ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;
     for (int i = num_minibatch_mols; i < idxs.size(); i++)
-        initialized_minibatch_flags[idxs[i]] = 0;
+        initialized_minibatch_flags[idxs[i]] = 0;*/
 }
 
 Solver *ModelBase::getSolver(int ga_method, double learning_rate) const {

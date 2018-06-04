@@ -573,8 +573,8 @@ void EMTestMiniBatchSelection::runTest() {
     }
 
     EmModel em(&cfg, &fc, status_filename);
-    em.selectMiniBatch(flags1);
-    em.selectMiniBatch(flags2);
+    em.setMiniBatchFlags(flags1, 0);
+    em.setMiniBatchFlags(flags2, 0);
 
     //Check that the random selections select the right number of molecules,
     //and that the selected molecules are different in the two runs

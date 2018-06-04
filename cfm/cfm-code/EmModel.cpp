@@ -229,7 +229,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 if(cfg->add_noise)
                     itdata->postprocessPredictedSpectra(80,5,30,cfg->noise_max);
                 else
-                    itdata->postprocessPredictedSpectra();
+                    itdata->postprocessPredictedSpectra(80,5,30, 1.0);
                 //if(energy_level >= 0)
                 //    jaccard += cmp->computeScore(itdata->getSpectrum(energy_level),itdata->getPredictedSpectrum(energy_level));
                 //else{
@@ -277,11 +277,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             qdif_str += "Best_Q_ratio= " + std::to_string(best_q_ratio) + " best_Q=" +
                        std::to_string(best_q) + "\n";
 
-            qdif_str += "Q=" + std::to_string(q) +
-                        " ValidationQ=" + std::to_string(val_q) + " ";
+            qdif_str += "Q=" + std::to_string(q);
+                        //+ " ValidationQ=" + std::to_string(val_q) + " ";
             qdif_str +=
-                    "Q_avg=" + std::to_string(q / numnonvalmols) +
-                    " ValidationQ_avg=" + std::to_string(val_q / numvalmols)
+                    "Q_avg=" + std::to_string(q / numnonvalmols)
+                    //+ " ValidationQ_avg=" + std::to_string(val_q / numvalmols)
                     + " Validatio Jaccard_avg=" +  std::to_string(jaccard / numvalmols) + " ";
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
@@ -479,43 +479,32 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         // Select molecules to include in gradient mini-batch.
         std::vector<int> minibatch_flags(data.size());
         auto itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            // Don't include validation molecules
-            minibatch_flags[molidx] = (itdata->getGroup() != validation_group);
-        }
 
-        if (cfg->ga_minibatch_nth_size > 1) {
-            selectMiniBatch(minibatch_flags);
-        }
+        int num_batch = cfg->ga_minibatch_nth_size;
+        setMiniBatchFlags(minibatch_flags, num_batch);
 
         // Compute Q and the gradient
         std::fill(grads.begin(), grads.end(), 0.0);
         itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (minibatch_flags[molidx]) {
-                //std::cout << itdata->getId() << " Start" << std::endl;
-                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, false, comm->used_idxs, sampling_method);
-                //std::cout << itdata->getId() << " Finished" << std::endl;
+        for(auto batch_idx = 0; batch_idx < num_batch; ++batch_idx){
+            for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
+                if(minibatch_flags[molidx] == batch_idx && itdata->getGroup() != validation_group)
+                    computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, false, comm->used_idxs, sampling_method);
             }
-
+            comm->collectGradsInMaster(&grads[0]);
+            // Step the parameters
+            if (comm->isMaster()) {
+                addRegularizersAndUpdateGradient(&grads[0]);
+                solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
+            }
+            comm->broadcastParams(param.get());
         }
-
-
-        if (comm->isMaster())
-            addRegularizersAndUpdateGradient(&grads[0]);
-        comm->collectGradsInMaster(&grads[0]);
-
-        // Step the parameters
-        if (comm->isMaster()) {
-            solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
-        }
-        comm->broadcastParams(param.get());
 
         // compute Q
         q = 0.0;
         itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (minibatch_flags[molidx])
+            if (itdata->getGroup() != validation_group)
                 q += computeQ(molidx, *itdata, suft);
         }
         if (comm->isMaster())

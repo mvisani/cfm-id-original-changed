@@ -67,7 +67,7 @@ public:
     trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename, int energy_level) = 0;
 
     //Select mini batch (exposed publicly for testing...)
-    void selectMiniBatch(std::vector<int> &initialized_minibatch_flags);
+    void setMiniBatchFlags(std::vector<int> &initialized_minibatch_flags, int num_batch);
 };
 
 
