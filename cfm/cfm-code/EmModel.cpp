@@ -227,7 +227,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
                 itdata->computePredictedSpectra(*param, false, false);
                 if(cfg->add_noise)
-                    itdata->postprocessPredictedSpectra(100,5,30,cfg->noise_max);
+                    itdata->postprocessPredictedSpectra(80,5,30,cfg->noise_max);
                 else
                     itdata->postprocessPredictedSpectra();
                 //if(energy_level >= 0)
