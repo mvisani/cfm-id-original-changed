@@ -225,7 +225,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 val_q += computeQ(molidx, *itdata, suft);
                 numvalmols++;
                 Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
-                itdata->computePredictedSpectra(*param, true, false);
+                itdata->computePredictedSpectra(*param, false, false);
+                if(cfg->add_noise)
+                    itdata->postprocessPredictedSpectra(100,5,30,cfg->noise_max);
+                else
+                    itdata->postprocessPredictedSpectra();
                 //if(energy_level >= 0)
                 //    jaccard += cmp->computeScore(itdata->getSpectrum(energy_level),itdata->getPredictedSpectrum(energy_level));
                 //else{
@@ -289,12 +293,13 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         const double ratio_cutoff = 1e-15;
 
         if (qratio < ratio_cutoff || prev_q >= q) {
-            if (learning_rate > cfg->starting_step_size * 0.02) {
+            count_no_progress += 1;
+            /*if (learning_rate > cfg->starting_step_size * 0.02) {
                 learning_rate *= 0.5;
                 count_no_progress = 0;
             } else {
                 count_no_progress += 1;
-            }
+            }*/
         } else {
             count_no_progress = 0;
         }
