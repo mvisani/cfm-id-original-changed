@@ -272,18 +272,20 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double qratio = fabs((q - prev_q) / q);
         double best_q_ratio = fabs((q - best_q) / q);
         if (comm->isMaster()) {
-            std::string qdif_str = "[M-Step] Q_ratio= " + std::to_string(qratio) + " prev_Q=" +
-                                   std::to_string(prev_q) + "\n";
-            
-            qdif_str += "Best_Q_ratio= " + std::to_string(best_q_ratio) + " best_Q=" +
-                       std::to_string(best_q) + "\n";
+            std::string qdif_str = "[M-Step]";
+            if(prev_q != -DBL_MAX)
+                qdif_str += "Q_ratio= " + std::to_string(qratio) + " prev_Q=" + std::to_string(prev_q) + "\n";
+
+            if(best_q != -DBL_MAX)
+                qdif_str += "Best_Q_ratio= " + std::to_string(best_q_ratio) +
+                " best_Q=" + std::to_string(best_q) + "\n";
 
             qdif_str += "Q=" + std::to_string(q);
-                        //+ " ValidationQ=" + std::to_string(val_q) + " ";
+                        + " ValidationQ=" + std::to_string(val_q) + "\n";
             qdif_str +=
                     "Q_avg=" + std::to_string(q / numnonvalmols)
-                    //+ " ValidationQ_avg=" + std::to_string(val_q / numvalmols)
-                    + " Validatio Jaccard_avg=" +  std::to_string(jaccard / numvalmols) + " ";
+                    + " ValidationQ_avg=" + std::to_string(val_q / numvalmols)
+                    + " Validation Jaccard_avg=" +  std::to_string(jaccard / numvalmols) + " ";
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
         }
@@ -295,12 +297,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         if (qratio < ratio_cutoff || prev_q >= q) {
             count_no_progress += 1;
-            /*if (learning_rate > cfg->starting_step_size * 0.02) {
+            if (learning_rate > cfg->starting_step_size * 0.02) {
                 learning_rate *= 0.5;
                 count_no_progress = 0;
             } else {
                 count_no_progress += 1;
-            }*/
+            }
         } else {
             count_no_progress = 0;
         }
