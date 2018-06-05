@@ -465,7 +465,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         if (q < prev_q && iter > 1 && learning_rate > cfg->starting_step_size * 0.02) {
             learning_rate = learning_rate * 0.5;
-            solver->setLearningRate(learning_rate);
+            if(comm->isMaster())
+                solver->setLearningRate(learning_rate);
         }
 
         // adjust learning rate
