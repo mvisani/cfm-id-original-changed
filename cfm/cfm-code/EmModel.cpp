@@ -296,13 +296,13 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         const double ratio_cutoff = 1e-15;
 
         if (qratio < ratio_cutoff || prev_q >= q) {
-            //count_no_progress += 1;
-            if (learning_rate > cfg->starting_step_size * 0.02) {
+            count_no_progress += 1;
+            /*if (learning_rate > cfg->starting_step_size * 0.02) {
                 learning_rate *= 0.5;
                 count_no_progress = 0;
             } else {
                 count_no_progress += 1;
-            }
+            }*/
         } else {
             count_no_progress = 0;
         }
