@@ -651,6 +651,10 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
                                                                                          std::vector<double> &thetas,
                                                                                          double explore_weight) {
 
+    // nothing to do here
+    if(fragments.size() <= 1 || transitions.empty())
+        return;
+
     std::vector<std::discrete_distribution<int>> discrete_distributions;
 
     for (auto &frag_trans_ids: from_id_tmap) {
@@ -671,20 +675,18 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
         softmax(weights, probs);
 
         // add to discrete_distributions
-        discrete_distributions.emplace_back(std::discrete_distribution<int>(probs.begin(), probs.end()));
+        discrete_distributions.push_back(std::discrete_distribution<int>(probs.begin(), probs.end()));
     }
 
     int num_iter = 0;
-    std::discrete_distribution<int> explore_coin({1.0, explore_weight});
+    //std::discrete_distribution<int> explore_coin({1.0, explore_weight});
 
     while (num_iter <= max_num_iter) {
         // init queue and add root
         std::queue<int> fgs;
-        // a coin , one out 3 chance we just go explore
 
         fgs.push(0);
         while (!fgs.empty()) {
-
             // get current id
             int frag_id = fgs.front();
             fgs.pop();
@@ -692,27 +694,21 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
             // if there is somewhere to go
             if (!from_id_tmap[frag_id].empty()) {
                 // add a uct style random select
-                int selected_idx;
-                int coin = explore_coin(util_rng);
+                // int selected_idx;
+                //int coin = explore_coin(util_rng);
                 //std::cerr << coin << std::endl;
-                if (coin == 1) {
-                    std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size());
-                    selected_idx = dis(util_rng);
-                } else {
-                    selected_idx = discrete_distributions[frag_id](util_rng);
-                }
+                //if (coin == 1) {
+                //    std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size() - 1);
+                 //   selected_idx = dis(util_rng);
+                //} else {
+
+                int selected_idx = discrete_distributions[frag_id](util_rng);
+               // }
                 if (selected_idx < from_id_tmap[frag_id].size()) {
                     // go to child
                     int selected_trans_id = from_id_tmap[frag_id][selected_idx];
                     fgs.push(transitions[selected_trans_id]->getToId());
                     selected_ids.insert(selected_trans_id);
-
-                } else if (selected_idx == from_id_tmap[frag_id].size()) {
-                    // select the same node again
-                    // fgs.push(frag_id);
-                    // There is none zero chance we are going to trapped in this fever
-                } else {
-                    std::cerr << "Sampling Out of Boundary" << std::endl;
                 }
             }
         }
