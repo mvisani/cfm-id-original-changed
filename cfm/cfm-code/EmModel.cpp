@@ -297,12 +297,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         if (qratio < ratio_cutoff || prev_q >= q) {
             count_no_progress += 1;
-            if (learning_rate > cfg->starting_step_size * 0.02) {
+            /*if (learning_rate > cfg->starting_step_size * 0.02) {
                 learning_rate *= 0.5;
                 count_no_progress = 0;
             } else {
                 count_no_progress += 1;
-            }
+            }*/
         } else {
             count_no_progress = 0;
         }
@@ -463,13 +463,13 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
            && fabs((q - prev_q) / q) >= cfg->ga_converge_thresh
            && no_progress_count < 3) {
 
-        if (q < prev_q && iter > 1 && learning_rate > cfg->starting_step_size * 0.02) {
+        /*if (q < prev_q && iter > 1 && learning_rate > cfg->starting_step_size * 0.02) {
             learning_rate = learning_rate * 0.5;
-        }
+        }*/
 
         // adjust learning rate
-        double learn_rate = learning_rate; //cfg->starting_step_size * learn_mult;
-        /*if (USE_DEFAULT_DECAY == cfg->ga_decay_method)
+        /*double learn_rate = learning_rate; cfg->starting_step_size * learn_mult;
+        if (USE_DEFAULT_DECAY == cfg->ga_decay_method)
             learn_rate *= 1.0 / (1.0 + cfg->decay_rate * (iter - 1));
         else if (USE_EXP_DECAY == cfg->ga_decay_method)
             learn_rate *= std::exp(-cfg->exp_decay_k * iter);
@@ -516,7 +516,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         q = comm->broadcastQ(q);
 
         if (comm->isMaster()) {
-            std::cout << iter << ":  Q=" << q << " prevQ=" << prev_q << " Learning_Rate=" << learn_rate
+            std::cout << iter << ":  Q=" << q << " prevQ=" << prev_q << " Learning_Rate=" << learning_rate
                       << std::endl;
         }
 
