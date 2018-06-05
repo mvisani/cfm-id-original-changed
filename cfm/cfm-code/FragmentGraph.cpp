@@ -603,9 +603,9 @@ void FragmentGraph::createNewGraphForComputation() {
             new ComputationalFragmenGraph(fragments,transitions,from_id_tmap,to_id_tmap));
 };
 
-void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter,
+bool FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter,
                                                               std::vector<double> &thetas, double explore_weight) {
-    current_graph->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, thetas, explore_weight);
+    return current_graph->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, thetas, explore_weight);
 }
 void FragmentGraph::ComputationalFragmenGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
                                    bool aggressive) {
@@ -646,14 +646,17 @@ void FragmentGraph::ComputationalFragmenGraph::removeLonelyFrags() {
     removeFragments(removed_fragmentation_ids);
 }
 
-void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids,
+bool FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids,
                                                                                          int max_num_iter,
                                                                                          std::vector<double> &thetas,
                                                                                          double explore_weight) {
 
     // nothing to do here
-    if(fragments.size() <= 1 || transitions.empty())
-        return;
+    if(fragments.size() <= 1 || transitions.empty()){
+        std::cerr << "nothing to do here" << std::endl;
+        return false;
+    }
+
 
     std::vector<std::discrete_distribution<int>> discrete_distributions;
 
@@ -691,6 +694,11 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
             int frag_id = fgs.front();
             fgs.pop();
 
+            if(from_id_tmap.size() <= frag_id){
+                std::cerr << "frag id out of boundary" << std::endl;
+                return false;
+            }
+
             // if there is somewhere to go
             if (!from_id_tmap[frag_id].empty()) {
                 //add a uct style random select
@@ -698,7 +706,7 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
                 //std::cerr << coin << std::endl;
                 if (explore_coin(util_rng) == 1) {
                   std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size() - 1);
-                    selected_idx = dis(util_rng);
+                  selected_idx = dis(util_rng);
                 } else {
                     selected_idx = discrete_distributions[frag_id](util_rng);
                 }
@@ -706,9 +714,18 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
                 // if this is a valid transition id
                 // take this path , and go to child
                 // if not , this is the end of this path
-                if (selected_idx < from_id_tmap[frag_id].size()) {
+                if (selected_idx < 0){
+                    std::cerr << "transition id out of boundary: -1" << std::endl;
+                    return false;
+                }
+
+                if ((selected_idx >=0) && (selected_idx < from_id_tmap[frag_id].size())) {
                     // go to child
                     int selected_trans_id = from_id_tmap[frag_id][selected_idx];
+                    if(selected_idx >= transitions.size()){
+                        std::cerr<< "transition id out of transitions boundary" << std::endl;
+                        return false;
+                    }
                     fgs.push(transitions[selected_trans_id]->getToId());
                     selected_ids.insert(selected_trans_id);
                 }
@@ -716,6 +733,7 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
         }
         num_iter++;
     }
+    return true;
 }
 void FragmentGraph::ComputationalFragmenGraph::removeFragments(std::vector<int> &input_ids) {
 

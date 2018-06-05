@@ -582,7 +582,9 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
             int num_iterations = cfg->ga_graph_sampling_k * num_frags;
             if (cfg->ga_use_sqaured_iter_num)
                 num_iterations = num_iterations * (energy + 1) * (energy + 1);
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
+            bool sampled = moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
+            if(!sampled)
+                std::cerr << "sampling failed: "  << moldata.getId() << std::endl;
         }
 
 
@@ -630,7 +632,6 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
                         else
                             sum_terms[fv_idx] = val;
                     }
-
                 }
 
                 // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
@@ -642,10 +643,6 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         auto fv_idx = *fv_it;
                         *(grads + fv_idx + grad_offset) += nu;
-
-                        if (record_used_idxs_only)
-                            used_idxs.insert(fv_idx + grad_offset);
-
                     }
                     q += nu * (moldata.getThetaForIdx(energy, trans_id) - log(denom));
                 }
@@ -655,9 +652,6 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
                 double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
                 for (auto &sit: sum_terms) {
                     *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
-
-                    if (record_used_idxs_only)
-                        used_idxs.insert(sit.first + grad_offset);
                 }
                 q -= nu * log(denom);
             }

@@ -198,7 +198,7 @@ public:
     // one fv per line
     std::string getFVsAsSparseCSVString();
 
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
+    bool getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                            double explore_weight);
 
     void addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
