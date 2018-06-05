@@ -463,9 +463,10 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
            && fabs((q - prev_q) / q) >= cfg->ga_converge_thresh
            && no_progress_count < 3) {
 
-        /*if (q < prev_q && iter > 1 && learning_rate > cfg->starting_step_size * 0.02) {
+        if (q < prev_q && iter > 1 && learning_rate > cfg->starting_step_size * 0.02) {
             learning_rate = learning_rate * 0.5;
-        }*/
+            solver->setLearningRate(learning_rate);
+        }
 
         // adjust learning rate
         /*double learn_rate = learning_rate; cfg->starting_step_size * learn_mult;
