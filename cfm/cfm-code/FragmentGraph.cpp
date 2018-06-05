@@ -679,7 +679,7 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
     }
 
     int num_iter = 0;
-    //std::discrete_distribution<int> explore_coin({1.0, explore_weight});
+    std::discrete_distribution<int> explore_coin({1.0, explore_weight});
 
     while (num_iter <= max_num_iter) {
         // init queue and add root
@@ -693,17 +693,19 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
 
             // if there is somewhere to go
             if (!from_id_tmap[frag_id].empty()) {
-                // add a uct style random select
-                // int selected_idx;
-                //int coin = explore_coin(util_rng);
+                //add a uct style random select
+                int selected_idx;
                 //std::cerr << coin << std::endl;
-                //if (coin == 1) {
-                //    std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size() - 1);
-                 //   selected_idx = dis(util_rng);
-                //} else {
+                if (explore_coin(util_rng) == 1) {
+                  std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size() - 1);
+                    selected_idx = dis(util_rng);
+                } else {
+                    selected_idx = discrete_distributions[frag_id](util_rng);
+                }
 
-                int selected_idx = discrete_distributions[frag_id](util_rng);
-               // }
+                // if this is a valid transition id
+                // take this path , and go to child
+                // if not , this is the end of this path
                 if (selected_idx < from_id_tmap[frag_id].size()) {
                     // go to child
                     int selected_trans_id = from_id_tmap[frag_id][selected_idx];
