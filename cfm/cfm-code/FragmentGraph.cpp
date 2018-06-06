@@ -664,7 +664,12 @@ bool FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
         std::vector<double> weights;
 
         for (auto &trans_id : frag_trans_ids) {
-            weights.push_back(thetas[trans_id]);
+            if(trans_id <thetas.size() )
+                weights.push_back(thetas[trans_id]);
+            else{
+                std::cerr << "thetas id out of boundary" << std::endl;
+                return false;
+            }
         }
 
         // Append 0.0 for i -> i
