@@ -281,11 +281,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 " best_Q=" + std::to_string(best_q) + "\n";
 
             qdif_str += "Q=" + std::to_string(q);
-                        + " ValidationQ=" + std::to_string(val_q) + "\n";
+                        + " Validation_Q=" + std::to_string(val_q) + "\n";
             qdif_str +=
                     "Q_avg=" + std::to_string(q / numnonvalmols)
-                    + " ValidationQ_avg=" + std::to_string(val_q / numvalmols)
-                    + " Validation Jaccard_avg=" +  std::to_string(jaccard / numvalmols) + " ";
+                    + " Validation_Q_avg=" + std::to_string(val_q / numvalmols)
+                    + " Validation_Jaccard_avg=" +  std::to_string(jaccard / numvalmols) + " ";
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
         }
