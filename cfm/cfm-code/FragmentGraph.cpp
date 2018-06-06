@@ -650,14 +650,16 @@ bool FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
                                                                                          int max_num_iter,
                                                                                          std::vector<double> &thetas,
                                                                                          double explore_weight) {
+
     // nothing to do here
     if(fragments.size() <= 1 || transitions.empty()){
         std::cerr << "nothing to do here" << std::endl;
         return false;
     }
 
-    /*
+
     std::vector<std::discrete_distribution<int>> discrete_distributions;
+
     for (auto &frag_trans_ids: from_id_tmap) {
 
         // Init weights and prob vector
@@ -677,10 +679,10 @@ bool FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
 
         // add to discrete_distributions
         discrete_distributions.push_back(std::discrete_distribution<int>(probs.begin(), probs.end()));
-    }*/
+    }
 
     int num_iter = 0;
-    //std::discrete_distribution<int> explore_coin({1.0, explore_weight});
+    std::discrete_distribution<int> explore_coin({1.0, explore_weight});
 
     while (num_iter <= max_num_iter) {
         // init queue and add root
@@ -702,12 +704,12 @@ bool FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
                 //add a uct style random select
                 int selected_idx;
                 //std::cerr << coin << std::endl;
-                //if (explore_coin(util_rng) == 1) {
+                if (explore_coin(util_rng) == 1) {
                   std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size() - 1);
                   selected_idx = dis(util_rng);
-                //} else {
-                //    selected_idx = discrete_distributions[frag_id](util_rng);
-                //}
+                } else {
+                    selected_idx = discrete_distributions[frag_id](util_rng);
+                }
 
                 // if this is a valid transition id
                 // take this path , and go to child
