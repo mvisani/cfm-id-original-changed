@@ -561,7 +561,7 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
 
     int offset = num_transitions;
 
-    if (!moldata.hasComputedGraph())
+    if (!moldata.hasComputedGraph() || moldata.hasEmptySpectrum())
         return q;
 
     suft_t *suft_values = &(suft.values[molidx]);
@@ -672,7 +672,7 @@ double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     int offset = num_transitions;
 
-    if (!moldata.hasComputedGraph())
+    if (!moldata.hasComputedGraph() || moldata.hasEmptySpectrum())
         return q;
 
 
