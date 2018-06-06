@@ -582,9 +582,7 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
             int num_iterations = cfg->ga_graph_sampling_k * num_frags;
             if (cfg->ga_use_sqaured_iter_num)
                 num_iterations = num_iterations * (energy + 1) * (energy + 1);
-            bool sampled = moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
-            if(!sampled)
-                std::cerr << "sampling failed: "  << moldata.getId() << std::endl;
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
         }
 
 

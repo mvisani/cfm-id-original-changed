@@ -332,7 +332,7 @@ public:
 
     // Get a list of transitions ids , with weighted prob
     // Function do some not so random selection
-    bool getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter,
+    void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter,
                                                    std::vector<double> &thetas, double explore_weight);
 protected:
     std::vector<Fragment*> fragments;
@@ -372,7 +372,7 @@ protected:
 
         // Get a list of transitions ids , with weighted prob
         // Function do some not so random selection
-        bool getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids,
+        void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids,
                                                        int max_num_iter,
                                                        std::vector<double> &thetas,
                                                        double explore_weight);
