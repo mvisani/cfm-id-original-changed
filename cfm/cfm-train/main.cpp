@@ -208,8 +208,14 @@ int main(int argc, char *argv[]) {
     }
     MPI_Barrier(MPI_COMM_WORLD);
     after_fg = time(nullptr);
-    if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
-    std::cout << mpi_rank << ": " << success_count << " successfully computed. " << except_count << " exceptions."
+    if (mpi_rank == MASTER)
+        std::cout << "Done" << std::endl;
+
+    int buffer_length = MPI_MAX_PROCESSOR_NAME;
+    char hostname[buffer_length];
+    MPI_Get_processor_name(hostname, &buffer_length); /* get hostname */
+
+    std::cout << hostname << ": " << mpi_rank << ": " << success_count << " successfully computed. " << except_count << " exceptions."
               << std::endl;
     if (mpi_rank == MASTER)
         std::cout << "Total Fragmentation Graph Computation Time Elaspsed = "
