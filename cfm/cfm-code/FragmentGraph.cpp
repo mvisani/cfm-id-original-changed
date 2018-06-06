@@ -656,7 +656,6 @@ bool FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
         return false;
     }
 
-    /*
     std::vector<std::discrete_distribution<int>> discrete_distributions;
     for (auto &frag_trans_ids: from_id_tmap) {
 
@@ -677,7 +676,7 @@ bool FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
 
         // add to discrete_distributions
         discrete_distributions.push_back(std::discrete_distribution<int>(probs.begin(), probs.end()));
-    }*/
+    }
 
     int num_iter = 0;
     //std::discrete_distribution<int> explore_coin({1.0, explore_weight});
