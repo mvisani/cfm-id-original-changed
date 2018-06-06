@@ -153,11 +153,6 @@ int main(int argc, char *argv[]) {
     std::ofstream fv_out;
     if (min_group == 0) fv_out.open(fv_filename_out.c_str(), std::ios::out | std::ios::binary);
 
-    // prints
-    int buffer_length = MPI_MAX_PROCESSOR_NAME;
-    char hostname[buffer_length];
-    MPI_Get_processor_name(hostname, &buffer_length); /* get hostname */
-
     //Fragment Graph Computation (or load from file)
     time_t before_fg, after_fg;
     before_fg = time(nullptr);
@@ -185,7 +180,6 @@ int main(int argc, char *argv[]) {
                     std::ofstream eout;
                     eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
                     after = time(nullptr);
-                    eout << "host: " << hostname <<  " processs: " << mpi_rank << " ";
                     eout << "ID: " << mit->getId() << " is Done. Time Elaspsed = " << (after - before) << " Seconds ";
                     eout << " :Num Frag = " << mit->getOriginalNumFragments();
                     eout << " :Num Trans = " << mit->getOriginalNumTransitions() << std::endl;
@@ -217,7 +211,11 @@ int main(int argc, char *argv[]) {
     if (mpi_rank == MASTER)
         std::cout << "Done" << std::endl;
 
-    std::cout << hostname << "-" << mpi_rank << ": " << success_count << " successfully computed. " << except_count << " exceptions."
+    int buffer_length = MPI_MAX_PROCESSOR_NAME;
+    char hostname[buffer_length];
+    MPI_Get_processor_name(hostname, &buffer_length); /* get hostname */
+
+    std::cout << hostname << ": " << mpi_rank << ": " << success_count << " successfully computed. " << except_count << " exceptions."
               << std::endl;
     if (mpi_rank == MASTER)
         std::cout << "Total Fragmentation Graph Computation Time Elaspsed = "
