@@ -452,7 +452,7 @@ void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
     std::vector<double> all_masses;
     getEnumerationSpectraMasses(all_masses);
 
-    for (auto spectrum : spectra) {
+    for (auto &spectrum : spectra) {
         spectrum.removePeaksWithNoFragment(all_masses, abs_tol, ppm_tol);
     }
 }

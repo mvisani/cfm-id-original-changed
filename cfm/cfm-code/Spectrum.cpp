@@ -256,7 +256,7 @@ bool Spectrum::hasPeakByMassWithinTol(double target_mass, double abs_tol, double
 
     auto diff = DBL_MAX;
     double closet_mass = 0.0;
-    for (auto peak: peaks) {
+    for (const auto & peak: peaks) {
         double current_diff = std::fabs(target_mass - peak.mass);
         if (diff > current_diff) {
             diff = current_diff;
