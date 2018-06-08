@@ -269,19 +269,18 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         numnonvalmols = comm->collectSumInMaster(numnonvalmols);
         jaccard = comm->collectQInMaster(jaccard);
         // Check for convergence
-        double qratio = fabs((q - prev_q) / q);
+        double q_ratio = fabs((q - prev_q) / q);
         double best_q_ratio = fabs((q - best_q) / q);
         if (comm->isMaster()) {
             std::string qdif_str = "[M-Step]";
             if(prev_q != -DBL_MAX)
-                qdif_str += "Q_ratio= " + std::to_string(qratio) + " prev_Q=" + std::to_string(prev_q) + "\n";
+                qdif_str += "Q_ratio= " + std::to_string(q_ratio) + " prev_Q=" + std::to_string(prev_q) + "\n";
 
             if(best_q != -DBL_MAX)
                 qdif_str += "Best_Q_ratio= " + std::to_string(best_q_ratio) +
                 " best_Q=" + std::to_string(best_q) + "\n";
 
-            qdif_str += "Q=" + std::to_string(q);
-                        + " Validation_Q=" + std::to_string(val_q) + "\n";
+            qdif_str += "Q=" + std::to_string(q) + " Validation_Q=" + std::to_string(val_q) + "\n";
             qdif_str +=
                     "Q_avg=" + std::to_string(q / numnonvalmols)
                     + " Validation_Q_avg=" + std::to_string(val_q / numvalmols)
@@ -290,24 +289,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             comm->printToMasterOnly(qdif_str.c_str());
         }
 
-        // check if make any progress yet
-        // two conditions: 1. Qratio is less than 1e-15
-        //                 2, Q has not improved compare to the best value so far
-        const double ratio_cutoff = 1e-15;
-
-        if (qratio < ratio_cutoff || prev_q >= q) {
-            //count_no_progress += 1;
-            if (learning_rate > cfg->starting_step_size * 0.02) {
-                learning_rate *= 0.5;
-                count_no_progress = 0;
-            } else {
-                count_no_progress += 1;
-            }
-        } else {
-            count_no_progress = 0;
-        }
-
-        // only save trhe best Q so far
+        // first let us save the model
+        // only save the one has best Q so far
         if (best_q < q) {
             best_q = q;
             // Write the params
@@ -320,23 +303,33 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             }
         }
 
-        prev_q = q;
         // check if EM meet halt flag
-        if (best_q_ratio < cfg->em_converge_thresh || count_no_progress >= 3) {
-            if (sampling_method != USE_NO_SAMPLING && cfg->reset_sampling) {
+        if (q_ratio < cfg->em_converge_thresh || prev_q >= q) {
+
+            if (learning_rate > cfg->starting_step_size * 0.02) {
+                learning_rate *= 0.5;
+                count_no_progress = 0;
+            } else if (sampling_method != USE_NO_SAMPLING && cfg->reset_sampling) {
                 if (comm->isMaster())
                     std::cout << "[Reset] Turn off sampling" << std::endl;
+
                 sampling_method = USE_NO_SAMPLING;
                 learning_rate = cfg->starting_step_size * cfg->reset_sampling_lr_ratio;
                 count_no_progress = 0;
-            } else {
+            }
+            else {
+                count_no_progress += 1;
+            }
+
+            if(count_no_progress >= 3){
                 comm->printToMasterOnly(("EM Converged after " +
-                                         std::to_string(iter) +
-                                         " iterations")
-                                                .c_str());
+                                             std::to_string(iter) +
+                                             " iterations")
+                                                    .c_str());
                 break;
             }
         }
+        prev_q = q;
         iter++;
     }
 
