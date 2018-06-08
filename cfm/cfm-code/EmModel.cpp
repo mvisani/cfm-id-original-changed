@@ -296,13 +296,13 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         const double ratio_cutoff = 1e-15;
 
         if (qratio < ratio_cutoff || prev_q >= q) {
-            count_no_progress += 1;
-            /*if (learning_rate > cfg->starting_step_size * 0.02) {
+            //count_no_progress += 1;
+            if (learning_rate > cfg->starting_step_size * 0.02) {
                 learning_rate *= 0.5;
                 count_no_progress = 0;
             } else {
                 count_no_progress += 1;
-            }*/
+            }
         } else {
             count_no_progress = 0;
         }
@@ -463,34 +463,34 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
            && fabs((q - prev_q) / q) >= cfg->ga_converge_thresh
            && no_progress_count < 3) {
 
+        /*if (USE_DEFAULT_DECAY == cfg->ga_decay_method)
+            learning_rate *= 1.0 / (1.0 + cfg->decay_rate * (iter - 1));
+        else if (USE_EXP_DECAY == cfg->ga_decay_method)
+            learning_rate *= std::exp(-cfg->exp_decay_k * iter);
+        else if (USE_STEP_DECAY == cfg->ga_decay_method)
+            learning_rate *= std::pow(cfg->step_decay_drop, std::floor(iter / cfg->step_decay_epochs_drop));
+
         if (q < prev_q && iter > 1 && learning_rate > cfg->starting_step_size * 0.02) {
             learning_rate = learning_rate * 0.5;
             if(comm->isMaster())
                 solver->setLearningRate(learning_rate);
-        }
+        }*/
 
         // adjust learning rate
-        /*double learn_rate = learning_rate; cfg->starting_step_size * learn_mult;
-        if (USE_DEFAULT_DECAY == cfg->ga_decay_method)
-            learn_rate *= 1.0 / (1.0 + cfg->decay_rate * (iter - 1));
-        else if (USE_EXP_DECAY == cfg->ga_decay_method)
-            learn_rate *= std::exp(-cfg->exp_decay_k * iter);
-        else if (USE_STEP_DECAY == cfg->ga_decay_method)
-            learn_rate *= std::pow(cfg->step_decay_drop, std::floor(iter / cfg->step_decay_epochs_drop));*/
+
 
         if (iter > 1)
             prev_q = q;
 
         // Select molecules to include in gradient mini-batch.
         std::vector<int> minibatch_flags(data.size());
-        auto itdata = data.begin();
 
         int num_batch = cfg->ga_minibatch_nth_size;
         setMiniBatchFlags(minibatch_flags, num_batch);
 
         // Compute Q and the gradient
         std::fill(grads.begin(), grads.end(), 0.0);
-        itdata = data.begin();
+        auto itdata = data.begin();
         for(auto batch_idx = 0; batch_idx < num_batch; ++batch_idx){
             for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
                 if(minibatch_flags[molidx] == batch_idx && itdata->getGroup() != validation_group)
