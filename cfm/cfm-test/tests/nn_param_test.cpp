@@ -26,9 +26,9 @@
 class NNTestParam : public NNParam {
 public:
 	NNTestParam(std::vector<std::string> a_feature_list, int a_num_energy_levels, std::vector<int> &a_hlayer_num_nodes, std::vector<int> &a_act_func_ids) : 
-	  NNParam(a_feature_list, a_num_energy_levels, a_hlayer_num_nodes, a_act_func_ids) {	
+	  NNParam(a_feature_list, a_num_energy_levels, a_hlayer_num_nodes, a_act_func_ids) {
 
-		randomInit();	//There will be a bunch of weights we don't set below
+        randomUniformInit();	//There will be a bunch of weights we don't set below
 
 		//Set the parameter weights
 		weights[0] = 1.0;  weights[2] = -2.0; weights[3] = -4.0; weights[5] = 3.0;   //H1
@@ -100,7 +100,7 @@ void NNParamsTestSaveAndLoadFromFile::runTest(){
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear?
 
 	NNParam param(fnames, 1, hlayer_numnodes, act_ids);
-	param.randomInit();
+    param.randomUniformInit();
 
 	//Save to file
 	std::string filename = "tmp_param_file.log";

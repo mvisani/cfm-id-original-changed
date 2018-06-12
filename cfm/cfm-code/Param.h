@@ -52,7 +52,9 @@ public:
     void appendRepeatedPrevEnergyParams();
 
     //Initialisation options
-    virtual void randomInit();
+    virtual void randomUniformInit();
+
+    virtual void randomNormalInit();
 
     void zeroInit();
 

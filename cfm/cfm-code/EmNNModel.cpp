@@ -46,9 +46,23 @@ EmNNModel::EmNNModel(config_t *a_cfg, FeatureCalculator *an_fc, std::string &a_s
 
 //These functions are the same as for EM, but use NNParam, so need to be redefined here
 void EmNNModel::initParams() {
-    if (cfg->param_init_type == PARAM_FULL_ZERO_INIT) nn_param->fullZeroInit();
-    else if (cfg->param_init_type == PARAM_ZERO_INIT) nn_param->zeroInit();
-    else nn_param->randomInit();
+    switch (cfg->param_init_type){
+        case PARAM_FULL_ZERO_INIT:
+            nn_param->fullZeroInit();
+            break;
+        case PARAM_ZERO_INIT:
+            nn_param->zeroInit();
+            break;
+        case PARAM_NORMAL_INIT:
+            nn_param->randomNormalInit();
+            break;
+        case NN_PARAM_HE_INIT:
+            nn_param->heInit();
+            break;
+        case PARAM_RANDOM_INIT:
+        default:
+            nn_param->randomUniformInit();
+    }
 }
 
 void EmNNModel::computeThetas(MolData *moldata) {

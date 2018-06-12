@@ -83,17 +83,33 @@ void Param::appendRepeatedPrevEnergyParams() {
 }
 
 //Randomly initialise all weights
-void Param::randomInit() {
+void Param::randomUniformInit() {
 
+    double min = -0.5 , max = 0.5;
+    std::uniform_real_distribution<double> distribution(min,max);
     // Non-Bias Terms: to uniform values between -0.5 and 0.5
     for (unsigned int i = 1; i < weights.size(); i++)
-        weights[i] = (double(std::rand()) / double(RAND_MAX) - 0.5);
+        weights[i] = distribution(util_rng); //(double(std::rand()) / double(RAND_MAX) - 0.5);
 
     // Bias Terms: to uniform values between -3 and 0
+    std::uniform_real_distribution<double> bais_distribution(-3, 0);
     unsigned int len = getNumWeightsPerEnergyLevel();
     for (unsigned int i = 0; i < num_energy_levels; i++)
-        weights[i * len] = (double(std::rand()) / double(RAND_MAX) - 1.0) * 3;
+        weights[i * len] = bais_distribution(util_rng);//(double(std::rand()) / double(RAND_MAX) - 1.0) * 3;
 
+}
+
+void Param::randomNormalInit() {
+    // All Terms: to normal values in mean and std
+    double mean=0.0, std_dev=0.25, min = -0.5 , max = 0.5;
+    std::normal_distribution<double> distribution(mean,std_dev);
+    for (unsigned int i = 0; i < weights.size(); i++){
+        double weight = 0;
+        do{
+            weight =  distribution(util_rng);
+        }while(weight < min || weight > max);
+        weights[i] = weight;
+    }
 }
 
 //Set all weights to zero except bias
@@ -104,11 +120,10 @@ void Param::zeroInit() {
         weights[i] = 0.0;
 
     // Bias Terms: to uniform values between -3 and 0
+    std::uniform_real_distribution<double> bais_distribution(-3, 0);
     unsigned int len = getNumWeightsPerEnergyLevel();
-    double rand_bias = (double(std::rand()) / double(RAND_MAX) - 1.0) * 3;
     for (unsigned int i = 0; i < num_energy_levels; i++)
-        weights[i * len] = rand_bias;
-
+        weights[i * len] = bais_distribution(util_rng);//(double(std::rand()) / double(RAND_MAX) - 1.0) * 3;
 }
 
 //Set all weights to zero

@@ -24,16 +24,27 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
 
     //The weight length was set in the Param constructor, now alter it to match the neural net layout
     unsigned int num_features = weights.size() / num_energy_levels;
-    int total_len = 0, num_input = num_features;
-    std::vector<int>::iterator it = hlayer_num_nodes.begin();
-    total_len += (*it) * num_features; //The first layer takes the fv as input (which has in-built bias).
-    total_nodes = *it;
-    num_input = *it;
-    ++it;
-    for (; it != hlayer_num_nodes.end(); ++it) {
-        total_len += (*it) * (num_input + 1);
-        total_nodes += *it;
-        num_input = *it;
+    input_layer_node_num = num_features;
+
+    // set input layer
+    int total_len = 0, num_input;
+    auto hlayer_node_num = hlayer_num_nodes.begin();
+    int num_input_layer_weights =(*hlayer_node_num) * num_features;
+    total_len +=  num_input_layer_weights;//The first layer takes the fv as input (which has in-built bias).
+    num_weights_per_layer.push_back(num_input_layer_weights);
+
+    // handle hidden layers
+    total_nodes = (*hlayer_node_num);
+    num_input = (*hlayer_node_num);
+    ++hlayer_node_num;
+
+    for (; hlayer_node_num != hlayer_num_nodes.end(); ++hlayer_node_num) {
+        int num_weights = (*hlayer_node_num) * (num_input + 1);
+        num_weights_per_layer.push_back(num_weights);
+
+        total_len += num_weights;
+        total_nodes += *hlayer_node_num;
+        num_input = *hlayer_node_num;
     }
     weights.resize(total_len * num_energy_levels);
 
@@ -46,14 +57,56 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
 }
 
 //Randomly initialise all weights
-void NNParam::randomInit() {
-
+void NNParam::randomUniformInit() {
+    double min = -0.1 , max = -0.1;
     // All Terms: to uniform values between -0.1 and 0.1 - Biases too
+    std::uniform_real_distribution<double> distribution(min,max);
     for (unsigned int i = 0; i < weights.size(); i++)
-        weights[i] = (double(std::rand()) / double(RAND_MAX) - 0.5) * 0.2;
+        weights[i] = distribution(util_rng);//(double(std::rand()) / double(RAND_MAX) - 0.5) * 0.2;
 }
 
+void NNParam::randomNormalInit() {
+    // All Terms: to normal values in mean and std
+    double mean=0.0, std_dev=0.05, min = -0.1 , max = 0.1;
+    std::normal_distribution<double> distribution(mean,std_dev);
 
+    unsigned int energy_length = getNumWeightsPerEnergyLevel();
+    for (unsigned int energy_level_idx = 0; energy_level_idx < getNumEnergyLevels(); energy_level_idx++){
+        int weight_offset = 0;
+        for(const auto & num_weights : num_weights_per_layer){
+            for (unsigned int i = 0; i < num_weights; i++){
+                double weight = 0;
+                do{
+                    weight =  distribution(util_rng);
+                }while((weight < min) || (weight > max));
+                weights[energy_length * energy_level_idx + weight_offset + i] = weight;
+            }
+            weight_offset += num_weights;
+        }
+    }
+}
+
+void NNParam::heInit() {
+    // All Terms: to normal values in mean and std
+    double scalar = 0.001;
+    unsigned int energy_length = getNumWeightsPerEnergyLevel();
+    for (unsigned int energy_level_idx = 0; energy_level_idx < getNumEnergyLevels(); energy_level_idx++) {
+        int weight_offset = 0;
+        for(int hlayer_idx = 0; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
+            int num_in = input_layer_node_num;
+            if (hlayer_idx > 0)
+                num_in = hlayer_num_nodes[hlayer_idx - 1];
+            int num_out = hlayer_num_nodes[hlayer_idx];
+            int num_weights = num_weights_per_layer[hlayer_idx];
+
+            std::uniform_real_distribution<double> distribution(num_in, num_out);
+            for (unsigned int i = 0; i < num_weights; i++)
+                weights[energy_level_idx * energy_length + weight_offset + i] = distribution(util_rng) * std::sqrt(2.0 / (double) num_out) * scalar;
+
+            weight_offset += num_weights;
+        }
+    }
+}
 double NNParam::computeTheta(const FeatureVector &fv, int energy) {
     return computeTheta(fv, energy, tmp_z_values, tmp_a_values, true);
 }

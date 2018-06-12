@@ -130,6 +130,9 @@ static const int DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY = 0;
 static const int PARAM_FULL_ZERO_INIT = 1;
 static const int PARAM_ZERO_INIT = 2;
 static const int PARAM_RANDOM_INIT = 3;
+static const int PARAM_NORMAL_INIT = 4;
+static const int NN_PARAM_HE_INIT = 5;
+
 static const int PARAM_DEFAULT_INIT = PARAM_RANDOM_INIT;
 
 static const int DEFAULT_ALLOW_FRAG_DETOURS = 1;
