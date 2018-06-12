@@ -86,6 +86,7 @@ void NNParam::randomNormalInit() {
     }
 }
 
+// He et al., http://arxiv.org/abs/1502.01852
 void NNParam::heInit() {
     // All Terms: to normal values in mean and std
     unsigned int energy_length = getNumWeightsPerEnergyLevel();
