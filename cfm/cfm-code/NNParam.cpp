@@ -88,21 +88,26 @@ void NNParam::randomNormalInit() {
 
 void NNParam::heInit() {
     // All Terms: to normal values in mean and std
-    double scalar = 0.001;
     unsigned int energy_length = getNumWeightsPerEnergyLevel();
     for (unsigned int energy_level_idx = 0; energy_level_idx < getNumEnergyLevels(); energy_level_idx++) {
         int weight_offset = 0;
         for(int hlayer_idx = 0; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
-            int num_in = input_layer_node_num;
+            int fan_in = input_layer_node_num;
             if (hlayer_idx > 0)
-                num_in = hlayer_num_nodes[hlayer_idx - 1];
-            int num_out = hlayer_num_nodes[hlayer_idx];
+                fan_in = hlayer_num_nodes[hlayer_idx - 1];
+            int fan_out = hlayer_num_nodes[hlayer_idx];
             int num_weights = num_weights_per_layer[hlayer_idx];
 
-            std::uniform_real_distribution<double> distribution(num_in, num_out);
-            for (unsigned int i = 0; i < num_weights; i++)
-                weights[energy_level_idx * energy_length + weight_offset + i] = distribution(util_rng) * std::sqrt(2.0 / (double) num_out) * scalar;
+            double mean=0.0, std_dev=sqrt(2 / fan_in), min = -2*std_dev , max = 2 * std_dev;
+            std::normal_distribution<double> distribution(mean,std_dev);
 
+            for (unsigned int i = 0; i < num_weights; i++){
+                double weight = 0;
+                do{
+                    weight =  distribution(util_rng);
+                }while((weight < min) || (weight > max));
+                weights[energy_length * energy_level_idx + weight_offset + i] = weight * std::sqrt(2.0 / (double) fan_out);
+            }
             weight_offset += num_weights;
         }
     }
