@@ -88,6 +88,8 @@ void NNParam::randomNormalInit() {
 
 // Understanding the difficulty of training deep feedforward neural networksUnderstanding the difficulty of training deep feedforward neural networks
 void NNParam::varianceScalingInitializer() {
+    double factor = 1.0;
+
     // All Terms: to normal values in mean and std
     unsigned int energy_length = getNumWeightsPerEnergyLevel();
     for (unsigned int energy_level_idx = 0; energy_level_idx < getNumEnergyLevels(); energy_level_idx++) {
@@ -100,7 +102,7 @@ void NNParam::varianceScalingInitializer() {
             int num_weights = num_weights_per_layer[hlayer_idx];
 
             double mean=0.0;
-            double std_dev=sqrt(1.0 / double(fan_out + fan_in));
+            double std_dev=sqrt(factor/ double(fan_out + fan_in));
             double min = -2*std_dev , max = 2 * std_dev;
             std::normal_distribution<double> distribution(mean,std_dev);
 
@@ -257,7 +259,11 @@ void NNParam::setActivationFunctionsFromIds() {
                     act_funcs.push_back(relu_activation);
                     deriv_funcs.push_back(relu_derivative);
                 }
-            } else throw NNParamActivationFunctionIdException();
+            } else if(*it == LEAKY_RELU_NN_ACTIVATION_FUNCTION){
+                act_funcs.push_back(leaky_relu_activation);
+                deriv_funcs.push_back(leaky_relu_derivative);
+            }
+            else throw NNParamActivationFunctionIdException();
         }
     }
 
