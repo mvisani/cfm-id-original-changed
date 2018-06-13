@@ -99,7 +99,9 @@ void NNParam::heInit() {
             int fan_out = hlayer_num_nodes[hlayer_idx];
             int num_weights = num_weights_per_layer[hlayer_idx];
 
-            double mean=0.0, std_dev=sqrt(2 / fan_in), min = -2*std_dev , max = 2 * std_dev;
+            double mean=0.0;
+            double std_dev=sqrt(2 / double(fan_out + fan_in));
+            double min = -2*std_dev , max = 2 * std_dev;
             std::normal_distribution<double> distribution(mean,std_dev);
 
             for (unsigned int i = 0; i < num_weights; i++){
@@ -107,7 +109,7 @@ void NNParam::heInit() {
                 do{
                     weight =  distribution(util_rng);
                 }while((weight < min) || (weight > max));
-                weights[energy_length * energy_level_idx + weight_offset + i] = weight * std::sqrt(2.0 / (double) fan_out);
+                weights[energy_length * energy_level_idx + weight_offset + i] = weight;
             }
             weight_offset += num_weights;
         }
