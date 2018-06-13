@@ -57,7 +57,7 @@ public:
 
     void randomNormalInit() override;
 
-    void heInit();
+    void varianceScalingInitializer();
 
     //Save parameters to file (non-sparse format, includes neural net configuration)
     void saveToFile(std::string &filename);

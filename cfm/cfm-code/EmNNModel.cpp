@@ -56,8 +56,8 @@ void EmNNModel::initParams() {
         case PARAM_NORMAL_INIT:
             nn_param->randomNormalInit();
             break;
-        case NN_PARAM_HE_INIT:
-            nn_param->heInit();
+        case NN_PARAM_VAR_SCALING_INIT:
+            nn_param->varianceScalingInitializer();
             break;
         case PARAM_RANDOM_INIT:
         default:
