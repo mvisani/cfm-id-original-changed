@@ -48,6 +48,9 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
     }
     weights.resize(total_len * num_energy_levels);
 
+    //Set dropout flags:
+    drop_out_probs.resize(total_nodes);
+
     //Set pointers to the activation functions and their derivatives used in each layer
     setActivationFunctionsFromIds();
 
@@ -117,6 +120,7 @@ void NNParam::varianceScalingInitializer() {
         }
     }
 }
+
 double NNParam::computeTheta(const FeatureVector &fv, int energy) {
     return computeTheta(fv, energy, tmp_z_values, tmp_a_values, true);
 }
@@ -457,5 +461,13 @@ void NNParam::getBiasIndexes(std::vector<unsigned int> &bias_indexes) {
             bias_indexes[count] = idx;
             idx += (num_input + 1);
         }
+    }
+}
+
+void NNParam::rollDropout(){
+    std::uniform_real_distribution<double> dist(0,1);
+    for(int idx = 0 ; idx < drop_out_probs.size(); ++idx){
+        double rand_num = dist(util_rng);
+        is_drop_out[idx] = rand_num < drop_out_probs[idx];
     }
 }
