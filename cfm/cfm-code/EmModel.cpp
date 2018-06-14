@@ -97,13 +97,13 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
         mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
 
-        /*if (cfg->add_noise) {
+        if (cfg->add_noise) {
             if (mol.getGroup() != validation_group){
                 mol.removeNoise();
                 mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
                 mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
             }
-        }*/
+        }
     }
 
     while (iter < MAX_EM_ITERATIONS) {
@@ -229,9 +229,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
                 itdata->computePredictedSpectra(*param, false, false);
                 if(cfg->add_noise)
-                    itdata->postprocessPredictedSpectra(80,5,30,cfg->noise_max);
+                    itdata->postprocessPredictedSpectra(100 - cfg->noise_sum ,5,30,cfg->noise_max);
                 else
-                    itdata->postprocessPredictedSpectra(80,5,30, 1.0);
+                    itdata->postprocessPredictedSpectra(80,5,30,0.0);
                 //if(energy_level >= 0)
                 //    jaccard += cmp->computeScore(itdata->getSpectrum(energy_level),itdata->getPredictedSpectrum(energy_level));
                 //else{
@@ -489,11 +489,11 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         for(auto batch_idx = 0; batch_idx < num_batch; ++batch_idx){
             for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
                 if(minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group){
-                    if (cfg->add_noise) {
+                    /*if (cfg->add_noise) {
                         mol_it->removeNoise();
                         mol_it->addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
                         mol_it->removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-                    }
+                    }*/
                     computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs, sampling_method);
                 }
             }
