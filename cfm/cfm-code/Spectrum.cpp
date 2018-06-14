@@ -301,3 +301,13 @@ void Spectrum::addNoise(double max_intensity, double total_intensity, double abs
     this->clean(abs_tol, ppm_tol);
     this->sortAndNormalizeAnnotations();
 }
+
+void Spectrum::removeNoisePeak(){
+    auto peak = peaks.begin();
+    while(peak != peaks.end()){
+        if(peak->is_noise)
+            peaks.erase(peak);
+        else
+            peak++;
+    }
+}

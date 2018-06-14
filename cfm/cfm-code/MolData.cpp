@@ -787,6 +787,11 @@ void MolData::addNoise(double max_intensity, double total_intensity, double abs_
     }
 }
 
+void MolData::removeNoise() {
+    for (auto &spectrum: spectra) {
+        spectrum.removeNoisePeak();
+    }
+}
 void MolData::getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol) const {
     //fg->getPaths(selected_pathes, mass, mass_tol);
 }

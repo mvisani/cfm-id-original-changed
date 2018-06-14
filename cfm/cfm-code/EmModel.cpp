@@ -84,6 +84,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
     int count_no_progress = 0;
 
+    // pre process data
     for (auto &mol : molDataSet) {
         if(cfg->use_graph_pruning ){
             if(cfg->use_single_energy_cfm){
@@ -94,17 +95,18 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 mol.pruneGraphBySpectra(-1, cfg->abs_mass_tol, cfg->ppm_mass_tol, cfg->aggressive_graph_pruning);
             }
         }
+        mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
 
-        if (cfg->add_noise) {
-            if (mol.getGroup() != validation_group)
+        /*if (cfg->add_noise) {
+            if (mol.getGroup() != validation_group){
+                mol.removeNoise();
                 mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
-            mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-        }
+                mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
+            }
+        }*/
     }
 
-
     while (iter < MAX_EM_ITERATIONS) {
-
         std::string iter_out_param_filename =
                 out_param_filename + "_" + std::to_string(iter);
 
@@ -483,11 +485,17 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         // Compute Q and the gradient
         std::fill(grads.begin(), grads.end(), 0.0);
-        auto itdata = data.begin();
+        auto mol_it = data.begin();
         for(auto batch_idx = 0; batch_idx < num_batch; ++batch_idx){
-            for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-                if(minibatch_flags[molidx] == batch_idx && itdata->getGroup() != validation_group)
-                    computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, false, comm->used_idxs, sampling_method);
+            for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
+                if(minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group){
+                    if (cfg->add_noise) {
+                        mol_it->removeNoise();
+                        mol_it->addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
+                        mol_it->removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
+                    }
+                    computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs, sampling_method);
+                }
             }
             comm->collectGradsInMaster(&grads[0]);
             // Step the parameters
@@ -500,10 +508,10 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         // compute Q
         q = 0.0;
-        itdata = data.begin();
-        for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() != validation_group)
-                q += computeQ(molidx, *itdata, suft);
+        mol_it = data.begin();
+        for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
+            if (mol_it->getGroup() != validation_group)
+                q += computeQ(molidx, *mol_it, suft);
         }
         if (comm->isMaster())
             q += addRegularizersAndUpdateGradient(nullptr);

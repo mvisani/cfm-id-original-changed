@@ -203,6 +203,8 @@ public:
 
     void addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
 
+    void removeNoise();
+
     void getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol) const;
 
     unsigned int getOriginalNumTransitions() const {
