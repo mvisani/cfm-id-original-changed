@@ -139,8 +139,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 // or missing spectra.
             }
 
-            if (itdata->getGroup() == validation_group)
-               continue;
+            //if (itdata->getGroup() == validation_group)
+             //  continue;
 
             MolData *moldata = &(*itdata);
 
@@ -223,7 +223,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double jaccard = 0.0;
         for (itdata = molDataSet.begin(); itdata != molDataSet.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
-                //val_q += computeQ(molidx, *itdata, suft);
+                val_q += computeQ(molidx, *itdata, suft);
                 numvalmols++;
                 Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
                 itdata->computePredictedSpectra(*param, true, false);
