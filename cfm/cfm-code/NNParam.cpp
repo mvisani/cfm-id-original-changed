@@ -61,7 +61,8 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
 
 //Randomly initialise all weights
 void NNParam::randomUniformInit() {
-    double min = -0.1 , max = -0.1;
+    double min = -1.1 , max = -1.0;
+    //double base = -0.0;
     // All Terms: to uniform values between -0.1 and 0.1 - Biases too
     std::uniform_real_distribution<double> distribution(min,max);
     for (unsigned int i = 0; i < weights.size(); i++)
@@ -70,7 +71,7 @@ void NNParam::randomUniformInit() {
 
 void NNParam::randomNormalInit() {
     // All Terms: to normal values in mean and std
-    double mean=0.0, std_dev=0.05, min = -0.1 , max = 0.1;
+    double mean = -1.0, std_dev=0.05, range = 0.1;
     std::normal_distribution<double> distribution(mean,std_dev);
 
     unsigned int energy_length = getNumWeightsPerEnergyLevel();
@@ -81,7 +82,7 @@ void NNParam::randomNormalInit() {
                 double weight = 0;
                 do{
                     weight =  distribution(util_rng);
-                }while((weight < min) || (weight > max));
+                }while((weight < (mean - range)) || (weight > (mean + range)));
                 weights[energy_length * energy_level_idx + weight_offset + i] = weight;
             }
             weight_offset += num_weights;
@@ -89,9 +90,10 @@ void NNParam::randomNormalInit() {
     }
 }
 
-// Understanding the difficulty of training deep feedforward neural networksUnderstanding the difficulty of training deep feedforward neural networks
+// Understanding the difficulty of training deep feed forward neural networksUnderstanding the difficulty of training deep feedforward neural networks
 void NNParam::varianceScalingInitializer() {
     double factor = 1.0;
+    double mean= -1.0;
 
     // All Terms: to normal values in mean and std
     unsigned int energy_length = getNumWeightsPerEnergyLevel();
@@ -104,16 +106,15 @@ void NNParam::varianceScalingInitializer() {
             int fan_out = hlayer_num_nodes[hlayer_idx];
             int num_weights = num_weights_per_layer[hlayer_idx];
 
-            double mean=0.0;
             double std_dev=sqrt(factor/ double(fan_out + fan_in));
-            double min = -2*std_dev , max = 2 * std_dev;
+            double range = 2*std_dev;// , max = 2 * std_dev;
             std::normal_distribution<double> distribution(mean,std_dev);
 
             for (unsigned int i = 0; i < num_weights; i++){
                 double weight = 0;
                 do{
                     weight =  distribution(util_rng);
-                }while((weight < min) || (weight > max));
+                }while((weight < (mean - range)) || (weight > (mean + range)));
                 weights[energy_length * energy_level_idx + weight_offset + i] = weight;
             }
             weight_offset += num_weights;
