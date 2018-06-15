@@ -109,9 +109,9 @@ private:
 
     static double relu_derivative(double input) { if (input > 0) return 1; else return 0; };
 
-    static double leaky_relu_activation(double input) { if (input > 0) return input; else return input * 0.1; };
+    static double leaky_relu_activation(double input) { if (input > 0) return input; else return input * 0.01; };
 
-    static double leaky_relu_derivative(double input) { if (input > 0) return 1; else return 0.1; };
+    static double leaky_relu_derivative(double input) { if (input > 0) return 1; else return 0.01; };
 
     static double neg_relu_activation(double input) { if (input < 0) return input; else return 0; };
 
