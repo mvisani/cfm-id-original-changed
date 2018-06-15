@@ -57,8 +57,8 @@ void NNParamsTestComputeTransitionThetas::runTest(){
 	fnames.push_back("IonicFeatures");	//5 features + bias =  6 features
 	std::vector<int> hlayer_numnodes(3), act_ids(3);
 	hlayer_numnodes[0] = 4; hlayer_numnodes[1] = 2; hlayer_numnodes[2] = 1;
-	act_ids[0] = RELU_NN_ACTIVATION_FUNCTION; 
-	act_ids[1] = RELU_NN_ACTIVATION_FUNCTION; 
+	act_ids[0] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
+	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
 
 	NNTestParam param(fnames, 1, hlayer_numnodes, act_ids);
@@ -95,8 +95,8 @@ void NNParamsTestSaveAndLoadFromFile::runTest(){
 
 	std::vector<int> hlayer_numnodes(3), act_ids(3);
 	hlayer_numnodes[0] = 12; hlayer_numnodes[1] = 4; hlayer_numnodes[2] = 1;
-	act_ids[0] = RELU_NN_ACTIVATION_FUNCTION; 
-	act_ids[1] = RELU_NN_ACTIVATION_FUNCTION; 
+	act_ids[0] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
+	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear?
 
 	NNParam param(fnames, 1, hlayer_numnodes, act_ids);
@@ -180,8 +180,8 @@ void NNParamsTestComputeDeltas::runTest(){
 	fnames.push_back("IonicFeatures");	//5 features + bias =  6 features
 	std::vector<int> hlayer_numnodes(3), act_ids(3);
 	hlayer_numnodes[0] = 4; hlayer_numnodes[1] = 2; hlayer_numnodes[2] = 1;
-	act_ids[0] = RELU_NN_ACTIVATION_FUNCTION; 
-	act_ids[1] = RELU_NN_ACTIVATION_FUNCTION; 
+	act_ids[0] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
+	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
 
 	NNTestParam testparam(fnames, 1, hlayer_numnodes, act_ids);
@@ -253,8 +253,8 @@ void NNParamsTestComputeUnweightedGradients::runTest(){
 	fnames.push_back("IonicFeatures");	//5 features + bias =  6 features
 	std::vector<int> hlayer_numnodes(3), act_ids(3);
 	hlayer_numnodes[0] = 4; hlayer_numnodes[1] = 2; hlayer_numnodes[2] = 1;
-	act_ids[0] = RELU_NN_ACTIVATION_FUNCTION; 
-	act_ids[1] = RELU_NN_ACTIVATION_FUNCTION; 
+	act_ids[0] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
+	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
 
 	NNTestParam testparam(fnames, 1, hlayer_numnodes, act_ids);
@@ -389,8 +389,8 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	fnames.push_back("IonicFeatures");	//5 features + bias =  6 features
 	std::vector<int> hlayer_numnodes(3), act_ids(3);
 	hlayer_numnodes[0] = 4; hlayer_numnodes[1] = 2; hlayer_numnodes[2] = 1;
-	act_ids[0] = RELU_NN_ACTIVATION_FUNCTION; 
-	act_ids[1] = RELU_NN_ACTIVATION_FUNCTION; 
+	act_ids[0] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
+	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
 	cfg.theta_nn_hlayer_num_nodes = hlayer_numnodes;
 	cfg.theta_nn_layer_act_func_ids = act_ids;
@@ -505,8 +505,8 @@ void NNParamsTestBiasIndexes::runTest(){
 	fnames.push_back("IonicFeatures");	//5 features + bias =  6 features
 	std::vector<int> hlayer_numnodes(3), act_ids(3);
 	hlayer_numnodes[0] = 4; hlayer_numnodes[1] = 2; hlayer_numnodes[2] = 1;
-	act_ids[0] = RELU_NN_ACTIVATION_FUNCTION; 
-	act_ids[1] = RELU_NN_ACTIVATION_FUNCTION; 
+	act_ids[0] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
+	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
 
 	NNTestParam param(fnames, 1, hlayer_numnodes, act_ids);

@@ -240,8 +240,8 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     hlayer_numnodes[0] = 4;
     hlayer_numnodes[1] = 2;
     hlayer_numnodes[2] = 1;
-    act_ids[0] = RELU_NN_ACTIVATION_FUNCTION;
-    act_ids[1] = RELU_NN_ACTIVATION_FUNCTION;
+    act_ids[0] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
+    act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
     act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;    //Final theta should be linear
     orig_cfg.theta_nn_hlayer_num_nodes = hlayer_numnodes;
     orig_cfg.theta_nn_layer_act_func_ids = act_ids;

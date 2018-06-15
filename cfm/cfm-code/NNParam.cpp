@@ -255,7 +255,7 @@ void NNParam::setActivationFunctionsFromIds() {
             if (*it == LINEAR_NN_ACTIVATION_FUNCTION) {
                 act_funcs.push_back(linear_activation);
                 deriv_funcs.push_back(linear_derivative);
-            } else if (*it == RELU_NN_ACTIVATION_FUNCTION) {
+            } else if (*it == RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION) {
                 if (hnode % 2 == 1) {
                     act_funcs.push_back(neg_relu_activation);
                     deriv_funcs.push_back(neg_relu_derivative);
@@ -266,6 +266,9 @@ void NNParam::setActivationFunctionsFromIds() {
             } else if(*it == LEAKY_RELU_NN_ACTIVATION_FUNCTION){
                 act_funcs.push_back(leaky_relu_activation);
                 deriv_funcs.push_back(leaky_relu_derivative);
+            }  else if(*it == RLEU_NN_ACTIVATION_FUNCTION){
+                act_funcs.push_back(relu_activation);
+                deriv_funcs.push_back(relu_derivative);
             }
             else throw NNParamActivationFunctionIdException();
         }

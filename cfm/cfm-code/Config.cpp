@@ -185,7 +185,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             cfg.theta_nn_layer_act_func_ids.resize(cfg.theta_nn_hlayer_num_nodes.size() + 1);
         }
         for (int i = 0; i < cfg.theta_nn_hlayer_num_nodes.size(); i++) {
-            if (cfg.theta_nn_layer_act_func_ids[i] == RELU_NN_ACTIVATION_FUNCTION &&
+            if (cfg.theta_nn_layer_act_func_ids[i] == RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION &&
                 cfg.theta_nn_hlayer_num_nodes[i] % 2 > 0) {
                 std::cout << "Warning: Invalid to have odd number of nodes for ReLU hidden layer. Adding extra node."
                           << std::endl;
