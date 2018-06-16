@@ -105,7 +105,7 @@ public:
 
     void quantisePeaksByMass(int num_dec_places);
 
-    bool hasPeakByMassWithinTol(double target_mass, double abs_tol, double ppm_tol) const;
+    bool hasPeakByMassWithinTol(double target_mass, double abs_tol, double ppm_tol, double ratio) const;
 
     // a function to add noise with in abs or ppm to the existing peaks
     // this may helps on overfitting

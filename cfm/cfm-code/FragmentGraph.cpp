@@ -543,14 +543,15 @@ bool FragmentGraph::ComputationalFragmenGraph::getPruningTransitionIds(int frag_
     if (visited.find(frag_id) == visited.end())
         return visited[frag_id];
 
+    const double std_ratio = 1.0;
     //first thing , check if we need save this node by itself
     bool need_save = false;
     if (energy_level > 0) {
         need_save = need_save ||
-                    spectra[energy_level].hasPeakByMassWithinTol(fragments[frag_id]->getMass(), abs_tol, ppm_tol);
+                spectra[energy_level].hasPeakByMassWithinTol(fragments[frag_id]->getMass(), abs_tol, ppm_tol, std_ratio);
     } else {
         for (auto &spectrum : spectra) {
-            need_save = need_save || spectrum.hasPeakByMassWithinTol(fragments[frag_id]->getMass(), abs_tol, ppm_tol);
+            need_save = need_save || spectrum.hasPeakByMassWithinTol(fragments[frag_id]->getMass(), abs_tol, ppm_tol, std_ratio);
             if (need_save)
                 break;
         }
@@ -614,7 +615,6 @@ void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &sel
 void FragmentGraph::ComputationalFragmenGraph::pruneGraphBySpectra(std::vector<Spectrum> &spectra, int energy_level,
                                                                    double abs_tol, double ppm_tol,
                                                                    bool aggressive) {
-
     int frag_id = 0;
     std::map<int, bool> visited;
     std::vector<int> removed_transitions_ids;

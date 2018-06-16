@@ -86,7 +86,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
     // pre process data
     for (auto &mol : molDataSet) {
-        if(cfg->use_graph_pruning ){
+        if(cfg->use_graph_pruning && mol.getGroup() != validation_group){
             if(cfg->use_single_energy_cfm){
                 mol.createNewGraphForComputation();
                 mol.pruneGraphBySpectra(energy_level, cfg->abs_mass_tol, cfg->ppm_mass_tol, cfg->aggressive_graph_pruning);
@@ -96,12 +96,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             }
         }
         mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-
-        if (cfg->add_noise) {
-            if (mol.getGroup() != validation_group){
+        if (cfg->add_noise && mol.getGroup() != validation_group) {
                 mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
                 mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-            }
         }
     }
 
@@ -213,12 +210,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double val_q = 0.0;
 
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
-        double jaccard = 0.0;
+        //double jaccard = 0.0;
         for (itdata = molDataSet.begin(); itdata != molDataSet.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
                 val_q += computeQ(molidx, *itdata, suft);
                 numvalmols++;
-                Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
+                /*Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
                 itdata->computePredictedSpectra(*param, true, false);
 
                 std::vector<unsigned int> energies;
@@ -226,7 +223,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 for(auto & energy: energies)
                     jaccard += cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
 
-                delete cmp;
+                delete cmp;*/
             }
             else
                 numnonvalmols++;
@@ -244,7 +241,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         numvalmols = comm->collectSumInMaster(numvalmols);
         numnonvalmols = comm->collectSumInMaster(numnonvalmols);
-        jaccard = comm->collectQInMaster(jaccard);
+        //jaccard = comm->collectQInMaster(jaccard);
         // Check for convergence
         double q_ratio = fabs((q - prev_q) / q);
         double best_q_ratio = fabs((q - best_q) / q);
@@ -260,8 +257,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             qdif_str += "Q=" + std::to_string(q) + " Validation_Q=" + std::to_string(val_q) + "\n";
             qdif_str +=
                     "Q_avg=" + std::to_string(q / numnonvalmols)
-                    + " Validation_Q_avg=" + std::to_string(val_q / numvalmols)
-                    + " Validation_Jaccard_avg=" +  std::to_string(jaccard / numvalmols) + " ";
+                    + " Validation_Q_avg=" + std::to_string(val_q / numvalmols);
+                    //+ " Validation_Jaccard_avg=" +  std::to_string(jaccard / numvalmols) + " ";
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
         }

@@ -249,11 +249,10 @@ void Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
     normalizeAndSort();
 }
 
-bool Spectrum::hasPeakByMassWithinTol(double target_mass, double abs_tol, double ppm_tol) const {
+bool Spectrum::hasPeakByMassWithinTol(double target_mass, double abs_tol, double ppm_tol, double ratio) const {
 
     // find closest mass
     // since peak is sorted by mass
-
     auto diff = DBL_MAX;
     double closet_mass = 0.0;
     for (const auto & peak: peaks) {
@@ -264,7 +263,7 @@ bool Spectrum::hasPeakByMassWithinTol(double target_mass, double abs_tol, double
         }
     }
 
-    return getMassTol(abs_tol, ppm_tol, closet_mass) >= diff;
+    return (getMassTol(abs_tol, ppm_tol, closet_mass) * ratio) >= diff;
 }
 
 void Spectrum::addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol) {
