@@ -431,12 +431,9 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group)
-                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0);
+                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0, 0);
         }
-        /*if( comm->isMaster() )
-            Q += addRegularizers( &grads[0] );
-        Q = comm->collectQInMaster(Q);
-        Q = comm->broadcastQ(Q);*/
+
         comm->setMasterUsedIdxs();
         if (comm->isMaster())
             zeroUnusedParams();
@@ -472,7 +469,6 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         // adjust learning rate
 
-
         if (iter > 1)
             prev_q = q;
 
@@ -493,7 +489,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                         mol_it->addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
                         mol_it->removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
                     }*/
-                    computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs, sampling_method);
+                    computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs,
+                                                 sampling_method, (double)iter);
                 }
             }
             comm->collectGradsInMaster(&grads[0]);
@@ -552,7 +549,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
 double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
                                              bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                             int sampling_method) {
+                                             int sampling_method, double sampling_explore_rate) {
 
     double q = 0.0;
     //const FragmentGraph *fg = moldata.getFragmentGraph();
@@ -582,7 +579,7 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
             int num_iterations = cfg->ga_graph_sampling_k * num_frags;
             if (cfg->ga_use_sqaured_iter_num)
                 num_iterations = num_iterations * (energy + 1) * (energy + 1);
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, sampling_explore_rate);
         }
 
 

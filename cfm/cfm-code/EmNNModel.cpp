@@ -76,7 +76,7 @@ void EmNNModel::writeParamsToFile(std::string &filename) {
 //Gradient Computation using Backpropagation
 double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
                                                bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                               int sampling_method) {
+                                               int sampling_method, double sampling_explore_rate) {
 
     double Q = 0.0;
     //const FragmentGraph *fg = moldata.getFragmentGraph();
@@ -117,7 +117,7 @@ double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolDat
             int num_iterations = cfg->ga_graph_sampling_k * num_frags;
             if (cfg->ga_use_sqaured_iter_num)
                 num_iterations = num_iterations * (energy + 1) * (energy + 1);
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, 1.0);
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, sampling_explore_rate);
         }
 
         //Iterate over from_id (i)

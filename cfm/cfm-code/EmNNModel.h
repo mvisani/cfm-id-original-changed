@@ -35,7 +35,7 @@ public:
     //This is public so the test can access it....there must be a better way?
     double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
                                         bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                        int sampling_method) override;
+                                        int sampling_method, double sampling_explore_rate) override;
 
     double computeQ(int molidx, MolData &moldata, suft_counts_t &suft) override;
 
