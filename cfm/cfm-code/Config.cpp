@@ -322,9 +322,26 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                       << " hidden layers: ";
             for (int i = 0; i < cfg.theta_nn_hlayer_num_nodes.size(); i++)
                 std::cout << cfg.theta_nn_hlayer_num_nodes[i] << " ";
-            std::cout << "and activation functions: ";
-            for (int i = 0; i < cfg.theta_nn_layer_act_func_ids.size(); i++)
-                std::cout << cfg.theta_nn_layer_act_func_ids[i] << " ";
+            std::cout << "and activation functions: " << std::endl;
+            for (int i = 0; i < cfg.theta_nn_layer_act_func_ids.size(); i++){
+                switch (cfg.theta_nn_layer_act_func_ids[i]){
+                    case RELU_NN_ACTIVATION_FUNCTION:
+                        std::cout << "Relu " << std::endl;
+                        break;
+                    case LEAKY_RELU_NN_ACTIVATION_FUNCTION:
+                        std::cout << "Leaky Relu " << std::endl;
+                        break;
+                    case RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION: {
+                        if (i % 2 == 0)
+                            std::cout << "Neg Relu " << std::endl;
+                        else
+                            std::cout << "Relu " << std::endl;
+                        break;
+                    }
+                    default:
+                        std::cout << "Linear Function" << std::endl;
+                }
+            }
             std::cout << std::endl;
         }
         if (cfg.obs_function == NORMAL_OBS_FUNCTION)

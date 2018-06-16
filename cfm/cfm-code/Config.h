@@ -154,8 +154,8 @@ static const int NEURAL_NET_THETA_FUNCTION = 2;
 static const int DEFAULT_THETA_FUNCTION = LINEAR_THETA_FUNCTION;
 
 static const int LINEAR_NN_ACTIVATION_FUNCTION = 0;
-static const int RLEU_NN_ACTIVATION_FUNCTION = 1;
-static const int RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION = 2;
+static const int RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION= 1;
+static const int RELU_NN_ACTIVATION_FUNCTION = 2;
 static const int LEAKY_RELU_NN_ACTIVATION_FUNCTION = 3;
 
 static const int DEFAULT_NN_ACTIVATION_FUNCTION = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
@@ -173,16 +173,13 @@ static const int DEFAULT_OBS_FUNCTION = NORMAL_OBS_FUNCTION;
 static const int DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS = -1;    //-1 is no timeout.
 
 //Random Sample settings
-static const double DEFAULT_RANDOM_SAMPLE_THRESHOLD = 1.0;
-
 static const int DEFAULT_NOT_USE_GRAPH_PRUNING = 0;
 static const int DEFAULT_USE_BEST_Q_IN_GA = 0;
 static const int USE_NO_SAMPLING = 0;
 static const int USE_GRAPH_RANDOM_WALK_SAMPLING = 1;
 static const int USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING = 2;
 static const int DEFAULT_GRAPH_SAMPLING_K = 5;
-static const int DEFAULT_NOT_USE_SQRT_PROB = 0;
-static const int DEFAULT_NOT_USE_SQUARD_ITER = 0;
+
 
 //Configuration
 struct config_t {

@@ -266,7 +266,7 @@ void NNParam::setActivationFunctionsFromIds() {
             } else if(*it == LEAKY_RELU_NN_ACTIVATION_FUNCTION){
                 act_funcs.push_back(leaky_relu_activation);
                 deriv_funcs.push_back(leaky_relu_derivative);
-            }  else if(*it == RLEU_NN_ACTIVATION_FUNCTION){
+            }  else if(*it == RELU_NN_ACTIVATION_FUNCTION){
                 act_funcs.push_back(relu_activation);
                 deriv_funcs.push_back(relu_derivative);
             }
