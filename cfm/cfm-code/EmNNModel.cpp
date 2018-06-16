@@ -111,28 +111,23 @@ double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolDat
 
 
         std::set<int> selected_trans_id;
-        if (!record_used_idxs_only && sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
-
-            int num_frags = moldata.getSpectrum(energy)->size();
-            int num_iterations = cfg->ga_graph_sampling_k * num_frags;
-            if (cfg->ga_use_sqaured_iter_num)
-                num_iterations = num_iterations * (energy + 1) * (energy + 1);
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, sampling_explore_rate);
-        }
+        if(!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
+            getRandomWalkedTransitions(moldata, sampling_method, sampling_explore_rate, energy, selected_trans_id);
 
         //Iterate over from_id (i)
         const tmap_t *from_map = moldata.getFromIdTMap();
         for (int from_idx = 0; from_idx < num_fragments; from_idx++) {
 
             const std::vector<int> *from_id_map = &(*from_map)[from_idx];
-            std::vector<int> sampled_trans_id_for_fg;
-            if (sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING && !record_used_idxs_only) {
+            std::vector<int> sampled_trans_id;
+
+            if (sampling_method != USE_NO_SAMPLING && !record_used_idxs_only) {
                 for (const auto &trans_id : (*from_map)[from_idx]) {
                     if (selected_trans_id.find(trans_id) != selected_trans_id.end()) {
-                        sampled_trans_id_for_fg.push_back(trans_id);
+                        sampled_trans_id.push_back(trans_id);
                     }
                 }
-                from_id_map = &sampled_trans_id_for_fg;
+                from_id_map = &sampled_trans_id;
             }
 
             if (from_id_map->empty())

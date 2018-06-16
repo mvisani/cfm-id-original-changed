@@ -71,19 +71,17 @@ void initDefaultConfig(config_t &cfg) {
     cfg.include_h_losses = DEFAULT_INCLUDE_H_LOSSES;
     cfg.include_precursor_h_losses_only = DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY;
     cfg.fragraph_compute_timeout_in_secs = DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS;
-    cfg.ga_sampling_selection_threshold = DEFAULT_RANDOM_SAMPLE_THRESHOLD;
     cfg.use_graph_pruning = DEFAULT_NOT_USE_GRAPH_PRUNING;
     cfg.ga_use_best_q = DEFAULT_USE_BEST_Q_IN_GA;
     cfg.ga_sampling_method = USE_NO_SAMPLING;
     cfg.ga_graph_sampling_k = DEFAULT_GRAPH_SAMPLING_K;
-    cfg.ga_use_sqaured_iter_num = DEFAULT_NOT_USE_SQUARD_ITER;
-    cfg.ga_use_sqrt_prob = DEFAULT_NOT_USE_SQRT_PROB;
     cfg.aggressive_graph_pruning = false;
     cfg.reset_sampling = false;
     cfg.reset_sampling_lr_ratio = 1.0;
     cfg.add_noise = false;
     cfg.noise_max = 1.0;
     cfg.noise_sum = 5;
+    cfg.ga_sampling_explore_weight = 1.0;
 }
 
 
@@ -117,11 +115,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "abs_mass_tol") cfg.abs_mass_tol = (double) value;
         else if (name == "ppm_mass_tol") cfg.ppm_mass_tol = (double) value;
         else if (name == "num_em_restarts") cfg.num_em_restarts = (int) value;
-        //else if (name == "line_search_alpha") cfg.line_search_alpha = (double) value;
-        //else if (name == "line_search_beta") cfg.line_search_beta = (double) value;
         else if (name == "starting_step_size") cfg.starting_step_size = (double) value;
         else if (name == "decay_rate") cfg.decay_rate = (double) value;
-        //else if (name == "max_search_count") cfg.max_search_count = (int) value;
         else if (name == "fg_depth") cfg.fg_depth = (int) value;
         else if (name == "allow_frag_detours") cfg.allow_frag_detours = (int) value;
         else if (name == "do_prelim_bfs") cfg.do_prelim_bfs = (int) value;
@@ -153,18 +148,17 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "include_h_losses") cfg.include_h_losses = (int) value;
         else if (name == "include_precursor_h_losses_only") cfg.include_precursor_h_losses_only = (int) value;
         else if (name == "fragraph_compute_timeout_in_secs") cfg.fragraph_compute_timeout_in_secs = (int) value;
-        else if (name == "ga_sampling_selection_threshold") cfg.ga_sampling_selection_threshold = value;
         else if (name == "use_graph_pruning") cfg.use_graph_pruning = (int) value;
         else if (name == "ga_use_best_q") cfg.ga_use_best_q = (int) value;
         else if (name == "ga_sampling_method") cfg.ga_sampling_method = (int) value;
         else if (name == "ga_graph_sampling_k") cfg.ga_graph_sampling_k = (int) value;
-        else if (name == "ga_use_sqaured_iter_num") cfg.ga_use_sqaured_iter_num = (int) value;
         else if (name == "aggressive_graph_pruning") cfg.aggressive_graph_pruning = (bool) value;
         else if (name == "reset_sampling") cfg.reset_sampling = (bool) value;
         else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double) value;
         else if (name == "add_noise") cfg.add_noise = (bool) value;
         else if (name == "noise_max") cfg.noise_max = (double) value;
         else if (name == "noise_sum") cfg.noise_sum = (double) value;
+        else if (name == "ga_sampling_explore_weight") cfg.ga_sampling_explore_weight = (double) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -275,7 +269,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         }
         if (cfg.ga_use_best_q)
             std::cout << "Using Best Q instead of Prev Q in GA" << std::endl;
-        std::cout << "Using Random Sampling with threshold: " << cfg.ga_sampling_selection_threshold << std::endl;
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
         if (cfg.use_graph_pruning != DEFAULT_NOT_USE_GRAPH_PRUNING) {
             std::cout << "Using graph pruning" << std::endl;
@@ -285,16 +278,13 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         }
 
         switch (cfg.ga_sampling_method) {
-            case USE_RANDOM_SAMPLING:
-                std::cout << "Using Random Sampling on transitions with ratio=" << cfg.ga_sampling_selection_threshold
-                          << std::endl;
-                break;
-            case USE_GRAPH_RANDOM_SAMPLING:
-                std::cout << "Using Graph Random Sampling on transitions with K=" << cfg.ga_graph_sampling_k
-                          << " And Selection Prob=" << cfg.ga_sampling_selection_threshold << std::endl;
-                break;
             case USE_GRAPH_RANDOM_WALK_SAMPLING:
-                std::cout << "Using Graph Random Walk Sampling on transitions with K=" << cfg.ga_graph_sampling_k
+                std::cout << "Using Graph Random Walk Sampling on transitions with K="
+                             << cfg.ga_graph_sampling_k << std::endl;
+                break;
+            case USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING:
+                std::cout << "Using Graph Weighted Random Walk Sampling on transitions with K="
+                             << cfg.ga_graph_sampling_k << " explore weight=" << cfg.ga_sampling_explore_weight
                           << std::endl;
                 break;
             case USE_NO_SAMPLING:

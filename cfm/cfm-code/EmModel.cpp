@@ -211,14 +211,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         before = time(nullptr);
         // validation Q value
         double val_q = 0.0;
-        // Compute the final Q (with all molecules, in case only some were used in
-        // the mini-batch)
-        /*if (cfg->ga_minibatch_nth_size > 1 ||
-            sampling_method != USE_NO_SAMPLING) {
-            q = 0;
-            if (comm->isMaster())
-                std::cout << "[INFO]Using MiniBatch and/or Sampling, Compute the final Q" << std::endl;
-        }*/
+
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
         double jaccard = 0.0;
         for (itdata = molDataSet.begin(); itdata != molDataSet.end(); ++itdata, molidx++) {
@@ -227,24 +220,14 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 numvalmols++;
                 Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
                 itdata->computePredictedSpectra(*param, true, false);
-                /*if(cfg->add_noise)
-                    itdata->postprocessPredictedSpectra(80,5,30)//cfg->noise_max);
-                else
-                    itdata->postprocessPredictedSpectra(80,5,30,1.0);*/
-                //if(energy_level >= 0)
-                //    jaccard += cmp->computeScore(itdata->getSpectrum(energy_level),itdata->getPredictedSpectrum(energy_level));
-                //else{
-                    std::vector<unsigned int> energies;
-                    getEnergiesLevels(energies);
-                    for(auto & energy: energies)
-                        jaccard += cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
-                //}
+
+                std::vector<unsigned int> energies;
+                getEnergiesLevels(energies);
+                for(auto & energy: energies)
+                    jaccard += cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
+
                 delete cmp;
-            } /*else if (cfg->ga_minibatch_nth_size > 1 ||
-                       sampling_method != USE_NO_SAMPLING) {
-                q += computeQ(molidx, *itdata, suft);
-                numnonvalmols++;
-            } */
+            }
             else
                 numnonvalmols++;
         }
@@ -258,14 +241,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             writeStatus(q_time_msg.c_str());
 
         val_q = comm->collectQInMaster(val_q);
-        /*if (cfg->ga_minibatch_nth_size > 1 ||
-            sampling_method != USE_NO_SAMPLING) {
-            if (comm->isMaster()) {
-                q += addRegularizersAndUpdateGradient(nullptr);
-            }
-            q = comm->collectQInMaster(q);
-            q = comm->broadcastQ(q);
-        }*/
+
         numvalmols = comm->collectSumInMaster(numvalmols);
         numnonvalmols = comm->collectSumInMaster(numnonvalmols);
         jaccard = comm->collectQInMaster(jaccard);
@@ -484,13 +460,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         for(auto batch_idx = 0; batch_idx < num_batch; ++batch_idx){
             for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
                 if(minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group){
-                    /*if (cfg->add_noise) {
-                        mol_it->removeNoise();
-                        mol_it->addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
-                        mol_it->removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-                    }*/
                     computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs,
-                                                 sampling_method, (double)iter);
+                                                 sampling_method, cfg->ga_sampling_explore_weight);
                 }
             }
             comm->collectGradsInMaster(&grads[0]);
@@ -573,15 +544,8 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         std::set<int> selected_trans_id;
-        if (!record_used_idxs_only && sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
-
-            int num_frags = moldata.getSpectrum(energy)->size();
-            int num_iterations = cfg->ga_graph_sampling_k * num_frags;
-            if (cfg->ga_use_sqaured_iter_num)
-                num_iterations = num_iterations * (energy + 1) * (energy + 1);
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations, energy, sampling_explore_rate);
-        }
-
+        if(!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
+            getRandomWalkedTransitions(moldata, sampling_method, sampling_explore_rate, energy, selected_trans_id);
 
         // Iterate over from_id (i)
         auto frag_trans_map = moldata.getFromIdTMap()->begin();
@@ -597,7 +561,7 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
             } else {
                 //Do some random selection
                 std::vector<int> sampled_ids;
-                if (sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
+                if (sampling_method != USE_NO_SAMPLING) {
                     for (auto id: *frag_trans_map) {
                         if (selected_trans_id.find(id) != selected_trans_id.end()) {
                             sampled_ids.push_back(id);
@@ -605,8 +569,6 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
                     }
                 } else
                     sampled_ids = *frag_trans_map;
-
-
 
                 // Calculate the denominator of the sum terms
                 double denom = 1.0;
@@ -658,6 +620,19 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
         moldata.computeTransitionThetas(*param);
 
     return q;
+}
+
+void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, double sampling_explore_rate,
+                                         unsigned int energy, std::set<int> &selected_trans_id) const {
+
+    int num_frags = moldata.getSpectrum(energy)->size();
+    int num_iterations = cfg->ga_graph_sampling_k * num_frags;
+    if(sampling_method == USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING)
+        moldata.getSampledTransitionIdsWeightedRandomWalk(selected_trans_id, num_iterations, energy,
+                                                                  sampling_explore_rate);
+    if(sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING)
+        moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations);
+
 }
 
 double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {

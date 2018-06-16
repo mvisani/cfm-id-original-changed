@@ -334,6 +334,13 @@ public:
     // Function do some not so random selection
     void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter,
                                                    std::vector<double> &thetas, double explore_weight);
+
+    // Get a list of transitions ids , with random walk
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids,
+                                           int max_num_iter) {
+        current_graph->getSampledTransitionIdsRandomWalk(selected_ids, max_num_iter);
+    };
+
 protected:
     std::vector<Fragment*> fragments;
     std::vector<Transition*> transitions;
@@ -376,6 +383,8 @@ protected:
                                                        int max_num_iter,
                                                        std::vector<double> &thetas,
                                                        double explore_weight);
+
+        void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter);
 
         std::vector<Fragment*> fragments;
         std::vector<Transition*> transitions;

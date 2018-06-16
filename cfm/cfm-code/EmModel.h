@@ -92,6 +92,8 @@ protected:
     // nullptr means do not update grads
     virtual double addRegularizersAndUpdateGradient(double *grads);
 
+    void getRandomWalkedTransitions(MolData &moldata, int sampling_method, double sampling_explore_rate,
+                                        unsigned int energy, std::set<int> &selected_trans_id) const;
 };
 
 #endif // __EM_TRAIN_H__

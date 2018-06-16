@@ -652,6 +652,36 @@ void FragmentGraph::ComputationalFragmenGraph::removeLonelyFrags() {
     removeFragments(removed_fragmentation_ids);
 }
 
+void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter) {
+    int num_iter = 0;
+    while (num_iter <= max_num_iter) {
+        // init queue and add root
+        std::queue<int> fgs;
+
+        fgs.push(0);
+        while (!fgs.empty()) {
+            // get current id
+            int frag_id = fgs.front();
+            fgs.pop();
+
+            // if there is somewhere to go
+            if (!from_id_tmap[frag_id].empty()) {
+                // add a uct style random select
+                std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size() - 1);
+                int selected_idx = dis(util_rng);
+                if (selected_idx < from_id_tmap[frag_id].size()) {
+                    // go to child
+                    int selected_trans_id = from_id_tmap[frag_id][selected_idx];
+                    fgs.push(transitions[selected_trans_id]->getToId());
+                    selected_ids.insert(selected_trans_id);
+
+                }
+            }
+        }
+        num_iter++;
+    }
+}
+
 void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids,
                                                                                          int max_num_iter,
                                                                                          std::vector<double> &thetas,
@@ -705,7 +735,6 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
                     std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size() - 1);
                     selected_idx = dis(util_rng);
                 } else {
-
                     int selected_idx = discrete_distributions[frag_id](util_rng);
                 }
                 if (selected_idx < from_id_tmap[frag_id].size()) {

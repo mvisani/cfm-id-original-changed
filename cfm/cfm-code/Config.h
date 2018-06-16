@@ -178,9 +178,8 @@ static const double DEFAULT_RANDOM_SAMPLE_THRESHOLD = 1.0;
 static const int DEFAULT_NOT_USE_GRAPH_PRUNING = 0;
 static const int DEFAULT_USE_BEST_Q_IN_GA = 0;
 static const int USE_NO_SAMPLING = 0;
-static const int USE_RANDOM_SAMPLING = 1;
-static const int USE_GRAPH_RANDOM_SAMPLING = 2;
-static const int USE_GRAPH_RANDOM_WALK_SAMPLING = 3;
+static const int USE_GRAPH_RANDOM_WALK_SAMPLING = 1;
+static const int USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING = 2;
 static const int DEFAULT_GRAPH_SAMPLING_K = 5;
 static const int DEFAULT_NOT_USE_SQRT_PROB = 0;
 static const int DEFAULT_NOT_USE_SQUARD_ITER = 0;
@@ -202,15 +201,13 @@ struct config_t {
     double isotope_thresh;
 
     // For sampling
-    double ga_sampling_selection_threshold;
     int use_graph_pruning;
     bool aggressive_graph_pruning;
     bool reset_sampling;
     double reset_sampling_lr_ratio;
     int ga_sampling_method;
     int ga_graph_sampling_k;
-    int ga_use_sqrt_prob;
-    int ga_use_sqaured_iter_num;
+    double ga_sampling_explore_weight;
 
     //Model Level Configuration
     unsigned int model_depth; //Total Depth
