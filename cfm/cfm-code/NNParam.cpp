@@ -61,7 +61,7 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
 
 //Randomly initialise all weights
 void NNParam::randomUniformInit() {
-    double min = -0.1 , max = -0.1;
+    double min = -0.1 , max = 0.1;
     // All Terms: to uniform values between -0.1 and 0.1 - Biases too
     std::uniform_real_distribution<double> distribution(min,max);
     for (unsigned int i = 0; i < weights.size(); i++)
@@ -92,6 +92,7 @@ void NNParam::randomNormalInit() {
 // Understanding the difficulty of training deep feedforward neural networksUnderstanding the difficulty of training deep feedforward neural networks
 void NNParam::varianceScalingInitializer() {
     double factor = 1.0;
+    double mean= -0.0;
 
     // All Terms: to normal values in mean and std
     unsigned int energy_length = getNumWeightsPerEnergyLevel();
@@ -104,7 +105,6 @@ void NNParam::varianceScalingInitializer() {
             int fan_out = hlayer_num_nodes[hlayer_idx];
             int num_weights = num_weights_per_layer[hlayer_idx];
 
-            double mean=0.0;
             double std_dev=sqrt(factor/ double(fan_out + fan_in));
             double min = -2*std_dev , max = 2 * std_dev;
             std::normal_distribution<double> distribution(mean,std_dev);
