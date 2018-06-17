@@ -244,7 +244,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         numvalmols = comm->collectSumInMaster(numvalmols);
         numnonvalmols = comm->collectSumInMaster(numnonvalmols);
-        //jaccard = comm->collectQInMaster(jaccard);
+        jaccard = comm->collectQInMaster(jaccard);
         // Check for convergence
         double q_ratio = fabs((q - prev_q) / q);
         double best_q_ratio = fabs((q - best_q) / q);
