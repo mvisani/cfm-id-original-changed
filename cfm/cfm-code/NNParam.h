@@ -85,6 +85,8 @@ public:
     void getBiasIndexes(std::vector<unsigned int> &bias_indexes);
 
     void rollDropout();
+
+    std::vector<bool>* getDropouts() { return &is_drop_out; }
 private:
     std::vector<int> hlayer_num_nodes;
     std::vector<int> num_weights_per_layer;

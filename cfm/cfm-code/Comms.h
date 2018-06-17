@@ -19,6 +19,7 @@
 #define __COMMS_H__
 
 #include "Param.h"
+#include "NNParam.h"
 #include <string>
 #include <set>
 
@@ -38,6 +39,8 @@ public:
     virtual void printToMasterOnly(const char *msg) = 0;
 
     void broadcastInitialParams(Param *param);
+
+    void broadcastDropouts(NNParam *param);
 
     void printWithWorkerId(const char *msg);
 

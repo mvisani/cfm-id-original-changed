@@ -125,6 +125,11 @@ void Comms::broadcastInitialParams(Param *param) {
     MPI_Bcast(&((*weights)[0]), weights->size(), MPI_DOUBLE, MASTER, MPI_COMM_WORLD);
 }
 
+void Comms::broadcastDropouts(NNParam *param) {
+    std::vector<bool> *dropout = param->getDropouts();
+    MPI_Bcast(dropout, dropout->size(), MPI_INT, MASTER, MPI_COMM_WORLD);
+}
+
 void WorkerComms::collectGradsInMaster(double *grads) {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
@@ -135,8 +140,6 @@ void WorkerComms::collectGradsInMaster(double *grads) {
     for (int i = 0; it != used_idxs.end(); ++it, i++)
         used_grads[i] = *(grads + *it);
     MPI_Send(&(used_grads[0]), num_used, MPI_DOUBLE, MASTER, 0, MPI_COMM_WORLD);
-
-
 }
 
 void MasterComms::collectGradsInMaster(double *grads) {
