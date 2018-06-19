@@ -128,7 +128,6 @@ public:
     ~Transition(){
         if(feature_vector != nullptr)
             delete  feature_vector;
-
     };
 
     // Access Functions

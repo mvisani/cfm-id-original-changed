@@ -207,20 +207,34 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
 	FeatureCalculator fc_null(fnames); 
 	std::string null_str = "null";
 	EmModel em(&cfg, &fc_null, null_str, param_filename );
-	double Q_only = em.computeQ(0, moldata, suft);
-	double Q = em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, 0);
-	
-	//Check Q
-	if( fabs(Q - -3.823 )  > tol ){
-		std::cout << "Unexpected Q value resulting from gradient computation: " << Q << std::endl;
-		pass = false;
-	}
-	if( fabs(Q_only - -3.823 )  > tol ){
-		std::cout << "Unexpected Q value resulting from Q only computation: " << Q << std::endl;
-		pass = false;
-	}
 
-	//Check the gradients
+    //Check Q
+    double Q = em.computeQ(0, moldata, suft);
+    if( fabs(Q - -3.823 )  > tol ){
+        std::cout << "Unexpected Q value resulting from Q only computation: " << Q << std::endl;
+        pass = false;
+    }
+
+    // get used flags
+    em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, 0);
+    //Check the used flags
+    for( int energy = 0; energy < 3; energy++ ){
+        //Check the ones that should be on
+        for( unsigned int i = 0; i < 2; i++ ){
+            if( used_idxs.find(energy*11 + i) == used_idxs.end()){
+                std::cout << "Expected used_flag to be set but found not set" << std::endl;
+                pass = false;
+            }
+        }
+        //Check one that shouldn't be on
+        if( used_idxs.find(energy*11 + 5) != used_idxs.end()){
+            std::cout << "Expected used_flag to be not set but found set" << std::endl;
+            pass = false;
+        }
+    }
+
+    //Check the gradients
+	em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, false, used_idxs, 0, 0);
 	double expected_vals[6] = {-0.1624,0.2499,-0.0568,0.2554,0.1649,0.4663};
 	for( int energy = 0; energy < 3; energy++ ){
 		for( unsigned int i = 0; i < 2; i++ ){
@@ -231,21 +245,6 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
 		}
 	}
 
-	//Check the used flags
-	for( int energy = 0; energy < 3; energy++ ){
-		//Check the ones that should be on
-		for( unsigned int i = 0; i < 2; i++ ){
-			if( used_idxs.find(energy*11 + i) == used_idxs.end()){
-				std::cout << "Expected used_flag to be set but found not set" << std::endl;
-				pass = false;
-			}
-		}
-		//Check one that shouldn't be on
-		if( used_idxs.find(energy*11 + 5) != used_idxs.end()){
-			std::cout << "Expected used_flag to be not set but found set" << std::endl;
-			pass = false;
-		}
-	}
 	passed = pass;
 
 }

@@ -20,8 +20,8 @@
 #include <boost/filesystem.hpp>
 
 void initMolProps( romol_ptr_t &mol ){
-	RDKit::ROMol::AtomIterator ai; 
-	for( ai = mol.get()->beginAtoms(); ai != mol.get()->endAtoms(); ++ai ){	
+	RDKit::ROMol::AtomIterator ai;
+	for( ai = mol.get()->beginAtoms(); ai != mol.get()->endAtoms(); ++ai ){
 		(*ai)->setProp("Root",0);
 		(*ai)->setProp("OtherRoot",0);
 	}
@@ -33,9 +33,9 @@ FeaturesTestInit::FeaturesTestInit(){
 }
 
 void FeaturesTestInit::runTest(){
-	
+
 	bool pass = true;
-    
+
 	//Valid Config
 	std::string config_filename = "tests/test_data/valid_feature_config.txt";
 	FeatureCalculator *fc = new FeatureCalculator( config_filename );
@@ -48,11 +48,11 @@ void FeaturesTestInit::runTest(){
 		if( fnames[0] != "BreakAtomPair" ||
 			fnames[1] != "RingFeatures" ){
 			std::cout << "Unexpected feature names" << std::endl;
-			pass = false;		
+			pass = false;
 		}
 		if( fc->getNumFeatures() != 85 ){
 			std::cout << "Unexpected feature count";
-			pass = false;			
+			pass = false;
 		}
 	}
 	delete fc;
@@ -68,7 +68,7 @@ void FeaturesTestInit::runTest(){
 	}
 	if( !except_thrown ){
 		std::cout << "Allowed invalid feature configuration" << std::endl;
-		pass = false;		
+		pass = false;
 	}
 	passed = pass;
 
@@ -79,7 +79,7 @@ FeaturesTestBreakAtomPair::FeaturesTestBreakAtomPair(){
 }
 
 void FeaturesTestBreakAtomPair::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("BreakAtomPair");
@@ -97,12 +97,12 @@ void FeaturesTestBreakAtomPair::runTest(){
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(3) != 1 ){
+		if(fv->getFeature(1) != 3 ){
 			std::cout << "Unexpected value for non-ring C-N root pair" << std::endl;
-			pass = false;			
+			pass = false;
 		}
 	}
 	delete fv;
@@ -118,12 +118,12 @@ void FeaturesTestBreakAtomPair::runTest(){
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(61) != 1 ){
+		if(fv->getFeature(1) != 61 ){
 			std::cout << "Unexpected value for non-ring X-C root pair" << std::endl;
-			pass = false;			
+			pass = false;
 		}
 	}
 	delete fv;
@@ -140,12 +140,12 @@ void FeaturesTestBreakAtomPair::runTest(){
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(4) != 1 ){
+		if(fv->getFeature(1) != 4 ){
 			std::cout << "Unexpected value for ring double C-N root pair" << std::endl;
-			pass = false;			
+			pass = false;
 		}
 	}
 	delete fv;
@@ -162,16 +162,16 @@ void FeaturesTestBreakAtomPair::runTest(){
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 3 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(4) != 1 ){
+		if(fv->getFeature(1) != 4 ){
 			std::cout << "Unexpected value for ring C-N, X-X root pair" << std::endl;
-			pass = false;			
+			pass = false;
 		}
-		if(fv->getFeature(72) != 1 ){
+		if(fv->getFeature(2) != 72 ){
 			std::cout << "Unexpected value for ring C-N, X-X root pair" << std::endl;
-			pass = false;			
+			pass = false;
 		}
 	}
 	delete fv;
@@ -184,7 +184,7 @@ FeaturesTestRootPairs::FeaturesTestRootPairs(){
 }
 
 void FeaturesTestRootPairs::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("IonRootPairs"); //NLRootPairs should work the same
@@ -202,16 +202,16 @@ void FeaturesTestRootPairs::runTest(){
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		bool ok = true;
-		if(fv->getFeature(6) != 1.0 ) ok = false;
-		if(fv->getFeature(7) != 1.0 ) ok = false;
-		if(fv->getFeature(22) != 1.0 ) ok = false;
+		if(fv->getFeature(1) != 6 ) ok = false;
+		if(fv->getFeature(2) != 7 ) ok = false;
+		if(fv->getFeature(3) != 22 ) ok = false;
 		if(!ok){
 			std::cout << "Unexpected value for non-ring C-N,C-N,C-X" << std::endl;
-			pass = false;			
+			pass = false;
 		}
 	}
 	delete fv;
@@ -220,59 +220,59 @@ void FeaturesTestRootPairs::runTest(){
 	ion = createMolPtr("B(B)N");
 	initMolProps(ion);
 	rtd_ion = RootedROMolPtr( ion, ion.get()->getAtomWithIdx(0), null_atom );
-	
+
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 3 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		bool ok = true;
-		if(fv->getFeature(126) != 1.0 ) ok = false;
-		if(fv->getFeature(142) != 2.0  ) ok = false;
+		if(fv->getFeature(1) != 126 ) ok = false;
+		if(fv->getFeature(2) != 142  ) ok = false;
 		if(!ok){
 			std::cout << "Unexpected value for non-ring X-X,X-N" << std::endl;
-			pass = false;			
+			pass = false;
 		}
 	}
 	delete fv;
 
 	//Ring "C-N,C-N,X-X,C-X,X-N"
 	ion = createMolPtr("C(N)(B)NNBB");
-	initMolProps(ion);	
+	initMolProps(ion);
 	rtd_ion = RootedROMolPtr( ion, ion.get()->getAtomWithIdx(0), ion.get()->getAtomWithIdx(5) );
 	nl.get()->setProp("IsRingBreak", 1);
 
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 6 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		bool ok = true;
-		if(fv->getFeature(8) != 1.0 ) ok = false;
-		if(fv->getFeature(9) != 1.0 ) ok = false;
-		if(fv->getFeature(24) != 1.0 ) ok = false;
-		if(fv->getFeature(128) != 1.0 ) ok = false;
-		if(fv->getFeature(144) != 1.0 ) ok = false;
-		if(!ok){
+        if( fv->getFeature(1) != 8 ) ok = false;
+        if( fv->getFeature(2) != 9 ) ok = false;
+        if( fv->getFeature(3) != 24 ) ok = false;
+        if( fv->getFeature(4) != 128 ) ok = false;
+        if( fv->getFeature(5) != 144 ) ok = false;
+        if(!ok){
 			std::cout << "Unexpected value for ring C-N,C-N,X-X,C-X,X-N" << std::endl;
-			pass = false;			
+			pass = false;
 		}
 	}
 	delete fv;
 
 	//Empty pairs (set feature indicating no pairs)
 	ion = createMolPtr("C");
-	initMolProps(ion);	
+	initMolProps(ion);
 	rtd_ion = RootedROMolPtr( ion, ion.get()->getAtomWithIdx(0), null_atom );
 	nl.get()->setProp("IsRingBreak", 0);
 
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		if(fv->getFeature(1) != 1 ){
 			std::cout << "Missing feature flagging no pairs" << std::endl;
@@ -292,7 +292,7 @@ FeaturesTestRootTriples::FeaturesTestRootTriples(){
 }
 
 void FeaturesTestRootTriples::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("NLRootTriples"); //IonRootTriples should work the same
@@ -305,39 +305,39 @@ void FeaturesTestRootTriples::runTest(){
 	initMolProps(nl);
 	RDKit::Atom *null_atom = nullptr;
 	RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
-	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom ); 
+	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
 
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		bool ok = true;
-		if(fv->getFeature(6) != 1.0 ) ok = false;
-		if(fv->getFeature(7) != 1.0 ) ok = false;
-		if(fv->getFeature(122) != 1.0 ) ok = false;
+        if( fv->getFeature(1) != 6 ) ok = false;
+        if( fv->getFeature(2) != 7 ) ok = false;
+        if( fv->getFeature(3) != 122 ) ok = false;
 		if(!ok){
 			std::cout << "Unexpected value for non-ring C-C-N,C-C-N,C-X-C" << std::endl;
-			pass = false;			
+			pass = false;
 		}
 	}
 	delete fv;
 
 	//Non-ring "N-X-X"
 	nl = createMolPtr("NBB");
-	initMolProps(nl);	
+	initMolProps(nl);
 	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0), null_atom );
 
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(286) != 1.0  ){
+        if( fv->getFeature(1) != 286 ){
 			std::cout << "Unexpected value for non-ring N-X-X" << std::endl;
-			pass = false;			
+			pass = false;
 		}
 	}
 	delete fv;
@@ -346,24 +346,24 @@ void FeaturesTestRootTriples::runTest(){
 	ion = createMolPtr("C");
 	nl = createMolPtr("C(BC)C(N)NBBN");
 	initMolProps(ion);
-	initMolProps(nl);	
+	initMolProps(nl);
 	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0), nl.get()->getAtomWithIdx(8) );
 	nl.get()->setProp("IsRingBreak", 1);
 
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 5 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		bool ok = true;
-		if(fv->getFeature(8) != 1.0 ) ok = false;
-		if(fv->getFeature(9) != 1.0 ) ok = false;
-		if(fv->getFeature(124) != 1.0 ) ok = false;
-		if(fv->getFeature(288) != 1.0 ) ok = false;
-		if(!ok){
+        if( fv->getFeature(1) != 8 ) ok = false;
+        if( fv->getFeature(2) != 9 ) ok = false;
+        if( fv->getFeature(3) != 124 ) ok = false;
+        if( fv->getFeature(4) != 288 ) ok = false;
+        if(!ok){
 			std::cout << "Unexpected value for non-ring C-C-N,C-C-N,C-X-C,N-X-X" << std::endl;
-			pass = false;			
+			pass = false;
 		}
 	}
 	delete fv;
@@ -372,12 +372,12 @@ void FeaturesTestRootTriples::runTest(){
 	nl = createMolPtr("C");
 	initMolProps(nl);
 	rtd_nl = RootedROMolPtr( nl, nl.get()->getAtomWithIdx(0), null_atom );
-	
+
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		if(fv->getFeature(1) != 1.0 ){
 			std::cout << "Missing feature flagging no triples" << std::endl;
@@ -395,7 +395,7 @@ FeaturesTestGasteigerCharges::FeaturesTestGasteigerCharges(){
 }
 
 void FeaturesTestGasteigerCharges::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("GasteigerCharges"); //IonRootTriples should work the same
@@ -408,7 +408,7 @@ void FeaturesTestGasteigerCharges::runTest(){
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OrigGasteigerCharge", -0.33042488 );
 	RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
 	romol_ptr_t nl = createMolPtr("C");
-	initMolProps(nl);	
+	initMolProps(nl);
 	nl.get()->getAtomWithIdx(0)->setProp<double>("OrigGasteigerCharge", -0.00652530 );
 	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
 	nl.get()->setProp("IsRingBreak",0);
@@ -416,10 +416,10 @@ void FeaturesTestGasteigerCharges::runTest(){
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(9) != 1.0 ){
+        if( fv->getFeature(1) != 9 ){
 			std::cout << "Unexpected value for ion gasteiger charge (non-ring) " << fv->getFeature(1) << std::endl;
 			pass = false;
 		}
@@ -428,29 +428,29 @@ void FeaturesTestGasteigerCharges::runTest(){
 
 	//Ring Retain Order (-0.01,0.9), (0.05,-0.4)
 	ion = createMolPtr("CC");
-	initMolProps(ion);	
+	initMolProps(ion);
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OrigGasteigerCharge", -0.01 );
 	ion.get()->getAtomWithIdx(1)->setProp<double>("OrigGasteigerCharge", 0.05 );
-	rtd_ion = RootedROMolPtr( ion, ion.get()->getAtomWithIdx(0), ion.get()->getAtomWithIdx(1) );	
+	rtd_ion = RootedROMolPtr( ion, ion.get()->getAtomWithIdx(0), ion.get()->getAtomWithIdx(1) );
 	nl = createMolPtr("CC");
 	initMolProps(nl);
 	nl.get()->getAtomWithIdx(0)->setProp<double>("OrigGasteigerCharge", 0.9 );
 	nl.get()->getAtomWithIdx(1)->setProp<double>("OrigGasteigerCharge", -0.4 );
-	nl.get()->setProp("IsRingBreak",1);	
+	nl.get()->setProp("IsRingBreak",1);
 	rtd_nl = RootedROMolPtr( nl, nl.get()->getAtomWithIdx(0), nl.get()->getAtomWithIdx(1) );
-	
+
 
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 3 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(54) != 1.0 ){
+		if(fv->getFeature(1) != 54){
 			std::cout << "Unexpected value for ion gasteiger charge ring " << fv->getFeature(1) << std::endl;
 			pass = false;
 		}
-		if(fv->getFeature(56) != 1.0 ){
+		if(fv->getFeature(2) != 56 ){
 			std::cout << "Unexpected value for nl gasteiger charge ring " << fv->getFeature(2) << std::endl;
 			pass = false;
 		}
@@ -467,7 +467,7 @@ FeaturesTestHydrogenMovement::FeaturesTestHydrogenMovement(){
 }
 
 void FeaturesTestHydrogenMovement::runTest(){
-	
+
 	bool pass = true;
 	RDKit::Atom *null_atom = nullptr;
 	std::vector<std::string> fnames;
@@ -487,10 +487,10 @@ void FeaturesTestHydrogenMovement::runTest(){
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(8) != 1.0 ){
+		if(fv->getFeature(1) != 8 ){
 			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
 			pass = false;
 		}
@@ -503,10 +503,10 @@ void FeaturesTestHydrogenMovement::runTest(){
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(4) != 1.0 ){
+		if(fv->getFeature(1) != 4 ){
 			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
 			pass = false;
 		}
@@ -519,11 +519,11 @@ void FeaturesTestHydrogenMovement::runTest(){
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(5) != 1.0 ){
-			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
+        if( fv->getFeature(1) != 5 ){
+            std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
 			pass = false;
 		}
 	}
@@ -535,11 +535,11 @@ void FeaturesTestHydrogenMovement::runTest(){
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(10) != 1.0 ){
-			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
+        if( fv->getFeature(1) != 10 ){
+            std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
 			pass = false;
 		}
 	}
@@ -551,10 +551,10 @@ void FeaturesTestHydrogenMovement::runTest(){
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(10) != 1.0 ){
+		if(fv->getFeature(1) != 10 ){
 			std::cout << "Unexpected idx for hydrogen movement" << fv->getFeature(1) << std::endl;
 			pass = false;
 		}
@@ -571,13 +571,13 @@ FeaturesTestFunctionalGroups::FeaturesTestFunctionalGroups(){
 }
 
 void FeaturesTestFunctionalGroups::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("IonFunctionalGroupFeatures");
 	fnames.push_back("NLFunctionalGroupFeatures");
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
-	
+
 	FragmentGraphGenerator fgen(fc);
 	std::string smiles_or_inchi("CCCCC(O)=O");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
@@ -587,23 +587,23 @@ void FeaturesTestFunctionalGroups::runTest(){
 	node->generateChildrenOfBreak(breaks[2]);
 
 	FragmentTreeNode *child = &(node->children[0]);
-	Transition tmp_t( -1, -1, child->nl, child->ion ); 
+	Transition tmp_t( -1, -1, child->nl, child->ion );
 	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
 	if( fv->getNumSetFeatures() != 9 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;	
+		pass = false;
 	}
 	else{
-		if(fv->getFeature(8) != 1.0 ||		//Ion: 7,9 and 86 are at the root atom
-                                                              fv->getFeature(10) != 1.0 ||
-                fv->getFeature(87) != 1.0 ||
-                fv->getFeature(163) != 1.0 ||		//Ion: 0,10,87 and 114 are one away
-                                                                fv->getFeature(173) != 173 ||
-                fv->getFeature(246) != 246 ||
-                fv->getFeature(270) != 270 ||
-                fv->getFeature(486) != 486 ){		//No functional group on NL side
-			std::cout << "Unexpected Functional Group features" << std::endl;
-			pass = false;
+        if( fv->getFeature(1) != 8 ||		//Ion: 7,9 and 86 are at the root atom
+            fv->getFeature(2) != 10 ||
+            fv->getFeature(3) != 87 ||
+            fv->getFeature(4) != 163 ||		//Ion: 0,10,87 and 114 are one away
+            fv->getFeature(5) != 173 ||
+            fv->getFeature(6) != 246 ||
+            fv->getFeature(7) != 270 ||
+            fv->getFeature(8) != 486 ){		//No functional group on NL side
+		        std::cout << "Unexpected Functional Group features" << std::endl;
+			    pass = false;
 		}
 	}
 
@@ -616,13 +616,13 @@ FeaturesTestExtraFunctionalGroups::FeaturesTestExtraFunctionalGroups(){
 }
 
 void FeaturesTestExtraFunctionalGroups::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("IonExtraFunctionalGroupFeatures");
 	fnames.push_back("NLExtraFunctionalGroupFeatures");
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
-	
+
 	FragmentGraphGenerator fgen(fc);
 	std::string smiles_or_inchi("C1CC1CC(C)(C)C");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
@@ -632,19 +632,19 @@ void FeaturesTestExtraFunctionalGroups::runTest(){
 	node->generateChildrenOfBreak(breaks[0]);
 
 	FragmentTreeNode *child = &(node->children[0]);
-	Transition tmp_t( -1, -1, child->nl, child->ion ); 
+	Transition tmp_t( -1, -1, child->nl, child->ion );
 	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
 	if( fv->getNumSetFeatures() != 6 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;	
+		pass = false;
 	}
 	else{
-		if(fv->getFeature(1) != 3 ||
-                fv->getFeature(2) != 15 ||
-                fv->getFeature(3) != 30 ||
-                fv->getFeature(4) != 35 ||
-                fv->getFeature(5) != 45  ){
-			std::cout << "Unexpected Extra Functional Group features" << std::endl;
+        if( fv->getFeature(1) != 3 ||
+            fv->getFeature(2) != 15 ||
+            fv->getFeature(3) != 30 ||
+            fv->getFeature(4) != 35 ||
+            fv->getFeature(5) != 45  ){
+            std::cout << "Unexpected Extra Functional Group features" << std::endl;
 			pass = false;
 		}
 	}
@@ -659,13 +659,13 @@ FeaturesTestFunctionalGroupsRootOnly::FeaturesTestFunctionalGroupsRootOnly(){
 }
 
 void FeaturesTestFunctionalGroupsRootOnly::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("IonFunctionalGroupRootOnlyFeatures");
 	fnames.push_back("NLFunctionalGroupRootOnlyFeatures");
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
-	
+
 	FragmentGraphGenerator fgen(fc);
 	std::string smiles_or_inchi("CCCCC(O)=O");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
@@ -675,17 +675,17 @@ void FeaturesTestFunctionalGroupsRootOnly::runTest(){
 	node->generateChildrenOfBreak(breaks[2]);
 
 	FragmentTreeNode *child = &(node->children[0]);
-	Transition tmp_t( -1, -1, child->nl, child->ion ); 
+	Transition tmp_t( -1, -1, child->nl, child->ion );
 	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
 	if( fv->getNumSetFeatures() != 5 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;	
+		pass = false;
 	}
 	else{
-		if(fv->getFeature(1) != 8 ||		//Ion: 7,9 and 86 are at the root atom
-                                                            fv->getFeature(2) != 10 ||
-                fv->getFeature(3) != 87 ||
-                fv->getFeature(4) != 324 ){		//No functional group on NL side
+        if( fv->getFeature(1) != 8 ||		//Ion: 7,9 and 86 are at the root atom
+            fv->getFeature(2) != 10 ||
+            fv->getFeature(3) != 87 ||
+            fv->getFeature(4) != 324 ){		//No functional group on NL side
 			std::cout << "Unexpected Functional Group features" << std::endl;
 			pass = false;
 		}
@@ -701,7 +701,7 @@ FeaturesTestRadicalFeatures::FeaturesTestRadicalFeatures(){
 }
 
 void FeaturesTestRadicalFeatures::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("RadicalFeatures");
@@ -716,8 +716,8 @@ void FeaturesTestRadicalFeatures::runTest(){
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		if(fv->getFeature(1) != 1 ){
 			std::cout << "Unexpected features for ion radical specification " << std::endl;
@@ -735,8 +735,8 @@ void FeaturesTestRadicalFeatures::runTest(){
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		if(fv->getFeature(1) != 2 ){
 			std::cout << "Unexpected features for nl radical specification " << std::endl;
@@ -754,8 +754,8 @@ void FeaturesTestRadicalFeatures::runTest(){
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		if(fv->getFeature(1) != 3 ){
 			std::cout << "Unexpected features for non-radical specification " << std::endl;
@@ -774,7 +774,7 @@ FeaturesTestRingFeatures::FeaturesTestRingFeatures(){
 }
 
 void FeaturesTestRingFeatures::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("RingFeatures");
@@ -790,17 +790,15 @@ void FeaturesTestRingFeatures::runTest(){
 	node->generateChildrenOfBreak(breaks[4]);
 
 	FragmentTreeNode *child = &(node->children[0]);
-	Transition tmp_t( -1, -1, child->nl, child->ion ); 
+	Transition tmp_t( -1, -1, child->nl, child->ion );
 	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
 	if( fv->getNumSetFeatures() != 5 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(1) != 2 || fv->getFeature(2) != 3 ||
-                fv->getFeature(3) != 6 ||
-                fv->getFeature(4) != 11 ){
-			std::cout << "Unexpected features for ring break 1,1,3,6 " << std::endl;
+        if( fv->getFeature(1) != 2 || fv->getFeature(2) != 3 || fv->getFeature(3) != 6 || fv->getFeature(4) != 11 ){
+            std::cout << "Unexpected features for ring break 1,1,3,6 " << std::endl;
 			pass = false;
 		}
 	}
@@ -815,16 +813,15 @@ void FeaturesTestRingFeatures::runTest(){
 	node2->generateChildrenOfBreak(breaks2[3]);
 
 	child = &(node2->children[0]);
-	Transition tmp_t2( -1, -1, child->nl, child->ion ); 
+	Transition tmp_t2( -1, -1, child->nl, child->ion );
 	fv = fc->computeFeatureVector(tmp_t2.getIon(), tmp_t2.getNeutralLoss(), 0);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
-		if(fv->getFeature(1) != 1 || fv->getFeature(2) != 6 ||
-                fv->getFeature(3) != 12 ){
-			std::cout << "Unexpected features for ring break 0,0,3,7 " << std::endl;
+        if( fv->getFeature(1) != 1 || fv->getFeature(2) != 6 || fv->getFeature(3) != 12 ){
+            std::cout << "Unexpected features for ring break 0,0,3,7 " << std::endl;
 			pass = false;
 		}
 	}
@@ -840,7 +837,7 @@ FeaturesTestExtraRingFeatures::FeaturesTestExtraRingFeatures(){
 }
 
 void FeaturesTestExtraRingFeatures::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("ExtraRingFeatures");
@@ -856,12 +853,12 @@ void FeaturesTestExtraRingFeatures::runTest(){
 	node->applyBreak(breaks[0], 0);
 	node->generateChildrenOfBreak(breaks[0]);
 	FragmentTreeNode *child = &(node->children[0]);
-	Transition tmp_t( -1, -1, child->nl, child->ion ); 
+	Transition tmp_t( -1, -1, child->nl, child->ion );
 	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		if(fv->getFeature(1) != 1 || fv->getFeature(2) != 2 ||
                 fv->getFeature(3) != 3 ){
@@ -874,15 +871,15 @@ void FeaturesTestExtraRingFeatures::runTest(){
 	node->children = std::vector<FragmentTreeNode>();
 
 	//Break single bond between ring and non-ring
-	node->applyBreak(breaks[1], 0);	
+	node->applyBreak(breaks[1], 0);
 	node->generateChildrenOfBreak(breaks[1]);
 	child = &(node->children[0]);
-	Transition tmp_t2( -1, -1, child->nl, child->ion ); 
+	Transition tmp_t2( -1, -1, child->nl, child->ion );
 	fv = fc->computeFeatureVector(tmp_t2.getIon(), tmp_t2.getNeutralLoss(), 0);
 	if( fv->getNumSetFeatures() != 3 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	else{
 		if(fv->getFeature(1) != 1 || fv->getFeature(2) != 3 ){
 			std::cout << "Unexpected extra ring features " << std::endl;
@@ -894,15 +891,15 @@ void FeaturesTestExtraRingFeatures::runTest(){
 	node->children = std::vector<FragmentTreeNode>();
 
 	//Break Ring (no features set)
-	node->applyBreak(breaks[5], 0);	
+	node->applyBreak(breaks[5], 0);
 	node->generateChildrenOfBreak(breaks[5]);
 	child = &(node->children[0]);
-	Transition tmp_t3( -1, -1, child->nl, child->ion ); 
+	Transition tmp_t3( -1, -1, child->nl, child->ion );
 	fv = fc->computeFeatureVector(tmp_t3.getIon(), tmp_t3.getNeutralLoss(), 0);
 	if( fv->getNumSetFeatures() != 1 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;		
-	} 
+		pass = false;
+	}
 	delete fv;
 
 	passed = pass;
@@ -915,13 +912,13 @@ FeaturesTestRootMMFFAtomType::FeaturesTestRootMMFFAtomType(){
 }
 
 void FeaturesTestRootMMFFAtomType::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("IonRootMMFFAtomType");
 	fnames.push_back("NLRootMMFFAtomType");
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
-	
+
 	FragmentGraphGenerator fgen(fc);
 	std::string smiles_or_inchi("CCCCC(O)=O");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
@@ -931,11 +928,11 @@ void FeaturesTestRootMMFFAtomType::runTest(){
 	node->generateChildrenOfBreak(breaks[4]);
 
 	FragmentTreeNode *child = &(node->children[0]);
-	Transition tmp_t( -1, -1, child->nl, child->ion ); 
+	Transition tmp_t( -1, -1, child->nl, child->ion );
 	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
 	if( fv->getNumSetFeatures() != 3 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;	
+		pass = false;
 	}
 	else{
 		if(fv->getFeature(1) != 6 || fv->getFeature(2) != 103 ){
@@ -953,13 +950,13 @@ FeaturesTestNeighbourMMFFAtomType::FeaturesTestNeighbourMMFFAtomType(){
 }
 
 void FeaturesTestNeighbourMMFFAtomType::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("IonNeighbourMMFFAtomType");
 	fnames.push_back("NLNeighbourMMFFAtomType");
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
-	
+
 	FragmentGraphGenerator fgen(fc);
 	std::string smiles_or_inchi("CCCCC(O)=O");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
@@ -969,11 +966,11 @@ void FeaturesTestNeighbourMMFFAtomType::runTest(){
 	node->generateChildrenOfBreak(breaks[4]);
 
 	FragmentTreeNode *child = &(node->children[0]);
-	Transition tmp_t( -1, -1, child->nl, child->ion ); 
+	Transition tmp_t( -1, -1, child->nl, child->ion );
 	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;	
+		pass = false;
 	}
 	else{
 		if(fv->getFeature(1) != 101 || fv->getFeature(2) != 102 ||
@@ -992,18 +989,18 @@ FeaturesTestBrokenOrigBondType::FeaturesTestBrokenOrigBondType(){
 }
 
 void FeaturesTestBrokenOrigBondType::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("BrokenOrigBondType");
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
-	
+
 	FragmentGraphGenerator fgen(fc);
 	std::string smiles_or_inchi("[Na+].C#CCCC(=O)CC=CC=CC=CCCc1ccccc1");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
 	node->generateBreaks(breaks, true);
-	
+
 	typedef std::pair<int, int> bond_test_spec_t;	//Break_idx, Expected Bond Type
 	std::vector<bond_test_spec_t> test_cases;
 	test_cases.push_back( bond_test_spec_t(0, 6) );	//IONIC
@@ -1013,20 +1010,20 @@ void FeaturesTestBrokenOrigBondType::runTest(){
 	test_cases.push_back( bond_test_spec_t(5, 2) );	//DOUBLE
 	test_cases.push_back( bond_test_spec_t(8, 5) );	//CONJUGATED
 	test_cases.push_back( bond_test_spec_t(19, 4) );//AROMATIC
-	
+
 	std::vector<bond_test_spec_t>::iterator testit = test_cases.begin();
 	for( ; testit != test_cases.end(); ++testit ){
-	
+
 		Break *brk = &breaks[testit->first];
 		node->applyBreak(*brk, 0);	//Break specified bond
 		node->generateChildrenOfBreak(*brk);
 
 		FragmentTreeNode *child = &(node->children[0]);
-		Transition tmp_t( -1, -1, child->nl, child->ion ); 
+		Transition tmp_t( -1, -1, child->nl, child->ion );
 		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
 		if( fv->getNumSetFeatures() != 2 ){
 			std::cout << "Unexpected number of non-zero features" << std::endl;
-			pass = false;	
+			pass = false;
 		}
 		else{
 			if(fv->getFeature(1) != testit->second ){
@@ -1047,40 +1044,40 @@ FeaturesTestNeighbourOrigBondType::FeaturesTestNeighbourOrigBondType(){
 }
 
 void FeaturesTestNeighbourOrigBondType::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("NeighbourOrigBondTypes");
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
-	
+
 	FragmentGraphGenerator fgen(fc);
 	std::string smiles_or_inchi("CC(c1ccccc1)=CC(C)C#C");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
 	node->generateBreaks(breaks, true);
-	
+
 	typedef std::pair<int, std::vector<int> > bond_test_spec_t;	//Break_idx, Expected FV
 	std::vector<bond_test_spec_t> test_cases;
 	int exp_fv1[] = { 6, 7 }; //Conjugated on ion side, no bonds on nl side
-	test_cases.push_back( bond_test_spec_t(0, std::vector<int>( exp_fv1, exp_fv1+2 )) );	
+	test_cases.push_back( bond_test_spec_t(0, std::vector<int>( exp_fv1, exp_fv1+2 )) );
 	int exp_fv2[] = { 5, 8, 12 };	//Aromatic on ion side, single and conjugated on nl side
-	test_cases.push_back( bond_test_spec_t(1, std::vector<int>( exp_fv2, exp_fv2+3 )) );	
+	test_cases.push_back( bond_test_spec_t(1, std::vector<int>( exp_fv2, exp_fv2+3 )) );
 	int exp_fv3[] = { 4, 8 };	//Triple on ion side, single on nl side
-	test_cases.push_back( bond_test_spec_t(5, std::vector<int>( exp_fv3, exp_fv3+2 )) );	
+	test_cases.push_back( bond_test_spec_t(5, std::vector<int>( exp_fv3, exp_fv3+2 )) );
 
 	std::vector<bond_test_spec_t>::iterator testit = test_cases.begin();
 	for( ; testit != test_cases.end(); ++testit ){
-	
+
 		Break *brk = &breaks[testit->first];
 		node->applyBreak(*brk, 0);	//Break specified bond
 		node->generateChildrenOfBreak(*brk);
 
 		FragmentTreeNode *child = &(node->children[0]);	//Take first child of break
-		Transition tmp_t( -1, -1, child->nl, child->ion ); 
+		Transition tmp_t( -1, -1, child->nl, child->ion );
 		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
 		if( fv->getNumSetFeatures() != testit->second.size()+1 ){
 			std::cout << "Unexpected number of non-zero features:" << fv->getNumSetFeatures() << std::endl;
-			pass = false;	
+			pass = false;
 		}
 		else{
 			std::vector<int>::iterator it = testit->second.begin();
@@ -1105,19 +1102,19 @@ FeaturesTestRootAtom::FeaturesTestRootAtom(){
 }
 
 void FeaturesTestRootAtom::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("IonRootAtom");
 	fnames.push_back("NLRootAtom");
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
-	
+
 	FragmentGraphGenerator fgen(fc);
 	std::string smiles_or_inchi("[Br]C([Cl])(F)N(I)OPS[Se][Si]([Na])CCCCCc1ccccc1");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
 	node->generateBreaks(breaks, true);
-	
+
 	typedef std::pair<int, int> atom_pair_t;
 	typedef std::pair<int, atom_pair_t> atom_test_spec_t;	//Break_idx, Expected Atom feature idxs
 	std::vector<atom_test_spec_t> test_cases;
@@ -1134,10 +1131,10 @@ void FeaturesTestRootAtom::runTest(){
 	test_cases.push_back( atom_test_spec_t(9, atom_pair_t(10,9)) );	//Se-Si
 	test_cases.push_back( atom_test_spec_t(10, atom_pair_t(12,10)) );	//Si-Na
 	test_cases.push_back( atom_test_spec_t(19, atom_pair_t(1,1)) );	//Ring c-c c-c
-	
+
 	std::vector<atom_test_spec_t>::iterator testit = test_cases.begin();
 	for( ; testit != test_cases.end(); ++testit ){
-	
+
 		Break *brk = &breaks[testit->first];
 		node->applyBreak(*brk, 0);	//Break specified bond
 		node->generateChildrenOfBreak(*brk);
@@ -1148,12 +1145,12 @@ void FeaturesTestRootAtom::runTest(){
 		//}
 
 		FragmentTreeNode *child = &(node->children[0]);
-		Transition tmp_t( -1, -1, child->nl, child->ion ); 
+		Transition tmp_t( -1, -1, child->nl, child->ion );
 		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
 		//std::cout << *(tmp_t.getNLSmiles()) << std::endl;
 		if( fv->getNumSetFeatures() != 3 ){
 			std::cout << "Unexpected number of non-zero features" << std::endl;
-			pass = false;	
+			pass = false;
 		}
 		else{
 			if(fv->getFeature(1) != testit->second.first + 1  ){				//Ion
@@ -1164,7 +1161,7 @@ void FeaturesTestRootAtom::runTest(){
 			if(fv->getFeature(2) != (testit->second.second + 13 + 1)){	//NL
 				std::cout << "Unexpected NL Root Atom Feature: expecting " << (testit->second.second + 13 + 1)<< " but found " << fv->getFeature(
                         2) << std::endl;
-				pass = false;			
+				pass = false;
 			}
 		}
 		node->children = std::vector<FragmentTreeNode>();
@@ -1181,7 +1178,7 @@ FeaturesTestIonicFeatures::FeaturesTestIonicFeatures(){
 
 class IonicFeatureTestCase {
 public:
-	IonicFeatureTestCase(int a_break_idx, int a_ionic_idx, int a_child_idx, bool a_rebreak_child, std::vector<int> &a_expected_output) : 
+	IonicFeatureTestCase(int a_break_idx, int a_ionic_idx, int a_child_idx, bool a_rebreak_child, std::vector<int> &a_expected_output) :
 	  break_idx( a_break_idx), ionic_idx( a_ionic_idx ), child_idx( a_child_idx ), expected_output( a_expected_output ), rebreak_child(a_rebreak_child) {};
 	int break_idx;
 	int ionic_idx;
@@ -1191,43 +1188,43 @@ public:
 };
 
 void FeaturesTestIonicFeatures::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
 	fnames.push_back("IonicFeatures");
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
-	
+
 	FragmentGraphGenerator fgen(fc);
 	std::string smiles_or_inchi("[Na+].[Cl-].CC=CC");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
 	node->generateBreaks(breaks, true);
-	
+
 	std::vector<IonicFeatureTestCase> test_cases;
 
 	//Tests case with Na+ on ion side, Cl- on NL side
-	std::vector<int> exp_result_t1; 
+	std::vector<int> exp_result_t1;
 	exp_result_t1.push_back(2); exp_result_t1.push_back(3);
 	test_cases.push_back( IonicFeatureTestCase(0,0,0,false,exp_result_t1) );
 
 	//Tests case with Na+ and Cl- on NL side
-	std::vector<int> exp_result_t2; 
+	std::vector<int> exp_result_t2;
 	exp_result_t2.push_back(1); exp_result_t2.push_back(3);
 	test_cases.push_back( IonicFeatureTestCase(0,1,0,false,exp_result_t2) );
 
 	//Tests case with Na+ and Cl- on Ion side
-	std::vector<int> exp_result_t3; 
+	std::vector<int> exp_result_t3;
 	exp_result_t3.push_back(2); exp_result_t3.push_back(4);
 	test_cases.push_back( IonicFeatureTestCase(2,0,0,false,exp_result_t3) );
 
 	//Tests case with no ionic fragments (need to re-break a child from above)
-	std::vector<int> exp_result_t4; 
+	std::vector<int> exp_result_t4;
 	exp_result_t4.push_back(5);
 	test_cases.push_back( IonicFeatureTestCase(0,1,0,true,exp_result_t4) );
-	
+
 	std::vector<IonicFeatureTestCase>::iterator testit = test_cases.begin();
 	for( ; testit != test_cases.end(); ++testit ){
-	
+
 		Break *brk = &breaks[ testit->break_idx];
 
 		node->applyBreak(*brk, testit->ionic_idx );	//Break specified bond
@@ -1242,12 +1239,12 @@ void FeaturesTestIonicFeatures::runTest(){
 			child = &(child->children[0]);
 		}
 
-		Transition tmp_t( -1, -1, child->nl, child->ion ); 
+		Transition tmp_t( -1, -1, child->nl, child->ion );
 		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
-		
+
 		if( fv->getNumSetFeatures() != testit->expected_output.size()+1 ){
 			std::cout << "Unexpected number of non-zero features. Expected " << testit->expected_output.size()+1 << " but found " <<  fv->getNumSetFeatures() << std::endl;
-			pass = false;	
+			pass = false;
 		}
 		else{
 			std::vector<int>::iterator it = testit->expected_output.begin();
@@ -1273,51 +1270,51 @@ FeaturesTestQuadraticFeatures::FeaturesTestQuadraticFeatures(){
 }
 
 void FeaturesTestQuadraticFeatures::runTest(){
-	
+
 	bool pass = true;
 	std::vector<std::string> fnames;
-	fnames.push_back("BreakAtomPair"); 
-	fnames.push_back("HydrogenMovement"); 
-	fnames.push_back("QuadraticFeatures"); 
-	FeatureCalculator *fc = new FeatureCalculator( fnames );	
+	fnames.push_back("BreakAtomPair");
+	fnames.push_back("HydrogenMovement");
+	fnames.push_back("QuadraticFeatures");
+	FeatureCalculator *fc = new FeatureCalculator( fnames );
 
 	//Simple initial vector with 3 bits set (indexes: 0,3,80 )
 	romol_ptr_t ion= createMolPtr("C");
-	initMolProps(ion);	
+	initMolProps(ion);
 	RDKit::Atom *null_atom = nullptr;
 	RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
 	double h_movement = 3.00452;
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OriginalMass", 16.0 - h_movement);
 	romol_ptr_t nl = createMolPtr("N");
-	initMolProps(nl);	
+	initMolProps(nl);
 	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
 	nl.get()->setProp("IsRingBreak",0);
 
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;	
+		pass = false;
 	}
 	else{
 		if(fv->getFeature(0) != 0 || fv->getFeature(1) != 3 ||
                 fv->getFeature(2) != 80 ){
 			std::cout << "Unexpected singular features" << std::endl;
-			pass = false;				
+			pass = false;
 		}
 		if(fv->getFeature(3) != 3166 ){
 			std::cout << "Unexpected quadratic feature:" << fv->getFeature(3) << std::endl;
-			pass = false;				
+			pass = false;
 		}
 	}
 	int total = fv->getTotalLength();
 	if( total != 3404 ){
 		std::cout << "Unexpected total feature count: " << total << std::endl;
-		pass = false;		
+		pass = false;
 	}
 	int numfeatures = fc->getNumFeatures();
 	if( numfeatures != 3404 ){
 		std::cout << "Unexpected total feature calculation: " << numfeatures << std::endl;
-		pass = false;		
+		pass = false;
 	}
 	delete fv;
 	delete fc;
@@ -1333,7 +1330,7 @@ FeaturesTestLength::FeaturesTestLength(){
 void FeaturesTestLength::runTest(){
 
 	bool pass = true;
-	
+
 	//Create the feature calculator
 	std::vector<std::string> names = FeatureCalculator::getValidFeatureNames();
 
@@ -1347,12 +1344,12 @@ void FeaturesTestLength::runTest(){
 	node->applyBreak(breaks[2], 0);	//Break Bond 2
 	node->generateChildrenOfBreak(breaks[2]);
 	FragmentTreeNode *child = &(node->children[0]);
-	Transition tmp_t( -1, -1, child->nl, child->ion ); 
+	Transition tmp_t( -1, -1, child->nl, child->ion );
 
 	//Check all feature lengths
 	std::vector<std::string>::const_iterator it = names.begin();
 	for( ; it != names.end(); ++it ){
-		
+
 		std::vector<std::string> feature_list;
 		feature_list.push_back( *it );
 		FeatureCalculator fc( feature_list );
@@ -1361,10 +1358,10 @@ void FeaturesTestLength::runTest(){
 		FeatureVector *fv = fc.computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
 
 		//Check the length
-		if( fv->getTotalLength() != fc.getNumFeatures() ){ 
+		if( fv->getTotalLength() != fc.getNumFeatures() ){
 			std::cout << "Feature length incorrect for " << *it;
 			std::cout << ": expecting " << fc.getNumFeatures();
-			std::cout << " but found " << fv->getTotalLength() << std::endl; 
+			std::cout << " but found " << fv->getTotalLength() << std::endl;
 			pass = false;
 		}
 		delete fv;
@@ -1388,7 +1385,7 @@ void FeaturesTestMetlinExample::runTest(){
 	//Ingegration Test - compute the fragment tree and transitions
 	std::string id = "Metlin_21361";
 	config_t cfg; initDefaultConfig(cfg);
-	cfg.fg_depth = 1; cfg.include_h_losses = true; 
+	cfg.fg_depth = 1; cfg.include_h_losses = true;
 	MolData mol( id, smiles_Metlin_21361, 0, &cfg );
 
 	mol.computeFragmentGraph(&fc);

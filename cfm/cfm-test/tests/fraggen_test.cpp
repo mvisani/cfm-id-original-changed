@@ -983,7 +983,7 @@ void FragGenTestCasesFromGross::runTest(){
 	for( ; test_it != test_cases.end(); ++test_it ){
 
 		//Run the fragmentation procedure
-		FragmentGraphGenerator gg(0);
+		FragmentGraphGenerator gg(1);
 		FragmentTreeNode *startNode = gg.createStartNode( boost::get<0>(*test_it), boost::get<1>(*test_it) );
 		config_t cfg; initDefaultConfig(cfg); cfg.include_h_losses = true; 
 		cfg.ionization_mode = boost::get<1>(*test_it); 

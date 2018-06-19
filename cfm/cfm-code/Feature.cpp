@@ -39,7 +39,6 @@ the feature
 #include "Features/IonRootMMFFAtomType.h"
 #include "Features/IonRootPairs.h"
 #include "Features/IonRootTriples.h"
-#include "Features/IonRootTriplesIncludeBond.h"
 #include "Features/NeighbourOrigBondTypes.h"
 #include "Features/NLExtraFunctionalGroupFeatures.h"
 #include "Features/NLFunctionalGroupFeaturesD2.h"
@@ -50,7 +49,6 @@ the feature
 #include "Features/NLRootMMFFAtomType.h"
 #include "Features/NLRootPairs.h"
 #include "Features/NLRootTriples.h"
-#include "Features/NLRootTriplesIncludeBond.h"
 #include "Features/QuadraticFeatures.h"
 #include "Features/RadicalFeatures.h"
 #include "Features/RingFeatures.h"
@@ -101,8 +99,6 @@ const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
         cogs.push_back(new IonNeighbourMMFFAtomType());
         cogs.push_back(new NLNeighbourMMFFAtomType());
         cogs.push_back(new QuadraticFeatures());
-        cogs.push_back(new IonRootTriplesIncludeBond());
-        cogs.push_back(new NLRootTriplesIncludeBond());
         cogs.push_back(new NLRootEncodingD3());
         cogs.push_back(new IonRootEncodingD3());
         cogs.push_back(new NLRootEncodingD4());
