@@ -70,7 +70,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     if (comm->isMaster())
         writeParamsToFile(init_out_param_filename);
 
-
     // EM
     iter = 0;
     double q;
@@ -100,8 +99,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             }
         }
         if (cfg->add_noise) {
-                mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
-                mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
+            mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
+            mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
         }
     }
 

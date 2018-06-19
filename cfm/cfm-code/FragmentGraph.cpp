@@ -307,11 +307,10 @@ void FragmentGraph::writeFullGraph(std::ostream &out) const {
     out << std::endl;
 
     //Transitions
-    auto itt = transitions.begin();
-    for (; itt != transitions.end(); ++itt) {
-        out << (*itt)->getFromId() << " ";
-        out << (*itt)->getToId() << " ";
-        out << (*itt)->getNLSmiles() << std::endl;
+    for(const auto & transition : transitions){
+        out << transition->getFromId() << " ";
+        out << transition->getToId() << " ";
+        out << *(transition->getNLSmiles()) << std::endl;
     }
 }
 

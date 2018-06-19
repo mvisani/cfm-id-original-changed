@@ -300,26 +300,38 @@ public:
 
     // For current graph in use
     virtual unsigned int getNumTransitions() const {
+        if(!current_graph)
+            return transitions.size();
         return current_graph->transitions.size();
     };
 
     virtual unsigned int getNumFragments() const {
+        if(!current_graph)
+            return fragments.size();
         return current_graph->fragments.size();
     };
 
     virtual const Transition *getTransitionAtIdx(int index) const {
+        if(!current_graph)
+            return transitions[index];
         return current_graph->transitions[index];
     };
 
     const Fragment *getFragmentAtIdx(int index) const {
+        if(!current_graph)
+            return fragments[index];
         return  current_graph->fragments[index];
     };
 
     const tmap_t *getFromIdTMap() const {
+        if(!current_graph)
+            return &from_id_tmap;
         return &current_graph->from_id_tmap;
     };
 
     const tmap_t *getToIdTMap() const {
+        if(!current_graph)
+            return &to_id_tmap;
         return &current_graph->to_id_tmap;
     };
 

@@ -75,25 +75,6 @@ void ModelBase::setMiniBatchFlags(std::vector<int> &minibatch_flags, int num_bat
             idx = 0;
     }
     std::random_shuffle(minibatch_flags.begin(),minibatch_flags.end());
-    //int num_per_batch = minibatch_flags.size() / num_batch;
-
-    // The flags are initialized to 1's for selectable molecules, so set unwanted
-    // molecule flags to 0
-    /*int num_mols = initialized_minibatch_flags.size();
-    std::vector<int> idxs(num_mols);
-    int count = 0;
-    for (int i = 0; i < num_mols; i++)
-        if (initialized_minibatch_flags[i])
-            idxs[count++] = i;
-    idxs.resize(count);
-
-
-    shuffle(idxs.begin(), idxs.end(), util_rng);
-
-    int num_minibatch_mols =
-            (num_mols + cfg->ga_minibatch_nth_size - 1) / cfg->ga_minibatch_nth_size;
-    for (int i = num_minibatch_mols; i < idxs.size(); i++)
-        initialized_minibatch_flags[idxs[i]] = 0;*/
 }
 
 Solver *ModelBase::getSolver(int ga_method, double learning_rate) const {

@@ -120,8 +120,8 @@ int main(int argc, char *argv[])
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_nump );
 
 	if( mpi_nump == 1 ){
-		tests.push_back( new EMTestNNSingleEnergySelfProduction() );
-		tests.push_back( new EMTestMiniBatchSelection() );
+		//tests.push_back( new EMTestNNSingleEnergySelfProduction() );
+		/*tests.push_back( new EMTestMiniBatchSelection() );
 		tests.push_back( new NNParamsTestBiasIndexes() );
 		tests.push_back( new NNParamsTestComputeAndAccumulateGradient() );
 		tests.push_back( new NNParamsTestComputeUnweightedGradients() );
@@ -136,15 +136,15 @@ int main(int argc, char *argv[])
 		tests.push_back( new InferenceTestSpectrumMessage() );
 		tests.push_back( new InferenceTestSpectrumMessageWithIsotopes() );
 		tests.push_back( new InferenceTestCompareVsIPFPSingleEnergyCase() );
-		tests.push_back( new InferenceTestCompareVsIPFPSharedMassCase() );
+		tests.push_back( new InferenceTestCompareVsIPFPSharedMassCase() );*/
 		//tests.push_back( new FragGenTestPositiveEINistExceptions() );
 		tests.push_back( new FragGenTestCasesFromGross() );
-		tests.push_back( new FragGenTestPositiveEIAndESIDegreeLpBonding() );
-		tests.push_back( new FragGenTestPositiveEIOxygenAromatic() );
-		tests.push_back( new FragGenTestPositiveEITriple() );
-		tests.push_back( new FragGenTestPositiveEISplitCharge() );
-		tests.push_back( new FragGenTestPositiveESISplitCharge() );
-		tests.push_back( new MspReaderTest() );
+		//tests.push_back( new FragGenTestPositiveEIAndESIDegreeLpBonding() );
+		//tests.push_back( new FragGenTestPositiveEIOxygenAromatic() );
+		//tests.push_back( new FragGenTestPositiveEITriple() );
+		//tests.push_back( new FragGenTestPositiveEISplitCharge() );
+		//tests.push_back( new FragGenTestPositiveESISplitCharge() );
+		/*tests.push_back( new MspReaderTest() );
 		tests.push_back( new MspReaderMultipleEnergiesTest() );
 		tests.push_back( new FragGenTestPositiveEI() );
 		tests.push_back( new FragGenTestPositiveEIMultibreak() );
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 		tests.push_back( new EMTestSingleEnergySelfProduction() );
 		tests.push_back( new EMTestSingleEnergyIsotopeSelfProduction() );
 		tests.push_back( new EMTestNNSingleEnergySelfProduction() );
-		tests.push_back( new FeaturesTestFingerPrint());
+		tests.push_back( new FeaturesTestFingerPrint());*/
 		//tests.push_back( new EMTestLBFGSvsOriginalGradientAscent() );
 	}
 	if( mpi_nump > 2 ){

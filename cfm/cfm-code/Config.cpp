@@ -24,7 +24,7 @@
 void initDefaultConfig(config_t &cfg) {
 
     cfg.lambda = DEFAULT_LAMBDA;
-    cfg.ga_method = USE_ADAM_FOR_GA;
+    cfg.ga_method = DEFAULT_USE_ADAM_FOR_GA;
     //cfg.converge_count_thresh = DEFAULT_CONVERGE_COUNT_THRESH;
     cfg.em_converge_thresh = DEFAULT_EM_CONVERGE_THRESH;
     cfg.ga_converge_thresh = DEFAULT_GA_CONVERGE_THRESH;
@@ -225,9 +225,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         std::cout << "Using EM Convergence Threshold " << cfg.em_converge_thresh << std::endl;
         std::cout << "Using Lambda " << cfg.lambda << std::endl;
 
-        if (USE_LBFGS_FOR_GA == cfg.ga_method)
-            std::cout << "Using LBFGS package for gradient ascent" << std::endl;
-        else if (USE_MOMENTUM_FOR_GA == cfg.ga_method) {
+
+        if (USE_MOMENTUM_FOR_GA == cfg.ga_method) {
             std::cout << "Using simple gradient ascent implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
                       << " decay rate " << cfg.decay_rate

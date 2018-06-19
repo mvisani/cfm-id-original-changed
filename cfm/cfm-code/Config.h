@@ -43,14 +43,13 @@ static const double DEFAULT_GA_CONVERGE_THRESH = 0.0001;
 static const double DEFAULT_LAMBDA = 0.01;
 
 //Use LBFGS package to do gradient ascent
-static const int DEFAULT_USE_LBFGS_FOR_GA = 1;
+static const int DEFAULT_USE_ADAM_FOR_GA = 1;
 
 // GA methods
-static const int USE_LBFGS_FOR_GA = 1;
-static const int USE_MOMENTUM_FOR_GA = 2;
-static const int USE_ADAM_FOR_GA = 3;
-static const int USE_ADADELTA_FOR_GA = 4;
-static const int USE_AMSGRAD_FOR_GA = 5;
+static const int USE_MOMENTUM_FOR_GA = 1;
+static const int USE_ADAM_FOR_GA = 2;
+static const int USE_ADADELTA_FOR_GA = 3;
+static const int USE_AMSGRAD_FOR_GA = 4;
 
 // LR Decay methods
 static const int USE_NO_DECAY = 0;
@@ -65,10 +64,8 @@ static const double DEFAULT_STEP_DECAY_DROP = 0.5;
 static const double DEFAULT_STEP_DECAY_EPOCHS_DROP = 10;
 
 // Learning Rate
-static const double DEFAULT_LEARNING_RATE = 1.0;
+static const double DEFAULT_LEARNING_RATE = 0.01;
 
-//Step Size used in Gradient Ascent
-static const double DEFAULT_STEP_SIZE = 0.001;
 
 //Momentum term used in Gradient Ascent
 static const double DEFAULT_MOMENTUM_ALPHA = 0.1;
@@ -162,7 +159,7 @@ static const int DEFAULT_NN_ACTIVATION_FUNCTION = RELU_AND_NEG_RLEU_NN_ACTIVATIO
 
 static const double DEFAULT_GA_MOMENTUM = 0.9;
 
-static const int DEFAULT_GA_MINIBATCH_NTH_SIZE = 0;
+static const int DEFAULT_GA_MINIBATCH_NTH_SIZE = 1;
 static const int DEFAULT_GA_MAX_ITERATIONS = 20;
 
 static const int NORMAL_OBS_FUNCTION = 1;

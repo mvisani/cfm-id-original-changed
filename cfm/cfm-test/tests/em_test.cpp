@@ -269,12 +269,13 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
 
         //Run EM (multiple times, and take best Q)
         double best_Q = -1000000.0;
+        const int trials_max = 1;
         std::vector<double> Qs;
-        for (int trial = 0; trial < 5; trial++) {
+        for (int trial = 0; trial < trials_max; trial++) {
             std::string status_file = "tmp_status_file.log";
             std::string tmp_file = "tmp.log";
             EmNNModel em(&cfg, &fc, status_file);
-            double Q = em.trainModel(data, 1, tmp_file, 0);
+            double Q = em.trainModel(data, 1, tmp_file, energy);
             Qs.push_back(Q);
 
             if (Q > best_Q) {
@@ -352,7 +353,7 @@ void EMTestSingleEnergyIsotopeSelfProduction::runTest() {
     orig_cfg.spectrum_depths.resize(1);
     orig_cfg.spectrum_weights.resize(1);
     orig_cfg.include_isotopes = 1;
-    orig_cfg.ga_method = USE_LBFGS_FOR_GA;
+    orig_cfg.ga_method = USE_ADAM_FOR_GA;
     orig_cfg.ga_converge_thresh = 0.0001;
 
     //Feature Calculator
@@ -430,7 +431,7 @@ void EMTestLBFGSvsOriginalGradientAscent::runTest() {
     std::cout << "Original Q = " << orig_Q << std::endl;
 
     std::cout << "Running EM using LBFGS gradient ascent algorithm" << std::endl;
-    cfg.ga_method = USE_LBFGS_FOR_GA;
+    cfg.ga_method = USE_ADAM_FOR_GA;
     cfg.ga_converge_thresh = 0.00001;
     EmModel em2(&cfg, &fc, status_file);
     double lbfgs_Q = em2.trainModel(data, 1, tmp_file, 0);
@@ -461,7 +462,6 @@ bool runMultiProcessorEMTest(config_t &cfg) {
     cfg.param_init_type = PARAM_FULL_ZERO_INIT;
     std::string fc_file = "tests/test_data/example_feature_config_withquadratic.txt";
     FeatureCalculator fc(fc_file);
-
 
     std::string id1 = "TestMol1", id2 = "TestMol2", id3 = "TestMol3";
     std::string smiles1 = "NCCCN", smiles2 = "N=CC(OC)CN", smiles3 = "N(CCCC)CCCN";
@@ -539,7 +539,7 @@ void EMTestMultiProcessorLBFGS::runTest() {
     config_t cfg;
     std::string cfg_file = "tests/test_data/example_param_config.txt";
     initConfig(cfg, cfg_file);
-    cfg.ga_method = USE_LBFGS_FOR_GA;
+    cfg.ga_method = USE_ADAM_FOR_GA;
     pass = runMultiProcessorEMTest(cfg);
 
     passed = pass;
@@ -564,17 +564,12 @@ void EMTestMiniBatchSelection::runTest() {
     fnames.push_back("HydrogenRemoval");
     FeatureCalculator fc(fnames);
 
-    std::vector<int> flags1(1000, 1);    //Select 100
-    std::vector<int> flags2(1000, 1);
-    //Turn off every second index (to test exclusion of validation molecules)
-    for (int i = 0; i < 1000; i += 2) {
-        flags1[i] = 0;
-        flags2[i] = 0;
-    }
+    std::vector<int> flags1(1000);    //Select 100
+    std::vector<int> flags2(1000);
 
     EmModel em(&cfg, &fc, status_filename);
-    em.setMiniBatchFlags(flags1, 0);
-    em.setMiniBatchFlags(flags2, 0);
+    em.setMiniBatchFlags(flags1, cfg.ga_minibatch_nth_size);
+    em.setMiniBatchFlags(flags2, cfg.ga_minibatch_nth_size);
 
     //Check that the random selections select the right number of molecules,
     //and that the selected molecules are different in the two runs
@@ -594,9 +589,7 @@ void EMTestMiniBatchSelection::runTest() {
         std::cout << "Found all matching molecules between two sets" << std::endl;
         pass = false;
     }
-
     passed = pass;
-
 }
 
 
