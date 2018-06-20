@@ -120,7 +120,6 @@ int main(int argc, char *argv[])
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_nump );
 
 	if( mpi_nump == 1 ){
-		tests.push_back( new EMTestNNSingleEnergySelfProduction() );
 		tests.push_back( new EMTestMiniBatchSelection() );
 		tests.push_back( new NNParamsTestBiasIndexes() );
 		tests.push_back( new NNParamsTestComputeAndAccumulateGradient() );
@@ -137,18 +136,8 @@ int main(int argc, char *argv[])
 		tests.push_back( new InferenceTestSpectrumMessageWithIsotopes() );
 		tests.push_back( new InferenceTestCompareVsIPFPSingleEnergyCase() );
 		tests.push_back( new InferenceTestCompareVsIPFPSharedMassCase() );
-		//tests.push_back( new FragGenTestPositiveEINistExceptions() );
-		//tests.push_back( new FragGenTestCasesFromGross() ); // NOTE THIS IS NOT WORKING
-		//tests.push_back( new FragGenTestPositiveEIAndESIDegreeLpBonding() );
-		//tests.push_back( new FragGenTestPositiveEIOxygenAromatic() );
-		//tests.push_back( new FragGenTestPositiveEITriple() );
-		//tests.push_back( new FragGenTestPositiveEISplitCharge() );
         tests.push_back( new FragGenTestPositiveESISplitCharge() );
 		tests.push_back( new MspReaderTest() );
-		//tests.push_back( new MspReaderMultipleEnergiesTest() );
-		//tests.push_back( new FragGenTestPositiveEI() );
-		//tests.push_back( new FragGenTestPositiveEIMultibreak() );
-		//tests.push_back( new FragGenTestPositiveEIAlkane() );
 		tests.push_back( new FragGenTestPositiveESI() );
 		tests.push_back( new FragGenTestNegativeESI() );
 		tests.push_back( new FragGenTestRingPositiveESI() );
@@ -156,7 +145,6 @@ int main(int argc, char *argv[])
 		tests.push_back( new FragGenTestMaxElectronMovement() );
 		tests.push_back( new FeaturesTestNeighbourMMFFAtomType() );
 		tests.push_back( new SpectrumQuantiseTest() );
-		//tests.push_back( new SpectrumCleanTest() ); NOTE: Missing File
 		tests.push_back( new ComparatorsTestRecall() );
 		tests.push_back( new ComparatorsTestPrecision() );
 		tests.push_back( new ComparatorsTestWeightedRecall() );
@@ -166,10 +154,6 @@ int main(int argc, char *argv[])
 		tests.push_back( new MessageTestIteration() );
 		tests.push_back( new MessageTestCopyAssignment() );
 		tests.push_back( new IPFPTestComputeBeliefsSingleEnergy() );
-		// Cases for CE model , some are failling
-		/*tests.push_back( new IPFPTestComputeBeliefsConverge() );
-		tests.push_back( new IPFPTestComputeBeliefsNonConverge() );
-		tests.push_back( new IPFPTestComputeBeliefsSharedMass() );*/
 		tests.push_back( new FeaturesTestInit() );
 		tests.push_back( new FeaturesTestBreakAtomPair() );
 		tests.push_back( new FeaturesTestBrokenOrigBondType() );
@@ -192,11 +176,26 @@ int main(int argc, char *argv[])
 		tests.push_back( new FeaturesTestLength() );
 		tests.push_back( new ParamsTestComputeTransitionThetas() );
 		tests.push_back( new ParamsTestComputeAndAccumulateGradient() );
-		/*tests.push_back( new EMTestSelfProduction() );
+		tests.push_back( new EMTestSelfProduction() );
 		tests.push_back( new EMTestSingleEnergySelfProduction() );
+        tests.push_back( new EMTestNNSingleEnergySelfProduction() );
 		tests.push_back( new EMTestSingleEnergyIsotopeSelfProduction() );
-		tests.push_back( new EMTestNNSingleEnergySelfProduction() );*/
 		//tests.push_back( new FeaturesTestFingerPrint());
+        // Cases for CE model , some are failling
+        tests.push_back( new IPFPTestComputeBeliefsConverge() );
+        tests.push_back( new IPFPTestComputeBeliefsNonConverge() );
+        tests.push_back( new IPFPTestComputeBeliefsSharedMass() );
+        //tests.push_back( new SpectrumCleanTest() ); NOTE: Missing File
+        //tests.push_back( new MspReaderMultipleEnergiesTest() );
+        //tests.push_back( new FragGenTestPositiveEI() );
+        //tests.push_back( new FragGenTestPositiveEIMultibreak() );
+        //tests.push_back( new FragGenTestPositiveEIAlkane() );
+        //tests.push_back( new FragGenTestPositiveEINistExceptions() );
+        //tests.push_back( new FragGenTestCasesFromGross() ); // NOTE THIS IS NOT WORKING
+        //tests.push_back( new FragGenTestPositiveEIAndESIDegreeLpBonding() );
+        //tests.push_back( new FragGenTestPositiveEIOxygenAromatic() );
+        //tests.push_back( new FragGenTestPositiveEITriple() );
+        //tests.push_back( new FragGenTestPositiveEISplitCharge() );
 	}
 	if( mpi_nump > 2 ){
 		tests.push_back( new CommsTestSetMasterUsedIdxs() );
@@ -204,7 +203,6 @@ int main(int argc, char *argv[])
 		tests.push_back( new CommsTestCollectGradsInMaster() );
 		tests.push_back( new CommsTestBroadcastParams() );
 		tests.push_back( new EMTestMultiProcessor() );
-		tests.push_back( new EMTestMultiProcessorLBFGS() );
 	}
 
 	// run one specific test

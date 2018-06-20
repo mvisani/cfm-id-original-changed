@@ -21,6 +21,7 @@ bool compareSpectra(const Spectrum *orig_spec, const Spectrum *predicted_spec, d
 
     bool pass = true;
     Spectrum::const_iterator ito = orig_spec->begin();
+    int energy = 0;
     for (; ito != orig_spec->end(); ++ito) {
 
         //Find a peak in the predicted spectrum with the same mass
@@ -32,7 +33,7 @@ bool compareSpectra(const Spectrum *orig_spec, const Spectrum *predicted_spec, d
 
                 //Check the intensity values of the matching peaks
                 if (fabs(itp->intensity - ito->intensity) > intensity_tol) {
-                    std::cout << "Mismatch in predicted peak intensity for mass " << ito->mass << ": Expecting "
+                    std::cout << "Energy " << energy << ", Mismatch in predicted peak intensity for mass " << ito->mass << ": Expecting "
                               << ito->intensity << " but found " << itp->intensity << std::endl;
                     pass = false;
                 }
@@ -44,6 +45,7 @@ bool compareSpectra(const Spectrum *orig_spec, const Spectrum *predicted_spec, d
             std::cout << "Could not find matching predicted peak for mass " << ito->mass << std::endl;
             pass = false;
         }
+        energy ++;
     }
     return pass;
 }
@@ -207,7 +209,6 @@ void EMTestSingleEnergySelfProduction::runTest() {
     passed = pass;
 }
 
-
 EMTestNNSingleEnergySelfProduction::EMTestNNSingleEnergySelfProduction() {
     description = "Test Neural Net SE-CFM EM ability to learn single spectrum from itself";
 }
@@ -236,12 +237,13 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;
     orig_cfg.include_h_losses = true;
+
     std::vector<int> hlayer_numnodes(3), act_ids(3);
-    hlayer_numnodes[0] = 4;
-    hlayer_numnodes[1] = 2;
+    hlayer_numnodes[0] = 16;
+    hlayer_numnodes[1] = 16;
     hlayer_numnodes[2] = 1;
-    act_ids[0] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
-    act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
+    act_ids[0] = RELU_NN_ACTIVATION_FUNCTION;
+    act_ids[1] = RELU_NN_ACTIVATION_FUNCTION;
     act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;    //Final theta should be linear
     orig_cfg.theta_nn_hlayer_num_nodes = hlayer_numnodes;
     orig_cfg.theta_nn_layer_act_func_ids = act_ids;
@@ -249,7 +251,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     //orig_cfg.em_converge_thresh = 0.0001;
 
     //Feature Calculator
-    std::string feature_cfg_file = "tests/test_data/example_feature_config_withquadratic.txt";
+    std::string feature_cfg_file = "tests/test_data/example_feature_config.txt";
     FeatureCalculator fc(feature_cfg_file);
 
     //Prepare some simple data
@@ -269,7 +271,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
 
         //Run EM (multiple times, and take best Q)
         double best_Q = -1000000.0;
-        const int trials_max = 1;
+        const int trials_max = 3;
         std::vector<double> Qs;
         for (int trial = 0; trial < trials_max; trial++) {
             std::string status_file = "tmp_status_file.log";
@@ -296,7 +298,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
 
     //Predict the output spectra
     data[0].computePredictedSpectra(*final_params);
-    data[0].postprocessPredictedSpectra(100.0, 0, 1000);
+    //data[0].postprocessPredictedSpectra(100.0, 0);
 
     //Compare the original and predicted spectra - should be able to overfit
     //very close to the actual values since training on same (and only same) mol
@@ -392,59 +394,6 @@ void EMTestSingleEnergyIsotopeSelfProduction::runTest() {
     passed = pass;
 }
 
-EMTestLBFGSvsOriginalGradientAscent::EMTestLBFGSvsOriginalGradientAscent() {
-    description = "Test LBFGS gradient ascent vs my original gradient ascent";
-}
-
-void EMTestLBFGSvsOriginalGradientAscent::runTest() {
-
-    double tol = 0.01;
-    bool pass = true;
-    config_t cfg;
-    std::string cfg_file = "tests/test_data/example_param_config.txt";
-    initConfig(cfg, cfg_file);
-    cfg.ga_method = USE_MOMENTUM_FOR_GA;
-    cfg.ga_converge_thresh = 0.0001;
-    cfg.param_init_type = PARAM_FULL_ZERO_INIT;
-    cfg.include_h_losses = true;
-    std::string fc_file = "tests/test_data/example_feature_config_withquadratic.txt";
-    FeatureCalculator fc(fc_file);
-
-    std::string id1 = "TestMol1", id2 = "TestMol2", id3 = "TestMol3";
-    std::string smiles1 = "NCCCN", smiles2 = "N=CC(OC)CN", smiles3 = "N(CCCC)CCCN";
-    std::string spec_file = "tests/test_data/example_spectra.txt";
-
-    std::vector<MolData> data;
-    data.push_back(MolData(id1, smiles1, 0, &cfg));
-    data.push_back(MolData(id2, smiles2, 0, &cfg));
-    data.push_back(MolData(id3, smiles3, 0, &cfg));
-    for (int i = 0; i < 3; i++) {
-        data[i].computeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
-        data[i].readInSpectraFromFile(spec_file);
-    }
-
-    std::cout << "Running EM using original gradient ascent algorithm" << std::endl;
-    std::string status_file = "tmp_status_file.log";
-    std::string tmp_file = "tmp.log";
-    EmModel em1(&cfg, &fc, status_file);
-    double orig_Q = em1.trainModel(data, 1, tmp_file, 0);
-    std::cout << "Original Q = " << orig_Q << std::endl;
-
-    std::cout << "Running EM using LBFGS gradient ascent algorithm" << std::endl;
-    cfg.ga_method = USE_ADAM_FOR_GA;
-    cfg.ga_converge_thresh = 0.00001;
-    EmModel em2(&cfg, &fc, status_file);
-    double lbfgs_Q = em2.trainModel(data, 1, tmp_file, 0);
-
-    std::cout << "Original Q: " << orig_Q << " LBFGS Q: " << lbfgs_Q << std::endl;
-    if (orig_Q - lbfgs_Q > tol) {
-        std::cout << "Mismatch and/or poorer Q values between running LBFGS vs original gradient ascent" << std::endl;
-        pass = false;
-    }
-
-    passed = pass;
-}
-
 bool runMultiProcessorEMTest(config_t &cfg) {
 
     bool pass = true;
@@ -526,25 +475,6 @@ void EMTestMultiProcessor::runTest() {
 
     passed = pass;
 }
-
-EMTestMultiProcessorLBFGS::EMTestMultiProcessorLBFGS() {
-    description = "Test EM running on multiple processors using LBFGS";
-}
-
-void EMTestMultiProcessorLBFGS::runTest() {
-
-    bool pass = true;
-
-    //Initialisation
-    config_t cfg;
-    std::string cfg_file = "tests/test_data/example_param_config.txt";
-    initConfig(cfg, cfg_file);
-    cfg.ga_method = USE_ADAM_FOR_GA;
-    pass = runMultiProcessorEMTest(cfg);
-
-    passed = pass;
-}
-
 
 EMTestMiniBatchSelection::EMTestMiniBatchSelection() {
     description = "Test selection of random mini-batches during gradient ascent";

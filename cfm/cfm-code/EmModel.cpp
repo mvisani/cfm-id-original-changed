@@ -212,20 +212,23 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double val_q = 0.0;
 
         int molidx = 0, numvalmols = 0, numnonvalmols = 0;
-        double jaccard = 0.0;
+        double jaccard = 0.0, w_jaccard = 0.0;
         for (itdata = molDataSet.begin(); itdata != molDataSet.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
                 val_q += computeQ(molidx, *itdata, suft);
                 numvalmols++;
-                Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
-                itdata->computePredictedSpectra(*param, true, false);
+                Comparator *j_cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
+                Comparator *wj_cmp = new WeightedJaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
+                itdata->computePredictedSpectra(*param, false, false);
 
                 std::vector<unsigned int> energies;
                 getEnergiesLevels(energies);
-                for(auto & energy: energies)
-                    jaccard += cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
-
-                delete cmp;
+                for(auto & energy: energies){
+                    jaccard += j_cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
+                    w_jaccard += wj_cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
+                }
+                delete j_cmp;
+                delete wj_cmp;
             }
             else
                 numnonvalmols++;
@@ -244,6 +247,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         numvalmols = comm->collectSumInMaster(numvalmols);
         numnonvalmols = comm->collectSumInMaster(numnonvalmols);
         jaccard = comm->collectQInMaster(jaccard);
+        w_jaccard = comm->collectQInMaster(w_jaccard);
         // Check for convergence
         double q_ratio = fabs((q - prev_q) / q);
         double best_q_ratio = fabs((q - best_q) / q);
@@ -260,7 +264,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             qdif_str +=
                     "Q_avg=" + std::to_string(q / numnonvalmols)
                     + " Validation_Q_avg=" + std::to_string(val_q / numvalmols)
-                    + " Validation_Jaccard_avg=" +  std::to_string(jaccard / numvalmols) + " ";
+                    + " Validation Jaccard_Avg=" +  std::to_string(jaccard / numvalmols)
+                    + " Weighted Validation Jaccard_Avg=" += std::to_string(w_jaccard / numvalmols);
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
         }
