@@ -220,6 +220,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 Comparator *j_cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
                 Comparator *wj_cmp = new WeightedJaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
                 itdata->computePredictedSpectra(*param, false, false);
+                itdata->postprocessPredictedSpectra(80,1,30, 2.0);
 
                 std::vector<unsigned int> energies;
                 getEnergiesLevels(energies);
