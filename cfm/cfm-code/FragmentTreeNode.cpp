@@ -407,7 +407,8 @@ FragmentTreeNode::findAlreadyChargedOrSplitCharge(boost::tuple<int, int, int> &o
     }
 
     //No charges found (or existing charges balance)
-    if (frag_total_qs[charge_side] == 0 && frag_total_qs[1 - charge_side] == 0) return qfound_oktogo_switchq;
+    if (frag_total_qs[charge_side] == 0 && frag_total_qs[1 - charge_side] == 0)
+        return qfound_oktogo_switchq;
     boost::get<0>(qfound_oktogo_switchq) = true;
 
     //Positive ESI or EI: Charges balance correctly, just need to check radicals
@@ -561,6 +562,8 @@ int FragmentTreeNode::findAtomChargeLocationNSOC(RDKit::RWMol &rwmol, int charge
 void FragmentTreeNode::assignChargeAndRadical(RDKit::RWMol &rwmol, int charge_idx, int radical_idx, bool is_negative) {
 
     RDKit::Atom *atom = rwmol.getAtomWithIdx(charge_idx);
+    // This is important, CC[CH3+] and CC[CH+] has the same radical electrons and formal charges, set H for charged atom  to avoid this problem
+    alterNumHs(atom,0);
     if (is_negative) {
         atom->setFormalCharge(-1);
         alterNumHs(atom, -1); //Even-[H+] -> Even-[H+] + NL

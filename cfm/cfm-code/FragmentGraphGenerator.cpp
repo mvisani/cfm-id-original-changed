@@ -293,7 +293,8 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
 void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization_mode) {
 
     int rad_side = -1;
-    if (ionization_mode == POSITIVE_EI_IONIZATION_MODE) rad_side = 0;
+    if (ionization_mode == POSITIVE_EI_IONIZATION_MODE)
+       rad_side = 0;
     bool is_neg = (ionization_mode == NEGATIVE_ESI_IONIZATION_MODE);
 
     boost::tuple<int, int, int> pindx_nidx_ridx(-1, -1, -1);
@@ -315,15 +316,13 @@ void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization
         }
         try {
             FragmentTreeNode::assignChargeAndRadical(*rwmol, qidx_ridx.first, qidx_ridx.second, is_neg);
-            RDKit::MolOps::sanitizeMol(
-                    *rwmol);    //Re-sanitize...sometimes RDKit only throws the exception the second time...
+            RDKit::MolOps::sanitizeMol(*rwmol);    //Re-sanitize...sometimes RDKit only throws the exception the second time...
         }
         catch (RDKit::MolSanitizeException e) {
             std::cout << "Could not ionize - sanitization failure" << std::endl;
             throw IonizationException();
         }
     }
-
 }
 
 
