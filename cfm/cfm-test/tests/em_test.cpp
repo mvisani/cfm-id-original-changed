@@ -21,7 +21,6 @@ bool compareSpectra(const Spectrum *orig_spec, const Spectrum *predicted_spec, d
 
     bool pass = true;
     Spectrum::const_iterator ito = orig_spec->begin();
-    int energy = 0;
     for (; ito != orig_spec->end(); ++ito) {
 
         //Find a peak in the predicted spectrum with the same mass
@@ -33,7 +32,7 @@ bool compareSpectra(const Spectrum *orig_spec, const Spectrum *predicted_spec, d
 
                 //Check the intensity values of the matching peaks
                 if (fabs(itp->intensity - ito->intensity) > intensity_tol) {
-                    std::cout << "Energy " << energy << ", Mismatch in predicted peak intensity for mass " << ito->mass << ": Expecting "
+                    std::cout << ", Mismatch in predicted peak intensity for mass " << ito->mass << ": Expecting "
                               << ito->intensity << " but found " << itp->intensity << std::endl;
                     pass = false;
                 }
@@ -45,7 +44,6 @@ bool compareSpectra(const Spectrum *orig_spec, const Spectrum *predicted_spec, d
             std::cout << "Could not find matching predicted peak for mass " << ito->mass << std::endl;
             pass = false;
         }
-        energy ++;
     }
     return pass;
 }
@@ -77,7 +75,7 @@ void EMTestSelfProduction::runTest() {
     cfg.ga_converge_thresh = 0.00001;
     cfg.include_h_losses = true;
 
-    for (int config_state = 0; config_state <= 3; config_state++) {
+    for (int config_state = 0; config_state < 3; config_state++) {
 
         if (config_state == 1) {
             std::cout << "Testing Depth 1-2-3 Configuration" << std::endl;
@@ -107,7 +105,7 @@ void EMTestSelfProduction::runTest() {
             std::string status_file = "tmp_status_file.log";
             std::string tmp_file = "tmp.log";
             EmModel em(&cfg, &fc, status_file);
-            double Q = em.trainModel(data, 1, tmp_file, 0);
+            double Q = em.trainModel(data, 1, tmp_file, -1);
             if (Q > best_Q) {
                 em.writeParamsToFile(param_filename);
                 best_Q = Q;
@@ -121,9 +119,11 @@ void EMTestSelfProduction::runTest() {
 
         //Compare the original and predicted spectra - should be able to overfit
         //very close to the actual values since training on same (and only same) mol
+        std::cout << "config_state: " << config_state << std::endl;
         for (unsigned int energy = 0; energy < data[0].getNumSpectra(); energy++) {
             const Spectrum *orig_spec = data[0].getSpectrum(energy);
             const Spectrum *predicted_spec = data[0].getPredictedSpectrum(energy);
+            std::cout << "energy: " << energy << std::endl;
             pass &= compareSpectra(orig_spec, predicted_spec, cfg.abs_mass_tol, cfg.ppm_mass_tol, intensity_tol);
         }
     }
@@ -160,6 +160,7 @@ void EMTestSingleEnergySelfProduction::runTest() {
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;
     orig_cfg.include_h_losses = true;
+    orig_cfg.ga_method = USE_MOMENTUM_FOR_GA;
 
     //Feature Calculator
     std::string feature_cfg_file = "tests/test_data/example_feature_config_withquadratic.txt";
@@ -183,7 +184,7 @@ void EMTestSingleEnergySelfProduction::runTest() {
         std::string status_file = "tmp_status_file.log";
         std::string tmp_file = "tmp.log";
         EmModel em(&cfg, &fc, status_file);
-        double Q = em.trainModel(data, 1, tmp_file, 0);
+        em.trainModel(data, 1, tmp_file, energy);
         std::string param_filename = "tmp_param_output.log";
         em.writeParamsToFile(param_filename);
 
@@ -204,7 +205,6 @@ void EMTestSingleEnergySelfProduction::runTest() {
         const Spectrum *orig_spec = data[0].getSpectrum(energy);
         const Spectrum *predicted_spec = data[0].getPredictedSpectrum(energy);
         pass &= compareSpectra(orig_spec, predicted_spec, orig_cfg.abs_mass_tol, orig_cfg.ppm_mass_tol, intensity_tol);
-
     }
     passed = pass;
 }
@@ -298,7 +298,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
 
     //Predict the output spectra
     data[0].computePredictedSpectra(*final_params);
-    //data[0].postprocessPredictedSpectra(100.0, 0);
+    data[0].postprocessPredictedSpectra(100.0, 0);
 
     //Compare the original and predicted spectra - should be able to overfit
     //very close to the actual values since training on same (and only same) mol

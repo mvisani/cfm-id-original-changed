@@ -217,10 +217,10 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             if (itdata->getGroup() == validation_group) {
                 val_q += computeQ(molidx, *itdata, suft);
                 numvalmols++;
-                Comparator *j_cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
+                /*Comparator *j_cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
                 Comparator *wj_cmp = new WeightedJaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
                 itdata->computePredictedSpectra(*param, false, false);
-                itdata->postprocessPredictedSpectra(80,1,30, 2.0);
+                itdata->postprocessPredictedSpectra(100,1,30, 2.0);
 
                 std::vector<unsigned int> energies;
                 getEnergiesLevels(energies);
@@ -229,7 +229,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                     w_jaccard += wj_cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
                 }
                 delete j_cmp;
-                delete wj_cmp;
+                delete wj_cmp;*/
             }
             else
                 numnonvalmols++;
@@ -288,7 +288,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         // check if EM meet halt flag
         if (q_ratio < cfg->em_converge_thresh || prev_q >= q) {
 
-            if (learning_rate > cfg->starting_step_size * 0.02) {
+            if (learning_rate > cfg->starting_step_size) {
                 learning_rate *= 0.5;
                 count_no_progress = 0;
             } else if (sampling_method != USE_NO_SAMPLING && cfg->reset_sampling) {

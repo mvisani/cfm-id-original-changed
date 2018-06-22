@@ -183,19 +183,18 @@ int main(int argc, char *argv[])
         tests.push_back( new FragGenTestPositiveEIMultibreak() );
         tests.push_back( new FragGenTestPositiveEIAlkane() );
         //tests.push_back( new FragGenTestPositiveEINistExceptions() );
-        //tests.push_back( new FragGenTestCasesFromGross() ); // NOTE THIS IS NOT WORKING
+        tests.push_back( new FragGenTestCasesFromGross() ); // NOTE THIS IS NOT WORKING
         tests.push_back( new FragGenTestPositiveEIAndESIDegreeLpBonding() );
         tests.push_back( new FragGenTestPositiveEIOxygenAromatic() );
         tests.push_back( new FragGenTestPositiveEITriple() );
-        tests.push_back( new FragGenTestPositiveEISplitCharge() );*/
+        tests.push_back( new FragGenTestPositiveEISplitCharge() );
         tests.push_back( new IPFPTestComputeBeliefsConverge() );
-        //tests.push_back( new IPFPTestComputeBeliefsNonConverge() );
-        //tests.push_back( new IPFPTestComputeBeliefsSharedMass() );
-        /*
-        tests.push_back( new EMTestSelfProduction() );
-        tests.push_back( new EMTestSingleEnergySelfProduction() );
+        tests.push_back( new IPFPTestComputeBeliefsNonConverge() );
+        tests.push_back( new IPFPTestComputeBeliefsSharedMass() );
+        tests.push_back( new EMTestSingleEnergySelfProduction() );*/
         tests.push_back( new EMTestNNSingleEnergySelfProduction() );
-        tests.push_back( new EMTestSingleEnergyIsotopeSelfProduction() );*/
+        //tests.push_back( new EMTestSelfProduction() );
+        //tests.push_back( new EMTestSingleEnergyIsotopeSelfProduction() );
 
 	}
 	if( mpi_nump > 2 ){
