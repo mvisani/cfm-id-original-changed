@@ -42,14 +42,14 @@ static const double DEFAULT_GA_CONVERGE_THRESH = 0.0001;
 //Regularization Constant
 static const double DEFAULT_LAMBDA = 0.01;
 
-//Use LBFGS package to do gradient ascent
-static const int DEFAULT_USE_ADAM_FOR_GA = 1;
-
 // GA methods
 static const int USE_MOMENTUM_FOR_GA = 1;
 static const int USE_ADAM_FOR_GA = 2;
 static const int USE_ADADELTA_FOR_GA = 3;
 static const int USE_AMSGRAD_FOR_GA = 4;
+
+//Use ADAM to do gradient ascent
+static const int DEFAULT_USE_ADAM_FOR_GA = USE_ADAM_FOR_GA;
 
 // LR Decay methods
 static const int USE_NO_DECAY = 0;
@@ -64,7 +64,7 @@ static const double DEFAULT_STEP_DECAY_DROP = 0.5;
 static const double DEFAULT_STEP_DECAY_EPOCHS_DROP = 10;
 
 // Learning Rate
-static const double DEFAULT_LEARNING_RATE = 0.01;
+static const double DEFAULT_LEARNING_RATE = 0.001;
 
 
 //Momentum term used in Gradient Ascent

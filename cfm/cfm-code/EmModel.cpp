@@ -222,11 +222,18 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 itdata->computePredictedSpectra(*param, false, false);
                 itdata->postprocessPredictedSpectra(100,1,30, 2.0);
 
-                std::vector<unsigned int> energies;
-                getEnergiesLevels(energies);
-                for(auto & energy: energies){
-                    jaccard += j_cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
-                    w_jaccard += wj_cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
+                if(cfg->use_single_energy_cfm){
+                    jaccard += j_cmp->computeScore(itdata->getSpectrum(energy_level),itdata->getPredictedSpectrum(energy_level));
+                    w_jaccard += wj_cmp->computeScore(itdata->getSpectrum(energy_level),itdata->getPredictedSpectrum(energy_level));
+                } else{
+                    std::vector<unsigned int> energies;
+                    getEnergiesLevels(energies);
+                    for(auto & energy: energies){
+                        jaccard += j_cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
+                        w_jaccard += wj_cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
+                    }
+                    jaccard /= (double)energies.size();
+                    w_jaccard /= (double)energies.size();
                 }
                 delete j_cmp;
                 delete wj_cmp;*/
@@ -509,7 +516,6 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 no_progress_count = 0;
             }
         }
-
     }
 
     if (comm->isMaster()) {

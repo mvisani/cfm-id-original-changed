@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_nump );
 
 	if( mpi_nump == 1 ){
-		/*tests.push_back( new EMTestMiniBatchSelection() );
+		tests.push_back( new EMTestMiniBatchSelection() );
 		tests.push_back( new NNParamsTestBiasIndexes() );
 		tests.push_back( new NNParamsTestComputeAndAccumulateGradient() );
 		tests.push_back( new NNParamsTestComputeUnweightedGradients() );
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 		tests.push_back( new ParamsTestComputeTransitionThetas() );
 		tests.push_back( new ParamsTestComputeAndAccumulateGradient() );
         //tests.push_back( new SpectrumCleanTest() ); NOTE: Missing File
-        //tests.push_back( new MspReaderMultipleEnergiesTest() );  NOTE: Missing File
+        tests.push_back( new MspReaderMultipleEnergiesTest() );
         tests.push_back( new FragGenTestPositiveEI() );
         tests.push_back( new FragGenTestPositiveEIMultibreak() );
         tests.push_back( new FragGenTestPositiveEIAlkane() );
@@ -191,11 +191,10 @@ int main(int argc, char *argv[])
         tests.push_back( new IPFPTestComputeBeliefsConverge() );
         tests.push_back( new IPFPTestComputeBeliefsNonConverge() );
         tests.push_back( new IPFPTestComputeBeliefsSharedMass() );
-        tests.push_back( new EMTestSingleEnergySelfProduction() );*/
+        tests.push_back( new EMTestSingleEnergySelfProduction() );
         tests.push_back( new EMTestNNSingleEnergySelfProduction() );
-        //tests.push_back( new EMTestSelfProduction() );
-        //tests.push_back( new EMTestSingleEnergyIsotopeSelfProduction() );
-
+        tests.push_back( new EMTestSelfProduction() );
+        tests.push_back( new EMTestSingleEnergyIsotopeSelfProduction() );
 	}
 	if( mpi_nump > 2 ){
 		tests.push_back( new CommsTestSetMasterUsedIdxs() );

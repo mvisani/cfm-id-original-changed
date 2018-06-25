@@ -160,7 +160,6 @@ void EMTestSingleEnergySelfProduction::runTest() {
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;
     orig_cfg.include_h_losses = true;
-    orig_cfg.ga_method = USE_MOMENTUM_FOR_GA;
 
     //Feature Calculator
     std::string feature_cfg_file = "tests/test_data/example_feature_config_withquadratic.txt";
@@ -355,7 +354,6 @@ void EMTestSingleEnergyIsotopeSelfProduction::runTest() {
     orig_cfg.spectrum_depths.resize(1);
     orig_cfg.spectrum_weights.resize(1);
     orig_cfg.include_isotopes = 1;
-    orig_cfg.ga_method = USE_ADAM_FOR_GA;
     orig_cfg.ga_converge_thresh = 0.0001;
 
     //Feature Calculator

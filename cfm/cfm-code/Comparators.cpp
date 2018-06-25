@@ -13,7 +13,7 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-
+#include <algorithm>
 #include <cmath>
 #include "Comparators.h"
 
@@ -174,6 +174,7 @@ double WeightedPrecision::computeScore(const Spectrum *measured, const Spectrum 
     Spectrum::const_iterator itc = predicted->begin();
     double den = 0.0;
     for (; itc != predicted->end(); ++itc)
+
         den += itc->intensity;
 
     return num * 100.0 / den;
@@ -183,13 +184,13 @@ double WeightedJaccard::computeScore(const Spectrum *measured, const Spectrum *p
 
     std::vector<peak_pair_t> peak_pairs;
     getMatchingPeakPairs(peak_pairs, measured, predicted);
-    double num = 0.0;
+    double intersection = 0.0;
     std::vector<peak_pair_t>::iterator it = peak_pairs.begin();
     for (; it != peak_pairs.end(); ++it) {
-        num += it->first.intensity;
-        num += it->second.intensity;
+        intersection += std::min(it->first.intensity,it->second.intensity);
     }
-    return num / 200.0;
+    // union = total - intersection
+    return intersection / (200.0-intersection);
 }
 
 
