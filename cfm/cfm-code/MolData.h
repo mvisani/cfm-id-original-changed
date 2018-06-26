@@ -173,8 +173,10 @@ public:
 
     void computeLogTransitionProbabilities();
 
-    void computePredictedSpectra(Param &param, bool postprocess = false,
-                                 bool use_existing_thetas = false);
+    // compute predicted Spectra
+    // if engry < -1 , compute all  Spectra
+    void computePredictedSpectra(Param &param, bool postprocess = false, bool use_existing_thetas = false,
+                                 int energy_level = -1);
 
     void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 5, int max_peaks = 30,
                                      double min_intensity = 0.0);
@@ -274,7 +276,7 @@ protected
     void getEnumerationSpectraMasses(std::vector<double> &output_masses);
 
     void computePredictedSingleEnergySpectra(Param &param, bool postprocess,
-                                             bool use_existing_thetas);
+                                             bool use_existing_thetas, int energy_level);
 
     void translatePeaksFromMsgToSpectra(Spectrum &out_spec, Message *msg);
 
@@ -283,6 +285,8 @@ protected
 
     void computeFragmentEvidenceValues(std::vector<double> &evidence,
                                        int frag_idx, const beliefs_t *beliefs);
+
+    void createSpeactraSingleEnergry(unsigned int energy_level);
 };
 
 #endif // __MOLDATA_H__

@@ -215,28 +215,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double jaccard = 0.0, w_jaccard = 0.0;
         for (itdata = molDataSet.begin(); itdata != molDataSet.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
-                val_q += computeQ(molidx, *itdata, suft);
-                numvalmols++;
-                /*Comparator *j_cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
-                Comparator *wj_cmp = new WeightedJaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
-                itdata->computePredictedSpectra(*param, false, false);
-                itdata->postprocessPredictedSpectra(100,1,30, 2.0);
-
-                if(cfg->use_single_energy_cfm){
-                    jaccard += j_cmp->computeScore(itdata->getSpectrum(energy_level),itdata->getPredictedSpectrum(energy_level));
-                    w_jaccard += wj_cmp->computeScore(itdata->getSpectrum(energy_level),itdata->getPredictedSpectrum(energy_level));
-                } else{
-                    std::vector<unsigned int> energies;
-                    getEnergiesLevels(energies);
-                    for(auto & energy: energies){
-                        jaccard += j_cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
-                        w_jaccard += wj_cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
-                    }
-                    jaccard /= (double)energies.size();
-                    w_jaccard /= (double)energies.size();
-                }
-                delete j_cmp;
-                delete wj_cmp;*/
+                computeValidationMetrics(energy_level, molidx, itdata, suft, val_q, numvalmols, jaccard,
+                                         w_jaccard);
             }
             else
                 numnonvalmols++;
@@ -329,6 +309,36 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                                         .c_str());
 
     return best_q;
+}
+
+void EmModel::computeValidationMetrics(int energy_level, int molidx,
+                                       std::vector<MolData, std::allocator<MolData>>::iterator &itdata,
+                                       suft_counts_t &suft, double &val_q, int &numvalmols, double &jaccard,
+                                       double &w_jaccard) {
+    val_q += computeQ(molidx, *itdata, suft);
+    numvalmols++;
+    Comparator *j_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+    Comparator *wj_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+
+    if(cfg->use_single_energy_cfm){
+                    itdata->computePredictedSpectra(*param, false, false, energy_level);
+                    itdata->postprocessPredictedSpectra(100,1,30, 2.0);
+                    jaccard += j_cmp->computeScore(itdata->getSpectrum(energy_level),itdata->getPredictedSpectrum(energy_level));
+                    w_jaccard += wj_cmp->computeScore(itdata->getSpectrum(energy_level),itdata->getPredictedSpectrum(energy_level));
+                } else{
+                    itdata->computePredictedSpectra(*param, false, false);
+                    itdata->postprocessPredictedSpectra(100,1,30, 2.0);
+                    std::vector<unsigned int> energies;
+                    getEnergiesLevels(energies);
+                    for(auto & energy: energies){
+                        jaccard += j_cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
+                        w_jaccard += wj_cmp->computeScore(itdata->getSpectrum(energy),itdata->getPredictedSpectrum(energy));
+                    }
+                    jaccard /= (double)energies.size();
+                    w_jaccard /= (double)energies.size();
+                }
+    delete j_cmp;
+    delete wj_cmp;
 }
 
 void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {

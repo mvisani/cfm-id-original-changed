@@ -466,13 +466,12 @@ bool MolData::hasEmptySpectrum() const {
     return result;
 }
 
-void MolData::computePredictedSpectra(Param &param, bool postprocess,
-                                      bool use_existing_thetas) {
+void MolData::computePredictedSpectra(Param &param, bool postprocess, bool use_existing_thetas, int energy_level) {
 
     // Divert to other function if doing single energy CFM
     if (cfg->use_single_energy_cfm) {
         computePredictedSingleEnergySpectra(param, postprocess,
-                                            use_existing_thetas);
+                                            use_existing_thetas, energy_level);
         return;
     }
 
@@ -487,7 +486,6 @@ void MolData::computePredictedSpectra(Param &param, bool postprocess,
     infer.runInferenceDownwardPass(msgs, cfg->model_depth);
 
     // Generate and collect the peak results
-    std::string outfilename;
     predicted_spectra.resize(cfg->spectrum_depths.size());
     for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
          energy++) {
@@ -516,7 +514,8 @@ void MolData::computePredictedSpectra(Param &param, bool postprocess,
 
 void MolData::computePredictedSingleEnergySpectra(Param &param,
                                                   bool postprocess,
-                                                  bool use_existing_thetas) {
+                                                  bool use_existing_thetas,
+                                                  int energy_level) {
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
@@ -524,29 +523,14 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
     computeLogTransitionProbabilities();
 
     // Generate and collect the peak results
-    std::string outfilename;
     predicted_spectra.resize(cfg->spectrum_depths.size());
-    for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
-         energy++) {
-        predicted_spectra[energy].clear();
-
-        config_t se_cfg;
-        initSingleEnergyConfig(se_cfg, *cfg, energy);
-
-        // Run forward inference
-        std::vector<Message> msgs;
-        Inference infer(this, &se_cfg);
-        infer.runInferenceDownwardPass(msgs, se_cfg.model_depth);
-
-        // Extract the peaks from the relevant message
-        int msg_depth = se_cfg.spectrum_depths[0] - 1;
-        Message *msg = &(msgs[msg_depth]);
-        if (cfg->include_isotopes)
-            translatePeaksFromMsgToSpectraWithIsotopes(predicted_spectra[energy],
-                                                       msg);
-        else
-            translatePeaksFromMsgToSpectra(predicted_spectra[energy], msg);
-    }
+    if(energy_level == -1) {
+        for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
+             energy++) {
+            createSpeactraSingleEnergry(energy);
+        }
+    } else
+        createSpeactraSingleEnergry(energy_level);
 
     if (postprocess)
         postprocessPredictedSpectra();
@@ -557,6 +541,27 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
             predicted_spectra[energy].quantisePeaksByMass(10);
         }
     }
+}
+
+void MolData::createSpeactraSingleEnergry(unsigned int energy_level) {
+    predicted_spectra[energy_level].clear();
+
+    config_t se_cfg;
+    initSingleEnergyConfig(se_cfg, *cfg, energy_level);
+
+    // Run forward inference
+    std::vector<Message> msgs;
+    Inference infer(this, &se_cfg);
+    infer.runInferenceDownwardPass(msgs, se_cfg.model_depth);
+
+    // Extract the peaks from the relevant message
+    int msg_depth = se_cfg.spectrum_depths[0] - 1;
+    Message *msg = &(msgs[msg_depth]);
+    if (cfg->include_isotopes)
+            translatePeaksFromMsgToSpectraWithIsotopes(predicted_spectra[energy_level],
+                                                       msg);
+        else
+            translatePeaksFromMsgToSpectra(predicted_spectra[energy_level], msg);
 }
 
 void MolData::translatePeaksFromMsgToSpectra(Spectrum &out_spec, Message *msg) {

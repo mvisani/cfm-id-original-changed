@@ -94,6 +94,10 @@ protected:
 
     void getRandomWalkedTransitions(MolData &moldata, int sampling_method, double sampling_explore_rate,
                                         unsigned int energy, std::set<int> &selected_trans_id) const;
+
+    void
+    computeValidationMetrics(int energy_level, int molidx, std::vector<MolData, std::allocator<MolData>>::iterator &itdata,
+                             suft_counts_t &suft, double &val_q, int &numvalmols, double &jaccard, double &w_jaccard);
 };
 
 #endif // __EM_TRAIN_H__
