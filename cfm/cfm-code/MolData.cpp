@@ -24,6 +24,7 @@ probabilities using those thetas.
 # of the cfm source tree.
 #########################################################################*/
 
+#include "Comparators.h"
 #include "MolData.h"
 #include "Inference.h"
 
@@ -798,13 +799,17 @@ void MolData::addNoise(double max_intensity, double total_intensity, double abs_
     }
 }
 
-void MolData::removeNoise() {
-    for (auto &spectrum: spectra) {
-        spectrum.removeNoisePeak();
+// It is caller's response to compute predicted spectra
+void MolData::computeDifferenceMap(std::multimap<double, double> &difference, int engery_level) {
+    /*Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
+    // this is for SE
+    std::vector<peak_pair_t> peak_pairs;
+    cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[engery_level], &predicted_spectra[engery_level]);
+    for(const auto & peak_pair : peak_pairs){
+        double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
+        difference.insert(intensity_difference, peak_pair.second.mass);
     }
-}
-void MolData::getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol) const {
-    //fg->getPaths(selected_pathes, mass, mass_tol);
+    delete(cmp);*/
 }
 
 MolData::~MolData() {

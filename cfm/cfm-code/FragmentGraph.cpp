@@ -652,6 +652,13 @@ void FragmentGraph::ComputationalFragmenGraph::removeLonelyFrags() {
 }
 
 void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter) {
+    std::vector<std::uniform_int_distribution<int>> uniform_int_distributions;
+
+    for (auto &frag_trans_ids: from_id_tmap) {
+        // add to discrete_distributions
+        uniform_int_distributions.emplace_back(std::uniform_int_distribution<> (0, (int) frag_trans_ids.size() - 1));
+    }
+
     int num_iter = 0;
     while (num_iter <= max_num_iter) {
         // init queue and add root
@@ -666,8 +673,8 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsRandomWalk
             // if there is somewhere to go
             if (!from_id_tmap[frag_id].empty()) {
                 // add a uct style random select
-                std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size() - 1);
-                int selected_idx = dis(util_rng);
+                ;
+                int selected_idx = uniform_int_distributions[frag_id](util_rng);
                 if (selected_idx < from_id_tmap[frag_id].size()) {
                     // go to child
                     int selected_trans_id = from_id_tmap[frag_id][selected_idx];
@@ -741,6 +748,48 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
                     fgs.push(transitions[selected_trans_id]->getToId());
                     selected_ids.insert(selected_trans_id);
 
+                }
+            }
+        }
+        num_iter++;
+    }
+}
+
+void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
+                                                                   int max_num_iter,
+                                                                   double explore_weight,
+                                                                   const Spectrum *measured,
+                                                                   const Spectrum *predicted){
+
+
+    std::vector<std::uniform_int_distribution<int>> uniform_int_distributions;
+
+    for (auto &frag_trans_ids: from_id_tmap) {
+        // add to discrete_distributions
+        uniform_int_distributions.emplace_back(std::uniform_int_distribution<> (0, (int) frag_trans_ids.size() - 1));
+    }
+
+    int num_iter = 0;
+    while (num_iter <= max_num_iter) {
+        // init queue and add root
+        std::queue<int> fgs;
+
+        fgs.push(0);
+        while (!fgs.empty()) {
+            // get current id
+            int frag_id = fgs.front();
+            fgs.pop();
+
+            // if there is somewhere to go
+            if (!from_id_tmap[frag_id].empty()) {
+                // add a uct style random select
+                ;
+                int selected_idx = uniform_int_distributions[frag_id](util_rng);
+                if (selected_idx < from_id_tmap[frag_id].size()) {
+                    // go to child
+                    int selected_trans_id = from_id_tmap[frag_id][selected_idx];
+                    fgs.push(transitions[selected_trans_id]->getToId());
+                    selected_ids.insert(selected_trans_id);
                 }
             }
         }

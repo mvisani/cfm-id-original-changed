@@ -207,8 +207,6 @@ public:
 
     void addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
 
-    void removeNoise();
-
     void getPaths(std::vector<Path> &selected_pathes, double mass, double mass_tol) const;
 
     unsigned int getOriginalNumTransitions() const {
@@ -287,6 +285,8 @@ protected
                                        int frag_idx, const beliefs_t *beliefs);
 
     void createSpeactraSingleEnergry(unsigned int energy_level);
+
+    void computeDifferenceMap(std::multimap<double, double> &difference, int engery_level);
 };
 
 #endif // __MOLDATA_H__

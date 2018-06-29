@@ -90,6 +90,5 @@ void softmax(std::vector<double> &weight, std::vector<double> &prob);
 // Init static members
 static std::random_device util_rd;
 static std::mt19937 util_rng(util_rd());
-static std::uniform_real_distribution<double> util_uniform_dist(0, 1.0);
 
 #endif // __UTIL_H__

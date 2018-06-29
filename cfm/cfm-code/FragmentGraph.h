@@ -390,13 +390,20 @@ protected:
 
         // Get a list of transitions ids , with weighted prob
         // Function do some not so random selection
+
+
+        void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter);
+
         void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids,
                                                        int max_num_iter,
                                                        std::vector<double> &thetas,
                                                        double explore_weight);
 
-        void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter);
-
+        void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
+                                                       int max_num_iter,
+                                                       double explore_weight,
+                                                       const Spectrum *measured,
+                                                       const Spectrum *predicted);
         std::vector<Fragment*> fragments;
         std::vector<Transition*> transitions;
         tmap_t from_id_tmap;
