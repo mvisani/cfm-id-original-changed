@@ -26,9 +26,12 @@ Comparator::getMatchingPeakPairs(std::vector<peak_pair_t> &peak_pairs, const Spe
     //Use Dynamic Programming to find the best match between peaks
     //such that each peak matches at most one other
     std::vector<std::vector<double> > dp_vals(p->size() + 1);
-    for (unsigned int i = 0; i <= p->size(); i++) dp_vals[i].resize(q->size() + 1);
-    for (unsigned int i = 0; i <= p->size(); i++) dp_vals[i][0] = 0.0;
-    for (unsigned int j = 0; j <= q->size(); j++) dp_vals[0][j] = 0.0;
+    for (unsigned int i = 0; i <= p->size(); i++)
+        dp_vals[i].resize(q->size() + 1);
+    for (unsigned int i = 0; i <= p->size(); i++)
+        dp_vals[i][0] = 0.0;
+    for (unsigned int j = 0; j <= q->size(); j++)
+        dp_vals[0][j] = 0.0;
 
     Spectrum::const_iterator itp = p->begin();
     for (unsigned int i = 1; itp != p->end(); ++itp, i++) {
@@ -74,7 +77,40 @@ Comparator::getMatchingPeakPairs(std::vector<peak_pair_t> &peak_pairs, const Spe
             j--;
         }
     }
+}
 
+void
+Comparator::getMatchingPeakPairsWithNoneMatchs(std::vector<peak_pair_t> &peak_pairs,
+                                               const Spectrum *measured,
+                                               const Spectrum *predicted) const{
+    getMatchingPeakPairs(peak_pairs, measured, predicted);
+    std::set<double> matched_measured_weights;
+    std::set<double> matched_predicted_weights;
+    for(const auto & peak_pair: peak_pairs){
+        matched_measured_weights.insert(peak_pair.first.mass);
+        matched_predicted_weights.insert(peak_pair.second.mass);
+    }
+
+    // get none matched measured peak
+    for(const auto & peak : *measured){
+        if(matched_measured_weights.find(peak.mass) != matched_measured_weights.end()){
+            Peak empty_peak;
+            empty_peak.mass = peak.mass;
+            empty_peak.intensity = 0.0;
+            peak_pair_t peak_pair(peak, empty_peak);
+            peak_pairs.push_back(peak_pair);
+        }
+    }
+    // get none matched measured peak
+    for(const auto & peak : *predicted){
+        if(matched_predicted_weights.find(peak.mass) != matched_predicted_weights.end()){
+            Peak empty_peak;
+            empty_peak.mass = peak.mass;
+            empty_peak.intensity = 0.0;
+            peak_pair_t peak_pair(empty_peak, peak);
+            peak_pairs.push_back(peak_pair);
+        }
+    }
 }
 
 double DotProduct::computeScore(const Spectrum *measured, const Spectrum *predicted) const {

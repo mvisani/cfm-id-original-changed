@@ -43,11 +43,14 @@ public:
     double getPPMTol() const { return ppm_tol; };
 
     double getAbsTol() const { return abs_tol; };
+
+    void getMatchingPeakPairsWithNoneMatchs(std::vector<peak_pair_t> &peak_pairs, const Spectrum *measured, const Spectrum *predicted) const;
 protected:
     double ppm_tol;
     double abs_tol;
-
     void getMatchingPeakPairs(std::vector<peak_pair_t> &peak_pairs, const Spectrum *p, const Spectrum *q) const;
+
+
 };
 
 class DotProduct : public Comparator {
