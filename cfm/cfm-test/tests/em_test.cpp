@@ -468,7 +468,6 @@ void EMTestMultiProcessor::runTest() {
     config_t cfg;
     std::string cfg_file = "tests/test_data/example_param_config.txt";
     initConfig(cfg, cfg_file);
-    cfg.ga_method = USE_MOMENTUM_FOR_GA;
     runMultiProcessorEMTest(cfg);
 
     passed = pass;

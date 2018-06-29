@@ -673,7 +673,6 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsRandomWalk
                     int selected_trans_id = from_id_tmap[frag_id][selected_idx];
                     fgs.push(transitions[selected_trans_id]->getToId());
                     selected_ids.insert(selected_trans_id);
-
                 }
             }
         }
