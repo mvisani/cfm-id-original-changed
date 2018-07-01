@@ -92,8 +92,8 @@ Comparator::getMatchingPeakPairsWithNoneMatchs(std::vector<peak_pair_t> &peak_pa
     }
 
     // get none matched measured peak
-    for(const auto & peak : *measured){
-        if(matched_measured_weights.find(peak.mass) != matched_measured_weights.end()){
+    for(const auto & peak : *measured->getPeaks()){
+        if(matched_measured_weights.find(peak.mass) == matched_measured_weights.end()){
             Peak empty_peak;
             empty_peak.mass = peak.mass;
             empty_peak.intensity = 0.0;
@@ -102,8 +102,8 @@ Comparator::getMatchingPeakPairsWithNoneMatchs(std::vector<peak_pair_t> &peak_pa
         }
     }
     // get none matched measured peak
-    for(const auto & peak : *predicted){
-        if(matched_predicted_weights.find(peak.mass) != matched_predicted_weights.end()){
+    for(const auto & peak : *predicted->getPeaks()){
+        if(matched_predicted_weights.find(peak.mass) == matched_predicted_weights.end()){
             Peak empty_peak;
             empty_peak.mass = peak.mass;
             empty_peak.intensity = 0.0;

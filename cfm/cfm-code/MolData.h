@@ -251,6 +251,8 @@ public:
     void createNewGraphForComputation() {
         fg->createNewGraphForComputation();
     }
+
+    void computeDifferenceMap(std::multimap<double, double, std::greater<double>> &difference, int engery_level);
     ~MolData();
 protected
     : // These items are protected rather than private for access during tests.
@@ -286,7 +288,6 @@ protected
 
     void createSpeactraSingleEnergry(unsigned int energy_level);
 
-    void computeDifferenceMap(std::multimap<double, double> &difference, int engery_level);
 };
 
 #endif // __MOLDATA_H__

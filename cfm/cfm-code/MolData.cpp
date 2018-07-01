@@ -800,16 +800,15 @@ void MolData::addNoise(double max_intensity, double total_intensity, double abs_
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::computeDifferenceMap(std::multimap<double, double> &difference, int engery_level) {
-    /*Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
-    // this is for SE
+void MolData::computeDifferenceMap(std::multimap<double, double, std::greater<double>> &difference, int engery_level) {
+    Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
     cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[engery_level], &predicted_spectra[engery_level]);
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
-        difference.insert(intensity_difference, peak_pair.second.mass);
+        difference.insert(std::pair<double,double>(intensity_difference, peak_pair.second.mass));
     }
-    delete(cmp);*/
+    delete(cmp);
 }
 
 MolData::~MolData() {
