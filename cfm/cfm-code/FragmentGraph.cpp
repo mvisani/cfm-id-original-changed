@@ -756,44 +756,44 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
 }
 
 void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                                   int max_num_iter,
-                                                                   double explore_weight,
-                                                                   const Spectrum *measured,
-                                                                   const Spectrum *predicted){
+                                                                                         std::set<double> &selected_weights) {
+    const unsigned  depth = 3;
+    std::vector<int> path(depth);
+    std::set<int> visited;
 
+    getSampledTransitionIdsDifferenceWeightedBFS(selected_ids, selected_weights, visited, 0, path);
+}
 
-    std::vector<std::uniform_int_distribution<int>> uniform_int_distributions;
+void FragmentGraph::ComputationalFragmenGraph::
+getSampledTransitionIdsDifferenceWeightedBFS(std::set<int> &selected_ids, std::set<double> &selected_weights,
+                                             std::set<int> &visited, int frag_id, std::vector<int> &path) {
 
-    for (auto &frag_trans_ids: from_id_tmap) {
-        // add to discrete_distributions
-        uniform_int_distributions.emplace_back(std::uniform_int_distribution<> (0, (int) frag_trans_ids.size() - 1));
+    double frag_mass = fragments[frag_id]->getMass();
+
+    bool save = (selected_weights.find(frag_mass) != selected_weights.end());
+    auto lower_bound = selected_weights.lower_bound(frag_mass);
+    auto upper_bound = selected_weights.upper_bound(frag_mass);
+    if(lower_bound != selected_weights.end()){
+        save = (std::fabs(*lower_bound - frag_mass) < 0.001);
+    }
+    if(upper_bound != selected_weights.end()){
+        save = (std::fabs(*upper_bound - frag_mass) < 0.001);
+    }
+    if(save){
+        for(const auto & trans_id : path)
+            selected_ids.insert(trans_id);
     }
 
-    int num_iter = 0;
-    while (num_iter <= max_num_iter) {
-        // init queue and add root
-        std::queue<int> fgs;
+    // if we have see this before
+    if(visited.find(frag_id) != visited.end())
+        return;
 
-        fgs.push(0);
-        while (!fgs.empty()) {
-            // get current id
-            int frag_id = fgs.front();
-            fgs.pop();
-
-            // if there is somewhere to go
-            if (!from_id_tmap[frag_id].empty()) {
-                // add a uct style random select
-                ;
-                int selected_idx = uniform_int_distributions[frag_id](util_rng);
-                if (selected_idx < from_id_tmap[frag_id].size()) {
-                    // go to child
-                    int selected_trans_id = from_id_tmap[frag_id][selected_idx];
-                    fgs.push(transitions[selected_trans_id]->getToId());
-                    selected_ids.insert(selected_trans_id);
-                }
-            }
-        }
-        num_iter++;
+    visited.insert(frag_id);
+    for(const auto & trans_id : from_id_tmap[frag_id]){
+        std::vector<int> current_path(path);
+        path.push_back(trans_id);
+        getSampledTransitionIdsDifferenceWeightedBFS(selected_ids, selected_weights, visited,
+                                                     transitions[trans_id]->getToId(), current_path);
     }
 }
 

@@ -653,14 +653,12 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
                                                                   sampling_explore_rate);
     else if(sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING){
         moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations);
-        /*moldata.computePredictedSpectra(*param,false, false,energy);
-        std::multimap<double, double, std::greater<double>> difference;
-        moldata.computeDifferenceMap(difference, energy);*/
     }
     else if(sampling_method == USE_DIFFERENCE_SAMPLING){
         moldata.computePredictedSpectra(*param,false,false,energy);
-        std::multimap<double, double, std::greater<double>> difference;
-        moldata.computeDifferenceMap(difference, energy);
+        std::set<double> weights;
+        moldata.getSelectedWeightSet(weights, energy, 0.5);
+        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
     }
 }
 

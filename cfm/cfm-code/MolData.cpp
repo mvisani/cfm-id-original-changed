@@ -793,6 +793,12 @@ void MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int
         fg->getSampledTransitionIdsRandomWalk(selected_ids, max_num_iter);
 }
 
+void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids,  std::set<double> &selected_weights) {
+    if (!hasEmptySpectrum() && hasComputedGraph())
+        fg->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights);
+}
+
+
 void MolData::addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol) {
     for (auto &spectrum: spectra) {
         spectrum.addNoise(max_intensity, total_intensity, abs_tol, ppm_tol);
@@ -800,15 +806,27 @@ void MolData::addNoise(double max_intensity, double total_intensity, double abs_
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::computeDifferenceMap(std::multimap<double, double, std::greater<double>> &difference, int engery_level) {
+void MolData::getSelectedWeightSet(std::set<double> &selected_weights, int engery_level, double ratio) {
+
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
     cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[engery_level], &predicted_spectra[engery_level]);
+    std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
+        //std::cout << peak_pair.first.mass << " " << peak_pair.second.mass << " ";
         difference.insert(std::pair<double,double>(intensity_difference, peak_pair.second.mass));
     }
     delete(cmp);
+
+    auto size_limit = difference.size() * ratio;
+    auto cout = 0;
+    for(const auto & diff:  difference){
+        selected_weights.insert(diff.second);
+        cout ++;
+        if(cout > size_limit)
+            break;
+    }
 }
 
 MolData::~MolData() {
@@ -818,8 +836,4 @@ MolData::~MolData() {
     if (ev_graph_computed)
         delete ev_fg;
 
-    // Delete any computed feature vectors
-    /*std::vector<FeatureVector *>::iterator it = fvs.begin();
-    for (; it != fvs.end(); ++it)
-        delete *it;*/
 }
