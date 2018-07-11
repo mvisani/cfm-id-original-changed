@@ -757,8 +757,7 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
 
 void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
                                                                                          std::set<double> &selected_weights) {
-    const unsigned  depth = 3;
-    std::vector<int> path(depth);
+    std::vector<int> path;
     std::set<int> visited;
 
     getSampledTransitionIdsDifferenceWeightedBFS(selected_ids, selected_weights, visited, 0, path);
@@ -774,14 +773,19 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<int> &selected_ids, std::s
     auto lower_bound = selected_weights.lower_bound(frag_mass);
     auto upper_bound = selected_weights.upper_bound(frag_mass);
     if(lower_bound != selected_weights.end()){
-        save = (std::fabs(*lower_bound - frag_mass) < 0.001);
+        save = (std::fabs(*lower_bound - frag_mass) <= 0.001);
     }
     if(upper_bound != selected_weights.end()){
-        save = (std::fabs(*upper_bound - frag_mass) < 0.001);
+        save = (std::fabs(*upper_bound - frag_mass) <= 0.001);
     }
     if(save){
-        for(const auto & trans_id : path)
+        //std::cout << std::endl;
+        //std::cout << *lower_bound << " " << frag_mass << " " <<  *upper_bound << " " << path.size() << std::endl;
+        for(const auto & trans_id : path){
             selected_ids.insert(trans_id);
+            //std::cout << trans_id << " ";
+        }
+        //std::cout << std::endl;
     }
 
     // if we have see this before
@@ -790,8 +794,9 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<int> &selected_ids, std::s
 
     visited.insert(frag_id);
     for(const auto & trans_id : from_id_tmap[frag_id]){
-        std::vector<int> current_path(path);
-        path.push_back(trans_id);
+        std::vector<int> current_path = path;
+        //std::cout << trans_id << std::endl;
+        current_path.push_back(trans_id);
         getSampledTransitionIdsDifferenceWeightedBFS(selected_ids, selected_weights, visited,
                                                      transitions[trans_id]->getToId(), current_path);
     }
