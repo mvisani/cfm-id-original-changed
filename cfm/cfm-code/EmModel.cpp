@@ -657,7 +657,7 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
     else if(sampling_method == USE_DIFFERENCE_SAMPLING){
         moldata.computePredictedSpectra(*param,false,false,energy);
         std::set<double> weights;
-        moldata.getSelectedWeightSet(weights, energy, 0.05);
+        moldata.getSelectedWeightSet(weights, energy, 0.1);
         moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
     }
 }
@@ -673,6 +673,7 @@ double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     if (!moldata.hasComputedGraph())
         return q;
+
 
     // Compute the latest transition thetas
     moldata.computeTransitionThetas(*param);
@@ -708,6 +709,14 @@ double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
                     (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
             q -= nu * log(denom);
         }
+    }
+    if (boost::math::isnan(q)) {
+        std::cerr << "Warning Q is NaN" << std::endl;
+        exit(0);
+    }
+    if (boost::math::isinf(q)) {
+        std::cerr << "Warning Q is Inf" << std::endl;
+        exit(0);
     }
     return q;
 }
