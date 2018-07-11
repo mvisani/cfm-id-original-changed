@@ -740,14 +740,13 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
                     std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size() - 1);
                     selected_idx = dis(util_rng);
                 } else {
-                    int selected_idx = discrete_distributions[frag_id](util_rng);
+                    selected_idx = discrete_distributions[frag_id](util_rng);
                 }
                 if (selected_idx < from_id_tmap[frag_id].size()) {
                     // go to child
                     int selected_trans_id = from_id_tmap[frag_id][selected_idx];
                     fgs.push(transitions[selected_trans_id]->getToId());
                     selected_ids.insert(selected_trans_id);
-
                 }
             }
         }
