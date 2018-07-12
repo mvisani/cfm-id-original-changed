@@ -46,8 +46,9 @@ static const double DEFAULT_LAMBDA = 0.01;
 static const int USE_SGD_FOR_GA = 0;
 static const int USE_MOMENTUM_FOR_GA = 1;
 static const int USE_ADAM_FOR_GA = 2;
-static const int USE_ADADELTA_FOR_GA = 3;
-static const int USE_AMSGRAD_FOR_GA = 4;
+static const int USE_ADAMW_FOR_GA = 3;
+static const int USE_ADADELTA_FOR_GA = 4;
+static const int USE_AMSGRAD_FOR_GA = 5;
 
 //Use ADAM to do gradient ascent
 static const int DEFAULT_USE_ADAM_FOR_GA = USE_ADAM_FOR_GA;
@@ -66,7 +67,6 @@ static const double DEFAULT_STEP_DECAY_EPOCHS_DROP = 10;
 
 // Learning Rate
 static const double DEFAULT_LEARNING_RATE = 0.001;
-
 
 //Momentum term used in Gradient Ascent
 static const double DEFAULT_MOMENTUM_ALPHA = 0.1;
@@ -179,7 +179,6 @@ static const int USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING = 2;
 static const int USE_DIFFERENCE_SAMPLING = 3;
 static const int DEFAULT_GRAPH_SAMPLING_K = 5;
 
-
 //Configuration
 struct config_t {
 
@@ -255,7 +254,10 @@ struct config_t {
     // For ADAM
     double ga_adam_beta_1;
     double ga_adam_beta_2;
-    double ga_eps;
+    double ga_adam_eps;
+    // For ADAMW
+    double ga_adamw_w;
+
     // For adadelta
     double ga_adadelta_rho;
 

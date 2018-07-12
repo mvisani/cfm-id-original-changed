@@ -49,9 +49,9 @@ private:
 
 };
 
-class Aadm : public Solver {
+class Adam : public Solver {
 public:
-    Aadm(unsigned int length,
+    Adam(unsigned int length,
          double learning_rate,
          double beta_1,
          double beta_2,
@@ -61,7 +61,7 @@ public:
                        std::vector<double> &weights,
                        std::set<unsigned int> &used_idxs) override;
 
-private:
+protected:
     double beta_1;
     double beta_2;
     double eps;
@@ -71,6 +71,26 @@ private:
 
 };
 
+// simple version of Adam W
+// where eta is always 1.0
+class AdamW : public Adam {
+public:
+    AdamW(unsigned int length,
+         double learning_rate,
+         double beta_1,
+         double beta_2,
+         double eps,
+          double w) : Adam(length, learning_rate, beta_1, beta_2, eps) {
+        this->w = w;
+    };
+
+    void adjustWeights(std::vector<double> &grads,
+                       std::vector<double> &weights,
+                       std::set<unsigned int> &used_idxs) override;
+
+private:
+    double w;
+};
 
 class Adadelta : public Solver {
 public:

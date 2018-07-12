@@ -20,7 +20,6 @@ void Sgd::adjustWeights(std::vector<double> &grads,
         weights[used_idx] += learning_rate * grads[used_idx];
 }
 
-
 Momentum::Momentum(unsigned int length, double learning_rate, double momentum) {
     prev_v = std::vector<double>(length, 0.0);
     this->learning_rate = learning_rate;
@@ -38,7 +37,7 @@ void Momentum::adjustWeights(std::vector<double> &grads,
     }
 }
 
-Aadm::Aadm(unsigned int length,
+Adam::Adam(unsigned int length,
            double learning_rate,
            double beta_1,
            double beta_2,
@@ -54,7 +53,7 @@ Aadm::Aadm(unsigned int length,
 }
 
 
-void Aadm::adjustWeights(std::vector<double> &grads,
+void Adam::adjustWeights(std::vector<double> &grads,
                          std::vector<double> &weights,
                          std::set<unsigned int> &used_idxs) {
 
@@ -82,6 +81,19 @@ void Aadm::adjustWeights(std::vector<double> &grads,
         // Update parameters
         // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
         weights[used_idx] += learning_rate * m_hat / (std::sqrt(v_hat) + eps);
+    }
+}
+
+void AdamW::adjustWeights(std::vector<double> &grads,
+                         std::vector<double> &weights,
+                         std::set<unsigned int> &used_idxs) {
+    // Adam use one base iterator
+    Adam::adjustWeights(grads, weights, used_idxs);
+    for (auto &used_idx: used_idxs) {
+        // theta_{t} <- theta_{t-1} - \eta * (alpha * m_hat / ( sqrt(v_hat) + eps) + w * theta_{t-1} )
+        // in this case , eta is always 1.0 and this is GA
+        //  all we need to do is to add  w * theta_{t-1} to exiting adam results
+        weights[used_idx] +=  w *  weights[used_idx];
     }
 }
 

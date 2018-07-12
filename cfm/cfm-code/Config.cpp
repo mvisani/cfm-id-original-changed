@@ -61,7 +61,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_momentum = DEFAULT_GA_MOMENTUM;
     cfg.ga_adam_beta_1 = DEFAULT_ADAM_BETA_1;
     cfg.ga_adam_beta_2 = DEFAULT_ADAM_BETA_2;
-    cfg.ga_eps = DEFAULT_EPS;
+    cfg.ga_adam_eps = DEFAULT_EPS;
+    cfg.ga_adamw_w = DEFAULT_LAMBDA;
     cfg.ga_adadelta_rho = DEFAULT_ADADELTA_RHO;
     cfg.ga_decay_method = USE_DEFAULT_DECAY;
     cfg.exp_decay_k = DEFAULT_EXP_DECAY_K;
@@ -138,7 +139,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_momentum") cfg.ga_momentum = (double) value;
         else if (name == "ga_adam_beta_1") cfg.ga_adam_beta_1 = (double) value;
         else if (name == "ga_adam_beta_2") cfg.ga_adam_beta_2 = (double) value;
-        else if (name == "ga_eps") cfg.ga_eps = (double) value;
+        else if (name == "ga_adam_eps") cfg.ga_adam_eps = (double) value;
+        else if (name == "ga_adamw_w") cfg.ga_adamw_w = (double) value;
         else if (name == "ga_adadelta_rho") cfg.ga_adadelta_rho = (double) value;
         else if (name == "ga_decay_method") cfg.ga_decay_method = (int) value;
         else if (name == "exp_decay_k") cfg.exp_decay_k = (double) value;
@@ -215,8 +217,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         }
         if (cfg.param_init_type == PARAM_RANDOM_INIT) std::cout << "Using Random Parameter Initialisation" << std::endl;
         else if (cfg.param_init_type == PARAM_FULL_ZERO_INIT) std::cout << "Using Full Zero Initialisation" << std::endl;
-        else if (cfg.param_init_type == PARAM_ZERO_INIT)
-            std::cout << "Using Zero Initialisation (non-zero Bias)" << std::endl;
+        else if (cfg.param_init_type == PARAM_ZERO_INIT) std::cout << "Using Zero Initialisation (non-zero Bias)" << std::endl;
+        else if (cfg.param_init_type == PARAM_NORMAL_INIT) std::cout << "Using NORMAL Initialisation FOR NN" << std::endl;
         else
             std::cout << "Warning: Unknown parameter initialization, revering to default mode (full random)!"
                       << std::endl;
@@ -234,16 +236,25 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         } else if (USE_ADADELTA_FOR_GA == cfg.ga_method) {
             std::cout << "Using AdaDelta implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " decay rate " << cfg.decay_rate
-                      << " eps " << cfg.ga_eps
+                      << " eps " << cfg.ga_adam_eps
                       << std::endl;
-        } else if (USE_ADAM_FOR_GA == cfg.ga_method || USE_AMSGRAD_FOR_GA == cfg.ga_method) {
+        } else if (USE_ADAM_FOR_GA == cfg.ga_method
+                   || USE_AMSGRAD_FOR_GA == cfg.ga_method
+                   || USE_ADAMW_FOR_GA == cfg.ga_method) {
             if (USE_ADAM_FOR_GA == cfg.ga_method)
-                std::cout << "Using ADAM implementation" << std::endl;
+                std::cout << "Using Adam implementation" << std::endl;
             else if (USE_AMSGRAD_FOR_GA == cfg.ga_method)
                 std::cout << "Using AMSgrad implementation" << std::endl;
+            else if (USE_ADAMW_FOR_GA == cfg.ga_method){
+                std::cout << "Using AdamW implementation" << std::endl;
+                if(cfg.lambda != 0.0)
+                    std::cout << "Set lambda to 0, adamW use Weight Decay not L2" << std::endl;
+            }
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " beta1  " << cfg.ga_adam_beta_1
-                      << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_eps
-                      << std::endl;
+                      << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_adam_eps;
+            if (USE_ADAMW_FOR_GA == cfg.ga_method)
+                std::cout << " ga_adamw_w " << cfg.ga_adamw_w;
+            std::cout << std::endl;
         }
 
         std::cout << "Using GA max iterations " << cfg.ga_max_iterations << std::endl;
