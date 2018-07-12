@@ -103,10 +103,14 @@ Solver *ModelBase::getSolver(int ga_method, double learning_rate) const {
                                   cfg->ga_eps);
             break;
         case USE_MOMENTUM_FOR_GA:
-        default:
             solver = new Momentum(param->getNumWeights(),
                                   learning_rate,
                                   cfg->ga_momentum);
+            break;
+        case USE_SGD_FOR_GA:
+        default:
+            solver = new Sgd(learning_rate);
+
     }
     return solver;
 }

@@ -27,6 +27,13 @@ protected:
     double learning_rate;
 };
 
+class Sgd: public Solver {
+public:
+    Sgd(double learning_rate);
+    void adjustWeights(std::vector<double> &grads,
+                       std::vector<double> &weights,
+                       std::set<unsigned int> &used_idxs) override;
+};
 
 class Momentum : public Solver {
 public:

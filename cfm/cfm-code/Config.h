@@ -43,6 +43,7 @@ static const double DEFAULT_GA_CONVERGE_THRESH = 0.0001;
 static const double DEFAULT_LAMBDA = 0.01;
 
 // GA methods
+static const int USE_SGD_FOR_GA = 0;
 static const int USE_MOMENTUM_FOR_GA = 1;
 static const int USE_ADAM_FOR_GA = 2;
 static const int USE_ADADELTA_FOR_GA = 3;

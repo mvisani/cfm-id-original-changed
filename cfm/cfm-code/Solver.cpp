@@ -9,6 +9,18 @@ void Solver::adjustWeights(std::vector<double> &grads,
     adjustWeights(grads, *(param->getWeightsPtr()), used_idxs);
 }
 
+Sgd::Sgd(double learning_rate){
+    this->learning_rate = learning_rate;
+}
+
+void Sgd::adjustWeights(std::vector<double> &grads,
+                             std::vector<double> &weights,
+                             std::set<unsigned int> &used_idxs) {
+    for (auto &used_idx: used_idxs)
+        weights[used_idx] += learning_rate * grads[used_idx];
+}
+
+
 Momentum::Momentum(unsigned int length, double learning_rate, double momentum) {
     prev_v = std::vector<double>(length, 0.0);
     this->learning_rate = learning_rate;
@@ -73,6 +85,7 @@ void Aadm::adjustWeights(std::vector<double> &grads,
     }
 }
 
+// AMSgrad sucks
 AMSgrad::AMSgrad(unsigned int length,
                  double learning_rate,
                  double beta_1,
