@@ -253,7 +253,6 @@ double EmNNModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
     return Q;
 }
 
-
 double EmNNModel::addRegularizersAndUpdateGradient(double *grads) {
 
     double Q = 0.0;

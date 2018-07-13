@@ -88,8 +88,18 @@ public:
                        std::vector<double> &weights,
                        std::set<unsigned int> &used_idxs) override;
 
+    void add_bais_index(int index) {
+        bias_indices.insert(index);
+    }
+
+    void add_bais_indices(std::vector<int> & indices) {
+        for(const auto & index : indices)
+            bias_indices.insert(index);
+    }
+    
 private:
     double w;
+    std::set<int> bias_indices;
 };
 
 class Adadelta : public Solver {
