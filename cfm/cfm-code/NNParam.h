@@ -82,7 +82,7 @@ public:
     unsigned int getTotalNumNodes() const { return total_nodes; };    //Only hidden and output nodes (not input nodes)
     unsigned int getSecondLayerWeightOffset() const { return hlayer_num_nodes[0] * expected_num_input_features; };
 
-    void getBiasIndexes(std::vector<unsigned int> &bias_indexes);
+    virtual void getBiasIndexes(std::vector<unsigned int> &bias_indexes) override;
 
     void rollDropout();
 

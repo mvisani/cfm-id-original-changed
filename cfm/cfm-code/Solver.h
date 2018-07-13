@@ -15,10 +15,7 @@ class Solver {
 public:
     virtual void adjustWeights(std::vector<double> &grads,
                                std::set<unsigned int> &used_idxs,
-                               boost::shared_ptr<Param> param);
-
-    virtual void adjustWeights(std::vector<double> &grads, std::vector<double> &weights,
-                               std::set<unsigned int> &used_idxs)=0;
+                               boost::shared_ptr<Param> param) = 0;
 
     void setLearningRate(const double lr) { this->learning_rate = lr; };
 
@@ -31,8 +28,8 @@ class Sgd: public Solver {
 public:
     Sgd(double learning_rate);
     void adjustWeights(std::vector<double> &grads,
-                       std::vector<double> &weights,
-                       std::set<unsigned int> &used_idxs) override;
+                       std::set<unsigned int> &used_idxs,
+                       boost::shared_ptr<Param> param) override;
 };
 
 class Momentum : public Solver {
@@ -40,8 +37,8 @@ public:
     Momentum(unsigned int length, double learning_rate, double momentum);
 
     void adjustWeights(std::vector<double> &grads,
-                       std::vector<double> &weights,
-                       std::set<unsigned int> &used_idxs) override;
+                       std::set<unsigned int> &used_idxs,
+                       boost::shared_ptr<Param> param) override;
 
 private:
     std::vector<double> prev_v;
@@ -58,8 +55,8 @@ public:
          double eps);
 
     void adjustWeights(std::vector<double> &grads,
-                       std::vector<double> &weights,
-                       std::set<unsigned int> &used_idxs) override;
+                       std::set<unsigned int> &used_idxs,
+                       boost::shared_ptr<Param> param) override;
 
 protected:
     double beta_1;
@@ -85,21 +82,11 @@ public:
     };
 
     void adjustWeights(std::vector<double> &grads,
-                       std::vector<double> &weights,
-                       std::set<unsigned int> &used_idxs) override;
-
-    void add_bais_index(int index) {
-        bias_indices.insert(index);
-    }
-
-    void add_bais_indices(std::vector<int> & indices) {
-        for(const auto & index : indices)
-            bias_indices.insert(index);
-    }
+                       std::set<unsigned int> &used_idxs,
+                       boost::shared_ptr<Param> param) override;
     
 private:
     double w;
-    std::set<int> bias_indices;
 };
 
 class Adadelta : public Solver {
@@ -110,8 +97,8 @@ public:
              double eps);
 
     void adjustWeights(std::vector<double> &grads,
-                       std::vector<double> &weights,
-                       std::set<unsigned int> &used_idxs) override;
+                       std::set<unsigned int> &used_idxs,
+                       boost::shared_ptr<Param> param) override;
 
 private:
     double decay_rate;
@@ -131,8 +118,8 @@ public:
             double eps);
 
     void adjustWeights(std::vector<double> &grads,
-                       std::vector<double> &weights,
-                       std::set<unsigned int> &used_idxs) override;
+                       std::set<unsigned int> &used_idxs,
+                       boost::shared_ptr<Param> param) override;
 
 private:
     double beta_1;

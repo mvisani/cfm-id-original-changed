@@ -730,11 +730,10 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
             int frag_id = fgs.front();
             fgs.pop();
 
-
             // if there is somewhere to go
             if (!from_id_tmap[frag_id].empty()) {
                 // add a uct style random select
-                int selected_idx;
+                int selected_idx = -1;
                 int coin = explore_coin(util_rng);
                 if (coin == 1) {
                     std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size() - 1);
@@ -742,7 +741,7 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
                 } else {
                     selected_idx = discrete_distributions[frag_id](util_rng);
                 }
-                if (selected_idx < from_id_tmap[frag_id].size()) {
+                if (selected_idx < from_id_tmap[frag_id].size() && selected_idx > -1) {
                     // go to child
                     int selected_trans_id = from_id_tmap[frag_id][selected_idx];
                     fgs.push(transitions[selected_trans_id]->getToId());

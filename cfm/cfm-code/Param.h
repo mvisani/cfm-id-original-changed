@@ -83,12 +83,12 @@ public:
 
     std::vector<std::string> *getFeatureNames() { return &feature_list; };
 
+    virtual void getBiasIndexes(std::vector<unsigned int> &bias_indexes){ bias_indexes.push_back(0);};
 protected:
     std::vector<double> weights;
     unsigned int num_energy_levels;
     std::vector<std::string> feature_list;
     int expected_num_input_features;
-
 };
 
 #endif // __PARAM_H__
