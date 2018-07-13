@@ -247,8 +247,10 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                 std::cout << "Using AMSgrad implementation" << std::endl;
             else if (USE_ADAMW_FOR_GA == cfg.ga_method){
                 std::cout << "Using AdamW implementation" << std::endl;
-                if(cfg.lambda != 0.0)
-                    std::cout << "Set lambda to 0, adamW use Weight Decay not L2" << std::endl;
+                if(cfg.lambda != 0.0){
+                    cfg.lambda = 0.0;
+                    std::cout << "Set lambda to " << cfg.lambda << ", adamW use Weight Decay not L2" << std::endl;
+                }
             }
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " beta1  " << cfg.ga_adam_beta_1
                       << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_adam_eps;
@@ -256,7 +258,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                 std::cout << " ga_adamw_w " << cfg.ga_adamw_w;
             std::cout << std::endl;
         }
-
         std::cout << "Using GA max iterations " << cfg.ga_max_iterations << std::endl;
         std::cout << "Using GA Convergence Threshold " << cfg.ga_converge_thresh << std::endl;
         std::cout << "Using GA mini batch taking 1 in " << cfg.ga_minibatch_nth_size << " of processor data"

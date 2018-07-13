@@ -88,12 +88,30 @@ void AdamW::adjustWeights(std::vector<double> &grads,
                          std::vector<double> &weights,
                          std::set<unsigned int> &used_idxs) {
     // Adam use one base iterator
-    Adam::adjustWeights(grads, weights, used_idxs);
+    // Adam use one base iterator
+    iteration_count += 1;
     for (auto &used_idx: used_idxs) {
-        // theta_{t} <- theta_{t-1} - \eta * (alpha * m_hat / ( sqrt(v_hat) + eps) + w * theta_{t-1} )
-        // in this case , eta is always 1.0 and this is GA
-        //  all we need to do is to add  w * theta_{t-1} to exiting adam results
-        weights[used_idx] +=  w *  weights[used_idx];
+        // Update biased first moment estimate
+        // m_t = beta_1 * m_{t-1} + ( 1 - beta_1 ) * g_t
+        double m_t = first_moment_vector[used_idx] * beta_1 + (1.0 - beta_1) * grads[used_idx];
+        first_moment_vector[used_idx] = m_t;
+
+        // Update biased second raw moment estimate
+        // v_t = beta_2 * v_{t-1} + ( 1 - beta_2 ) * g_t^2
+        double v_t = beta_2 * second_moment_vector[used_idx]
+                     + (1.0 - beta_2) * std::pow(grads[used_idx], 2);
+        second_moment_vector[used_idx] = v_t;
+
+        // Compute bias-corrected first moment estimate
+        // hat_m_t = m_t / ( 1 - beta_1 ^ t)
+        double m_hat = m_t / (1.0 - std::pow(beta_1, iteration_count));
+        // Compute bias-corrected second raw moment estimate
+        // hat_v_t = v_t / ( 1 - beta_2 ^ t)
+        double v_hat = v_t / (1.0 - std::pow(beta_2, iteration_count));
+
+        // Update parameters
+        // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
+        weights[used_idx] =  (1.0 - w) *  weights[used_idx] + learning_rate * m_hat / (std::sqrt(v_hat) + eps);
     }
 }
 
