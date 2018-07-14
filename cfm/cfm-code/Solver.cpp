@@ -13,9 +13,8 @@ void Sgd::adjustWeights(std::vector<double> &grads,
                         std::set<unsigned int> &used_idxs,
                         boost::shared_ptr<Param> param) {
 
-    auto weights = *(param->getWeightsPtr());
     for (auto &used_idx: used_idxs)
-        weights[used_idx] += learning_rate * grads[used_idx];
+        (*(param->getWeightsPtr()))[used_idx] += learning_rate * grads[used_idx];
 }
 
 Momentum::Momentum(unsigned int length, double learning_rate, double momentum) {
@@ -28,10 +27,9 @@ void Momentum::adjustWeights(std::vector<double> &grads,
                              std::set<unsigned int> &used_idxs,
                              boost::shared_ptr<Param> param) {
 
-    auto weights = *(param->getWeightsPtr());
     for (auto &used_idx: used_idxs) {
         double v = momentum * prev_v[used_idx] + learning_rate * grads[used_idx];
-        weights[used_idx] += v;
+        (*(param->getWeightsPtr()))[used_idx] += v;
         prev_v[used_idx] = v;
     }
 }
@@ -56,8 +54,6 @@ void Adam::adjustWeights(std::vector<double> &grads,
                          std::set<unsigned int> &used_idxs,
                          boost::shared_ptr<Param> param) {
 
-    auto weights = *(param->getWeightsPtr());
-
     // Adam use one base iterator
     iteration_count += 1;
     for (auto &used_idx: used_idxs) {
@@ -81,15 +77,13 @@ void Adam::adjustWeights(std::vector<double> &grads,
 
         // Update parameters
         // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
-        weights[used_idx] += learning_rate * m_hat / (std::sqrt(v_hat) + eps);
+        (*(param->getWeightsPtr()))[used_idx] += learning_rate * m_hat / (std::sqrt(v_hat) + eps);
     }
 }
 
 void AdamW::adjustWeights(std::vector<double> &grads,
                           std::set<unsigned int> &used_idxs,
                           boost::shared_ptr<Param> param) {
-
-    auto weights = *(param->getWeightsPtr());
 
     std::vector<unsigned int> bias_index;
     param->getBiasIndexes(bias_index);
@@ -118,9 +112,9 @@ void AdamW::adjustWeights(std::vector<double> &grads,
         // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
 
         if(std::find(bias_index.begin(), bias_index.end(),used_idx) != bias_index.end())
-            weights[used_idx] =  (1.0 - w) *  weights[used_idx] + learning_rate * m_hat / (std::sqrt(v_hat) + eps);
+            (*(param->getWeightsPtr()))[used_idx] =  (1.0 - w) *  (*(param->getWeightsPtr()))[used_idx] + learning_rate * m_hat / (std::sqrt(v_hat) + eps);
         else
-            weights[used_idx] =  weights[used_idx] + learning_rate * m_hat / (std::sqrt(v_hat) + eps);
+            (*(param->getWeightsPtr()))[used_idx] =  (*(param->getWeightsPtr()))[used_idx] + learning_rate * m_hat / (std::sqrt(v_hat) + eps);
     }
 }
 
@@ -146,7 +140,7 @@ void AMSgrad::adjustWeights(std::vector<double> &grads,
                             std::set<unsigned int> &used_idxs,
                             boost::shared_ptr<Param> param) {
 
-    auto weights = *(param->getWeightsPtr());
+    
     // Adam use one base iterator
     iteration_count += 1;
     for (auto &used_idx: used_idxs) {
@@ -174,7 +168,7 @@ void AMSgrad::adjustWeights(std::vector<double> &grads,
 
         // Update parameters
         // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
-        weights[used_idx] += learning_rate * m_hat / (sqrt(v_hat) + eps);
+        (*(param->getWeightsPtr()))[used_idx] += learning_rate * m_hat / (sqrt(v_hat) + eps);
     }
 }
 
@@ -195,8 +189,7 @@ Adadelta::Adadelta(unsigned int length,
 void Adadelta::adjustWeights(std::vector<double> &grads,
                              std::set<unsigned int> &used_idxs,
                              boost::shared_ptr<Param> param) {
-
-    auto weights = *(param->getWeightsPtr());
+    
     // TODO: MAKE SURE THIS WORKS
     iteration_count += 1;
     for (auto &used_idx: used_idxs) {
@@ -219,6 +212,6 @@ void Adadelta::adjustWeights(std::vector<double> &grads,
 
         // Update weights
         // NOTE: we are doing gradient ascent
-        weights[used_idx] -= detla_x;
+        (*(param->getWeightsPtr()))[used_idx] -= detla_x;
     }
 }
