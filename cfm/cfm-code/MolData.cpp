@@ -820,7 +820,7 @@ void MolData::getSelectedWeightSet(std::set<double> &selected_weights, int enger
 
     for(const auto & diff:  difference){
 
-        if(diff.first < 0.1)
+        if(diff.first < 0.5)
             break;
 
         selected_weights.insert(diff.second);
