@@ -771,19 +771,15 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<int> &selected_ids, std::s
     auto lower_bound = selected_weights.lower_bound(frag_mass);
     auto upper_bound = selected_weights.upper_bound(frag_mass);
     if(lower_bound != selected_weights.end()){
-        save = (std::fabs(*lower_bound - frag_mass) <= 0.001);
+        save = (std::fabs(*lower_bound - frag_mass) <= 0.00001);
     }
     if(upper_bound != selected_weights.end()){
-        save = (std::fabs(*upper_bound - frag_mass) <= 0.001);
+        save = (std::fabs(*upper_bound - frag_mass) <= 0.00001);
     }
     if(save){
-        //std::cout << std::endl;
-        //std::cout << *lower_bound << " " << frag_mass << " " <<  *upper_bound << " " << path.size() << std::endl;
         for(const auto & trans_id : path){
             selected_ids.insert(trans_id);
-            //std::cout << trans_id << " ";
         }
-        //std::cout << std::endl;
     }
 
     // if we have see this before

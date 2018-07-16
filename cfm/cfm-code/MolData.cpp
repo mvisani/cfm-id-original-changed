@@ -806,7 +806,7 @@ void MolData::addNoise(double max_intensity, double total_intensity, double abs_
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::getSelectedWeightSet(std::set<double> &selected_weights, int engery_level, double ratio) {
+void MolData::getSelectedWeightSet(std::set<double> &selected_weights, int engery_level, int limit) {
 
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
@@ -819,12 +819,11 @@ void MolData::getSelectedWeightSet(std::set<double> &selected_weights, int enger
     }
     delete(cmp);
 
-    auto size_limit = difference.size() * ratio;
     auto cout = 0;
     for(const auto & diff:  difference){
         selected_weights.insert(diff.second);
         cout ++;
-        if(cout > size_limit)
+        if(cout == limit)
             break;
     }
 }
