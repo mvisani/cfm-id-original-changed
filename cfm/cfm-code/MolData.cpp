@@ -814,17 +814,21 @@ void MolData::getSelectedWeightSet(std::set<double> &selected_weights, int enger
     std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
-        //std::cout << peak_pair.first.mass << " " << peak_pair.second.mass << " ";
+        //std::cout << peak_pair.second.mass << " " << intensity_difference << " ";
         difference.insert(std::pair<double,double>(intensity_difference, peak_pair.second.mass));
     }
+    //std::cout << std::endl;
     delete(cmp);
 
     auto cout = 0;
     for(const auto & diff:  difference){
-        selected_weights.insert(diff.second);
-        cout ++;
         if(cout == limit)
             break;
+        if(diff.first < 0.1)
+            break;
+
+        selected_weights.insert(diff.second);
+        cout ++;
     }
 }
 

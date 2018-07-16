@@ -657,9 +657,12 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
     else if(sampling_method == USE_DIFFERENCE_SAMPLING){
         moldata.computePredictedSpectra(*param,false,false,energy);
         std::set<double> weights;
-        moldata.getSelectedWeightSet(weights, energy, 10);
-        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
-        moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations);
+        moldata.getSelectedWeightSet(weights, energy, 15);
+        if(weights.size() > 0 )
+            moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
+        else
+            moldata.getSampledTransitionIdsWeightedRandomWalk(selected_trans_id, num_iterations, energy,
+                                                              sampling_explore_rate);
     }
 }
 
@@ -674,7 +677,6 @@ double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     if (!moldata.hasComputedGraph())
         return q;
-
 
     // Compute the latest transition thetas
     moldata.computeTransitionThetas(*param);
