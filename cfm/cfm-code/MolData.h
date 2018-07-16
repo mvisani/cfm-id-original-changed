@@ -254,7 +254,7 @@ public:
         fg->createNewGraphForComputation();
     }
 
-    void getSelectedWeightSet(std::set<double> &selected_weights, int engery_level, int limit);
+    void getSelectedWeightSet(std::set<double> &selected_weights, int engery_level);
     ~MolData();
 protected
     : // These items are protected rather than private for access during tests.
