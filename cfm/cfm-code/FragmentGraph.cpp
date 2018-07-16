@@ -758,14 +758,19 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifference
     std::vector<int> path;
     std::set<int> visited;
 
-    getSampledTransitionIdsDifferenceWeightedBFS(selected_ids, selected_weights, visited, 0, path);
+    getSampledTransitionIdsDifferenceWeightedBFS(selected_ids, selected_weights, visited, 0, path,
+                                                 *std::min_element(std::begin(selected_ids),std::end(selected_ids)));
 }
 
 void FragmentGraph::ComputationalFragmenGraph::
 getSampledTransitionIdsDifferenceWeightedBFS(std::set<int> &selected_ids, std::set<double> &selected_weights,
-                                             std::set<int> &visited, int frag_id, std::vector<int> &path) {
+                                             std::set<int> &visited, int frag_id, std::vector<int> &path,
+                                             double stop_mass) {
 
     double frag_mass = fragments[frag_id]->getMass();
+
+    if(frag_mass < stop_mass)
+        return;
 
     bool save = (selected_weights.find(frag_mass) != selected_weights.end());
     auto lower_bound = selected_weights.lower_bound(frag_mass);
@@ -792,7 +797,7 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<int> &selected_ids, std::s
         //std::cout << trans_id << std::endl;
         current_path.push_back(trans_id);
         getSampledTransitionIdsDifferenceWeightedBFS(selected_ids, selected_weights, visited,
-                                                     transitions[trans_id]->getToId(), current_path);
+                                                     transitions[trans_id]->getToId(), current_path, 0);
     }
 }
 

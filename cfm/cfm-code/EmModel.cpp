@@ -659,6 +659,7 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
         std::set<double> weights;
         moldata.getSelectedWeightSet(weights, energy, 10);
         moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
+        moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations);
     }
 }
 

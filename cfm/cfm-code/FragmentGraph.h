@@ -409,7 +409,8 @@ protected:
                                                                std::set<double> &selected_weights);
 
         void getSampledTransitionIdsDifferenceWeightedBFS(std::set<int> &selected_ids, std::set<double> &selected_weights,
-                                                                  std::set<int> &visited, int frag_id, std::vector<int> &path);
+                                                                  std::set<int> &visited, int frag_id, std::vector<int> &path,
+                                                                  double stop_mass);
         std::vector<Fragment*> fragments;
         std::vector<Transition*> transitions;
         tmap_t from_id_tmap;
