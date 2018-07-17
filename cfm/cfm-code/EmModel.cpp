@@ -19,6 +19,7 @@
 #include "mpi.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <algorithm>
 
 #include "EmModel.h"
 #include "Comparators.h"
@@ -646,6 +647,7 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
 void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, double sampling_explore_rate,
                                          unsigned int energy, std::set<int> &selected_trans_id) const {
 
+    std::cout << moldata.getId() << " ";
     int num_frags = moldata.getSpectrum(energy)->size();
     int num_iterations = cfg->ga_graph_sampling_k * num_frags;
     if(sampling_method == USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING)
@@ -659,7 +661,29 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
         std::set<double> weights;
         moldata.getSelectedWeightSet(weights, energy);
         moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
+
+        std::set<int> set1, set2;
+        moldata.getSampledTransitionIdsRandomWalk(set1, num_iterations);
+        std::cout << "Random: " << set1.size() << " ";
+
+        moldata.getSampledTransitionIdsWeightedRandomWalk(set2, num_iterations, energy,
+                                                          sampling_explore_rate);
+        std::cout << "WeighedRandom: " << set2.size() << " ";
+
+        std::cout << "DiffMap: " << selected_trans_id.size() << std::endl;
+        std::set<int> inter1;
+        std::set_intersection(std::begin(set1),std::end(set1),std::begin(selected_trans_id),std::end(selected_trans_id),std::inserter(inter1, inter1.begin()));
+        std::cout << "Set difference between Random and DiffMap: " << inter1.size() << std::endl;
+
+        std::set<int> inter2;
+        std::set_intersection(std::begin(set2),std::end(set2),std::begin(selected_trans_id),std::end(selected_trans_id),std::inserter(inter2, inter2.begin()));
+        std::cout << "Set difference between WRandom and DiffMap: " << inter2.size() << std::endl;
+
+        std::set<int> inter3;
+        std::set_intersection(std::begin(set1),std::end(set1),std::begin(set2),std::end(set2),std::inserter(inter3, inter3.begin()));
+        std::cout << "Set difference between Random and WRandom: " << inter3.size() << std::endl;
     }
+    //std::cout << moldata.getId() << " " << selected_trans_id.size() << std::endl;
 }
 
 double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
