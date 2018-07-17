@@ -688,7 +688,7 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
         std::set_intersection(std::begin(set1),std::end(set1),std::begin(set2),std::end(set2),std::inserter(inter3, inter3.begin()));
         std::cout << "Set intersetion between Random and WRandom: " << inter3.size() << std::endl;*/
     }
-    std::cout << moldata.getId() << " " << selected_trans_id.size() << std::endl;
+    // std::cout << moldata.getId() << " " << selected_trans_id.size() << std::endl;
 }
 
 double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
