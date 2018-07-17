@@ -754,36 +754,58 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
 }
 
 void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                                                         std::set<double> &selected_weights) {
+                                                                                         std::vector<double> &selected_weights) {
     std::vector<int> path;
     std::set<int> visited;
+    std::map<double, std::set<int>> selected_trans_map;
+    std::set<double> selected_weights_set;
+    std::copy(selected_weights.begin(), selected_weights.end(), std::inserter(selected_weights_set, selected_weights_set.begin()));
 
-    getSampledTransitionIdsDifferenceWeightedBFS(selected_ids, selected_weights, visited, 0, path,
-                                                 *std::min_element(std::begin(selected_ids),std::end(selected_ids)));
+    getSampledTransitionIdsDifferenceWeightedBFS(selected_weights_set, visited, 0, path,
+                                                 *std::min_element(std::begin(selected_ids), std::end(selected_ids)),
+                                                 selected_trans_map);
+    int total = (int)(transitions.size() * 0.2 + 0.5);
+    for(const auto & key : selected_weights){
+        for(const auto & trans_id: selected_trans_map[key]){
+            selected_ids.insert(trans_id);
+        }
+        if(selected_ids.size() >= total)
+            break;
+    }
 }
 
 void FragmentGraph::ComputationalFragmenGraph::
-getSampledTransitionIdsDifferenceWeightedBFS(std::set<int> &selected_ids, std::set<double> &selected_weights,
-                                             std::set<int> &visited, int frag_id, std::vector<int> &path,
-                                             double stop_mass) {
+getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<int> &visited, int frag_id,
+                                             std::vector<int> &path, double stop_mass,
+                                             std::map<double, std::set<int>> &selected_trans_map) {
 
     double frag_mass = fragments[frag_id]->getMass();
 
     if(frag_mass < stop_mass)
         return;
 
-    bool save = (selected_weights.find(frag_mass) != selected_weights.end());
     auto lower_bound = selected_weights.lower_bound(frag_mass);
     auto upper_bound = selected_weights.upper_bound(frag_mass);
-    if(lower_bound != selected_weights.end()){
-        save = (std::fabs(*lower_bound - frag_mass) <= 0.00001);
+
+    bool save = false;
+    double matched_mass = 0.0;
+    if(selected_weights.find(frag_mass) != selected_weights.end()){
+        save = true;
+        matched_mass = frag_mass;
     }
-    if(upper_bound != selected_weights.end()){
+    else if(lower_bound != selected_weights.end()){
+        save = (std::fabs(*lower_bound - frag_mass) <= 0.00001);
+        matched_mass = *lower_bound;
+    }
+    else if(upper_bound != selected_weights.end()){
         save = (std::fabs(*upper_bound - frag_mass) <= 0.00001);
+        matched_mass = *upper_bound;
     }
     if(save){
         for(const auto & trans_id : path){
-            selected_ids.insert(trans_id);
+            if(selected_trans_map.find(matched_mass) == selected_trans_map.end())
+                selected_trans_map[matched_mass];
+            selected_trans_map[matched_mass].insert(trans_id);
         }
     }
 
@@ -796,8 +818,8 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<int> &selected_ids, std::s
         std::vector<int> current_path = path;
         //std::cout << trans_id << std::endl;
         current_path.push_back(trans_id);
-        getSampledTransitionIdsDifferenceWeightedBFS(selected_ids, selected_weights, visited,
-                                                     transitions[trans_id]->getToId(), current_path, 0);
+        getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, visited, transitions[trans_id]->getToId(),
+                                                     current_path, 0, selected_trans_map);
     }
 }
 

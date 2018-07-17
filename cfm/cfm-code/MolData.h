@@ -205,7 +205,7 @@ public:
 
     void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter);
 
-    void getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids,  std::set<double> &selected_weights);
+    void getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::vector<double> &selected_weights);
 
     void addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
 
@@ -254,7 +254,7 @@ public:
         fg->createNewGraphForComputation();
     }
 
-    void getSelectedWeightSet(std::set<double> &selected_weights, int engery_level);
+    void getSelectedWeights(std::vector<double> &selected_weights, int engery_level);
     ~MolData();
 protected
     : // These items are protected rather than private for access during tests.

@@ -793,7 +793,7 @@ void MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int
         fg->getSampledTransitionIdsRandomWalk(selected_ids, max_num_iter);
 }
 
-void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids,  std::set<double> &selected_weights) {
+void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::vector<double> &selected_weights) {
     if (!hasEmptySpectrum() && hasComputedGraph())
         fg->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights);
 }
@@ -806,7 +806,7 @@ void MolData::addNoise(double max_intensity, double total_intensity, double abs_
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::getSelectedWeightSet(std::set<double> &selected_weights, int engery_level) {
+void MolData::getSelectedWeights(std::vector<double> &selected_weights, int engery_level) {
 
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
@@ -823,7 +823,7 @@ void MolData::getSelectedWeightSet(std::set<double> &selected_weights, int enger
         if(diff.first < 0.1)
             break;
 
-        selected_weights.insert(diff.second);
+        selected_weights.push_back(diff.second);
 
     }
 }

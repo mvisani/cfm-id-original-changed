@@ -354,7 +354,7 @@ public:
 
     // Get a list of transitions ids , with random walk
     void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                   std::set<double> &selected_weights) {
+                                                   std::vector<double> &selected_weights) {
         current_graph->getSampledTransitionIdsDifferenceWeighted(selected_ids,selected_weights);
     };
 
@@ -406,11 +406,13 @@ protected:
                                                        double explore_weight);
 
         void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                               std::set<double> &selected_weights);
+                                                       std::vector<double> &selected_weights);
 
-        void getSampledTransitionIdsDifferenceWeightedBFS(std::set<int> &selected_ids, std::set<double> &selected_weights,
-                                                                  std::set<int> &visited, int frag_id, std::vector<int> &path,
-                                                                  double stop_mass);
+        void
+        getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<int> &visited,
+                                                     int frag_id,
+                                                     std::vector<int> &path, double stop_mass,
+                                                     std::map<double, std::set<int>> &selected_trans_map);
         std::vector<Fragment*> fragments;
         std::vector<Transition*> transitions;
         tmap_t from_id_tmap;
