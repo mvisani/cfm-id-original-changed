@@ -647,12 +647,10 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
 void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, double sampling_explore_rate,
                                          unsigned int energy, std::set<int> &selected_trans_id) const {
 
-
+    //std::cout << moldata.getId() << " ";
     int num_trans = moldata.getNumTransitions();
     int num_iterations = cfg->ga_graph_sampling_k * num_trans;
-
-    if(sampling_method == USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING){
-        moldata.computePredictedSpectra(*param,false,false,energy);
+    if(sampling_method == USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING)
         moldata.getSampledTransitionIdsWeightedRandomWalk(selected_trans_id, num_iterations, energy,
                                                           moldata.getWeightedJaccardScore(energy));
     }

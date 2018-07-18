@@ -764,7 +764,7 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifference
     getSampledTransitionIdsDifferenceWeightedBFS(selected_weights_set, visited, 0, path,
                                                  *std::min_element(std::begin(selected_ids), std::end(selected_ids)),
                                                  selected_trans_map);
-    int total = (int)(transitions.size() * 0.2 + 0.5);
+    int total = (int)(transitions.size() * 0.1 + 0.5);
     for(const auto & key : selected_weights){
         for(const auto & trans_id: selected_trans_map[key]){
             selected_ids.insert(trans_id);
