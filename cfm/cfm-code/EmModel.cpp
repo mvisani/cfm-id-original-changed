@@ -647,12 +647,15 @@ double EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
 void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, double sampling_explore_rate,
                                          unsigned int energy, std::set<int> &selected_trans_id) const {
 
-    //std::cout << moldata.getId() << " ";
-    int num_frags = moldata.getSpectrum(energy)->size();
-    int num_iterations = cfg->ga_graph_sampling_k * num_frags;
-    if(sampling_method == USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING)
+
+    int num_trans = moldata.getNumTransitions();
+    int num_iterations = cfg->ga_graph_sampling_k * num_trans;
+
+    if(sampling_method == USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING){
+        moldata.computePredictedSpectra(*param,false,false,energy);
         moldata.getSampledTransitionIdsWeightedRandomWalk(selected_trans_id, num_iterations, energy,
-                                                                  sampling_explore_rate);
+                                                          moldata.getWeightedJaccardScore(energy));
+    }
     else if(sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING){
         moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations);
     }
@@ -660,35 +663,9 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
         moldata.computePredictedSpectra(*param,false,false,energy);
         std::vector<double> weights;
         moldata.getSelectedWeights(weights, energy);
-        // std::cout << "nuw frags: " << weights.size() << std::endl;
-        if(!weights.empty())
-            moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
-        /*else
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations);*/
 
-        //std::cout << "nuw frags: " << moldata.getNumTransitions() << std::endl;
-        /*std::set<int> set1, set2;
-        moldata.getSampledTransitionIdsRandomWalk(set1, num_iterations);
-        std::cout << "Random: " << set1.size() << " ";
-
-        moldata.getSampledTransitionIdsWeightedRandomWalk(set2, num_iterations, energy,
-                                                          sampling_explore_rate);
-        std::cout << "WeighedRandom: " << set2.size() << " ";
-
-        std::cout << "DiffMap: " << selected_trans_id.size() << std::endl;
-        std::set<int> inter1;
-        std::set_intersection(std::begin(set1),std::end(set1),std::begin(selected_trans_id),std::end(selected_trans_id),std::inserter(inter1, inter1.begin()));
-        std::cout << "Set intersetion between Random and DiffMap: " << inter1.size() << std::endl;
-
-        std::set<int> inter2;
-        std::set_intersection(std::begin(set2),std::end(set2),std::begin(selected_trans_id),std::end(selected_trans_id),std::inserter(inter2, inter2.begin()));
-        std::cout << "Set intersetion between WRandom and DiffMap: " << inter2.size() << std::endl;
-
-        std::set<int> inter3;
-        std::set_intersection(std::begin(set1),std::end(set1),std::begin(set2),std::end(set2),std::inserter(inter3, inter3.begin()));
-        std::cout << "Set intersetion between Random and WRandom: " << inter3.size() << std::endl;*/
+        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
     }
-    // std::cout << moldata.getId() << " " << selected_trans_id.size() << std::endl;
 }
 
 double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {

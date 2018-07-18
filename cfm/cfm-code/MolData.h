@@ -255,6 +255,9 @@ public:
     }
 
     void getSelectedWeights(std::vector<double> &selected_weights, int engery_level);
+
+    double getWeightedJaccardScore(int engery_level);
+
     ~MolData();
 protected
     : // These items are protected rather than private for access during tests.

@@ -805,6 +805,13 @@ void MolData::addNoise(double max_intensity, double total_intensity, double abs_
     }
 }
 
+double MolData::getWeightedJaccardScore(int engery_level){
+    Comparator *cmp = new WeightedJaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
+    auto rev = cmp->computeScore(&spectra[engery_level], &predicted_spectra[engery_level]);
+    delete (cmp);
+    return rev;
+}
+
 // It is caller's response to compute predicted spectra
 void MolData::getSelectedWeights(std::vector<double> &selected_weights, int engery_level) {
 
