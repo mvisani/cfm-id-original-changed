@@ -649,11 +649,18 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
 
     //std::cout << moldata.getId() << " ";
     int num_trans = moldata.getNumTransitions();
-    int num_iterations = cfg->ga_graph_sampling_k * num_trans;
+    int num_iterations = (int)((cfg->ga_graph_sampling_k * num_trans) / (double)(cfg->fg_depth * cfg->fg_depth));
     if(sampling_method == USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING){
-        moldata.computePredictedSpectra(*param,false,false,energy);
-        moldata.getSampledTransitionIdsWeightedRandomWalk(selected_trans_id, num_iterations, energy,
-                                                          moldata.getWeightedJaccardScore(energy));
+        //moldata.computePredictedSpectra(*param,false,false,energy);
+        //moldata.getSampledTransitionIdsWeightedRandomWalk(selected_trans_id, num_iterations, energy,moldata.getWeightedJaccardScore(energy));
+        moldata.getSampledTransitionIdsWeightedRandomWalk(selected_trans_id, num_iterations, energy, 0);
+
+        if(selected_trans_id.size() < (int)((double)num_trans/30.0)){
+            moldata.computePredictedSpectra(*param,false,false,energy);
+            std::vector<double> weights;
+            moldata.getSelectedWeights(weights, energy);
+            moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
+        }
     }
     else if(sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING){
         moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations);
@@ -662,7 +669,6 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
         moldata.computePredictedSpectra(*param,false,false,energy);
         std::vector<double> weights;
         moldata.getSelectedWeights(weights, energy);
-
         moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
     }
     std::cout << moldata.getId() << " "  << selected_trans_id.size() << std::endl;

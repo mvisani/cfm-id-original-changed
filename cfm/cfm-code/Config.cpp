@@ -153,7 +153,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "use_graph_pruning") cfg.use_graph_pruning = (int) value;
         else if (name == "ga_use_best_q") cfg.ga_use_best_q = (int) value;
         else if (name == "ga_sampling_method") cfg.ga_sampling_method = (int) value;
-        else if (name == "ga_graph_sampling_k") cfg.ga_graph_sampling_k = (int) value;
+        else if (name == "ga_graph_sampling_k") cfg.ga_graph_sampling_k = (double) value;
         else if (name == "aggressive_graph_pruning") cfg.aggressive_graph_pruning = (bool) value;
         else if (name == "reset_sampling") cfg.reset_sampling = (bool) value;
         else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double) value;

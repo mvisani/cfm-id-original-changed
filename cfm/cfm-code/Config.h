@@ -201,7 +201,7 @@ struct config_t {
     bool reset_sampling;
     double reset_sampling_lr_ratio;
     int ga_sampling_method;
-    int ga_graph_sampling_k;
+    double ga_graph_sampling_k;
     double ga_sampling_explore_weight;
 
     //Model Level Configuration
