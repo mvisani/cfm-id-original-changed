@@ -409,10 +409,13 @@ protected:
                                                        std::vector<double> &selected_weights);
 
         void
-        getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<int> &visited,
-                                                     int frag_id,
-                                                     std::vector<int> &path, double stop_mass,
-                                                     std::map<double, std::set<int>> &selected_trans_map);
+        getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<int> &visited, int frag_id,
+                                                             std::vector<int> &path,
+                                                             std::map<double, std::set<int>> &selected_trans_map);
+
+        void getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
+                                        int frag_id, std::vector<std::pair<int, int>> &path,
+                                        std::map<int, std::vector<int>> &trans_to_interest_frags_map);
         std::vector<Fragment*> fragments;
         std::vector<Transition*> transitions;
         tmap_t from_id_tmap;

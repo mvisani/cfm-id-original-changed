@@ -219,14 +219,16 @@ double WeightedPrecision::computeScore(const Spectrum *measured, const Spectrum 
 double WeightedJaccard::computeScore(const Spectrum *measured, const Spectrum *predicted) const {
 
     std::vector<peak_pair_t> peak_pairs;
-    getMatchingPeakPairs(peak_pairs, measured, predicted);
-    double intersection = 0.0;
+    getMatchingPeakPairsWithNoneMatchs(peak_pairs, measured, predicted);
+    double intersection_sum = 0.0;
+    double union_sum = 0.0;
     std::vector<peak_pair_t>::iterator it = peak_pairs.begin();
     for (; it != peak_pairs.end(); ++it) {
-        intersection += std::min(it->first.intensity,it->second.intensity);
+        intersection_sum += std::min(it->first.intensity, it->second.intensity);
+        union_sum += std::max(it->first.intensity, it->second.intensity);
     }
     // union = total - intersection
-    return intersection / (200.0-intersection);
+    return intersection_sum / union_sum;
 }
 
 

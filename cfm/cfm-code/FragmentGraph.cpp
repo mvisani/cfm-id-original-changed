@@ -760,29 +760,85 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
 
 void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
                                                                                          std::vector<double> &selected_weights) {
-    std::vector<int> path;
+
     std::set<int> visited;
     std::map<double, std::set<int>> selected_trans_map;
     std::set<double> selected_weights_set;
+
     std::copy(selected_weights.begin(), selected_weights.end(), std::inserter(selected_weights_set, selected_weights_set.begin()));
 
-    getSampledTransitionIdsDifferenceWeightedBFS(selected_weights_set, visited, 0, path,
-                                                 *std::min_element(std::begin(selected_ids), std::end(selected_ids)),
-                                                 selected_trans_map);
+    /*std::map<int, std::vector<int>> frag_trans_map;
+    std::vector<std::pair<int,int>> frag_trans_pair_path;
+    getCommonAncestors(selected_weights_set, visited, 0, frag_trans_pair_path, frag_trans_map);
+
+    for(const auto & record : frag_trans_map){
+        if(record.second.size() > 1)
+            for(const auto & trans_id :record.second)
+                selected_ids.insert(trans_id);
+    }*/
+
+    std::vector<int> path;
+    visited.clear();
+    getSampledTransitionIdsDifferenceWeightedBFS(selected_weights_set, visited, 0, path, selected_trans_map);
+
     for(const auto & key : selected_weights)
         for(const auto & trans_id: selected_trans_map[key])
             selected_ids.insert(trans_id);
 }
 
 void FragmentGraph::ComputationalFragmenGraph::
-getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<int> &visited, int frag_id,
-                                             std::vector<int> &path, double stop_mass,
-                                             std::map<double, std::set<int>> &selected_trans_map) {
+getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
+                   int frag_id, std::vector<std::pair<int, int>> &path,
+                   std::map<int, std::vector<int>> &frag_trans_map) {
 
     double frag_mass = fragments[frag_id]->getMass();
 
-    if(frag_mass < stop_mass)
+    /*if(frag_mass < stop_mass)
+        return;*/
+
+    auto lower_bound = selected_weights.lower_bound(frag_mass);
+    auto upper_bound = selected_weights.upper_bound(frag_mass);
+
+    bool save = false;
+    if(selected_weights.find(frag_mass) != selected_weights.end()){
+        save = true;
+    }
+    else if(lower_bound != selected_weights.end()){
+        save = (std::fabs(*lower_bound - frag_mass) <= 0.00001);
+    }
+    else if(upper_bound != selected_weights.end()){
+        save = (std::fabs(*upper_bound - frag_mass) <= 0.00001);
+    }
+
+    if(save){
+        // record troubled frag_id to each transition
+        for(const auto & frag_trans_pair : path){
+            if(frag_trans_map.find(frag_trans_pair.first) == frag_trans_map.end())
+                frag_trans_map[frag_trans_pair.first];
+            frag_trans_map[frag_trans_pair.first].push_back(frag_trans_pair.second);
+        }
+    }
+
+    // if we have see this before
+    if(visited.find(frag_id) != visited.end())
         return;
+
+    visited.insert(frag_id);
+    for(const auto & trans_id : from_id_tmap[frag_id]){
+        auto current_path = path;
+        //std::cout << trans_id << std::endl;
+        current_path.push_back(std::pair<int,int>(frag_id,trans_id));
+        getCommonAncestors(selected_weights, visited, transitions[trans_id]->getToId(), current_path, frag_trans_map);
+    }
+
+}
+
+void FragmentGraph::ComputationalFragmenGraph::
+getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<int> &visited, int frag_id,
+                                             std::vector<int> &path,
+                                             std::map<double, std::set<int>> &selected_trans_map) {
+
+    double frag_mass = fragments[frag_id]->getMass();
 
     auto lower_bound = selected_weights.lower_bound(frag_mass);
     auto upper_bound = selected_weights.upper_bound(frag_mass);
@@ -819,7 +875,7 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights,
         //std::cout << trans_id << std::endl;
         current_path.push_back(trans_id);
         getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, visited, transitions[trans_id]->getToId(),
-                                                     current_path, 0, selected_trans_map);
+                                                     current_path, selected_trans_map);
     }
 }
 

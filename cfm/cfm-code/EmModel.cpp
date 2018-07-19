@@ -659,15 +659,11 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
     }
     else if(sampling_method == USE_DIFFERENCE_SAMPLING){
         moldata.computePredictedSpectra(*param,false,false,energy);
-        if(moldata.getWeightedJaccardScore(energy) < 0.5)
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, num_iterations);
-        else{
-            std::vector<double> weights;
-            moldata.getSelectedWeights(weights, energy);
-            moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
-        }
+        std::vector<double> weights;
+        moldata.getSelectedWeights(weights, energy);
+        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
     }
-    std::cout << moldata.getId() << " " <<  selected_trans_id.size() << std::endl;
+    std::cout << moldata.getId() << " "  << selected_trans_id.size() << std::endl;
 }
 
 double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {

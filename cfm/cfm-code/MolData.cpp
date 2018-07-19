@@ -826,12 +826,9 @@ void MolData::getSelectedWeights(std::vector<double> &selected_weights, int enge
     delete(cmp);
 
     for(const auto & diff:  difference){
-
-        if(diff.first < 0.1)
+        if(diff.first < 0.01 || selected_weights.size() > 20)
             break;
-
         selected_weights.push_back(diff.second);
-
     }
 }
 
