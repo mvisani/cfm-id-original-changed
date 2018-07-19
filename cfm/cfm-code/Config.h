@@ -177,7 +177,7 @@ static const int USE_NO_SAMPLING = 0;
 static const int USE_GRAPH_RANDOM_WALK_SAMPLING = 1;
 static const int USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING = 2;
 static const int USE_DIFFERENCE_SAMPLING = 3;
-static const int DEFAULT_GRAPH_SAMPLING_K = 5;
+static const double DEFAULT_GRAPH_SAMPLING_K = 1.0;
 
 //Configuration
 struct config_t {

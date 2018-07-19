@@ -652,6 +652,7 @@ void FragmentGraph::ComputationalFragmenGraph::removeLonelyFrags() {
 }
 
 void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter) {
+
     std::vector<std::uniform_int_distribution<int>> uniform_int_distributions;
 
     for (auto &frag_trans_ids: from_id_tmap) {
@@ -692,6 +693,11 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
                                                                                          std::vector<double> &thetas,
                                                                                          double explore_weight) {
 
+    std::vector<std::uniform_int_distribution<int>> uniform_int_distributions;
+    for (auto &frag_trans_ids: from_id_tmap)
+        uniform_int_distributions.emplace_back(std::uniform_int_distribution<> (0, (int) frag_trans_ids.size() - 1));
+
+
     std::vector<std::discrete_distribution<int>> discrete_distributions;
 
     for (auto &frag_trans_ids: from_id_tmap) {
@@ -716,7 +722,7 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
     }
 
     int num_iter = 0;
-    std::discrete_distribution<int> explore_coin({1.0, explore_weight});
+    std::discrete_distribution<int> explore_coin({1.0-explore_weight, explore_weight});
 
     while (num_iter <= max_num_iter) {
         // init queue and add root
@@ -736,8 +742,7 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
                 int selected_idx = -1;
                 int coin = explore_coin(util_rng);
                 if (coin == 1) {
-                    std::uniform_int_distribution<> dis(0, (int) from_id_tmap[frag_id].size() - 1);
-                    selected_idx = dis(util_rng);
+                    selected_idx = uniform_int_distributions[frag_id](util_rng);
                 } else {
                     selected_idx = discrete_distributions[frag_id](util_rng);
                 }
@@ -764,14 +769,9 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifference
     getSampledTransitionIdsDifferenceWeightedBFS(selected_weights_set, visited, 0, path,
                                                  *std::min_element(std::begin(selected_ids), std::end(selected_ids)),
                                                  selected_trans_map);
-    int total = (int)(transitions.size() * 0.1 + 0.5);
-    for(const auto & key : selected_weights){
-        for(const auto & trans_id: selected_trans_map[key]){
+    for(const auto & key : selected_weights)
+        for(const auto & trans_id: selected_trans_map[key])
             selected_ids.insert(trans_id);
-        }
-        if(selected_ids.size() >= total)
-            break;
-    }
 }
 
 void FragmentGraph::ComputationalFragmenGraph::
