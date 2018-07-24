@@ -64,7 +64,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_adam_eps = DEFAULT_EPS;
     cfg.ga_adamw_w = DEFAULT_LAMBDA;
     cfg.ga_adadelta_rho = DEFAULT_ADADELTA_RHO;
-    cfg.ga_decay_method = USE_DEFAULT_DECAY;
+    cfg.ga_decay_method = USE_NO_DECAY;
     cfg.exp_decay_k = DEFAULT_EXP_DECAY_K;
     cfg.step_decay_drop = DEFAULT_STEP_DECAY_DROP;
     cfg.step_decay_epochs_drop = DEFAULT_STEP_DECAY_EPOCHS_DROP;

@@ -38,14 +38,6 @@ struct suft_counts_t {
     std::vector<suft_t> values;
 };
 
-class EmComputationException : public std::exception {
-
-    virtual const char *what() const noexcept override {
-        return "Error during EM, unable to proceed.";
-    }
-};
-
-
 class EmModel : public ModelBase {
 public:
     //Constructor
@@ -61,9 +53,9 @@ public:
     trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename, int energy_level) override;
 
     //This is public so the test can access it....there must be a better way?
-    virtual double computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                                bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                                int sampling_method, double sampling_explore_rate);
+    virtual void computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
+                                              bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
+                                              int sampling_method);
 
     virtual double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
 
@@ -85,19 +77,25 @@ protected:
     double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
                                           int sampling_method);
 
+    double computeLoss(std::vector<MolData> &data, suft_counts_t &suft);
+
     //Helper functions
 
     // function to add Regularization term for Q
     // update grads is updated if a ptr is passed
     // nullptr means do not update grads
-    virtual double addRegularizersAndUpdateGradient(double *grads);
+    virtual double getRegularizationTerm();
 
-    void getRandomWalkedTransitions(MolData &moldata, int sampling_method, double sampling_explore_rate,
-                                        unsigned int energy, std::set<int> &selected_trans_id) const;
+    virtual void updateGradientForRegularizationTerm(double *grads);
+
+    void getRandomWalkedTransitions(MolData &moldata, int sampling_method, unsigned int energy,
+                                        std::set<int> &selected_trans_id) const;
 
     void
     computeValidationMetrics(int energy_level, int molidx, std::vector<MolData, std::allocator<MolData>>::iterator &itdata,
                              suft_counts_t &suft, double &val_q, int &numvalmols, double &jaccard, double &w_jaccard);
+
+    double getUpdatedLearningRate(double learning_rate, double current_loss, double prev_loss, int iter) const;
 };
 
 #endif // __EM_TRAIN_H__

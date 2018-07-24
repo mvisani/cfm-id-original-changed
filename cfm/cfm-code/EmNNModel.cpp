@@ -74,11 +74,10 @@ void EmNNModel::writeParamsToFile(std::string &filename) {
 }
 
 //Gradient Computation using Backpropagation
-double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
-                                               bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                               int sampling_method, double sampling_explore_rate) {
+void EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
+                                             bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
+                                             int sampling_method) {
 
-    double Q = 0.0;
     //const FragmentGraph *fg = moldata.getFragmentGraph();
     unsigned int num_transitions = moldata.getNumTransitions();
     unsigned int num_fragments = moldata.getNumFragments();
@@ -87,7 +86,8 @@ double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolDat
     unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();
     int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
 
-    if (!moldata.hasComputedGraph()) return Q;
+    if (!moldata.hasComputedGraph())
+        return;
 
     suft_t *suft_values = &(suft.values[molidx]);
 
@@ -112,7 +112,7 @@ double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolDat
 
         std::set<int> selected_trans_id;
         if(!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
-            getRandomWalkedTransitions(moldata, sampling_method, sampling_explore_rate, energy, selected_trans_id);
+            getRandomWalkedTransitions(moldata, sampling_method, energy, selected_trans_id);
 
         //Iterate over from_id (i)
         const tmap_t *from_map = moldata.getFromIdTMap();
@@ -148,11 +148,9 @@ double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolDat
                 denom += exp(theta);
                 nu_terms[idx] = (*suft_values)[*it + suft_offset];
                 nu_sum += nu_terms[idx];
-                Q += nu_terms[idx] * theta;
             }
             nu_terms[num_trans_from_id] = (*suft_values)[offset + from_idx + suft_offset];
             nu_sum += nu_terms[num_trans_from_id];
-            Q -= log(denom) * nu_sum;
 
             //Compute the deltas
             std::vector<azd_vals_t> deltasA, deltasB;
@@ -189,7 +187,6 @@ double EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolDat
                 used_idxs.insert(grad_offset + i);
         }
     }
-    return Q;
 }
 
 double EmNNModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
@@ -247,19 +244,16 @@ double EmNNModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
             nu_terms[num_trans_from_id] = (*suft_values)[offset + from_idx + suft_offset];
             nu_sum += nu_terms[num_trans_from_id];
             Q -= log(denom) * nu_sum;
-
         }
     }
     return Q;
 }
 
-double EmNNModel::addRegularizersAndUpdateGradient(double *grads) {
+void EmNNModel::updateGradientForRegularizationTerm(double *grads) {
 
-    double Q = 0.0;
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
         double weight = nn_param->getWeightAtIdx(*it);
-        Q -= 0.5 * cfg->lambda * weight * weight;
         if (grads != nullptr)
             *(grads + *it) -= cfg->lambda * weight;
     }
@@ -273,11 +267,33 @@ double EmNNModel::addRegularizersAndUpdateGradient(double *grads) {
         int offset = energy * weights_per_energy;
         for (; it != bias_indexes.end(); ++it) {
             double bias = nn_param->getWeightAtIdx(offset + *it);
-            Q += 0.99 * 0.5 * cfg->lambda * bias * bias;
-            if (grads != nullptr)
+             if (grads != nullptr)
                 *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
         }
     }
-    return Q;
+}
+
+double EmNNModel::getRegularizationTerm() {
+
+    double req_term = 0.0;
+    auto it = ((MasterComms *) comm)->master_used_idxs.begin();
+    for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
+        double weight = nn_param->getWeightAtIdx(*it);
+        req_term -= 0.5 * cfg->lambda * weight * weight;
+    }
+
+    //Remove part of the Bias terms (regularize the bias terms 100 times less than the other weights!)
+    unsigned int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
+    std::vector<unsigned int> bias_indexes;
+    nn_param->getBiasIndexes(bias_indexes);
+    for (unsigned int energy = 0; energy < nn_param->getNumEnergyLevels(); energy++) {
+        auto it = bias_indexes.begin();
+        int offset = energy * weights_per_energy;
+        for (; it != bias_indexes.end(); ++it) {
+            double bias = nn_param->getWeightAtIdx(offset + *it);
+            req_term += 0.99 * 0.5 * cfg->lambda * bias * bias;
+        }
+    }
+    return req_term;
 }
 
