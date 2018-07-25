@@ -57,7 +57,7 @@ public:
                                               bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
                                               int sampling_method);
 
-    virtual double computeQ(int molidx, MolData &moldata, suft_counts_t &suft);
+    virtual double computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft);
 
 protected:
 
@@ -77,7 +77,7 @@ protected:
     double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
                                           int sampling_method);
 
-    double computeLoss(std::vector<MolData> &data, suft_counts_t &suft);
+    double computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy_level);
 
     //Helper functions
 

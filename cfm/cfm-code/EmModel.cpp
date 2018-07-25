@@ -309,13 +309,15 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     return best_q;
 }
 
-double EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft) {
+double EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy_level) {
 
     double loss = 0.0;
     auto mol_it = data.begin();
     for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
         if (mol_it->getGroup() != validation_group) {
-            loss += computeQ(molidx, *mol_it, suft);
+            loss += computeLogLikelihoodLoss(molidx, *mol_it, suft);
+            //mol_it->computePredictedSpectra(*param,true,false,energy_level);
+            //loss += (1.0 - mol_it->getWeightedJaccardScore(energy_level));
         }
     }
 
@@ -332,7 +334,7 @@ void EmModel::computeValidationMetrics(int energy_level, int molidx,
                                        suft_counts_t &suft, double &val_q, int &numvalmols, double &jaccard,
                                        double &w_jaccard) {
 
-    val_q += computeQ(molidx, *moldata, suft);
+    val_q += computeLogLikelihoodLoss(molidx, *moldata, suft);
     numvalmols++;
     Comparator *j_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *wj_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
@@ -505,7 +507,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         }
 
         // compute Q
-        q = computeLoss(data, suft);
+        q = computeLoss(data, suft, 0);
 
         if (comm->isMaster()) {
             std::cout << iter << ":  Q=" << q << " prevQ=" << prev_q << " Learning_Rate=" << learning_rate
@@ -665,10 +667,9 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
     }
 }
 
-double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
+double EmModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     double q = 0.0;
-    //const FragmentGraph *fg = moldata.getFragmentGraph();
     unsigned int num_transitions = moldata.getNumTransitions();
     unsigned int num_fragments = moldata.getNumFragments();
 
@@ -711,14 +712,7 @@ double EmModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
             q -= nu * log(denom);
         }
     }
-    if (boost::math::isnan(q)) {
-        std::cerr << "Warning Q is NaN" << std::endl;
-        exit(0);
-    }
-    if (boost::math::isinf(q)) {
-        std::cerr << "Warning Q is Inf" << std::endl;
-        exit(0);
-    }
+
     return q;
 }
 

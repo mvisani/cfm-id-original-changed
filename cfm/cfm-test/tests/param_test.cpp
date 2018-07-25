@@ -209,7 +209,7 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
 	EmModel em(&cfg, &fc_null, null_str, param_filename );
 
     //Check Q
-    double Q = em.computeQ(0, moldata, suft);
+    double Q = em.computeLogLikelihoodLoss(0, moldata, suft);
     if( fabs(Q - -3.823 )  > tol ){
         std::cout << "Unexpected Q value resulting from Q only computation: " << Q << std::endl;
         pass = false;

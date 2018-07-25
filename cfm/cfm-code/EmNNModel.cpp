@@ -189,7 +189,7 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
     }
 }
 
-double EmNNModel::computeQ(int molidx, MolData &moldata, suft_counts_t &suft) {
+double EmNNModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     double Q = 0.0;
     //const FragmentGraph *fg = moldata.getFragmentGraph();

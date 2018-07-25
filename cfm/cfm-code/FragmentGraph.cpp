@@ -767,7 +767,7 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifference
 
     std::copy(selected_weights.begin(), selected_weights.end(), std::inserter(selected_weights_set, selected_weights_set.begin()));
 
-    /*std::map<int, std::vector<int>> frag_trans_map;
+    std::map<int, std::vector<int>> frag_trans_map;
     std::vector<std::pair<int,int>> frag_trans_pair_path;
     getCommonAncestors(selected_weights_set, visited, 0, frag_trans_pair_path, frag_trans_map);
 
@@ -775,15 +775,15 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifference
         if(record.second.size() > 1)
             for(const auto & trans_id :record.second)
                 selected_ids.insert(trans_id);
-    }*/
+    }
 
-    std::vector<int> path;
+    /*std::vector<int> path;
     visited.clear();
     getSampledTransitionIdsDifferenceWeightedBFS(selected_weights_set, visited, 0, path, selected_trans_map);
 
     for(const auto & key : selected_weights)
         for(const auto & trans_id: selected_trans_map[key])
-            selected_ids.insert(trans_id);
+            selected_ids.insert(trans_id);*/
 }
 
 void FragmentGraph::ComputationalFragmenGraph::
