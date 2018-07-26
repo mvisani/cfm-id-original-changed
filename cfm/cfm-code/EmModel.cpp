@@ -72,16 +72,17 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
     // EM
     iter = 0;
-    double q;
-    double prev_q = -DBL_MAX;
+    double loss;
+    double prev_loss = -DBL_MAX;
     double best_q = -DBL_MAX;
 
     // make of copy of learing rate
     // so we can share the save lr var over all em iterations
+    //init some flags
     double learning_rate = cfg->starting_step_size;
     int sampling_method = cfg->ga_sampling_method;
-
     int count_no_progress = 0;
+    bool use_weighted_jaccard = false;
 
     // pre process data
     for (auto &mol : molDataSet) {
@@ -194,7 +195,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         // (M-step)
 
         before = time(nullptr);
-        q = updateParametersGradientAscent(molDataSet, suft, learning_rate, sampling_method);
+        loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, energy_level, sampling_method,
+                                              use_weighted_jaccard);
 
         after = time(nullptr);
         std::string param_update_time_msg =
@@ -236,20 +238,20 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         jaccard = comm->collectQInMaster(jaccard);
         w_jaccard = comm->collectQInMaster(w_jaccard);
         // Check for convergence
-        double q_ratio = fabs((q - prev_q) / q);
-        double best_q_ratio = fabs((q - best_q) / q);
+        double q_ratio = fabs((loss - prev_loss) / loss);
+        double best_q_ratio = fabs((loss - best_q) / loss);
         if (comm->isMaster()) {
             std::string qdif_str = "[M-Step]";
-            if (prev_q != -DBL_MAX)
-                qdif_str += "Q_ratio= " + std::to_string(q_ratio) + " prev_Q=" + std::to_string(prev_q) + "\n";
+            if (prev_loss != -DBL_MAX)
+                qdif_str += "Q_ratio= " + std::to_string(q_ratio) + " prev_Q=" + std::to_string(prev_loss) + "\n";
 
             if (best_q != -DBL_MAX)
                 qdif_str += "Best_Q_ratio= " + std::to_string(best_q_ratio) +
                             " best_Q=" + std::to_string(best_q) + "\n";
 
-            qdif_str += "Q=" + std::to_string(q) + " Validation_Q=" + std::to_string(val_q) + "\n";
+            qdif_str += "Q=" + std::to_string(loss) + " Validation_Q=" + std::to_string(val_q) + "\n";
             qdif_str +=
-            "Q_avg=" + std::to_string(q / numnonvalmols)
+            "Q_avg=" + std::to_string(loss / numnonvalmols)
             + " Validation_Q_avg=" + std::to_string(val_q / numvalmols)
             + " Validation Jaccard_Avg=" + std::to_string(jaccard / numvalmols)
             + " Weighted Validation Jaccard_Avg=" += std::to_string(w_jaccard / numvalmols);
@@ -259,8 +261,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         // first let us save the model
         // only save the one has best Q so far
-        if (best_q < q) {
-            best_q = q;
+        if (best_q < loss) {
+            best_q = loss;
             // Write the params
             if (comm->isMaster()) {
                 std::string progress_str = "[M-Step] Found Better Q: "
@@ -272,7 +274,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         // check if EM meet halt flag
-        if (q_ratio < cfg->em_converge_thresh || prev_q >= q) {
+        if (q_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
 
             if (learning_rate > cfg->starting_step_size) {
                 learning_rate *= 0.5;
@@ -284,9 +286,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 sampling_method = USE_NO_SAMPLING;
                 learning_rate = cfg->starting_step_size * cfg->reset_sampling_lr_ratio;
                 count_no_progress = 0;
-            } else {
+            } else
                 count_no_progress += 1;
-            }
+
 
             if (count_no_progress >= 3) {
                 comm->printToMasterOnly(("EM Converged after " +
@@ -296,7 +298,10 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 break;
             }
         }
-        prev_q = q;
+
+        prev_loss = loss;
+        use_weighted_jaccard = (loss/numnonvalmols  < 2.5);
+        std::cout << "use_weighted_jaccard " << use_weighted_jaccard << std::endl;
         iter++;
     }
 
@@ -309,15 +314,19 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     return best_q;
 }
 
-double EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy_level) {
+double
+EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy_level, bool use_weighted_jaccard) {
 
     double loss = 0.0;
     auto mol_it = data.begin();
     for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
         if (mol_it->getGroup() != validation_group) {
-            loss += computeLogLikelihoodLoss(molidx, *mol_it, suft);
-            //mol_it->computePredictedSpectra(*param,true,false,energy_level);
-            //loss += (1.0 - mol_it->getWeightedJaccardScore(energy_level));
+            if (!use_weighted_jaccard)
+                loss += computeLogLikelihoodLoss(molidx, *mol_it, suft);
+            else {
+                mol_it->computePredictedSpectra(*param, true, false, energy_level);
+                loss += mol_it->getWeightedJaccardScore(energy_level);
+            }
         }
     }
 
@@ -429,11 +438,11 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
 }
 
 double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
-                                               int sampling_method) {
+                                               int energy_level, int sampling_method, bool use_weighted_jaccard) {
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
-    double q = 0.0, prev_q = -DBL_MAX, best_q = -DBL_MAX;
+    double loss = 0.0, prev_loss = -DBL_MAX, best_q = -DBL_MAX;
 
     std::vector<double> grads(param->getNumWeights(), 0.0);
 
@@ -470,15 +479,15 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
     int max_iteration = cfg->ga_max_iterations;
     int no_progress_count = 0;
     while (iter++ < max_iteration
-           && fabs((q - prev_q) / q) >= cfg->ga_converge_thresh
+           && fabs((loss - prev_loss) / loss) >= cfg->ga_converge_thresh
            && no_progress_count < 3) {
 
         if (iter > 1)
-            prev_q = q;
+            prev_loss = loss;
 
         // update learning rate
-        if (comm->isMaster()){
-            learning_rate = getUpdatedLearningRate(learning_rate, q, prev_q, iter);
+        if (comm->isMaster() && USE_NO_DECAY != cfg->ga_decay_method) {
+            learning_rate = getUpdatedLearningRate(learning_rate, loss, prev_loss, iter);
             solver->setLearningRate(learning_rate);
         }
 
@@ -487,13 +496,14 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         int num_batch = cfg->ga_minibatch_nth_size;
         setMiniBatchFlags(minibatch_flags, num_batch);
 
-        // Compute Q and the gradient
+        // Compute the gradient
         std::fill(grads.begin(), grads.end(), 0.0);
         auto mol_it = data.begin();
         for (auto batch_idx = 0; batch_idx < num_batch; ++batch_idx) {
             for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
                 if (minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group) {
-                    computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs, 0);
+                    computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs,
+                                                 sampling_method);
                 }
             }
             comm->collectGradsInMaster(&grads[0]);
@@ -506,15 +516,15 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             comm->broadcastParams(param.get());
         }
 
-        // compute Q
-        q = computeLoss(data, suft, 0);
+        // compute loss
+        loss = computeLoss(data, suft, energy_level, use_weighted_jaccard);
 
         if (comm->isMaster()) {
-            std::cout << iter << ":  Q=" << q << " prevQ=" << prev_q << " Learning_Rate=" << learning_rate
+            std::cout << iter << ":  Loss =" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
                       << std::endl;
         }
 
-        no_progress_count = prev_q > q ? no_progress_count + 1 : 0 ;
+        no_progress_count = prev_loss > loss ? no_progress_count + 1 : 0;
     }
 
     if (comm->isMaster()) {
@@ -526,12 +536,12 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         delete solver;
     }
 
-    return q;
+    return loss;
 }
 
 double EmModel::getUpdatedLearningRate(double learning_rate, double current_loss, double prev_loss, int iter) const {
 
-    if(USE_NO_DECAY == cfg->ga_decay_method)
+    if (USE_NO_DECAY == cfg->ga_decay_method)
         return learning_rate;
 
     if (USE_DEFAULT_DECAY == cfg->ga_decay_method)
@@ -546,7 +556,6 @@ double EmModel::getUpdatedLearningRate(double learning_rate, double current_loss
     }
     return learning_rate;
 }
-
 
 
 void EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
@@ -736,7 +745,7 @@ double EmModel::getRegularizationTerm() {
     return reg_term;
 }
 
-void EmModel::updateGradientForRegularizationTerm(double *grads){
+void EmModel::updateGradientForRegularizationTerm(double *grads) {
 
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
