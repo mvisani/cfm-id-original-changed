@@ -274,7 +274,42 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         // check if EM meet halt flag
-        if (q_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
+        updateTraningParams(loss, prev_loss, q_ratio, learning_rate, sampling_method, count_no_progress);
+
+        if (count_no_progress >= 3) {
+            comm->printToMasterOnly(("EM Stopped after " +  std::to_string(count_no_progress) +  " No Progress Iterations").c_str());
+            comm->printToMasterOnly(("EM Converged after " +  std::to_string(iter) +  " iterations").c_str());
+            break;
+        }
+
+        prev_loss = loss;
+        updateWJaccardFlag(use_weighted_jaccard, prev_loss, loss / numnonvalmols);
+
+        iter++;
+    }
+
+    if (iter >= MAX_EM_ITERATIONS)
+        comm->printToMasterOnly(("Warning: EM did not converge after " +
+                                 std::to_string(iter) +
+                                 " iterations.")
+                                        .c_str());
+
+    return best_q;
+}
+
+void EmModel::updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, double avg_loss) const {
+    if(!use_weighted_jaccard && avg_loss > -2.5){
+            use_weighted_jaccard = true;
+            prev_loss = 0.0;
+            if(comm->isMaster())
+                std::cout << "[EM INFO]Switching to Jaccard " << std::endl;
+        }
+}
+
+void
+EmModel::updateTraningParams(double loss, double prev_loss, double q_ratio, double &learning_rate, int &sampling_method,
+                             int &count_no_progress) const {
+    if (q_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
 
             if (learning_rate > cfg->starting_step_size) {
                 learning_rate *= 0.5;
@@ -288,30 +323,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 count_no_progress = 0;
             } else
                 count_no_progress += 1;
-
-
-            if (count_no_progress >= 3) {
-                comm->printToMasterOnly(("EM Converged after " +
-                                         std::to_string(iter) +
-                                         " iterations")
-                                                .c_str());
-                break;
-            }
-        }
-
-        prev_loss = loss;
-        use_weighted_jaccard = (loss/numnonvalmols  < 2.5);
-        std::cout << "use_weighted_jaccard " << use_weighted_jaccard << std::endl;
-        iter++;
-    }
-
-    if (iter >= MAX_EM_ITERATIONS)
-        comm->printToMasterOnly(("Warning: EM did not converge after " +
-                                 std::to_string(iter) +
-                                 " iterations.")
-                                        .c_str());
-
-    return best_q;
+        } else
+            count_no_progress = 0;
 }
 
 double
