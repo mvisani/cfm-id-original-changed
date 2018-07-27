@@ -38,6 +38,7 @@ protected:
     FeatureCalculator *fc;
     //The current parameters
     boost::shared_ptr<Param> param;
+
     //Configuration data
     config_t *cfg;
     //Communicator (for exchanging data between threads)
@@ -54,8 +55,6 @@ protected:
     void getEnergiesLevels(std::vector<unsigned int> &energies);
 
     Solver *getSolver(int ga_method, double learning_rate) const;
-
-    virtual void initParams();
 
     bool initial_params_provided;
 public:

@@ -15,7 +15,7 @@ set(BASE_HEADERS FragmentGraph.h Feature.h Config.h Spectrum.h
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Features FEATURES_SRC_DIR)
 
-set(TRAIN_HEADERS Comms.h ModelBase.h EmModel.h EmNNModel.h DirectModel.h Solver.h)
+set(TRAIN_HEADERS Comms.h ModelBase.h EmModel.h EmNNModel.h Solver.h)
 
 set(BASE_SRC_FILES FragmentGraph.cpp
         Feature.cpp
@@ -42,7 +42,6 @@ set(TRAIN_SRC_FILES Comms.cpp
         ModelBase.cpp
         EmModel.cpp
         EmNNModel.cpp
-        DirectModel.cpp
         Solver.cpp)
 
 if (INCLUDE_TRAIN)

@@ -51,15 +51,6 @@ public:
     //Copy the highest energy parameters to create another higher energy level
     void appendRepeatedPrevEnergyParams();
 
-    //Initialisation options
-    virtual void randomUniformInit();
-
-    virtual void randomNormalInit();
-
-    void zeroInit();
-
-    void fullZeroInit();
-
     //Compute the theta value for an input feature vector and energy based
     //on the current weight settings
     virtual double computeTheta(const FeatureVector &fv, int energy);
@@ -84,11 +75,21 @@ public:
     std::vector<std::string> *getFeatureNames() { return &feature_list; };
 
     virtual void getBiasIndexes(std::vector<unsigned int> &bias_indexes){ bias_indexes.push_back(0);};
+
+    virtual void initWeights(int init_type);
+
 protected:
     std::vector<double> weights;
     unsigned int num_energy_levels;
     std::vector<std::string> feature_list;
     int expected_num_input_features;
+
+    //Initialisation options
+    virtual void randomUniformInit();
+    virtual void randomNormalInit();
+    void zeroInit();
+    void fullZeroInit();
+
 };
 
 #endif // __PARAM_H__

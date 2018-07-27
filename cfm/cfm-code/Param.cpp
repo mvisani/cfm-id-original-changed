@@ -16,6 +16,7 @@
 #########################################################################*/
 
 #include "Param.h"
+#include "Config.h"
 
 //Constructor to initialise parameter weight size from a feature list
 Param::Param(std::vector<std::string> a_feature_list, int a_num_energy_levels) :
@@ -33,6 +34,23 @@ Param::Param(std::vector<std::string> a_feature_list, int a_num_energy_levels) :
 Param::Param(Param &param_instance) {
     num_energy_levels = param_instance.num_energy_levels;
     weights.resize(param_instance.getNumWeights());
+}
+
+void Param::initWeights(int init_type){
+    switch (init_type){
+        case PARAM_FULL_ZERO_INIT:
+            fullZeroInit();
+            break;
+        case PARAM_ZERO_INIT:
+            zeroInit();
+            break;
+        case PARAM_NORMAL_INIT:
+            randomNormalInit();
+            break;
+        case PARAM_RANDOM_INIT:
+        default:
+            randomUniformInit();
+    }
 }
 
 //Append a set of parameters for the next energy level

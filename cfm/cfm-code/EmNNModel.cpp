@@ -45,26 +45,6 @@ EmNNModel::EmNNModel(config_t *a_cfg, FeatureCalculator *an_fc, std::string &a_s
 }
 
 //These functions are the same as for EM, but use NNParam, so need to be redefined here
-void EmNNModel::initParams() {
-    switch (cfg->param_init_type){
-        case PARAM_FULL_ZERO_INIT:
-            nn_param->fullZeroInit();
-            break;
-        case PARAM_ZERO_INIT:
-            nn_param->zeroInit();
-            break;
-        case PARAM_NORMAL_INIT:
-            nn_param->randomNormalInit();
-            break;
-        case NN_PARAM_VAR_SCALING_INIT:
-            nn_param->varianceScalingInitializer();
-            break;
-        case PARAM_RANDOM_INIT:
-        default:
-            nn_param->randomUniformInit();
-    }
-}
-
 void EmNNModel::computeThetas(MolData *moldata) {
     moldata->computeTransitionThetas(*nn_param);
 }
@@ -74,22 +54,22 @@ void EmNNModel::writeParamsToFile(std::string &filename) {
 }
 
 //Gradient Computation using Backpropagation
-void EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
+void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
                                              bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
                                              int sampling_method) {
 
     //const FragmentGraph *fg = moldata.getFragmentGraph();
-    unsigned int num_transitions = moldata.getNumTransitions();
-    unsigned int num_fragments = moldata.getNumFragments();
+    unsigned int num_transitions = mol_data.getNumTransitions();
+    unsigned int num_fragments = mol_data.getNumFragments();
 
     int offset = num_transitions;
     unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();
     int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
 
-    if (!moldata.hasComputedGraph())
+    if (!mol_data.hasComputedGraph())
         return;
 
-    suft_t *suft_values = &(suft.values[molidx]);
+    suft_t *suft_values = &(suft.values[mol_idx]);
 
     //Collect energies to compute
     std::vector<unsigned int> energies;
@@ -112,10 +92,10 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
 
         std::set<int> selected_trans_id;
         if(!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
-            getRandomWalkedTransitions(moldata, sampling_method, energy, selected_trans_id);
+            getRandomWalkedTransitions(mol_data, sampling_method, energy, selected_trans_id);
 
         //Iterate over from_id (i)
-        const tmap_t *from_map = moldata.getFromIdTMap();
+        const tmap_t *from_map = mol_data.getFromIdTMap();
         for (int from_idx = 0; from_idx < num_fragments; from_idx++) {
 
             const std::vector<int> *from_id_map = &(*from_map)[from_idx];
@@ -143,7 +123,7 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int molidx, MolData 
             std::vector<const FeatureVector *> fvs(num_trans_from_id);
             std::vector<double> nu_terms(num_trans_from_id + 1);
             for (int idx = 0; it != from_id_map->end(); ++it, idx++) {
-                fvs[idx] = moldata.getFeatureVectorForIdx(*it);
+                fvs[idx] = mol_data.getFeatureVectorForIdx(*it);
                 double theta = nn_param->computeTheta(*fvs[idx], energy, z_values[idx], a_values[idx]);
                 denom += exp(theta);
                 nu_terms[idx] = (*suft_values)[*it + suft_offset];

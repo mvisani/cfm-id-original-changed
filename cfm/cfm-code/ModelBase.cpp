@@ -122,20 +122,3 @@ Solver *ModelBase::getSolver(int ga_method, double learning_rate) const {
     }
     return solver;
 }
-
-void ModelBase::initParams() {
-    switch (cfg->param_init_type){
-        case PARAM_FULL_ZERO_INIT:
-            param->fullZeroInit();
-            break;
-        case PARAM_ZERO_INIT:
-            param->zeroInit();
-            break;
-        case PARAM_NORMAL_INIT:
-            param->randomNormalInit();
-            break;
-        case PARAM_RANDOM_INIT:
-        default:
-            param->randomUniformInit();
-    }
-}

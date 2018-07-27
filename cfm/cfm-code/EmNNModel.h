@@ -33,7 +33,7 @@ public:
           std::string initial_params_filename = "");
 
     //This is public so the test can access it....there must be a better way?
-    void computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
+    void computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
                                       bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
                                       int sampling_method) override;
 
@@ -47,11 +47,8 @@ public:
 
 private:
     //The current parameters
-    boost::shared_ptr<NNParam> nn_param; //EM::param will also be set to point to this location.
-    void initParams() override;
-
+    boost::shared_ptr<NNParam> nn_param;
     void computeThetas(MolData *moldata) override;
-
 };
 
 #endif // __EM_NN_TRAIN_H__

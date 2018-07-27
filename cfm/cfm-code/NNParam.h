@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# param.h
+# nn_param.h
 #
 # Description: 	Class for parameterization of fragmentation probabilities
 #				within the bayesian network fragmentation trees.
@@ -34,12 +34,12 @@ class NNParamActivationFunctionIdException : public std::exception {
     }
 };
 
-//Exception to throw when a param file is expected to contain the neural net configuration
+//Exception to throw when a nn_param file is expected to contain the neural net configuration
 //information but doesn't
 class NNParamFileReadException : public std::exception {
 
     virtual const char *what() const noexcept {
-        return "Couldn't find neural net configuration information in param file";
+        return "Couldn't find neural net configuration information in nn_param file";
     }
 };
 
@@ -51,13 +51,6 @@ public:
 
     //Constructor for loading parameters from file
     NNParam(std::string &filename);
-
-    //Initialisation options
-    void randomUniformInit() override;
-
-    void randomNormalInit() override;
-
-    void varianceScalingInitializer();
 
     //Save parameters to file (non-sparse format, includes neural net configuration)
     void saveToFile(std::string &filename);
@@ -84,17 +77,19 @@ public:
 
     virtual void getBiasIndexes(std::vector<unsigned int> &bias_indexes) override;
 
-    void rollDropout();
+    virtual void initWeights(int init_type) override ;
 
-    std::vector<bool>* getDropouts() { return &is_drop_out; }
 private:
     std::vector<int> hlayer_num_nodes;
     std::vector<int> num_weights_per_layer;
-    std::vector<bool> is_drop_out;
-    std::vector<double> drop_out_probs;
 
     unsigned int total_nodes;
     unsigned int input_layer_node_num;
+
+    //Initialisation options
+    virtual void randomUniformInit() override;
+    virtual void randomNormalInit() override;
+    void varianceScalingInitializer();
 
     //Activation functions and their derivatives (kept general in case we want to try other activation functions...)
     std::vector<int> act_func_ids;

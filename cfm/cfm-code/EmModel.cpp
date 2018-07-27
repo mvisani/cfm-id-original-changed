@@ -60,7 +60,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     int iter = 0;
 
     if (!initial_params_provided)
-        initParams();
+        param->initWeights(cfg->param_init_type);
     comm->broadcastInitialParams(param.get());
     validation_group = group;
 
@@ -200,7 +200,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         after = time(nullptr);
         std::string param_update_time_msg =
-                "[M-Step]Completed M-step param update: Time Elapsed = " +
+                "[M-Step]Completed M-step nn_param update: Time Elapsed = " +
                 std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(param_update_time_msg.c_str());
@@ -573,19 +573,19 @@ double EmModel::getUpdatedLearningRate(double learning_rate, double current_loss
 }
 
 
-void EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &moldata, suft_counts_t &suft,
+void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
                                            bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
                                            int sampling_method) {
 
-    unsigned int num_transitions = moldata.getNumTransitions();
-    unsigned int num_fragments = moldata.getNumFragments();
+    unsigned int num_transitions = mol_data.getNumTransitions();
+    unsigned int num_fragments = mol_data.getNumFragments();
 
     int offset = num_transitions;
 
-    if (!moldata.hasComputedGraph())
+    if (!mol_data.hasComputedGraph())
         return;
 
-    suft_t *suft_values = &(suft.values[molidx]);
+    suft_t *suft_values = &(suft.values[mol_idx]);
 
     // Collect energies to compute
     std::vector<unsigned int> energies;
@@ -598,15 +598,15 @@ void EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &m
 
         std::set<int> selected_trans_id;
         if (!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
-            getRandomWalkedTransitions(moldata, sampling_method, energy, selected_trans_id);
+            getRandomWalkedTransitions(mol_data, sampling_method, energy, selected_trans_id);
 
         // Iterate over from_id (i)
-        auto frag_trans_map = moldata.getFromIdTMap()->begin();
-        for (int from_idx = 0; frag_trans_map != moldata.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
+        auto frag_trans_map = mol_data.getFromIdTMap()->begin();
+        for (int from_idx = 0; frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
 
             if (record_used_idxs_only) {
                 for (auto trans_id : *frag_trans_map) {
-                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
+                    const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         used_idxs.insert(*fv_it + grad_offset);
                     }
@@ -626,17 +626,17 @@ void EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &m
                 // Calculate the denominator of the sum terms
                 double denom = 1.0;
                 for (auto trans_id : sampled_ids)
-                    denom += exp(moldata.getThetaForIdx(energy, trans_id));
+                    denom += exp(mol_data.getThetaForIdx(energy, trans_id));
 
                 // Complete the innermost sum terms	(sum over j')
                 std::map<unsigned int, double> sum_terms;
 
                 for (auto trans_id : sampled_ids) {
-                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
+                    const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
 
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         auto fv_idx = *fv_it;
-                        double val = exp(moldata.getThetaForIdx(energy, trans_id)) / denom;
+                        double val = exp(mol_data.getThetaForIdx(energy, trans_id)) / denom;
                         if (sum_terms.find(fv_idx) != sum_terms.end())
                             sum_terms[fv_idx] += val;
                         else
@@ -649,7 +649,7 @@ void EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &m
                 for (auto trans_id : sampled_ids) {
                     double nu = (*suft_values)[trans_id + suft_offset];
                     nu_sum += nu;
-                    const FeatureVector *fv = moldata.getFeatureVectorForIdx(trans_id);
+                    const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         auto fv_idx = *fv_it;
                         *(grads + fv_idx + grad_offset) += nu;
@@ -668,7 +668,7 @@ void EmModel::computeAndAccumulateGradient(double *grads, int molidx, MolData &m
 
     // Compute the latest transition thetas
     if (!record_used_idxs_only)
-        moldata.computeTransitionThetas(*param);
+        mol_data.computeTransitionThetas(*param);
 }
 
 

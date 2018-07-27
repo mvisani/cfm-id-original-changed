@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec Prediction and Identification of Metabolites
 #
-# param.cpp
+# nn_param.cpp
 #
 # Description: 	Class for parameterization of fragmentation probabilities
 #				within the bayesian network fragmentation trees.
@@ -48,15 +48,32 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
     }
     weights.resize(total_len * num_energy_levels);
 
-    //Set dropout flags:
-    drop_out_probs.resize(total_nodes);
-
     //Set pointers to the activation functions and their derivatives used in each layer
     setActivationFunctionsFromIds();
 
     //Resize some temporary a and z vectors so we don't have to allocate memory for a and z within the computeTheta function if we don't need them after.
     tmp_z_values.resize(total_nodes);
     tmp_a_values.resize(total_nodes);
+}
+
+void NNParam::initWeights(int init_type){
+    switch (init_type){
+        case PARAM_FULL_ZERO_INIT:
+            fullZeroInit();
+            break;
+        case PARAM_ZERO_INIT:
+            zeroInit();
+            break;
+        case PARAM_NORMAL_INIT:
+            randomNormalInit();
+            break;
+        case NN_PARAM_VAR_SCALING_INIT:
+            varianceScalingInitializer();
+            break;
+        case PARAM_RANDOM_INIT:
+        default:
+            randomUniformInit();
+    }
 }
 
 //Randomly initialise all weights
@@ -464,13 +481,5 @@ void NNParam::getBiasIndexes(std::vector<unsigned int> &bias_indexes) {
             bias_indexes[count] = idx;
             idx += (num_input + 1);
         }
-    }
-}
-
-void NNParam::rollDropout(){
-    std::uniform_real_distribution<double> dist(0,1);
-    for(int idx = 0 ; idx < drop_out_probs.size(); ++idx){
-        double rand_num = dist(util_rng);
-        is_drop_out[idx] = rand_num < drop_out_probs[idx];
     }
 }
