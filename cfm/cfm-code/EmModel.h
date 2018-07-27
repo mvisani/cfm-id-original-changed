@@ -100,7 +100,7 @@ protected:
     void updateTraningParams(double loss, double prev_loss, double q_ratio, double &learning_rate, int &sampling_method,
                              int &count_no_progress) const;
 
-    void updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, double avg_loss) const;
+    void updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss) const;
 };
 
 #endif // __EM_TRAIN_H__

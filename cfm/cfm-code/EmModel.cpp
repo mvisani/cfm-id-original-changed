@@ -74,7 +74,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     iter = 0;
     double loss;
     double prev_loss = -DBL_MAX;
-    double best_q = -DBL_MAX;
+    double best_loss = -DBL_MAX;
 
     // make of copy of learing rate
     // so we can share the save lr var over all em iterations
@@ -239,15 +239,15 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         w_jaccard = comm->collectQInMaster(w_jaccard);
         // Check for convergence
         double q_ratio = fabs((loss - prev_loss) / loss);
-        double best_q_ratio = fabs((loss - best_q) / loss);
+        double best_q_ratio = fabs((loss - best_loss) / loss);
         if (comm->isMaster()) {
             std::string qdif_str = "[M-Step]";
             if (prev_loss != -DBL_MAX)
                 qdif_str += "Q_ratio= " + std::to_string(q_ratio) + " prev_Q=" + std::to_string(prev_loss) + "\n";
 
-            if (best_q != -DBL_MAX)
+            if (best_loss != -DBL_MAX)
                 qdif_str += "Best_Q_ratio= " + std::to_string(best_q_ratio) +
-                            " best_Q=" + std::to_string(best_q) + "\n";
+                            " best_Q=" + std::to_string(best_loss) + "\n";
 
             qdif_str += "Q=" + std::to_string(loss) + " Validation_Q=" + std::to_string(val_q) + "\n";
             qdif_str +=
@@ -261,12 +261,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         // first let us save the model
         // only save the one has best Q so far
-        if (best_q < loss) {
-            best_q = loss;
+        if (best_loss < loss) {
+            best_loss = loss;
             // Write the params
             if (comm->isMaster()) {
                 std::string progress_str = "[M-Step] Found Better Q: "
-                                           + std::to_string(best_q) + " Write to File";
+                                           + std::to_string(best_loss) + " Write to File";
                 comm->printToMasterOnly(progress_str.c_str());
                 writeParamsToFile(iter_out_param_filename);
                 writeParamsToFile(out_param_filename);
@@ -283,7 +283,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         prev_loss = loss;
-        updateWJaccardFlag(use_weighted_jaccard, prev_loss, loss / numnonvalmols);
+        updateWJaccardFlag(use_weighted_jaccard, prev_loss, best_loss, loss / numnonvalmols);
 
         iter++;
     }
@@ -294,13 +294,15 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                                  " iterations.")
                                         .c_str());
 
-    return best_q;
+    return best_loss;
 }
 
-void EmModel::updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, double avg_loss) const {
+void
+EmModel::updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss) const {
     if(!use_weighted_jaccard && avg_loss > -2.5){
             use_weighted_jaccard = true;
             prev_loss = 0.0;
+            best_loss = 0.0;
             if(comm->isMaster())
                 std::cout << "[EM INFO]Switching to Jaccard " << std::endl;
         }
@@ -537,7 +539,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                       << std::endl;
         }
 
-        no_progress_count = prev_loss > loss ? no_progress_count + 1 : 0;
+        no_progress_count = prev_loss >= loss ? no_progress_count + 1 : 0;
     }
 
     if (comm->isMaster()) {
