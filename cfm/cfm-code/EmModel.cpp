@@ -83,27 +83,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     int sampling_method = cfg->ga_sampling_method;
     int count_no_progress = 0;
     bool use_weighted_jaccard = false;
-
-    // pre process data
-    for (auto &mol : molDataSet) {
-        if (mol.getGroup() == validation_group)
-            continue;
-
-        mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-        if (cfg->use_graph_pruning) {
-            if (cfg->use_single_energy_cfm) {
-                mol.createNewGraphForComputation();
-                mol.pruneGraphBySpectra(energy_level, cfg->abs_mass_tol, cfg->ppm_mass_tol,
-                                        cfg->aggressive_graph_pruning);
-            } else {
-                mol.pruneGraphBySpectra(-1, cfg->abs_mass_tol, cfg->ppm_mass_tol, cfg->aggressive_graph_pruning);
-            }
-        }
-        if (cfg->add_noise) {
-            mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
-            mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-        }
-    }
+    molDataPreProcessing(molDataSet, energy_level);
 
     while (iter < MAX_EM_ITERATIONS) {
         std::string iter_out_param_filename =
@@ -295,6 +275,28 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                                         .c_str());
 
     return best_loss;
+}
+
+void EmModel::molDataPreProcessing(std::vector<MolData> &molDataSet, int energy_level) const {// pre process data
+    for (auto &mol : molDataSet) {
+        if (mol.getGroup() == validation_group)
+            continue;
+
+        mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
+        if (cfg->use_graph_pruning) {
+            if (cfg->use_single_energy_cfm) {
+                mol.createNewGraphForComputation();
+                mol.pruneGraphBySpectra(energy_level, cfg->abs_mass_tol, cfg->ppm_mass_tol,
+                                        cfg->aggressive_graph_pruning);
+            } else {
+                mol.pruneGraphBySpectra(-1, cfg->abs_mass_tol, cfg->ppm_mass_tol, cfg->aggressive_graph_pruning);
+            }
+        }
+        if (cfg->add_noise) {
+            mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
+            mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
+        }
+    }
 }
 
 void
