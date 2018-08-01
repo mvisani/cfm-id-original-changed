@@ -82,7 +82,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.add_noise = false;
     cfg.noise_max = 1.0;
     cfg.noise_sum = 5;
-    cfg.ga_sampling_explore_weight = 1.0;
+    cfg.use_weighted_jaccard = false;
 }
 
 
@@ -161,6 +161,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "noise_max") cfg.noise_max = (double) value;
         else if (name == "noise_sum") cfg.noise_sum = (double) value;
         else if (name == "ga_sampling_explore_weight") cfg.ga_sampling_explore_weight = (double) value;
+        else if (name == "use_weighted_jaccard") cfg.use_weighted_jaccard = (bool) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();

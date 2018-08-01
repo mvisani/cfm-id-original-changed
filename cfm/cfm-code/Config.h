@@ -267,6 +267,9 @@ struct config_t {
 
     int fragraph_compute_timeout_in_secs;
 
+    //  flag swicth
+    bool use_weighted_jaccard;
+
     //noise
     bool add_noise;
     double noise_sum;

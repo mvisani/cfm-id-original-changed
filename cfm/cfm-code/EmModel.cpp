@@ -81,7 +81,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     //init some flags
     double learning_rate = cfg->starting_step_size;
     int sampling_method = cfg->ga_sampling_method;
-    int count_no_progress = 0;
+    int em_no_progress_count = 0;
     bool use_weighted_jaccard = false;
     molDataPreProcessing(molDataSet, energy_level);
 
@@ -254,10 +254,10 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         // check if EM meet halt flag
-        updateTraningParams(loss, prev_loss, q_ratio, learning_rate, sampling_method, count_no_progress);
+        updateTraningParams(loss, prev_loss, q_ratio, learning_rate, sampling_method, em_no_progress_count);
 
-        if (count_no_progress >= 3) {
-            comm->printToMasterOnly(("EM Stopped after " +  std::to_string(count_no_progress) +  " No Progress Iterations").c_str());
+        if (em_no_progress_count >= 3) {
+            comm->printToMasterOnly(("EM Stopped after " +  std::to_string(em_no_progress_count) +  " No Progress Iterations").c_str());
             comm->printToMasterOnly(("EM Converged after " +  std::to_string(iter) +  " iterations").c_str());
             break;
         }
@@ -301,13 +301,13 @@ void EmModel::molDataPreProcessing(std::vector<MolData> &molDataSet, int energy_
 
 void
 EmModel::updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss) const {
-    if(!use_weighted_jaccard && avg_loss > -2.5){
+    if(!use_weighted_jaccard && avg_loss > -2.5 && cfg->use_weighted_jaccard){
             use_weighted_jaccard = true;
             prev_loss = 0.0;
             best_loss = 0.0;
             if(comm->isMaster())
                 std::cout << "[EM INFO]Switching to Jaccard " << std::endl;
-        }
+    }
 }
 
 void
@@ -494,10 +494,10 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
     //double learn_mult = 1.0;
 
     int max_iteration = cfg->ga_max_iterations;
-    int no_progress_count = 0;
+    int ga_no_progress_count = 0;
     while (iter++ < max_iteration
            && fabs((loss - prev_loss) / loss) >= cfg->ga_converge_thresh
-           && no_progress_count < 3) {
+           && ga_no_progress_count <= 3) {
 
         if (iter > 1)
             prev_loss = loss;
@@ -541,7 +541,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                       << std::endl;
         }
 
-        no_progress_count = prev_loss >= loss ? no_progress_count + 1 : 0;
+        ga_no_progress_count = prev_loss >= loss ? ga_no_progress_count + 1 : 0;
     }
 
     if (comm->isMaster()) {
