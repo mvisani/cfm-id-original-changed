@@ -699,12 +699,12 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
         if (!use_difference_sampling_flag) {
             moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, 0.1);
         }
-        /*else{
+        else{
             moldata.computePredictedSpectra(*param, false, false, energy);
             std::vector<double> weights;
             moldata.getSelectedWeights(weights, energy);
             moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
-        }*/
+        }
     }
 }
 
@@ -724,7 +724,6 @@ double EmModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_coun
     suft_t *suft_values = &(suft.values[molidx]);
 
     // Collect energies to compute
-
     std::vector<unsigned int> energies;
     getEnergiesLevels(energies);
 

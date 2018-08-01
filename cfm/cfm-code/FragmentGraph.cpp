@@ -616,7 +616,7 @@ FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsRandomWalk(std:
     for (auto &frag_trans_ids: from_id_tmap)
         uniform_int_distributions.emplace_back(std::uniform_int_distribution<> (0, (int) frag_trans_ids.size() - 1));
 
-    int num_iter = 0;
+    //std::cerr << (double)transitions.size() * ratio<< " " << limited << std::endl;
     while (selected_ids.size() < limited) {
         // init queue and add root
         std::queue<int> fgs;
@@ -640,7 +640,6 @@ FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsRandomWalk(std:
                 }
             }
         }
-        num_iter++;
     }
 }
 

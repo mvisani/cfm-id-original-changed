@@ -323,8 +323,8 @@ public:
 
     // Get a list of transitions ids , with random walk
     void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids,
-                                           int max_num_iter) {
-        current_graph->getSampledTransitionIdsRandomWalk(selected_ids, 0);
+                                           double ratio) {
+        current_graph->getSampledTransitionIdsRandomWalk(selected_ids, ratio);
     };
 
     // Get a list of transitions ids , with random walk
