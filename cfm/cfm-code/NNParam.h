@@ -79,17 +79,18 @@ public:
 
     virtual void initWeights(int init_type) override ;
 
+protected:
+    //Initialisation options
+    virtual void randomUniformInit() override;
+    virtual void randomNormalInit() override;
+    void varianceScalingInitializer();
+
 private:
     std::vector<int> hlayer_num_nodes;
     std::vector<int> num_weights_per_layer;
 
     unsigned int total_nodes;
     unsigned int input_layer_node_num;
-
-    //Initialisation options
-    virtual void randomUniformInit() override;
-    virtual void randomNormalInit() override;
-    void varianceScalingInitializer();
 
     //Activation functions and their derivatives (kept general in case we want to try other activation functions...)
     std::vector<int> act_func_ids;

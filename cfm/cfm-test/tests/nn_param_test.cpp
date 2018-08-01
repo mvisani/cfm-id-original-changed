@@ -100,7 +100,7 @@ void NNParamsTestSaveAndLoadFromFile::runTest(){
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear?
 
 	NNParam param(fnames, 1, hlayer_numnodes, act_ids);
-    param.randomUniformInit();
+    param.initWeights(PARAM_RANDOM_INIT);
 
 	//Save to file
 	std::string filename = "tmp_param_file.log";
@@ -424,7 +424,7 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	std::string null_str = "null";
 	EmNNModel em(&cfg, &fc_null, null_str, param_filename );
 	double Qonly  = em.computeLogLikelihoodLoss(0, moldata, suft);
-	double Q = em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0);
+	em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, false);
 
 	//Check Q
 	double theta1 = 12.0, theta2 = 10.0;
@@ -432,12 +432,8 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	double x1 = exp(theta1)/rho_denom, x2 = exp(theta2)/rho_denom;	
 	
 	double expected_Q = (0.2+0.9+0.08)*(theta1-log(rho_denom)) + (0.3+0.05+0.9)*(theta2-log(rho_denom)) + (0.5+0.05+0.02)*(-log(rho_denom));
-	if( fabs(Q - expected_Q )  > tol ){
-		std::cout << "Unexpected Q value resulting from gradient computation: " << Q << std::endl;
-		pass = false;
-	}
 	if( fabs(Qonly - expected_Q )  > tol ){
-		std::cout << "Unexpected Q value resulting from Q only computation: " << Q << std::endl;
+		std::cout << "Unexpected Q value resulting from Q only computation: " << Qonly << std::endl;
 		pass = false;
 	}
 
