@@ -83,7 +83,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     int sampling_method = cfg->ga_sampling_method;
     int em_no_progress_count = 0;
     bool switch_to_weighted_jaccard = false;
-    bool switch_to_diff_sampling = false;
 
     molDataPreProcessing(molDataSet, energy_level);
 
@@ -178,7 +177,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         before = time(nullptr);
         loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, energy_level, sampling_method,
-                switch_to_weighted_jaccard, switch_to_diff_sampling);
+                                              switch_to_weighted_jaccard);
 
         after = time(nullptr);
         std::string param_update_time_msg =
@@ -259,22 +258,18 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         updateTraningParams(loss, prev_loss, q_ratio, learning_rate, sampling_method, em_no_progress_count);
 
         if (em_no_progress_count >= 3) {
-            comm->printToMasterOnly(("EM Stopped after " +  std::to_string(em_no_progress_count) +  " No Progress Iterations").c_str());
-            comm->printToMasterOnly(("EM Converged after " +  std::to_string(iter) +  " iterations").c_str());
+            comm->printToMasterOnly(
+                    ("EM Stopped after " + std::to_string(em_no_progress_count) + " No Progress Iterations").c_str());
+            comm->printToMasterOnly(("EM Converged after " + std::to_string(iter) + " iterations").c_str());
             break;
         }
 
         prev_loss = loss;
         double threshold = -2.0;
-        if(comm->isMaster())
+        if (comm->isMaster())
             updateWJaccardFlag(switch_to_weighted_jaccard, prev_loss, best_loss, loss / numnonvalmols, threshold);
         comm->broadcastBooleanFlag(switch_to_weighted_jaccard);
 
-        if(comm->isMaster()){
-            switch_to_diff_sampling = (loss / numnonvalmols) > threshold;
-            std::cout << "switch_to_diff_sampling " << switch_to_diff_sampling <<  std::endl;
-        }
-        comm->broadcastBooleanFlag(switch_to_diff_sampling);
         iter++;
     }
 
@@ -310,13 +305,14 @@ void EmModel::molDataPreProcessing(std::vector<MolData> &molDataSet, int energy_
 }
 
 void
-EmModel::updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss, double threshold) const {
-    if(!use_weighted_jaccard && avg_loss > threshold && cfg->use_weighted_jaccard){
-            use_weighted_jaccard = true;
-            prev_loss = 0.0;
-            best_loss = 0.0;
-            if(comm->isMaster())
-                std::cout << "[EM INFO]Switching to Jaccard " << std::endl;
+EmModel::updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss,
+                            double threshold) const {
+    if (!use_weighted_jaccard && avg_loss > threshold && cfg->use_weighted_jaccard) {
+        use_weighted_jaccard = true;
+        prev_loss = 0.0;
+        best_loss = 0.0;
+        if (comm->isMaster())
+            std::cout << "[EM INFO]Switching to Jaccard " << std::endl;
     }
 }
 
@@ -325,20 +321,20 @@ EmModel::updateTraningParams(double loss, double prev_loss, double q_ratio, doub
                              int &count_no_progress) const {
     if (q_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
 
-            if (learning_rate > cfg->starting_step_size) {
-                learning_rate *= 0.5;
-                count_no_progress = 0;
-            } else if (sampling_method != USE_NO_SAMPLING && cfg->reset_sampling) {
-                if (comm->isMaster())
-                    std::cout << "[Reset] Turn off sampling" << std::endl;
-
-                sampling_method = USE_NO_SAMPLING;
-                learning_rate = cfg->starting_step_size * cfg->reset_sampling_lr_ratio;
-                count_no_progress = 0;
-            } else
-                count_no_progress += 1;
-        } else
+        if (learning_rate > cfg->starting_step_size) {
+            learning_rate *= 0.5;
             count_no_progress = 0;
+        } else if (sampling_method != USE_NO_SAMPLING && cfg->reset_sampling) {
+            if (comm->isMaster())
+                std::cout << "[Reset] Turn off sampling" << std::endl;
+
+            sampling_method = USE_NO_SAMPLING;
+            learning_rate = cfg->starting_step_size * cfg->reset_sampling_lr_ratio;
+            count_no_progress = 0;
+        } else
+            count_no_progress += 1;
+    } else
+        count_no_progress = 0;
 }
 
 double
@@ -465,8 +461,7 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
 }
 
 double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
-                                               int energy_level, int sampling_method, bool switch_to_wjaccard,
-                                               bool use_diff_sampling) {
+                                               int energy_level, int sampling_method, bool switch_to_wjaccard) {
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
@@ -486,7 +481,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group)
-                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0, false);
+                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0);
         }
 
         comm->setMasterUsedIdxs();
@@ -531,7 +526,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
                 if (minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group) {
                     computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs,
-                                                 sampling_method, use_diff_sampling);
+                                                 sampling_method);
                 }
             }
             comm->collectGradsInMaster(&grads[0]);
@@ -587,7 +582,7 @@ double EmModel::getUpdatedLearningRate(double learning_rate, double current_loss
 
 void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
                                            bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                           int sampling_method, bool use_diff_flag) {
+                                           int sampling_method) {
 
     unsigned int num_transitions = mol_data.getNumTransitions();
     unsigned int num_fragments = mol_data.getNumFragments();
@@ -610,7 +605,7 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
 
         std::set<int> selected_trans_id;
         if (!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
-            getRandomWalkedTransitions(mol_data, sampling_method, energy, selected_trans_id, use_diff_flag);
+            getRandomWalkedTransitions(mol_data, sampling_method, energy, selected_trans_id);
 
         // Iterate over from_id (i)
         auto frag_trans_map = mol_data.getFromIdTMap()->begin();
@@ -685,7 +680,7 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
 
 
 void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, unsigned int energy,
-                                         std::set<int> &selected_trans_id, bool use_difference_sampling_flag) const {
+                                         std::set<int> &selected_trans_id) const {
 
     int num_trans = moldata.getNumTransitions();
     int num_iterations = (int) ((cfg->ga_graph_sampling_k * num_trans) / (double) (cfg->fg_depth * cfg->fg_depth));
@@ -696,15 +691,11 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
     } else if (sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
         moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, 0.1);
     } else if (sampling_method == USE_DIFFERENCE_SAMPLING) {
-        if (!use_difference_sampling_flag) {
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, 0.1);
-        }
-        else{
-            moldata.computePredictedSpectra(*param, false, false, energy);
-            std::vector<double> weights;
-            moldata.getSelectedWeights(weights, energy);
-            moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
-        }
+        moldata.computePredictedSpectra(*param, false, false, energy);
+        std::vector<double> weights;
+        moldata.getSelectedWeights(weights, energy);
+        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
+
     }
 }
 
