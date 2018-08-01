@@ -606,17 +606,18 @@ void FragmentGraph::ComputationalFragmenGraph::removeLonelyFrags() {
     removeFragments(removed_fragmentation_ids);
 }
 
-void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter) {
+void
+FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio) {
 
+    int limited = (int)std::ceil((double)transitions.size() * ratio);
     std::vector<std::uniform_int_distribution<int>> uniform_int_distributions;
 
-    for (auto &frag_trans_ids: from_id_tmap) {
-        // add to discrete_distributions
+    // add to discrete_distributions
+    for (auto &frag_trans_ids: from_id_tmap)
         uniform_int_distributions.emplace_back(std::uniform_int_distribution<> (0, (int) frag_trans_ids.size() - 1));
-    }
 
     int num_iter = 0;
-    while (num_iter <= max_num_iter) {
+    while (selected_ids.size() < limited) {
         // init queue and add root
         std::queue<int> fgs;
 
@@ -832,6 +833,17 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights,
         getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, visited, transitions[trans_id]->getToId(),
                                                      current_path, selected_trans_map);
     }
+}
+void FragmentGraph::ComputationalFragmenGraph::getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio) {
+    int limited = (int)std::ceil((double)transitions.size() * ratio);
+
+    std::vector<int> ids(transitions.size());
+    std::iota(ids.begin(),ids.end(), 0);
+    std::shuffle(ids.begin(),ids.end(), util_rng);
+
+    for(int i = 0; i < limited; ++i)
+        selected_trans_id.insert(ids[i]);
+
 }
 
 void FragmentGraph::ComputationalFragmenGraph::removeFragments(std::vector<int> &input_ids) {

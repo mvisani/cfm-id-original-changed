@@ -206,6 +206,12 @@ int Comms::broadcastNumUsed(int num_used) {
 
 }
 
+bool Comms::broadcastBooleanFlag(bool flag) {
+    MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
+    MPI_Bcast(&flag, 1, MPI_CXX_BOOL, MASTER, MPI_COMM_WORLD);
+    return flag;
+}
+
 double Comms::broadcastQ(double Q) {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait

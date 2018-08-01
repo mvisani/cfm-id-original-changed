@@ -216,7 +216,7 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
     }
 
     // get used flags
-	em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0);
+    em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, false);
     //Check the used flags
     for( int energy = 0; energy < 3; energy++ ){
         //Check the ones that should be on
@@ -234,7 +234,7 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
     }
 
     //Check the gradients
-	em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, false, used_idxs, 0);
+    em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, false, used_idxs, 0, false);
 	double expected_vals[6] = {-0.1624,0.2499,-0.0568,0.2554,0.1649,0.4663};
 	for( int energy = 0; energy < 3; energy++ ){
 		for( unsigned int i = 0; i < 2; i++ ){

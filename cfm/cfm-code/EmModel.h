@@ -55,7 +55,7 @@ public:
     //This is public so the test can access it....there must be a better way?
     virtual void computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
                                               bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                              int sampling_method);
+                                              int sampling_method, bool use_diff_flag);
 
     virtual double computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft);
 
@@ -75,7 +75,8 @@ protected:
 
     //Simple gradient ascent
     double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
-                                          int energy_level, int sampling_method, bool use_weighted_jaccard);
+                                          int energy_level, int sampling_method, bool switch_to_wjaccard,
+                                          bool use_diff_sampling);
 
     double computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy_level, bool use_weighted_jaccard);
 
@@ -89,8 +90,7 @@ protected:
     virtual void updateGradientForRegularizationTerm(double *grads);
 
     void getRandomWalkedTransitions(MolData &moldata, int sampling_method, unsigned int energy,
-                                        std::set<int> &selected_trans_id) const;
-
+                                        std::set<int> &selected_trans_id, bool use_difference_sampling_flag) const;
     void
     computeValidationMetrics(int energy_level, int molidx, std::vector<MolData, std::allocator<MolData>>::iterator &itdata,
                              suft_counts_t &suft, double &val_q, int &numvalmols, double &jaccard, double &w_jaccard);
@@ -100,7 +100,7 @@ protected:
     void updateTraningParams(double loss, double prev_loss, double q_ratio, double &learning_rate, int &sampling_method,
                              int &count_no_progress) const;
 
-    void updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss) const;
+    void updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss, double threshold) const;
 
     void molDataPreProcessing(std::vector<MolData> &molDataSet, int energy_level) const;
 };

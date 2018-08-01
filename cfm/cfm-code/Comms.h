@@ -52,6 +52,8 @@ public:
 
     int broadcastNumUsed(int num_used);
 
+    bool broadcastBooleanFlag(bool flag);
+
     int collectSumInMaster(int partial);
 
     double broadcastQ(double Q);

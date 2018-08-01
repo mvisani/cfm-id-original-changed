@@ -203,9 +203,11 @@ public:
     void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                    double explore_weight);
 
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter);
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
 
     void getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::vector<double> &selected_weights);
+
+    void getRandomSampledTransitions(std::set<int> &selected_ids, double ratio);
 
     void addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
 

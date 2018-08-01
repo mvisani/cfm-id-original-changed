@@ -324,13 +324,17 @@ public:
     // Get a list of transitions ids , with random walk
     void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids,
                                            int max_num_iter) {
-        current_graph->getSampledTransitionIdsRandomWalk(selected_ids, max_num_iter);
+        current_graph->getSampledTransitionIdsRandomWalk(selected_ids, 0);
     };
 
     // Get a list of transitions ids , with random walk
     void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
                                                    std::vector<double> &selected_weights) {
         current_graph->getSampledTransitionIdsDifferenceWeighted(selected_ids,selected_weights);
+    };
+
+    void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio) {
+        current_graph->getRandomSampledTransitions(selected_trans_id,ratio);
     };
 
 protected:
@@ -372,7 +376,7 @@ protected:
         // Function do some not so random selection
 
 
-        void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter);
+        void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
 
         void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids,
                                                        int max_num_iter,
@@ -390,6 +394,9 @@ protected:
         void getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
                                         int frag_id, std::vector<std::pair<int, int>> &path,
                                         std::map<int, std::vector<int>> &trans_to_interest_frags_map);
+
+        void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio);
+
         std::vector<Fragment*> fragments;
         std::vector<Transition*> transitions;
         tmap_t from_id_tmap;
@@ -423,8 +430,6 @@ protected:
     // Find the id for an existing transition that matches the input ids
     // or -1 in the case where no such transition is found
     int findMatchingTransition(int from_id, int to_id);
-
-    void computePathFromFrag(int frag_id, std::vector<int> &trans_ids, int depth);
 };
 
 class EvidenceFragmentGraph : public FragmentGraph {

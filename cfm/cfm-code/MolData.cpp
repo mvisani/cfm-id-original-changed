@@ -787,10 +787,10 @@ void MolData::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_
         fg->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, thetas[energy], explore_weight);
 }
 
-void MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_num_iter) {
+void MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio) {
 
     if(!hasEmptySpectrum() && hasComputedGraph())
-        fg->getSampledTransitionIdsRandomWalk(selected_ids, max_num_iter);
+        fg->getSampledTransitionIdsRandomWalk(selected_ids, ratio);
 }
 
 void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::vector<double> &selected_weights) {
@@ -798,6 +798,10 @@ void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, st
         fg->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights);
 }
 
+void MolData::getRandomSampledTransitions(std::set<int> &selected_ids, double ratio){
+    if (!hasEmptySpectrum() && hasComputedGraph())
+        fg->getRandomSampledTransitions(selected_ids, ratio);
+}
 
 void MolData::addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol) {
     for (auto &spectrum: spectra) {
