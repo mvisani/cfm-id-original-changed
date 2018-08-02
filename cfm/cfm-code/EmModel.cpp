@@ -268,7 +268,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double threshold = -2.0;
         if (comm->isMaster())
             updateWJaccardFlag(switch_to_weighted_jaccard, prev_loss, best_loss, loss / numnonvalmols, threshold);
-        comm->broadcastBooleanFlag(switch_to_weighted_jaccard);
+        switch_to_weighted_jaccard = comm->broadcastBooleanFlag(switch_to_weighted_jaccard);
 
         iter++;
     }
@@ -311,8 +311,7 @@ EmModel::updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, doubl
         use_weighted_jaccard = true;
         prev_loss = 0.0;
         best_loss = 0.0;
-        if (comm->isMaster())
-            std::cout << "[EM INFO]Switching to Jaccard " << std::endl;
+        std::cout << "[EM INFO]Switching to Jaccard " << std::endl;
     }
 }
 
