@@ -265,9 +265,13 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         prev_loss = loss;
-        double threshold = -2.0;
-        if (comm->isMaster())
-            updateWJaccardFlag(switch_to_weighted_jaccard, prev_loss, best_loss, loss / numnonvalmols, threshold);
+
+        if (comm->isMaster()){
+            double loss_before_reg = loss - getRegularizationTerm();
+            updateWJaccardFlag(switch_to_weighted_jaccard, prev_loss,
+                    best_loss, loss_before_reg/ numnonvalmols, cfg->em_wjaccard_swicth_threshold);
+
+        }
         switch_to_weighted_jaccard = comm->broadcastBooleanFlag(switch_to_weighted_jaccard);
 
         iter++;
@@ -307,7 +311,7 @@ void EmModel::molDataPreProcessing(std::vector<MolData> &molDataSet, int energy_
 void
 EmModel::updateWJaccardFlag(bool &switch_to_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss,
                             double threshold) const {
-    if (!switch_to_weighted_jaccard && avg_loss > threshold && cfg->use_weighted_jaccard) {
+    if (!switch_to_weighted_jaccard && avg_loss > threshold && cfg->em_use_weighted_jaccard) {
         switch_to_weighted_jaccard = true;
         prev_loss = 0.0;
         best_loss = 0.0;

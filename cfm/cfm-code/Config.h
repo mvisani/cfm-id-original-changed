@@ -268,8 +268,8 @@ struct config_t {
     int fragraph_compute_timeout_in_secs;
 
     //  flag swicth
-    bool use_weighted_jaccard;
-
+    bool em_use_weighted_jaccard;
+    double em_wjaccard_swicth_threshold;
     //noise
     bool add_noise;
     double noise_sum;
