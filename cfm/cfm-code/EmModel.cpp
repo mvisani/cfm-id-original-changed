@@ -356,7 +356,8 @@ EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy
         loss += getRegularizationTerm();
     loss = comm->collectQInMaster(loss);
     loss = comm->broadcastQ(loss);
-
+    
+    loss /= data.size();
     return loss;
 }
 
