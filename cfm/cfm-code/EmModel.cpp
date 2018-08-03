@@ -305,10 +305,10 @@ void EmModel::molDataPreProcessing(std::vector<MolData> &molDataSet, int energy_
 }
 
 void
-EmModel::updateWJaccardFlag(bool &use_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss,
+EmModel::updateWJaccardFlag(bool &switch_to_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss,
                             double threshold) const {
-    if (!use_weighted_jaccard && avg_loss > threshold && cfg->use_weighted_jaccard) {
-        use_weighted_jaccard = true;
+    if (!switch_to_weighted_jaccard && avg_loss > threshold && cfg->use_weighted_jaccard) {
+        switch_to_weighted_jaccard = true;
         prev_loss = 0.0;
         best_loss = 0.0;
         std::cout << "[EM INFO]Switching to Jaccard " << std::endl;
