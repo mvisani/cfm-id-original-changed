@@ -78,6 +78,11 @@ public:
 
     virtual void initWeights(int init_type);
 
+    void rollDropouts();
+    // addition paramenter for drop outs
+    // need move to protected
+    // NOTE: FIX ME
+    std::vector<bool> dropped_out;
 protected:
     std::vector<double> weights;
     unsigned int num_energy_levels;
@@ -89,7 +94,6 @@ protected:
     virtual void randomNormalInit();
     void zeroInit();
     void fullZeroInit();
-
 };
 
 #endif // __PARAM_H__

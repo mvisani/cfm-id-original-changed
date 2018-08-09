@@ -102,11 +102,9 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
             std::vector<int> sampled_trans_id;
 
             if (sampling_method != USE_NO_SAMPLING && !record_used_idxs_only) {
-                for (const auto &trans_id : (*from_map)[from_idx]) {
-                    if (selected_trans_id.find(trans_id) != selected_trans_id.end()) {
+                for (const auto &trans_id : (*from_map)[from_idx])
+                    if (selected_trans_id.find(trans_id) != selected_trans_id.end())
                         sampled_trans_id.push_back(trans_id);
-                    }
-                }
                 from_id_map = &sampled_trans_id;
             }
 

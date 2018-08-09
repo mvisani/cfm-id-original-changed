@@ -40,8 +40,6 @@ public:
 
     void broadcastInitialParams(Param *param);
 
-    void broadcastDropouts(NNParam *param);
-
     void printWithWorkerId(const char *msg);
 
     double collectQInMaster(double Q);

@@ -92,7 +92,7 @@ protected:
                                         std::set<int> &selected_trans_id) const;
     void
     computeValidationMetrics(int energy_level, int molidx, std::vector<MolData, std::allocator<MolData>>::iterator &itdata,
-                             suft_counts_t &suft, double &val_q, int &numvalmols, double &jaccard, double &w_jaccard);
+                             suft_counts_t &suft, double &val_q, int &num_val_mols, double &jaccard, double &w_jaccard);
 
     double getUpdatedLearningRate(double learning_rate, double current_loss, double prev_loss, int iter) const;
 
@@ -103,6 +103,7 @@ protected:
                             double threshold) const;
 
     void molDataPreProcessing(std::vector<MolData> &molDataSet, int energy_level) const;
+
 };
 
 #endif // __EM_TRAIN_H__

@@ -176,6 +176,10 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         // (M-step)
 
         before = time(nullptr);
+        // let us roll Dropouts
+        /*if(comm->isMaster())
+            param->rollDropouts();*/
+
         loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, energy_level, sampling_method,
                                               switch_to_weighted_jaccard);
 
@@ -194,14 +198,14 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         // validation Q value
         double val_q = 0.0;
 
-        int molidx = 0, numvalmols = 0, numnonvalmols = 0;
+        int molidx = 0, num_val_mols = 0, num_training_mols = 0;
         double jaccard = 0.0, w_jaccard = 0.0;
         for (itdata = molDataSet.begin(); itdata != molDataSet.end(); ++itdata, molidx++) {
             if (itdata->getGroup() == validation_group) {
-                computeValidationMetrics(energy_level, molidx, itdata, suft, val_q, numvalmols, jaccard,
+                computeValidationMetrics(energy_level, molidx, itdata, suft, val_q, num_val_mols, jaccard,
                                          w_jaccard);
             } else
-                numnonvalmols++;
+                num_training_mols++;
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
@@ -214,8 +218,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         val_q = comm->collectQInMaster(val_q);
 
-        numvalmols = comm->collectSumInMaster(numvalmols);
-        numnonvalmols = comm->collectSumInMaster(numnonvalmols);
+        num_val_mols = comm->collectSumInMaster(num_val_mols);
+        num_training_mols = comm->collectSumInMaster(num_training_mols);
         jaccard = comm->collectQInMaster(jaccard);
         w_jaccard = comm->collectQInMaster(w_jaccard);
         // Check for convergence
@@ -232,10 +236,10 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
             qdif_str += "Q=" + std::to_string(loss) + " Validation_Q=" + std::to_string(val_q) + "\n";
             qdif_str +=
-            "Q_avg=" + std::to_string(loss / numnonvalmols)
-            + " Validation_Q_avg=" + std::to_string(val_q / numvalmols)
-            + " Validation Jaccard_Avg=" + std::to_string(jaccard / numvalmols)
-            + " Weighted Validation Jaccard_Avg=" += std::to_string(w_jaccard / numvalmols);
+            "Q_avg=" + std::to_string(loss / num_training_mols)
+            + " Validation_Q_avg=" + std::to_string(val_q / num_val_mols)
+            + " Validation Jaccard_Avg=" + std::to_string(jaccard / num_val_mols)
+            + " Weighted Validation Jaccard_Avg=" += std::to_string(w_jaccard / num_val_mols);
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
         }
@@ -266,14 +270,13 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         prev_loss = loss;
 
-        if (comm->isMaster()){
+        if (comm->isMaster()) {
             double loss_before_reg = loss - getRegularizationTerm();
             updateWJaccardFlag(switch_to_weighted_jaccard, prev_loss,
-                    best_loss, loss_before_reg/ numnonvalmols, cfg->em_wjaccard_swicth_threshold);
+                               best_loss, loss_before_reg / num_training_mols, cfg->em_wjaccard_swicth_threshold);
 
         }
         switch_to_weighted_jaccard = comm->broadcastBooleanFlag(switch_to_weighted_jaccard);
-
         iter++;
     }
 
@@ -366,11 +369,11 @@ EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy
 
 void EmModel::computeValidationMetrics(int energy_level, int molidx,
                                        std::vector<MolData, std::allocator<MolData>>::iterator &moldata,
-                                       suft_counts_t &suft, double &val_q, int &numvalmols, double &jaccard,
+                                       suft_counts_t &suft, double &val_q, int &num_val_mols, double &jaccard,
                                        double &w_jaccard) {
 
     val_q += computeLogLikelihoodLoss(molidx, *moldata, suft);
-    numvalmols++;
+    num_val_mols++;
     Comparator *j_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *wj_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
@@ -617,21 +620,18 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
             if (record_used_idxs_only) {
                 for (auto trans_id : *frag_trans_map) {
                     const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
-                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
                         used_idxs.insert(*fv_it + grad_offset);
-                    }
                 }
             } else {
                 //Do some random selection
                 std::vector<int> sampled_ids;
-                if (sampling_method != USE_NO_SAMPLING) {
-                    for (auto id: *frag_trans_map) {
-                        if (selected_trans_id.find(id) != selected_trans_id.end()) {
+                if (sampling_method != USE_NO_SAMPLING)
+                    for (auto id: *frag_trans_map)
+                        if (selected_trans_id.find(id) != selected_trans_id.end())
                             sampled_ids.push_back(id);
-                        }
-                    }
-                } else
-                    sampled_ids = *frag_trans_map;
+                        else
+                            sampled_ids = *frag_trans_map;
 
                 // Calculate the denominator of the sum terms
                 double denom = 1.0;
@@ -646,6 +646,8 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
 
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         auto fv_idx = *fv_it;
+                        /*if(param->dropped_out[fv_idx])
+                            continue;*/
                         double val = exp(mol_data.getThetaForIdx(energy, trans_id)) / denom;
                         if (sum_terms.find(fv_idx) != sum_terms.end())
                             sum_terms[fv_idx] += val;
