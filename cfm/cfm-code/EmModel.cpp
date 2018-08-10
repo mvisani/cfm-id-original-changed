@@ -542,7 +542,10 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 updateGradientForRegularizationTerm(&grads[0]);
                 solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
             }
-            comm->broadcastParams(param.get());
+
+            // this should be a better way in large number of cores
+            comm->broadcastInitialParams(param.get());
+            //comm->broadcastParams(param.get());
         }
 
         // compute loss
