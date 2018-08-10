@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_nump);
 
-    if (argc < 4 || argc > 10) {
+    if (argc < 4 || argc > 11) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
                   << "Usage: cfm-train.exe <input_filename> <feature_filename> <config_filename> <peakfile_dir> <group> <status_filename> <no_train> <start_energy>"
@@ -63,6 +63,10 @@ int main(int argc, char *argv[]) {
         std::cout << std::endl << "status_filename (opt):" << std::endl
                   << "Name of file to write logging information as the program runs. If not specified will write to status.log<group>, or status.log if no group is specified"
                   << std::endl;
+        std::cout << std::endl << "tmp_data_foldername (opt):" << std::endl
+                  << "Name of folder to write tmp data for training. If not specified will write to tmp_data"
+                  << std::endl;
+
         std::cout << std::endl << "no_train (opt):" << std::endl
                   << "Set to 1 if the training part should be skipped (useful in debugging - default 0)" << std::endl;
         std::cout << std::endl << "start_energy (opt - se only)" << std::endl
@@ -92,22 +96,31 @@ int main(int argc, char *argv[]) {
     if (argc >= 7) status_filename = argv[6];
     else if (argc >= 6) status_filename = "status.log" + std::string(argv[5]);    //status.log<group>
 
+    std::string data_folder = "tmp_data";
+    if (argc >= 8) data_folder = std::string(argv[7]);
+
+    status_filename = data_folder + '/' + status_filename;
+    std::string enumrated_output_folder = data_folder + "/enumerated_output";
+    std::string predicted_output_folder = data_folder + "/predicted_output";
+    std::string fv_fragment_graphs_folder = data_folder + "/fv_fragment_graphs";
+
     int no_train = 0;
     int start_energy = 0, start_repeat = 0;
-    if (argc >= 8) no_train = atoi(argv[7]);
-    if (argc >= 9) start_energy = atoi(argv[8]);
-    if (argc >= 10) start_repeat = atoi(argv[9]);
+    if (argc >= 9) no_train = atoi(argv[8]);
+    if (argc >= 10) start_energy = atoi(argv[9]);
+    if (argc >= 11) start_repeat = atoi(argv[10]);
 
     if (mpi_rank == MASTER) {
+
         //Create the tmp_data directory if it doesn't exist
-        if (!boost::filesystem::exists("tmp_data"))
-            boost::filesystem::create_directory("tmp_data");
-        if (!boost::filesystem::exists("tmp_data/enumerated_output"))
-            boost::filesystem::create_directory("tmp_data/enumerated_output");
-        if (!boost::filesystem::exists("tmp_data/predicted_output"))
-            boost::filesystem::create_directory("tmp_data/predicted_output");
-        if (!boost::filesystem::exists("tmp_data/fv_fragment_graphs"))
-            boost::filesystem::create_directory("tmp_data/fv_fragment_graphs");
+        if (!boost::filesystem::exists(data_folder))
+            boost::filesystem::create_directory(data_folder);
+        if (!boost::filesystem::exists(enumrated_output_folder))
+            boost::filesystem::create_directory(enumrated_output_folder);
+        if (!boost::filesystem::exists(predicted_output_folder))
+            boost::filesystem::create_directory(predicted_output_folder);
+        if (!boost::filesystem::exists(fv_fragment_graphs_folder))
+            boost::filesystem::create_directory(fv_fragment_graphs_folder);
         //Delete the status file if it already exists
         if (boost::filesystem::exists(status_filename))
             boost::filesystem::remove_all(status_filename);
@@ -130,9 +143,9 @@ int main(int argc, char *argv[]) {
 
     //Configure fragment graph state files
     std::string fv_filename_out =
-            "tmp_data/fv_fragment_graphs/P" + boost::lexical_cast<std::string>(mpi_rank) + "_graphs.fg";
+            fv_fragment_graphs_folder + "/P" + boost::lexical_cast<std::string>(mpi_rank) + "_graphs.fg";
     std::string fv_filename_in =
-            "tmp_data/fv_fragment_graphs/P" + boost::lexical_cast<std::string>(mpi_rank) + "_graphs.fg_tmp";
+            fv_fragment_graphs_folder + "/P" + boost::lexical_cast<std::string>(mpi_rank) + "_graphs.fg_tmp";
     if (min_group != 0) fv_filename_in = fv_filename_out;
     if (min_group == 0 && boost::filesystem::exists(fv_filename_in))
         boost::filesystem::remove(fv_filename_in);
@@ -263,7 +276,7 @@ int main(int argc, char *argv[]) {
 
         time_t before, after;
         before = time(nullptr);
-        std::string param_filename = "tmp_data/param_output";
+        std::string param_filename = data_folder + "/param_output";
         param_filename += boost::lexical_cast<std::string>(group);
         param_filename += ".log";
 
@@ -284,8 +297,8 @@ int main(int argc, char *argv[]) {
         if (spectra_in_msp) {
             std::string proc_group_str =
                     "P" + boost::lexical_cast<std::string>(mpi_rank) + "G" + boost::lexical_cast<std::string>(group);
-            std::string enum_msp_filename = "tmp_data/enumerated_output/especs_" + proc_group_str + ".msp";
-            std::string pred_msp_filename = "tmp_data/predicted_output/pspecs_" + proc_group_str + ".msp";
+            std::string enum_msp_filename = data_folder + "/enumerated_output/especs_" + proc_group_str + ".msp";
+            std::string pred_msp_filename = data_folder + "/predicted_output/pspecs_" + proc_group_str + ".msp";
             of_emsp.open(enum_msp_filename.c_str());
             of_pmsp.open(pred_msp_filename.c_str());
             if (!of_emsp.is_open() || !of_pmsp.is_open()) {
@@ -312,7 +325,7 @@ int main(int argc, char *argv[]) {
 
             if (spectra_in_msp) mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
             else {
-                std::string spectra_filename = "tmp_data/predicted_output/" + mit->getId() + ".log";
+                std::string spectra_filename = data_folder + "/predicted_output/" + mit->getId() + ".log";
                 mit->writePredictedSpectraToFile(spectra_filename);
             }
         }
