@@ -817,23 +817,21 @@ double MolData::getWeightedJaccardScore(int engery_level){
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::getSelectedWeights(std::vector<double> &selected_weights, int engery_level) {
+void MolData::getSelectedWeights(std::vector<double> &selected_weights, int engery_level, int peak_num) {
 
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
     cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[engery_level], &predicted_spectra[engery_level]);
-    std::map<double, double, std::greater<double>> difference;
+
     for(const auto & peak_pair : peak_pairs){
-        double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
-        difference.insert(std::pair<double,double>(intensity_difference, peak_pair.second.mass));
+        if(std::fabs(peak_pair.first.intensity - peak_pair.second.intensity) > 0.01)
+            selected_weights.push_back(peak_pair.second.mass);
     }
     delete(cmp);
 
-    for(const auto & diff:  difference){
-        if(diff.first < 0.01 || selected_weights.size() > 10)
-            break;
-        selected_weights.push_back(diff.second);
-    }
+    std::shuffle(selected_weights.begin(),selected_weights.end(), util_rng);
+    if(selected_weights.size() > peak_num)
+        selected_weights.resize(peak_num);
 }
 
 MolData::~MolData() {

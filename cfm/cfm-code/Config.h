@@ -203,6 +203,7 @@ struct config_t {
     int ga_sampling_method;
     double ga_graph_sampling_k;
     double ga_sampling_explore_weight;
+    int ga_diff_sampling_peak_num;
 
     //Model Level Configuration
     unsigned int model_depth; //Total Depth

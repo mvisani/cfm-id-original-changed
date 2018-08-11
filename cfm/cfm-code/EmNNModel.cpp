@@ -89,7 +89,6 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
         unsigned int grad_offset = energy * nn_param->getNumWeightsPerEnergyLevel();
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
-
         std::set<int> selected_trans_id;
         if(!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
             getRandomWalkedTransitions(mol_data, sampling_method, energy, selected_trans_id);
