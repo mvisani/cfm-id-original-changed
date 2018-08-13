@@ -96,7 +96,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         comm->printToMasterOnly(msg.c_str());
 
         time_t before, after;
-        std::vector<MolData>::iterator itdata;
+        std::vector<MolData>::iterator mol_it;
 
         // Reset sufficient counts
         suft_counts_t suft;
@@ -107,23 +107,23 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         before = time(nullptr);
 
         // Do the inference part (E-step)
-        itdata = molDataSet.begin();
-        for (int molidx = 0; itdata != molDataSet.end(); ++itdata, molidx++) {
+        mol_it = molDataSet.begin();
+        for (int molidx = 0; mol_it != molDataSet.end(); ++mol_it, molidx++) {
 
-            if (!itdata->hasComputedGraph())
+            if (!mol_it->hasComputedGraph())
                 continue; // If we couldn't compute it's graph for some reason..
-            if (itdata->hasEmptySpectrum()) {
+            if (mol_it->hasEmptySpectrum()) {
                 std::cout << "Warning: No peaks with explanatory fragment found for "
-                          << itdata->getId() << ", ignoring this input molecule."
+                          << mol_it->getId() << ", ignoring this input molecule."
                           << std::endl;
                 continue; // Ignore any molecule with poor (no peaks matched a fragment)
                 // or missing spectra.
             }
 
-            //if (itdata->getGroup() == validation_group)
+            //if (mol_it->getGroup() == validation_group)
             //  continue;
 
-            MolData *moldata = &(*itdata);
+            MolData *moldata = &(*mol_it);
 
             computeThetas(moldata);
             moldata->computeLogTransitionProbabilities();
@@ -200,12 +200,29 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         int molidx = 0, num_val_mols = 0, num_training_mols = 0;
         double jaccard = 0.0, w_jaccard = 0.0;
-        for (itdata = molDataSet.begin(); itdata != molDataSet.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() == validation_group) {
-                computeValidationMetrics(energy_level, molidx, itdata, suft, val_q, num_val_mols, jaccard,
+        for (mol_it = molDataSet.begin(); mol_it != molDataSet.end(); ++mol_it, molidx++) {
+            if (mol_it->getGroup() == validation_group) {
+                computeValidationMetrics(energy_level, molidx, mol_it, suft, val_q, num_val_mols, jaccard,
                                          w_jaccard);
-            } else
+            } else{
+                double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
+                std::cout << mol_it->getId() << " Loss=" << mol_loss;
+
+                mol_it->computePredictedSpectra(*param, true, true, energy_level);
+                Comparator *jaccard_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+                Comparator *weighted_jaccard_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+                std::cout << " Jaccard="
+                << jaccard_cmp->computeScore(mol_it->getSpectrum(energy_level),
+                        mol_it->getPredictedSpectrum(energy_level))
+                << " Weighted Jaccard=" << weighted_jaccard_cmp->computeScore(
+                        mol_it->getSpectrum(energy_level),
+                        mol_it->getPredictedSpectrum(energy_level)) << " ";
+                delete jaccard_cmp;
+                delete weighted_jaccard_cmp;
+                std::cout << std::endl;
                 num_training_mols++;
+            }
+
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
@@ -217,11 +234,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             writeStatus(q_time_msg.c_str());
 
         val_q = comm->collectQInMaster(val_q);
-
         num_val_mols = comm->collectSumInMaster(num_val_mols);
         num_training_mols = comm->collectSumInMaster(num_training_mols);
         jaccard = comm->collectQInMaster(jaccard);
         w_jaccard = comm->collectQInMaster(w_jaccard);
+
         // Check for convergence
         double q_ratio = fabs((loss - prev_loss) / loss);
         double best_q_ratio = fabs((loss - best_loss) / loss);
@@ -352,12 +369,10 @@ EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy
         if (mol_it->getGroup() != validation_group) {
             if (!use_weighted_jaccard) {
                 double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
-                //std::cout << mol_it->getId() << " " << mol_loss << std::endl;
                 loss += mol_loss;
             }
             else {
                 mol_it->computePredictedSpectra(*param, true, false, energy_level);
-
                 loss += mol_it->getWeightedJaccardScore(energy_level);
             }
         }
@@ -378,29 +393,29 @@ void EmModel::computeValidationMetrics(int energy_level, int molidx,
 
     val_q += computeLogLikelihoodLoss(molidx, *moldata, suft);
     num_val_mols++;
-    Comparator *j_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
-    Comparator *wj_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+    Comparator *jaccard_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+    Comparator *weighed_jaccard_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
     if (cfg->use_single_energy_cfm) {
-        moldata->computePredictedSpectra(*param, false, false, energy_level);
-        moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
-        jaccard += j_cmp->computeScore(moldata->getSpectrum(energy_level), moldata->getPredictedSpectrum(energy_level));
-        w_jaccard += wj_cmp->computeScore(moldata->getSpectrum(energy_level),
+        moldata->computePredictedSpectra(*param, true, true, energy_level);
+        //moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
+        jaccard += jaccard_cmp->computeScore(moldata->getSpectrum(energy_level), moldata->getPredictedSpectrum(energy_level));
+        w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getSpectrum(energy_level),
                                           moldata->getPredictedSpectrum(energy_level));
     } else {
-        moldata->computePredictedSpectra(*param, false, false);
-        moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
+        moldata->computePredictedSpectra(*param, true, true);
+        //moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
         std::vector<unsigned int> energies;
         getEnergiesLevels(energies);
         for (auto &energy: energies) {
-            jaccard += j_cmp->computeScore(moldata->getSpectrum(energy), moldata->getPredictedSpectrum(energy));
-            w_jaccard += wj_cmp->computeScore(moldata->getSpectrum(energy), moldata->getPredictedSpectrum(energy));
+            jaccard += jaccard_cmp->computeScore(moldata->getSpectrum(energy), moldata->getPredictedSpectrum(energy));
+            w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getSpectrum(energy), moldata->getPredictedSpectrum(energy));
         }
         jaccard /= (double) energies.size();
         w_jaccard /= (double) energies.size();
     }
-    delete j_cmp;
-    delete wj_cmp;
+    delete jaccard_cmp;
+    delete weighed_jaccard_cmp;
 }
 
 void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
