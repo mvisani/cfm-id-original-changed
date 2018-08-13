@@ -350,10 +350,14 @@ EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy
     auto mol_it = data.begin();
     for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
         if (mol_it->getGroup() != validation_group) {
-            if (!use_weighted_jaccard)
-                loss += computeLogLikelihoodLoss(molidx, *mol_it, suft);
+            if (!use_weighted_jaccard) {
+                double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
+                std::cout << mol_it->getId() << " " << mol_loss << std::endl;
+                loss += mol_loss;
+            }
             else {
                 mol_it->computePredictedSpectra(*param, true, false, energy_level);
+
                 loss += mol_it->getWeightedJaccardScore(energy_level);
             }
         }
