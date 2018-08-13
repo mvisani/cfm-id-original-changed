@@ -21,8 +21,17 @@ void IonRootMatrixFP::compute(FeatureVector &fv, const RootedROMolPtr *ion, cons
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
-    unsigned int distance_to_root = 2;
     unsigned int num_atoms = 10;
+    bool include_adjacency_matrix = true;
+
+    addAdjacentMatrixRepresentationFeature(fv, ion, num_atoms, ring_break, include_adjacency_matrix);
+}
+
+void IonRootMatrixFPN16::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,int depth) const {
+    int ring_break;
+    nl->mol.get()->getProp("IsRingBreak", ring_break);
+
+    unsigned int num_atoms = 16;
     bool include_adjacency_matrix = true;
 
     addAdjacentMatrixRepresentationFeature(fv, ion, num_atoms, ring_break, include_adjacency_matrix);

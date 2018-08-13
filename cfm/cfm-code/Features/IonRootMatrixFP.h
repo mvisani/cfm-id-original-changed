@@ -15,6 +15,7 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+#pragma once
 #include "FingerPrintFeature.h"
 
 // Features use fingerprint encode NL fragmentatNL
@@ -23,6 +24,16 @@ public:
     IonRootMatrixFP() {
         size = 860;
         name = "IonRootMatrixFP";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+};
+
+class IonRootMatrixFPN16 : public FingerPrintFeature {
+public:
+    IonRootMatrixFPN16() {
+        size = 1952;
+        name = "IonRootMatrixFPN16";
     };
 
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;

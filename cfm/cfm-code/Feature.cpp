@@ -52,12 +52,8 @@ the feature
 #include "Features/QuadraticFeatures.h"
 #include "Features/RadicalFeatures.h"
 #include "Features/RingFeatures.h"
-#include "Features/IonRootEncodingD3.h"
-#include "Features/NLRootEncodingD3.h"
-#include "Features/IonRootEncodingD4.h"
-#include "Features/NLRootEncodingD4.h"
-#include "Features/IonRootEncodingN10.h"
-#include "Features/NLRootEncodingN10.h"
+#include "Features/IonRootEncodings.h"
+#include "Features/NLRootEncodings.h"
 #include "Features/IonRootMatrixFP.h"
 #include "Features/NLRootMatrixFP.h"
 #include "Features/IonRootMatrixSimpleFP.h"
@@ -107,6 +103,8 @@ const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
         cogs.push_back(new IonRootEncodingN10());
         cogs.push_back(new NLRootMatrixFP());
         cogs.push_back(new IonRootMatrixFP());
+        cogs.push_back(new NLRootMatrixFPN16());
+        cogs.push_back(new IonRootMatrixFPN16());
         cogs.push_back(new NLRootMatrixSimpleFP());
         cogs.push_back(new IonRootMatrixSimpleFP());
         cogs.push_back(new GraphDepthFeature());

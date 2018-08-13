@@ -352,7 +352,7 @@ EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy
         if (mol_it->getGroup() != validation_group) {
             if (!use_weighted_jaccard) {
                 double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
-                std::cout << mol_it->getId() << " " << mol_loss << std::endl;
+                //std::cout << mol_it->getId() << " " << mol_loss << std::endl;
                 loss += mol_loss;
             }
             else {

@@ -15,7 +15,44 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+#pragma once
 #include "FingerPrintFeature.h"
+
+// Features use fingerprint encode ion fragmentation
+class IonRootEncodingD3 : public FingerPrintFeature {
+public:
+    IonRootEncodingD3() {
+        size = 1024;
+        name = "IonRootEncodingD3";
+    };
+
+    void
+    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+};
+
+// Features use fingerprint encode ion fragmentation
+class IonRootEncodingN10 : public FingerPrintFeature {
+public:
+    IonRootEncodingN10() {
+        size = 1024;
+        name = "IonRootEncodingN10";
+    };
+
+    void
+    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+};
+
+// Features use fingerprint encode ion fragmentation
+class IonRootEncodingD4 : public FingerPrintFeature {
+public:
+    IonRootEncodingD4() {
+        size = 1024;
+        name = "IonRootEncodingD4";
+    };
+
+    void
+    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+};
 
 // Features use fingerprint encode ion fragmentation
 class IonRootEncodingMorganD3 : public FingerPrintFeature {
