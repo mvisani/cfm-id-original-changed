@@ -86,6 +86,17 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
     molDataPreProcessing(molDataSet, energy_level);
 
+    int num_training_mols = 0, num_val_mols = 0;
+    for(const auto & mol : molDataSet){
+        if(mol.getGroup() != validation_group)
+            num_training_mols ++;
+        else
+            num_val_mols ++;
+    }
+    num_training_mols = comm->collectSumInMaster(num_training_mols);
+    num_val_mols = comm->collectSumInMaster(num_val_mols);
+
+
     while (iter < MAX_EM_ITERATIONS) {
         std::string iter_out_param_filename =
                 out_param_filename + "_" + std::to_string(iter);
@@ -181,7 +192,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             param->rollDropouts();*/
 
         loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, energy_level, sampling_method,
-                                              switch_to_weighted_jaccard);
+                                              switch_to_weighted_jaccard, num_training_mols);
 
         after = time(nullptr);
         std::string param_update_time_msg =
@@ -198,11 +209,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         // validation Q value
         double val_q = 0.0;
 
-        int molidx = 0, num_val_mols = 0, num_training_mols = 0;
+        int molidx = 0;
         double jaccard = 0.0, w_jaccard = 0.0;
         for (mol_it = molDataSet.begin(); mol_it != molDataSet.end(); ++mol_it, molidx++) {
             if (mol_it->getGroup() == validation_group) {
-                computeValidationMetrics(energy_level, molidx, mol_it, suft, val_q, num_val_mols, jaccard,
+                computeValidationMetrics(energy_level, molidx, mol_it, suft, val_q, jaccard,
                                          w_jaccard);
             } else{
                 double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
@@ -220,7 +231,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 delete jaccard_cmp;
                 delete weighted_jaccard_cmp;
                 std::cout << std::endl;
-                num_training_mols++;
             }
 
         }
@@ -234,8 +244,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             writeStatus(q_time_msg.c_str());
 
         val_q = comm->collectQInMaster(val_q);
-        num_val_mols = comm->collectSumInMaster(num_val_mols);
-        num_training_mols = comm->collectSumInMaster(num_training_mols);
         jaccard = comm->collectQInMaster(jaccard);
         w_jaccard = comm->collectQInMaster(w_jaccard);
 
@@ -369,11 +377,14 @@ EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy
         if (mol_it->getGroup() != validation_group) {
             if (!use_weighted_jaccard) {
                 double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
+                mol_it->setLoss(mol_loss);
                 loss += mol_loss;
             }
             else {
                 mol_it->computePredictedSpectra(*param, true, false, energy_level);
-                loss += mol_it->getWeightedJaccardScore(energy_level);
+                double weighted_jaccard = mol_it->getWeightedJaccardScore(energy_level);
+                mol_it->setLoss(weighted_jaccard);
+                loss += weighted_jaccard;
             }
         }
     }
@@ -386,25 +397,22 @@ EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy
     return loss;
 }
 
-void EmModel::computeValidationMetrics(int energy_level, int molidx,
-                                       std::vector<MolData, std::allocator<MolData>>::iterator &moldata,
-                                       suft_counts_t &suft, double &val_q, int &num_val_mols, double &jaccard,
-                                       double &w_jaccard) {
+void EmModel::computeValidationMetrics(int energy_level, int molidx, std::vector<MolData, std::allocator<MolData>>::iterator &moldata,
+                                       suft_counts_t &suft, double &val_q, double &jaccard, double &w_jaccard) {
 
     val_q += computeLogLikelihoodLoss(molidx, *moldata, suft);
-    num_val_mols++;
     Comparator *jaccard_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *weighed_jaccard_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
     if (cfg->use_single_energy_cfm) {
-        moldata->computePredictedSpectra(*param, true, false, energy_level);
-        //moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
+        moldata->computePredictedSpectra(*param, false, false, energy_level);
+        moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
         jaccard += jaccard_cmp->computeScore(moldata->getSpectrum(energy_level), moldata->getPredictedSpectrum(energy_level));
         w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getSpectrum(energy_level),
                                           moldata->getPredictedSpectrum(energy_level));
     } else {
-        moldata->computePredictedSpectra(*param, true, false);
-        //moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
+        moldata->computePredictedSpectra(*param, false, false);
+        moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
         std::vector<unsigned int> energies;
         getEnergiesLevels(energies);
         for (auto &energy: energies) {
@@ -486,7 +494,8 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
 }
 
 double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
-                                               int energy_level, int sampling_method, bool switch_to_wjaccard) {
+                                               int energy_level, int sampling_method, bool switch_to_wjaccard,
+                                               int total_num_traning_sample) {
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
@@ -523,15 +532,21 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
     int iter = 0;
     //double learn_mult = 1.0;
-
     int max_iteration = cfg->ga_max_iterations;
     int ga_no_progress_count = 0;
+
+    double avg_loss = -DBL_MAX;
+
     while (iter++ < max_iteration
            && fabs((loss - prev_loss) / loss) >= cfg->ga_converge_thresh
            && ga_no_progress_count <= 3) {
 
-        if (iter > 1)
+        if (iter > 1) {
             prev_loss = loss;
+            avg_loss = prev_loss/(double)total_num_traning_sample;
+            avg_loss += 1.0;
+        }
+
 
         // update learning rate
         if (comm->isMaster() && USE_NO_DECAY != cfg->ga_decay_method) {
@@ -544,12 +559,14 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         int num_batch = cfg->ga_minibatch_nth_size;
         setMiniBatchFlags(minibatch_flags, num_batch);
 
+
         // Compute the gradient
         std::fill(grads.begin(), grads.end(), 0.0);
         auto mol_it = data.begin();
         for (auto batch_idx = 0; batch_idx < num_batch; ++batch_idx) {
             for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
-                if (minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group) {
+                if (minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group
+                   && mol_it -> getLoss() <= avg_loss) {
                     computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs,
                                                  sampling_method);
                 }

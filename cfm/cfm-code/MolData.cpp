@@ -835,7 +835,6 @@ void MolData::getSelectedWeights(std::vector<double> &selected_weights, int enge
             break;
         selected_weights.push_back(diff.second);
     }
-
 }
 
 MolData::~MolData() {

@@ -47,11 +47,13 @@ public:
     MolData(std::string &an_id, std::string &an_smiles_or_inchi, int a_group,
             config_t *a_cfg)
             : id(an_id), smiles_or_inchi(an_smiles_or_inchi), group(a_group),
-              graph_computed(false), ev_graph_computed(false), cfg(a_cfg) {};
+              graph_computed(false), ev_graph_computed(false), cfg(a_cfg),
+              loss(-DBL_MAX) {};
 
     MolData(const char *an_id, const char *an_smiles_or_inchi, config_t *a_cfg)
             : id(an_id), smiles_or_inchi(an_smiles_or_inchi), group(0),
-              graph_computed(false), ev_graph_computed(false), cfg(a_cfg) {};
+              graph_computed(false), ev_graph_computed(false), cfg(a_cfg),
+              loss(-DBL_MAX){};
 
     // Access functions
     const FragmentGraph *getFragmentGraph() const { return fg; };
@@ -258,6 +260,9 @@ public:
 
     double getWeightedJaccardScore(int engery_level);
 
+    double getLoss() const { return loss; } ;
+    void setLoss(double loss) { this->loss = loss; };
+
     ~MolData();
 protected
     : // These items are protected rather than private for access during tests.
@@ -293,6 +298,7 @@ protected
 
     void createSpeactraSingleEnergry(unsigned int energy_level);
 
+    double loss;
 };
 
 #endif // __MOLDATA_H__
