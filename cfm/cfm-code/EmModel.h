@@ -75,8 +75,7 @@ protected:
 
     //Simple gradient ascent
     double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
-                                          int energy_level, int sampling_method, bool switch_to_wjaccard,
-                                          int total_num_traning_sample);
+                                          int energy_level, int sampling_method, bool switch_to_wjaccard);
 
     double computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy_level, bool use_weighted_jaccard);
 
@@ -93,7 +92,7 @@ protected:
                                         std::set<int> &selected_trans_id) const;
     void
     computeValidationMetrics(int energy_level, int molidx, std::vector<MolData, std::allocator<MolData>>::iterator &itdata,
-                                 suft_counts_t &suft, double &val_q, double &jaccard, double &w_jaccard);
+                             suft_counts_t &suft, double &val_q, int &num_val_mols, double &jaccard, double &w_jaccard);
 
     double getUpdatedLearningRate(double learning_rate, double current_loss, double prev_loss, int iter) const;
 
