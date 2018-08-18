@@ -586,7 +586,6 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                       << std::endl;
         delete solver;
     }
-
     return loss;
 }
 
@@ -668,7 +667,7 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
 
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         auto fv_idx = *fv_it;
-                        /*if(param->dropped_out[fv_idx])
+                        /*if(param->is_dropped[fv_idx])
                             continue;*/
                         double val = exp(mol_data.getThetaForIdx(energy, trans_id)) / denom;
                         if (sum_terms.find(fv_idx) != sum_terms.end())

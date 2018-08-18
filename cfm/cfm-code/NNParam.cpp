@@ -18,9 +18,12 @@
 #include "NNParam.h"
 #include "Config.h"
 
-NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_levels, std::vector<int> &a_hlayer_num_nodes,
-                 std::vector<int> &a_act_func_ids) :
-        hlayer_num_nodes(a_hlayer_num_nodes), act_func_ids(a_act_func_ids), Param(a_feature_list, a_num_energy_levels) {
+NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_levels,
+                 std::vector<int> &a_hlayer_num_nodes, std::vector<int> &a_act_func_ids,
+                 std::vector<double> &a_dropout_probs) :
+        hlayer_num_nodes(a_hlayer_num_nodes), act_func_ids(a_act_func_ids),
+        hlayer_dropout_probs(a_dropout_probs),
+        Param(a_feature_list, a_num_energy_levels) {
 
     //The weight length was set in the Param constructor, now alter it to match the neural net layout
     unsigned int num_features = weights.size() / num_energy_levels;
@@ -54,6 +57,11 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
     //Resize some temporary a and z vectors so we don't have to allocate memory for a and z within the computeTheta function if we don't need them after.
     tmp_z_values.resize(total_nodes);
     tmp_a_values.resize(total_nodes);
+
+    //Roll Drop outs
+    //last dropped out for output node
+    //add this one for not to break stuff
+    rollDropouts();
 }
 
 void NNParam::initWeights(int init_type){
@@ -68,7 +76,7 @@ void NNParam::initWeights(int init_type){
             randomNormalInit();
             break;
         case NN_PARAM_VAR_SCALING_INIT:
-            varianceScalingInitializer();
+            varianceScalingInit();
             break;
         case PARAM_RANDOM_INIT:
         default:
@@ -106,8 +114,8 @@ void NNParam::randomNormalInit() {
     }
 }
 
-// Understanding the difficulty of training deep feedforward neural networksUnderstanding the difficulty of training deep feedforward neural networks
-void NNParam::varianceScalingInitializer() {
+// Variance Scaling Initializer
+void NNParam::varianceScalingInit() {
     double factor = 1.0;
     double mean= -0.0;
 
@@ -143,7 +151,7 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy) {
 }
 
 double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_values, azd_vals_t &a_values,
-                             bool already_sized) {
+                             bool already_sized, bool is_train) {
 
     //Check Feature Length
     int len = fv.getTotalLength();
@@ -167,33 +175,39 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
 
     //The first hidden layer takes the fv as input (which already has a bias feature, so no addtional biases in this layer)
     itlayer = hlayer_num_nodes.begin();
+    auto is_dropped_it = is_dropped.begin();
     for (int hnode = 0; hnode < (*itlayer); hnode++) {
-        double z_val = 0.0;
-        for (auto it = fv.getFeatureBegin(); it != fv.getFeatureEnd(); ++it)
-            z_val += *(wit + *it);
-        wit += len;
-        *zit++ = z_val;
-        *ait++ = (*itaf++)(z_val);
+        if(!is_train || (is_train && !(*is_dropped_it))){
+            double z_val = 0.0;
+            for (auto it = fv.getFeatureBegin(); it != fv.getFeatureEnd(); ++it)
+                z_val += *(wit + *it);
+            wit += len;
+            *zit++ = z_val;
+            *ait++ = (*itaf++)(z_val);
+        }
+        is_dropped_it ++;
     }
 
     //Subsequent layers take the previous layer as input
     azd_vals_t::iterator ait_input_tmp, ait_input = a_values.begin();
     int num_input = *itlayer++;
     for (; itlayer != hlayer_num_nodes.end(); ++itlayer) {
-        for (int hnode = 0; hnode < (*itlayer); hnode++) {
-            ait_input_tmp = ait_input;
-            double z_val = *wit++; //Bias
-            for (int i = 0; i < num_input; i++) {
-                z_val += (*ait_input_tmp++) * (*wit++);
+        if(!is_train || (is_train && !(*is_dropped_it))) {
+            for (int hnode = 0; hnode < (*itlayer); hnode++) {
+                ait_input_tmp = ait_input;
+                double z_val = *wit++; //Bias
+                for (int i = 0; i < num_input; i++) {
+                    z_val += (*ait_input_tmp++) * (*wit++);
+                }
+                *zit++ = z_val;
+                *ait++ = (*itaf++)(z_val);
             }
-            *zit++ = z_val;
-            *ait++ = (*itaf++)(z_val);
         }
+        is_dropped_it++;
         num_input = *itlayer;
         ait_input = ait_input_tmp;
     }
     return *(--ait);    //The output of the last layer is theta
-
 }
 
 void NNParam::saveToFile(std::string &filename) {
@@ -217,6 +231,9 @@ void NNParam::saveToFile(std::string &filename) {
         iit = act_func_ids.begin();
         for (; iit != act_func_ids.end(); ++iit)
             out << *iit << " ";
+        out << std::endl;
+        for (const auto & prob : hlayer_dropout_probs)
+            out << prob << " ";
         out << std::endl;
         out.close();
     }
@@ -253,6 +270,15 @@ NNParam::NNParam(std::string &filename) : Param(filename) {
             for (int i = 0; i < num_layers; i++)
                 ss2 >> act_func_ids[i];
             setActivationFunctionsFromIds();
+
+            getline(ifs, line);
+            std::stringstream ss3(line);
+            hlayer_dropout_probs.resize(act_func_size-1);
+            // get  and roll drop outs
+            for (int i = 0; i < num_layers; i++)
+                ss3 >> hlayer_dropout_probs[i];
+            rollDropouts();
+
             tmp_z_values.resize(total_nodes);
             tmp_a_values.resize(total_nodes);
             found_nn_details = true;
@@ -465,7 +491,6 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
 
 }
 
-
 void NNParam::getBiasIndexes(std::vector<unsigned int> &bias_indexes) {
 
     bias_indexes.resize(total_nodes);
@@ -480,6 +505,25 @@ void NNParam::getBiasIndexes(std::vector<unsigned int> &bias_indexes) {
         for (int hnode = 0; hnode < *itlayer; hnode++, count++) {
             bias_indexes[count] = idx;
             idx += (num_input + 1);
+        }
+    }
+}
+
+void NNParam::rollDropouts() {
+
+    if(is_dropped.empty())
+        is_dropped.resize(total_nodes + 1);
+
+    //adding dropouts in the all layer with the same prob
+    auto drop_out_idx = 0;
+    for(int hlayer_idx = 0; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
+        std::bernoulli_distribution bernoulli_coin(hlayer_dropout_probs[hlayer_idx]);
+        for(int j = 0 ; j < hlayer_num_nodes[hlayer_idx];  ++j) {
+            if (0.0 == hlayer_dropout_probs[hlayer_idx])
+                is_dropped[drop_out_idx] = false;
+            else
+                is_dropped[drop_out_idx] = bernoulli_coin(util_rng);
+            drop_out_idx++;
         }
     }
 }

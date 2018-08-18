@@ -310,15 +310,3 @@ Param::Param(std::string &filename) {
     }
     ifs.close();
 }
-
-void Param::rollDropouts(){
-    std::vector<unsigned int> bias_indexes;
-    getBiasIndexes(bias_indexes);
-    dropped_out.resize(weights.size());
-    std::bernoulli_distribution distribution;
-    for(int i = 0 ; i < dropped_out.size(); ++ i)
-        dropped_out[i] = distribution(util_rng);
-
-    for(const auto & idx : bias_indexes)
-        dropped_out[idx] = false;
-}

@@ -25,8 +25,10 @@
 
 class NNTestParam : public NNParam {
 public:
-	NNTestParam(std::vector<std::string> a_feature_list, int a_num_energy_levels, std::vector<int> &a_hlayer_num_nodes, std::vector<int> &a_act_func_ids) : 
-	  NNParam(a_feature_list, a_num_energy_levels, a_hlayer_num_nodes, a_act_func_ids) {
+	NNTestParam(std::vector<std::string> a_feature_list, int a_num_energy_levels,
+			std::vector<int> &a_hlayer_num_nodes, std::vector<int> &a_act_func_ids,
+			std::vector<double>&a_dropout_probs) :
+            NNParam(a_feature_list, a_num_energy_levels, a_hlayer_num_nodes, a_act_func_ids, a_dropout_probs) {
 
         randomUniformInit();	//There will be a bunch of weights we don't set below
 
@@ -61,7 +63,8 @@ void NNParamsTestComputeTransitionThetas::runTest(){
 	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
 
-	NNTestParam param(fnames, 1, hlayer_numnodes, act_ids);
+    std::vector<double> dropout_probs(2,0.0);
+	NNTestParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
 
 	//Create the Feature Vector
 	FeatureVector fv;
@@ -99,7 +102,8 @@ void NNParamsTestSaveAndLoadFromFile::runTest(){
 	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear?
 
-	NNParam param(fnames, 1, hlayer_numnodes, act_ids);
+    std::vector<double> dropout_probs(2,0.0);
+    NNParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
     param.initWeights(PARAM_RANDOM_INIT);
 
 	//Save to file
@@ -184,7 +188,8 @@ void NNParamsTestComputeDeltas::runTest(){
 	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
 
-	NNTestParam testparam(fnames, 1, hlayer_numnodes, act_ids);
+    std::vector<double> dropout_probs(2,0.0);
+	NNTestParam testparam(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
 
 	//Create the Feature Vector
 	FeatureVector fv1, fv2;
@@ -193,10 +198,11 @@ void NNParamsTestComputeDeltas::runTest(){
 
 	for( unsigned int energy = 0; energy <= 2; energy++ ){
 
-		NNParam *param;
-		if( energy == 0 ) param = new NNTestParam(fnames, 1, hlayer_numnodes, act_ids);
-		else{ 
-			param = new NNParam(fnames, energy, hlayer_numnodes, act_ids);
+        std::vector<double> dropout_probs(2,0.0);
+        NNParam *param;
+		if( energy == 0 ) param = new NNTestParam(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
+		else{
+            param = new NNParam(fnames, energy, hlayer_numnodes, act_ids, dropout_probs);
 			param->appendNextEnergyParams( testparam );
 		}
 
@@ -257,7 +263,8 @@ void NNParamsTestComputeUnweightedGradients::runTest(){
 	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
 
-	NNTestParam testparam(fnames, 1, hlayer_numnodes, act_ids);
+    std::vector<double> dropout_probs(2, 0.0);
+	NNTestParam testparam(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
 
 	//Create the Feature Vector
 	FeatureVector fv1, fv2;
@@ -267,9 +274,11 @@ void NNParamsTestComputeUnweightedGradients::runTest(){
 	for( unsigned int energy = 0; energy <= 2; energy++ ){
 
 		NNParam *param;
-		if( energy == 0 ) param = new NNTestParam(fnames, 1, hlayer_numnodes, act_ids);
-		else{ 
-			param = new NNParam(fnames, energy, hlayer_numnodes, act_ids);
+        std::vector<double> dropout_probs(2,0.0);
+
+        if( energy == 0 ) param = new NNTestParam(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
+		else{
+            param = new NNParam(fnames, energy, hlayer_numnodes, act_ids, dropout_probs);
 			param->appendNextEnergyParams( testparam );
 		}
 
@@ -392,11 +401,14 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	act_ids[0] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
+    std::vector<double> dropout_probs(2, 0.0);
+
 	cfg.theta_nn_hlayer_num_nodes = hlayer_numnodes;
 	cfg.theta_nn_layer_act_func_ids = act_ids;
+	cfg.nn_layer_dropout_probs = dropout_probs;
 
-	NNTestParam testparam(fnames, 1, hlayer_numnodes, act_ids);
-	NNTestParam param(fnames, 1, hlayer_numnodes, act_ids);
+	NNTestParam testparam(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
+	NNTestParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
 	param.appendNextEnergyParams(testparam);
 	param.appendNextEnergyParams(testparam);
 
@@ -417,7 +429,7 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 
 	//Initialise all gradients to 0
 	grads.resize(param.getNumWeights());
-	for( unsigned int i = 0; i < grads.size(); i++ ) grads[i] = 0.0;
+	for( unsigned int i = 0; i < grads.size(); i++ )grads[i] = 0.0;
 
 	std::set<unsigned int> used_idxs;
 	FeatureCalculator fc_null(fnames); 
@@ -505,7 +517,8 @@ void NNParamsTestBiasIndexes::runTest(){
 	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
 
-	NNTestParam param(fnames, 1, hlayer_numnodes, act_ids);
+    std::vector<double> dropout_probs(2, 0.0);
+	NNTestParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
 
 	std::vector<unsigned int> bias_indexes;
 	param.getBiasIndexes( bias_indexes );

@@ -46,8 +46,9 @@ class NNParamFileReadException : public std::exception {
 
 class NNParam : public Param {
 public:
-    NNParam(std::vector<std::string> a_feature_list, int a_num_energy_levels, std::vector<int> &a_hlayer_num_nodes,
-            std::vector<int> &a_act_func_ids);
+    NNParam(std::vector<std::string> a_feature_list, int a_num_energy_levels,
+                std::vector<int> &a_hlayer_num_nodes, std::vector<int> &a_act_func_ids,
+                std::vector<double> &a_dropout_probs);
 
     //Constructor for loading parameters from file
     NNParam(std::string &filename);
@@ -57,11 +58,16 @@ public:
 
     //Compute the theta value for an input feature vector and energy
     //based on the current weight settings
+    //is should only be used in prediction phase or compute loss
     double computeTheta(const FeatureVector &fv, int energy);
 
-    //Same, but keeps a record of the z and a values along the way (for forwards step in forwards-backwards algorithm)
+    // Compute the theta value for an input feature vector and energy in training time
+    // this function is added to use drop out in nerual network
+    // which in Inverted Dropout Implementation, drop out only chance FowardPassing phase
+    // this function also keeps a record of the z and a values along the way
+    // (for forwards step in forwards-backwards algorithm)
     double computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_values, azd_vals_t &a_values,
-                        bool already_sized = false);
+                        bool already_sized = false, bool is_train = false);
 
     void
     computeDeltas(std::vector<azd_vals_t> &deltasA, std::vector<azd_vals_t> &deltasB, std::vector<azd_vals_t> &z_values,
@@ -77,16 +83,25 @@ public:
 
     virtual void getBiasIndexes(std::vector<unsigned int> &bias_indexes) override;
 
-    virtual void initWeights(int init_type) override ;
+    virtual void initWeights(int init_type) override;
+
+    void rollDropouts();
 
 protected:
     //Initialisation options
     virtual void randomUniformInit() override;
     virtual void randomNormalInit() override;
-    void varianceScalingInitializer();
+    void varianceScalingInit();
 
 private:
+    // hold num of node for each hlayer
     std::vector<int> hlayer_num_nodes;
+    // hold drop out prob for each hlayer
+    std::vector<double> hlayer_dropout_probs;
+    // addition paramenter for drop outs
+    std::vector<bool> is_dropped;
+
+    // tmp value for  varianceScalingInit
     std::vector<int> num_weights_per_layer;
 
     unsigned int total_nodes;

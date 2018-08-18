@@ -5,7 +5,7 @@
 #
 # Description: 	Class to apply Expectation Maximization algorithm to derive 
 #				model parameters when using a neural net for theta.
-#				- all identical to linear model, except params are NNParam and gradient 
+#				- all identical to linear model, except params are NNParam and gradient
 #				  computation is different.
 #					E-step: IPFP or equivalent.
 #					M-step: Gradient Ascent
@@ -32,7 +32,7 @@ EmNNModel::EmNNModel(config_t *a_cfg, FeatureCalculator *an_fc, std::string &a_s
     if (!initial_params_provided) {
         nn_param = boost::shared_ptr<NNParam>(
                 new NNParam(fc->getFeatureNames(), num_energies_to_include, a_cfg->theta_nn_hlayer_num_nodes,
-                            a_cfg->theta_nn_layer_act_func_ids));
+                            a_cfg->theta_nn_layer_act_func_ids, a_cfg->nn_layer_dropout_probs));
         comm->printToMasterOnly("EM_NN: No initial params provided");
     } else {
         nn_param = boost::shared_ptr<NNParam>(new NNParam(initial_params_filename));
@@ -115,19 +115,19 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
             std::vector<azd_vals_t> z_values(num_trans_from_id);
 
             //Compute the forward values, storing intermediate a and z values, and the combined denom of the rho term, and Q
-            double denom = 1.0, nu_sum = 0.0;
+            double denom = 1.0;
             std::vector<int>::const_iterator it = from_id_map->begin();
             std::vector<const FeatureVector *> fvs(num_trans_from_id);
             std::vector<double> nu_terms(num_trans_from_id + 1);
             for (int idx = 0; it != from_id_map->end(); ++it, idx++) {
                 fvs[idx] = mol_data.getFeatureVectorForIdx(*it);
-                double theta = nn_param->computeTheta(*fvs[idx], energy, z_values[idx], a_values[idx]);
+                // use nn_param->compute theta in forward pass mode
+                // which uses Inverted Dropout
+                double theta = nn_param->computeTheta(*fvs[idx], energy, z_values[idx], a_values[idx], false, true);
                 denom += exp(theta);
                 nu_terms[idx] = (*suft_values)[*it + suft_offset];
-                nu_sum += nu_terms[idx];
             }
             nu_terms[num_trans_from_id] = (*suft_values)[offset + from_idx + suft_offset];
-            nu_sum += nu_terms[num_trans_from_id];
 
             //Compute the deltas
             std::vector<azd_vals_t> deltasA, deltasB;

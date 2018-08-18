@@ -223,7 +223,7 @@ struct config_t {
     //Neural Net Configuration
     std::vector<int> theta_nn_hlayer_num_nodes;
     std::vector<int> theta_nn_layer_act_func_ids;
-
+    std::vector<double> nn_layer_dropout_probs;
     //IPFP Configuration
     int ipfp_algorithm;    //0 = IPFP, 1 = GEMA, 2 = IPFP_WITH_OSC_ADJUST
     double ipfp_converge_thresh;
