@@ -185,8 +185,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             std::cout << "Warning: More activations function types than neural net layers, ignoring some activations."
                       << std::endl;
             cfg.theta_nn_layer_act_func_ids.resize(cfg.theta_nn_hlayer_num_nodes.size() + 1);
-        }else if(cfg.nn_layer_dropout_probs.size() != cfg.theta_nn_hlayer_num_nodes.size()) {
-            std::cout << "Warning: Invalid number of dropouts" << std::endl;
         }
         for (int i = 0; i < cfg.theta_nn_hlayer_num_nodes.size(); i++) {
             if (cfg.theta_nn_layer_act_func_ids[i] == RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION &&

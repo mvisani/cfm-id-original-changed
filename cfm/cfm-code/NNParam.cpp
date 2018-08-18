@@ -61,6 +61,8 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
     //Roll Drop outs
     //last dropped out for output node
     //add this one for not to break stuff
+    while(hlayer_dropout_probs.size() < hlayer_num_nodes.size())
+        hlayer_dropout_probs.push_back(0);
     rollDropouts();
 }
 
@@ -175,6 +177,7 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
 
     //The first hidden layer takes the fv as input (which already has a bias feature, so no addtional biases in this layer)
     itlayer = hlayer_num_nodes.begin();
+    int layer_idx = 0;
     auto is_dropped_it = is_dropped.begin();
     for (int hnode = 0; hnode < (*itlayer); hnode++) {
         if(!is_train || (is_train && !(*is_dropped_it))){
@@ -182,11 +185,14 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
             for (auto it = fv.getFeatureBegin(); it != fv.getFeatureEnd(); ++it)
                 z_val += *(wit + *it);
             wit += len;
+            if(hlayer_dropout_probs[layer_idx] != 0.0)
+                z_val *= 1/hlayer_dropout_probs[layer_idx];
             *zit++ = z_val;
             *ait++ = (*itaf++)(z_val);
         }
         is_dropped_it ++;
     }
+    layer_idx++;
 
     //Subsequent layers take the previous layer as input
     azd_vals_t::iterator ait_input_tmp, ait_input = a_values.begin();
@@ -199,10 +205,13 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
                 for (int i = 0; i < num_input; i++) {
                     z_val += (*ait_input_tmp++) * (*wit++);
                 }
+                if(hlayer_dropout_probs[layer_idx] != 0.0)
+                    z_val *= 1/hlayer_dropout_probs[layer_idx];
                 *zit++ = z_val;
                 *ait++ = (*itaf++)(z_val);
             }
         }
+        layer_idx ++;
         is_dropped_it++;
         num_input = *itlayer;
         ait_input = ait_input_tmp;
