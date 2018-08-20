@@ -85,6 +85,8 @@ public:
 
     virtual void initWeights(int init_type) override;
 
+    virtual std::vector<bool> *getDropoutsPtr() override { return &is_dropped; };
+
     void rollDropouts() override;
 
 protected:

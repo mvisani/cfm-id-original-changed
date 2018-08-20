@@ -121,6 +121,10 @@ double Comms::collectQInMaster(double Q) {
 void Comms::broadcastInitialParams(Param *param) {
     std::vector<double> *weights = param->getWeightsPtr();
     MPI_Bcast(&((*weights)[0]), weights->size(), MPI::DOUBLE, MASTER, MPI_COMM_WORLD);
+
+    std::vector<bool> *dropouts = param->getDropoutsPtr();
+    if(nullptr != dropouts)
+        MPI_Bcast(dropouts, dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
 }
 
 void WorkerComms::collectGradsInMaster(double *grads) {
@@ -171,6 +175,8 @@ void WorkerComms::broadcastParams(Param *param) {
 
 }
 
+//careful, this is only a good idea if we only have small amount of process
+//MPIBroadcast use tree pattern which are much more effective
 void MasterComms::broadcastParams(Param *param) {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
@@ -188,6 +194,10 @@ void MasterComms::broadcastParams(Param *param) {
 
         MPI_Send(&(used_params[0]), worker_num_used[i], MPI::DOUBLE, i, 0, MPI_COMM_WORLD);
     }
+
+    std::vector<bool> *dropouts = param->getDropoutsPtr();
+    if(nullptr != dropouts)
+        MPI_Bcast(dropouts, dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
 }
 
 int Comms::broadcastConverged(int converged) {

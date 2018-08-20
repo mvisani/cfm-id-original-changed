@@ -546,10 +546,6 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         auto mol_it = data.begin();
         for (auto batch_idx = 0; batch_idx < num_batch; ++batch_idx) {
 
-            // let us roll Dropouts
-            if(comm->isMaster())
-                param->rollDropouts();
-
             for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
                 if (minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group) {
                     computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs,
@@ -561,7 +557,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             // Step the parameters
             if (comm->isMaster()) {
                 updateGradientForRegularizationTerm(&grads[0]);
-                solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
+                solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);            // let us roll Dropouts
+                param->rollDropouts();
             }
 
             // this should be a better way in large number of cores

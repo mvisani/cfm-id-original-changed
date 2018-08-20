@@ -66,6 +66,10 @@ public:
 
     std::vector<double> *getWeightsPtr() { return &weights; };
 
+    //this will be changed once we add dropouts for linear model, for now
+    //it only return nullptr
+    virtual std::vector<bool> *getDropoutsPtr() { return nullptr; };
+
     unsigned int getNumWeights() { return weights.size(); };
 
     unsigned int getNumWeightsPerEnergyLevel() { return weights.size() / num_energy_levels; };
