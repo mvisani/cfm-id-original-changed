@@ -122,9 +122,9 @@ void Comms::broadcastInitialParams(Param *param) {
     std::vector<double> *weights = param->getWeightsPtr();
     MPI_Bcast(&((*weights)[0]), weights->size(), MPI::DOUBLE, MASTER, MPI_COMM_WORLD);
 
-    std::vector<bool> *dropouts = param->getDropoutsPtr();
+    auto dropouts = param->getDropoutsPtr();
     if(nullptr != dropouts)
-        MPI_Bcast(dropouts, dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
+        MPI_Bcast(&((*dropouts)[0]), dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
 }
 
 void WorkerComms::collectGradsInMaster(double *grads) {
@@ -195,9 +195,9 @@ void MasterComms::broadcastParams(Param *param) {
         MPI_Send(&(used_params[0]), worker_num_used[i], MPI::DOUBLE, i, 0, MPI_COMM_WORLD);
     }
 
-    std::vector<bool> *dropouts = param->getDropoutsPtr();
+    auto dropouts = param->getDropoutsPtr();
     if(nullptr != dropouts)
-        MPI_Bcast(dropouts, dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
+        MPI_Bcast(&((*dropouts)[0]), dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
 }
 
 int Comms::broadcastConverged(int converged) {

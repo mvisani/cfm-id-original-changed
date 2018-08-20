@@ -21,6 +21,7 @@
 #include "Feature.h"
 
 #include <string>
+#include <boost/container/vector.hpp>
 
 //Exception to throw when the input feature vector configuration doesn't match the parameters
 class ParamFeatureMismatchException : public std::exception {
@@ -68,7 +69,9 @@ public:
 
     //this will be changed once we add dropouts for linear model, for now
     //it only return nullptr
-    virtual std::vector<bool> *getDropoutsPtr() { return nullptr; };
+    // NOTE use boost vector of bool for mpi
+    // because std vector can not return bool&
+    virtual boost::container::vector<bool> *getDropoutsPtr() { return nullptr; };
 
     unsigned int getNumWeights() { return weights.size(); };
 

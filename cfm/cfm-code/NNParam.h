@@ -85,7 +85,7 @@ public:
 
     virtual void initWeights(int init_type) override;
 
-    virtual std::vector<bool> *getDropoutsPtr() override { return &is_dropped; };
+    virtual boost::container::vector<bool> *getDropoutsPtr() override { return &is_dropped; };
 
     void rollDropouts() override;
 
@@ -101,7 +101,7 @@ private:
     // hold drop out prob for each hlayer
     std::vector<double> hlayer_dropout_probs;
     // addition paramenter for drop outs
-    std::vector<bool> is_dropped;
+    boost::container::vector<bool> is_dropped;
 
     // tmp value for  varianceScalingInit
     std::vector<int> num_weights_per_layer;
