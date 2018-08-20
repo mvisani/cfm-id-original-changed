@@ -78,6 +78,10 @@ public:
 
     virtual void initWeights(int init_type);
 
+    // do nothing roolDropots function
+    // we may add Dropouts for linear model later
+    virtual void rollDropouts() {};
+
 protected:
     std::vector<double> weights;
     unsigned int num_energy_levels;
@@ -89,6 +93,7 @@ protected:
     virtual void randomNormalInit();
     void zeroInit();
     void fullZeroInit();
+
 };
 
 #endif // __PARAM_H__

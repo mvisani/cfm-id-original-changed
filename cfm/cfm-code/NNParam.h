@@ -85,7 +85,7 @@ public:
 
     virtual void initWeights(int init_type) override;
 
-    void rollDropouts();
+    void rollDropouts() override;
 
 protected:
     //Initialisation options

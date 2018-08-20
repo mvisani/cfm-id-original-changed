@@ -176,9 +176,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         // (M-step)
 
         before = time(nullptr);
-        // let us roll Dropouts
-        /*if(comm->isMaster())
-            param->rollDropouts();*/
 
         loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, energy_level, sampling_method,
                                               switch_to_weighted_jaccard);
@@ -548,6 +545,11 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         std::fill(grads.begin(), grads.end(), 0.0);
         auto mol_it = data.begin();
         for (auto batch_idx = 0; batch_idx < num_batch; ++batch_idx) {
+
+            // let us roll Dropouts
+            if(comm->isMaster())
+                param->rollDropouts();
+
             for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
                 if (minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group) {
                     computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs,

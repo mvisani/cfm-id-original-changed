@@ -149,7 +149,7 @@ void NNParam::varianceScalingInit() {
 }
 
 double NNParam::computeTheta(const FeatureVector &fv, int energy) {
-    return computeTheta(fv, energy, tmp_z_values, tmp_a_values, true);
+    return computeTheta(fv, energy, tmp_z_values, tmp_a_values, false);
 }
 
 double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_values, azd_vals_t &a_values,
@@ -185,8 +185,8 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
             for (auto it = fv.getFeatureBegin(); it != fv.getFeatureEnd(); ++it)
                 z_val += *(wit + *it);
             wit += len;
-            if(hlayer_dropout_probs[layer_idx] != 0.0)
-                z_val *= 1/hlayer_dropout_probs[layer_idx];
+            if(hlayer_dropout_probs[layer_idx] != 0.0 && is_train)
+                z_val *= 1.0/hlayer_dropout_probs[layer_idx];
             *zit++ = z_val;
             *ait++ = (*itaf++)(z_val);
         }
@@ -205,8 +205,8 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
                 for (int i = 0; i < num_input; i++) {
                     z_val += (*ait_input_tmp++) * (*wit++);
                 }
-                if(hlayer_dropout_probs[layer_idx] != 0.0)
-                    z_val *= 1/hlayer_dropout_probs[layer_idx];
+                if(hlayer_dropout_probs[layer_idx] != 0.0 && is_train)
+                    z_val *= 1.0/hlayer_dropout_probs[layer_idx];
                 *zit++ = z_val;
                 *ait++ = (*itaf++)(z_val);
             }
@@ -282,7 +282,7 @@ NNParam::NNParam(std::string &filename) : Param(filename) {
 
             getline(ifs, line);
             std::stringstream ss3(line);
-            hlayer_dropout_probs.resize(act_func_size-1);
+            hlayer_dropout_probs.resize(act_func_size);
             // get  and roll drop outs
             for (int i = 0; i < num_layers; i++)
                 ss3 >> hlayer_dropout_probs[i];
