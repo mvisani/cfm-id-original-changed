@@ -32,8 +32,8 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
     // set input layer
     int total_len = 0, num_input;
     auto hlayer_node_num = hlayer_num_nodes.begin();
-    int num_input_layer_weights =(*hlayer_node_num) * num_features;
-    total_len +=  num_input_layer_weights;//The first layer takes the fv as input (which has in-built bias).
+    int num_input_layer_weights = (*hlayer_node_num) * num_features;
+    total_len += num_input_layer_weights;//The first layer takes the fv as input (which has in-built bias).
     num_weights_per_layer.push_back(num_input_layer_weights);
 
     // handle hidden layers
@@ -54,20 +54,21 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
     //Set pointers to the activation functions and their derivatives used in each layer
     setActivationFunctionsFromIds();
 
-    //Resize some temporary a and z vectors so we don't have to allocate memory for a and z within the computeTheta function if we don't need them after.
+    //Resize some temporary a and z vectors so we don't have to
+    // allocate memory for a and z within the computeTheta function if we don't need them after.
     tmp_z_values.resize(total_nodes);
     tmp_a_values.resize(total_nodes);
 
     //Roll Drop outs
     //last dropped out for output node
     //add this one for not to break stuff
-    while(hlayer_dropout_probs.size() < hlayer_num_nodes.size())
+    while (hlayer_dropout_probs.size() < hlayer_num_nodes.size())
         hlayer_dropout_probs.push_back(0);
     rollDropouts();
 }
 
-void NNParam::initWeights(int init_type){
-    switch (init_type){
+void NNParam::initWeights(int init_type) {
+    switch (init_type) {
         case PARAM_FULL_ZERO_INIT:
             fullZeroInit();
             break;
@@ -88,27 +89,27 @@ void NNParam::initWeights(int init_type){
 
 //Randomly initialise all weights
 void NNParam::randomUniformInit() {
-    double min = -0.1 , max = 0.1;
+    double min = -0.1, max = 0.1;
     // All Terms: to uniform values between -0.1 and 0.1 - Biases too
-    std::uniform_real_distribution<double> distribution(min,max);
+    std::uniform_real_distribution<double> distribution(min, max);
     for (unsigned int i = 0; i < weights.size(); i++)
         weights[i] = distribution(util_rng);//(double(std::rand()) / double(RAND_MAX) - 0.5) * 0.2;
 }
 
 void NNParam::randomNormalInit() {
     // All Terms: to normal values in mean and std
-    double mean=0.0, std_dev=0.05, min = -0.1 , max = 0.1;
-    std::normal_distribution<double> distribution(mean,std_dev);
+    double mean = 0.0, std_dev = 0.05, min = -0.1, max = 0.1;
+    std::normal_distribution<double> distribution(mean, std_dev);
 
     unsigned int energy_length = getNumWeightsPerEnergyLevel();
-    for (unsigned int energy_level_idx = 0; energy_level_idx < getNumEnergyLevels(); energy_level_idx++){
+    for (unsigned int energy_level_idx = 0; energy_level_idx < getNumEnergyLevels(); energy_level_idx++) {
         int weight_offset = 0;
-        for(const auto & num_weights : num_weights_per_layer){
-            for (unsigned int i = 0; i < num_weights; i++){
+        for (const auto &num_weights : num_weights_per_layer) {
+            for (unsigned int i = 0; i < num_weights; i++) {
                 double weight = 0;
-                do{
-                    weight =  distribution(util_rng);
-                }while((weight < min) || (weight > max));
+                do {
+                    weight = distribution(util_rng);
+                } while ((weight < min) || (weight > max));
                 weights[energy_length * energy_level_idx + weight_offset + i] = weight;
             }
             weight_offset += num_weights;
@@ -119,28 +120,28 @@ void NNParam::randomNormalInit() {
 // Variance Scaling Initializer
 void NNParam::varianceScalingInit() {
     double factor = 1.0;
-    double mean= -0.0;
+    double mean = -0.0;
 
     // All Terms: to normal values in mean and std
     unsigned int energy_length = getNumWeightsPerEnergyLevel();
     for (unsigned int energy_level_idx = 0; energy_level_idx < getNumEnergyLevels(); energy_level_idx++) {
         int weight_offset = 0;
-        for(int hlayer_idx = 0; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
+        for (int hlayer_idx = 0; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
             int fan_in = input_layer_node_num;
             if (hlayer_idx > 0)
                 fan_in = hlayer_num_nodes[hlayer_idx - 1];
             int fan_out = hlayer_num_nodes[hlayer_idx];
             int num_weights = num_weights_per_layer[hlayer_idx];
 
-            double std_dev=sqrt(factor/ double(fan_out + fan_in));
-            double min = -2*std_dev , max = 2 * std_dev;
-            std::normal_distribution<double> distribution(mean,std_dev);
+            double std_dev = sqrt(factor / double(fan_out + fan_in));
+            double min = -2 * std_dev, max = 2 * std_dev;
+            std::normal_distribution<double> distribution(mean, std_dev);
 
-            for (unsigned int i = 0; i < num_weights; i++){
+            for (unsigned int i = 0; i < num_weights; i++) {
                 double weight = 0;
-                do{
-                    weight =  distribution(util_rng);
-                }while((weight < min) || (weight > max));
+                do {
+                    weight = distribution(util_rng);
+                } while ((weight < min) || (weight > max));
                 weights[energy_length * energy_level_idx + weight_offset + i] = weight;
             }
             weight_offset += num_weights;
@@ -156,10 +157,10 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
                              bool already_sized, bool is_train) {
 
     //Check Feature Length
-    int len = fv.getTotalLength();
-    if (len != expected_num_input_features) {
+    int fv_length = fv.getTotalLength();
+    if (fv_length != expected_num_input_features) {
         std::cout << "Expecting feature vector of length " << expected_num_input_features;
-        std::cout << " but found " << len << std::endl;
+        std::cout << " but found " << fv_length << std::endl;
         throw (ParamFeatureMismatchException());
     }
     int energy_offset = getNumWeightsPerEnergyLevel() * energy;
@@ -180,17 +181,23 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
     int layer_idx = 0;
     auto is_dropped_it = is_dropped.begin();
     for (int hnode = 0; hnode < (*itlayer); hnode++) {
-        if(!is_train || (is_train && !(*is_dropped_it))){
+        if (!is_train || (is_train && !(*is_dropped_it))) {
             double z_val = 0.0;
             for (auto it = fv.getFeatureBegin(); it != fv.getFeatureEnd(); ++it)
                 z_val += *(wit + *it);
-            wit += len;
-            if(hlayer_dropout_probs[layer_idx] != 0.0 && is_train)
-                z_val *= 1.0/hlayer_dropout_probs[layer_idx];
-            *zit++ = z_val;
-            *ait++ = (*itaf++)(z_val);
-        }
-        is_dropped_it ++;
+            wit += fv_length;
+            *zit = z_val;
+            *ait = (*itaf)(z_val);
+            if (is_train)
+                *ait = (*ait)/(1.0 - hlayer_dropout_probs[layer_idx]);
+
+        } else if (is_train && *is_dropped_it)
+            wit = std::next(wit, fv_length);
+
+        zit = std::next(zit, 1);
+        ait = std::next(ait, 1);
+        itaf = std::next(itaf, 1);
+        is_dropped_it = std::next(is_dropped_it,1);
     }
     layer_idx++;
 
@@ -198,21 +205,31 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
     azd_vals_t::iterator ait_input_tmp, ait_input = a_values.begin();
     int num_input = *itlayer++;
     for (; itlayer != hlayer_num_nodes.end(); ++itlayer) {
-        if(!is_train || (is_train && !(*is_dropped_it))) {
-            for (int hnode = 0; hnode < (*itlayer); hnode++) {
+        for (int hnode = 0; hnode < (*itlayer); hnode++) {
+            if (!is_train || (is_train && !(*is_dropped_it))) {
                 ait_input_tmp = ait_input;
                 double z_val = *wit++; //Bias
-                for (int i = 0; i < num_input; i++) {
+
+                // sum up and record z_val
+                for (int i = 0; i < num_input; i++)
                     z_val += (*ait_input_tmp++) * (*wit++);
-                }
-                if(hlayer_dropout_probs[layer_idx] != 0.0 && is_train)
-                    z_val *= 1.0/hlayer_dropout_probs[layer_idx];
-                *zit++ = z_val;
-                *ait++ = (*itaf++)(z_val);
-            }
+                *zit = z_val;
+                // compute active function output
+                *ait = (*itaf)(z_val);
+                // update if in training mod and use dropout
+                if (is_train)
+                   *ait = (*ait)/(1.0 - hlayer_dropout_probs[layer_idx]);
+
+            } else if (is_train && *is_dropped_it)
+                wit = std::next(wit, num_input);
+
+            zit = std::next(zit, 1);
+            ait = std::next(ait, 1);
+            itaf = std::next(itaf, 1);
+            is_dropped_it = std::next(is_dropped_it,1);
         }
-        layer_idx ++;
-        is_dropped_it++;
+
+        layer_idx++;
         num_input = *itlayer;
         ait_input = ait_input_tmp;
     }
@@ -241,7 +258,7 @@ void NNParam::saveToFile(std::string &filename) {
         for (; iit != act_func_ids.end(); ++iit)
             out << *iit << " ";
         out << std::endl;
-        for (const auto & prob : hlayer_dropout_probs)
+        for (const auto &prob : hlayer_dropout_probs)
             out << prob << " ";
         out << std::endl;
         out.close();
@@ -295,6 +312,7 @@ NNParam::NNParam(std::string &filename) : Param(filename) {
         }
     }
     ifs.close();
+
     if (!found_nn_details) throw NNParamFileReadException();
 }
 
@@ -315,14 +333,13 @@ void NNParam::setActivationFunctionsFromIds() {
                     act_funcs.push_back(relu_activation);
                     deriv_funcs.push_back(relu_derivative);
                 }
-            } else if(*it == LEAKY_RELU_NN_ACTIVATION_FUNCTION){
+            } else if (*it == LEAKY_RELU_NN_ACTIVATION_FUNCTION) {
                 act_funcs.push_back(leaky_relu_activation);
                 deriv_funcs.push_back(leaky_relu_derivative);
-            }  else if(*it == RELU_NN_ACTIVATION_FUNCTION){
+            } else if (*it == RELU_NN_ACTIVATION_FUNCTION) {
                 act_funcs.push_back(relu_activation);
                 deriv_funcs.push_back(relu_derivative);
-            }
-            else throw NNParamActivationFunctionIdException();
+            } else throw NNParamActivationFunctionIdException();
         }
     }
 
@@ -519,15 +536,14 @@ void NNParam::getBiasIndexes(std::vector<unsigned int> &bias_indexes) {
 }
 
 void NNParam::rollDropouts() {
-
-    if(is_dropped.empty())
+    if (is_dropped.empty())
         is_dropped.resize(total_nodes + 1);
 
     //adding dropouts in the all layer with the same prob
     auto drop_out_idx = 0;
-    for(int hlayer_idx = 0; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
+    for (int hlayer_idx = 0; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
         std::bernoulli_distribution bernoulli_coin(hlayer_dropout_probs[hlayer_idx]);
-        for(int j = 0 ; j < hlayer_num_nodes[hlayer_idx];  ++j) {
+        for (int j = 0; j < hlayer_num_nodes[hlayer_idx]; ++j) {
             if (0.0 == hlayer_dropout_probs[hlayer_idx])
                 is_dropped[drop_out_idx] = false;
             else
