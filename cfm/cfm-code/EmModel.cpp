@@ -647,12 +647,13 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
             } else {
                 //Do some random selection
                 std::vector<int> sampled_ids;
-                if (sampling_method != USE_NO_SAMPLING)
+                if (sampling_method != USE_NO_SAMPLING){
                     for (auto id: *frag_trans_map)
                         if (selected_trans_id.find(id) != selected_trans_id.end())
                             sampled_ids.push_back(id);
-                        else
-                            sampled_ids = *frag_trans_map;
+                }
+                else
+                    sampled_ids = *frag_trans_map;
 
                 // Calculate the denominator of the sum terms
                 double denom = 1.0;
@@ -667,8 +668,6 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
 
                     for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                         auto fv_idx = *fv_it;
-                        /*if(param->is_dropped[fv_idx])
-                            continue;*/
                         double val = exp(mol_data.getThetaForIdx(energy, trans_id)) / denom;
                         if (sum_terms.find(fv_idx) != sum_terms.end())
                             sum_terms[fv_idx] += val;
