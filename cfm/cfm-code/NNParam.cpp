@@ -150,7 +150,8 @@ void NNParam::varianceScalingInit() {
 }
 
 double NNParam::computeTheta(const FeatureVector &fv, int energy) {
-    return computeTheta(fv, energy, tmp_z_values, tmp_a_values, false);
+
+    return computeTheta(fv, energy, tmp_z_values, tmp_a_values, true, false);
 }
 
 double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_values, azd_vals_t &a_values,
@@ -170,7 +171,9 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
     std::vector<int>::iterator itlayer = hlayer_num_nodes.begin();
     if (!already_sized) {
         z_values.resize(total_nodes);
+        std::fill(z_values.begin(), z_values.end(), 0);
         a_values.resize(total_nodes);
+        std::fill(a_values.begin(), a_values.end(), 0);
     }
     azd_vals_t::iterator zit = z_values.begin();
     azd_vals_t::iterator ait = a_values.begin();
