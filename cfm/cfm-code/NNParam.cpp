@@ -359,7 +359,6 @@ void NNParam::computeDeltas(std::vector<azd_vals_t> &deltasA, std::vector<azd_va
     for (int idx = 0; idx < num_trans_from_id; idx++) {
         deltasA[idx].resize(total_nodes);
         deltasB[idx].resize(total_nodes);
-        for (int i = 0; i < total_nodes; i++) deltasA[idx][i] = i + 1;    //DEBUG!
     }
 
     //Set up the iterators (we are going backwards through the network, so set up iterators in reverse)
@@ -421,7 +420,6 @@ void NNParam::computeDeltas(std::vector<azd_vals_t> &deltasA, std::vector<azd_va
         itdf = itdf_tmp;
         wit = wit_tmp;
     }
-
 }
 
 void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unweighted_grads,
