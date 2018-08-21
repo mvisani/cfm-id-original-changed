@@ -184,7 +184,6 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
 	//Set some arbitrary suft values
 	suft.values.resize(1);
 
-	//const FragmentGraph *fg = moldata.getFragmentGraph();
 	unsigned int N = moldata.getNumTransitions() + moldata.getNumFragments();
 	suft.values[0].assign(3*N, 0.0);
 	suft.values[0][1] = 0.5;
