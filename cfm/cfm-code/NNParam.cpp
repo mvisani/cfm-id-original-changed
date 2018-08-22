@@ -168,7 +168,6 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
     std::vector<double>::iterator wit = weights.begin() + energy_offset;
 
     //Resize the z and a vectors to the required sizes
-    std::vector<int>::iterator itlayer = hlayer_num_nodes.begin();
     if (!already_sized) {
         z_values.resize(total_nodes);
         std::fill(z_values.begin(), z_values.end(), 0);
@@ -180,7 +179,7 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
     std::vector<double (*)(double)>::iterator itaf = act_funcs.begin();
 
     //The first hidden layer takes the fv as input (which already has a bias feature, so no addtional biases in this layer)
-    itlayer = hlayer_num_nodes.begin();
+    auto itlayer = hlayer_num_nodes.begin();
     int layer_idx = 0;
     auto is_dropped_it = is_dropped.begin();
     for (int hnode = 0; hnode < (*itlayer); hnode++) {
@@ -223,8 +222,11 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
                 if (is_train)
                    *ait = (*ait)/(1.0 - hlayer_dropout_probs[layer_idx]);
 
-            } else if (is_train && *is_dropped_it)
-                wit = std::next(wit, num_input);
+            } else if (is_train && (*is_dropped_it)){
+                // if dropped out move by num_input + 1
+                // 1 for bais num_input weights
+                wit = std::next(wit, 1 + num_input);
+            }
 
             zit = std::next(zit, 1);
             ait = std::next(ait, 1);
@@ -234,9 +236,9 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
 
         layer_idx++;
         num_input = *itlayer;
-        ait_input = ait_input_tmp;
+        ait_input = std::next(ait_input, num_input);
     }
-    return *(--ait);    //The output of the last layer is theta
+    return a_values.back();    //The output of the last layer is theta
 }
 
 void NNParam::saveToFile(std::string &filename) {
@@ -538,7 +540,7 @@ void NNParam::getBiasIndexes(std::vector<unsigned int> &bias_indexes) {
 
 void NNParam::rollDropouts() {
     if (is_dropped.empty())
-        is_dropped.resize(total_nodes + 1);
+        is_dropped.resize(total_nodes);
 
     //adding dropouts in the all layer with the same prob
     auto drop_out_idx = 0;
