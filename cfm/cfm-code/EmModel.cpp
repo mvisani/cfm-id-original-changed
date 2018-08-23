@@ -202,7 +202,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 computeValidationMetrics(energy_level, molidx, mol_it, suft, val_q, num_val_mols, jaccard,
                                          w_jaccard);
             } else{
-                double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
+                /*double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
                 std::cout << mol_it->getId() << " Loss=" << mol_loss;
 
                 mol_it->computePredictedSpectra(*param, true, true, energy_level);
@@ -216,7 +216,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                         mol_it->getPredictedSpectrum(energy_level)) << " ";
                 delete jaccard_cmp;
                 delete weighted_jaccard_cmp;
-                std::cout << std::endl;
+                std::cout << std::endl;*/
                 num_training_mols++;
             }
 
