@@ -165,7 +165,7 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
         throw (ParamFeatureMismatchException());
     }
     int energy_offset = getNumWeightsPerEnergyLevel() * energy;
-    std::vector<double>::iterator wit = weights.begin() + energy_offset;
+    auto weights_it = weights.begin() + energy_offset;
 
     //Resize the z and a vectors to the required sizes
     if (!already_sized) {
@@ -174,70 +174,56 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
         a_values.resize(total_nodes);
         std::fill(a_values.begin(), a_values.end(), 0);
     }
-    azd_vals_t::iterator zit = z_values.begin();
-    azd_vals_t::iterator ait = a_values.begin();
-    std::vector<double (*)(double)>::iterator itaf = act_funcs.begin();
 
     //The first hidden layer takes the fv as input (which already has a bias feature, so no addtional biases in this layer)
+    int node_idx = 0;
     auto itlayer = hlayer_num_nodes.begin();
-    int layer_idx = 0;
-    auto is_dropped_it = is_dropped.begin();
+
     for (int hnode = 0; hnode < (*itlayer); hnode++) {
-        if (!is_train || (is_train && !(*is_dropped_it))) {
+        if (!is_train || (is_train && !is_dropped[node_idx])) {
             double z_val = 0.0;
             for (auto it = fv.getFeatureBegin(); it != fv.getFeatureEnd(); ++it)
-                z_val += *(wit + *it);
-            wit += fv_length;
-            *zit = z_val;
-            *ait = (*itaf)(z_val);
+                z_val += *(weights_it + *it);
+            weights_it += fv_length;
+            z_values[node_idx] = z_val;
+            a_values[node_idx] = act_funcs[node_idx](z_val);
             if (is_train)
-                *ait = (*ait)/(1.0 - hlayer_dropout_probs[layer_idx]);
+                a_values[node_idx] = a_values[node_idx]/(1.0 - hlayer_dropout_probs[0]);
 
-        } else if (is_train && *is_dropped_it)
-            wit = std::next(wit, fv_length);
-
-        zit = std::next(zit, 1);
-        ait = std::next(ait, 1);
-        itaf = std::next(itaf, 1);
-        is_dropped_it = std::next(is_dropped_it,1);
+        } else if (is_train && is_dropped[node_idx])
+            weights_it += fv_length;
+        node_idx++;
     }
-    layer_idx++;
 
     //Subsequent layers take the previous layer as input
-    azd_vals_t::iterator ait_input_tmp, ait_input = a_values.begin();
-    int num_input = *itlayer++;
-    for (; itlayer != hlayer_num_nodes.end(); ++itlayer) {
-        for (int hnode = 0; hnode < (*itlayer); hnode++) {
-            if (!is_train || (is_train && !(*is_dropped_it))) {
-                ait_input_tmp = ait_input;
-                double z_val = *wit++; //Bias
+    int num_input = hlayer_num_nodes[0];
+    int input_layer_node_idx_start = 0;
+    for (int hlayer_idx = 1; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
+        for (int hnode = 0; hnode < hlayer_num_nodes[hlayer_idx]; ++hnode) {
+            if (!is_train || (is_train && !is_dropped[node_idx])) {
+                double z_val = *weights_it++; //Bias
 
                 // sum up and record z_val
                 for (int i = 0; i < num_input; i++)
-                    z_val += (*ait_input_tmp++) * (*wit++);
-                *zit = z_val;
-                // compute active function output
-                *ait = (*itaf)(z_val);
-                // update if in training mod and use dropout
-                if (is_train)
-                   *ait = (*ait)/(1.0 - hlayer_dropout_probs[layer_idx]);
+                    z_val += a_values[input_layer_node_idx_start + i] * (*weights_it++);
 
-            } else if (is_train && (*is_dropped_it)){
+                z_values[node_idx] = z_val;
+                a_values[node_idx] = act_funcs[node_idx](z_val);
+                if (is_train)
+                    a_values[node_idx] = a_values[node_idx]/(1.0 - hlayer_dropout_probs[hlayer_idx + 1]);
+
+            } else if (is_train && is_dropped[node_idx]){
                 // if dropped out move by num_input + 1
                 // 1 for bais num_input weights
-                wit = std::next(wit, 1 + num_input);
+                weights_it += 1 + num_input;
             }
-
-            zit = std::next(zit, 1);
-            ait = std::next(ait, 1);
-            itaf = std::next(itaf, 1);
-            is_dropped_it = std::next(is_dropped_it,1);
+            node_idx ++;
         }
 
-        layer_idx++;
-        num_input = *itlayer;
-        ait_input = std::next(ait_input, num_input);
+        input_layer_node_idx_start += num_input;
+        num_input = hlayer_num_nodes[hlayer_idx];
     }
+
     return a_values.back();    //The output of the last layer is theta
 }
 

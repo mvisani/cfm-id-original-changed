@@ -420,7 +420,6 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	//Set some arbitrary suft values
 	suft.values.resize(1);
 
-	//const FragmentGraph *fg = moldata.getFragmentGraph();
 	unsigned int N = moldata.getNumTransitions() + moldata.getNumFragments();
 	suft.values[0].assign(3*N, 0.0);
 	suft.values[0][0] = 0.2; suft.values[0][1] = 0.3; suft.values[0][2] = 0.5; suft.values[0][3] = 0.0; suft.values[0][4] = 0.0;
@@ -436,7 +435,7 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	std::string null_str = "null";
 	EmNNModel em(&cfg, &fc_null, null_str, param_filename );
 	double Qonly  = em.computeLogLikelihoodLoss(0, moldata, suft);
-    em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, false);
+    em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0);
 
 	//Check Q
 	double theta1 = 12.0, theta2 = 10.0;
@@ -445,7 +444,8 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	
 	double expected_Q = (0.2+0.9+0.08)*(theta1-log(rho_denom)) + (0.3+0.05+0.9)*(theta2-log(rho_denom)) + (0.5+0.05+0.02)*(-log(rho_denom));
 	if( fabs(Qonly - expected_Q )  > tol ){
-		std::cout << "Unexpected Q value resulting from Q only computation: " << Qonly << std::endl;
+		std::cout << "Unexpected Q value resulting from Q only computation: "
+		          << Qonly << " (Expecting: " <<  expected_Q << ")" << std::endl;
 		pass = false;
 	}
 
