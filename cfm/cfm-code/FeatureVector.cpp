@@ -1,0 +1,55 @@
+//*#########################################################################
+//# Mass Spec Prediction and Identification of Metabolites
+//#
+//# FeatureVector.cpp
+//#
+//# Description: 	Code for computing features for fragmentations.
+//#
+//# Copyright (c) 2018
+//# All rights reserved.
+//
+//# This file is part of the cfm-id project.
+//# The contents are covered by the terms of the GNU Lesser General Public
+//# License, which is included in the file license.txt, found at the root
+//# of the cfm source tree.
+//#########################################################################*/
+
+#include "FeatureVector.h"
+
+#include <iostream>
+
+void FeatureVector::addFeature(double value) {
+    if (value != 0.0)
+        fv.push_back(fv_idx++);
+    else
+        fv_idx++;
+}
+
+void FeatureVector::addFeatureAtIdx(double value, unsigned int idx) {
+    if (fv_idx <= idx)
+        fv_idx = idx + 1;
+    if (value != 0.0)
+        fv.push_back(idx);
+}
+
+void FeatureVector::addFeatures(const std::vector<double> &values) {
+    for (const auto &value: values) {
+        this->addFeature(value);
+    }
+}
+
+void FeatureVector::addFeatures(const std::vector<int> &values) {
+    for (const auto &value: values) {
+        this->addFeature((double) value);
+    }
+}
+
+// print debug info
+void FeatureVector::printDebugInfo() const {
+    std::cout << "fv_idx : " << fv_idx << std::endl;
+    std::cout << "fv_vector_size: " << fv.size() << std::endl;
+    for (int i = 0; i < fv.size(); i++) {
+        std::cout << fv[i] << " ";
+    }
+    std::cout << std::endl;
+}

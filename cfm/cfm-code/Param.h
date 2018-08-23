@@ -19,6 +19,8 @@
 #define __PARAM_H__
 
 #include "Feature.h"
+#include "FeatureVector.h"
+#include "FeatureCalculator.h"
 
 #include <string>
 #include <boost/container/vector.hpp>

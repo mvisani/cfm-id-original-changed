@@ -14,11 +14,11 @@
 # of the cfm source tree.
 #########################################################################*/
 
-#ifndef __FEATURE_H__
-#define __FEATURE_H__
+#pragma once
 
 #include "Util.h"
 #include "FunctionalGroups.h"
+#include "FeatureVector.h"
 
 #include <GraphMol/FragCatalog/FragCatParams.h>
 
@@ -31,69 +31,7 @@
 #include <iostream>
 #include <fstream>
 
-struct input_file_t;
-
 typedef std::pair<std::string, std::string> symbol_pair_t;
-
-// Exception to throw when the input feature configuration file is invalid
-class InvalidConfigException : public std::exception {
-
-    virtual const char *what() const noexcept {
-        return "Invalid Feature Configuration File";
-    }
-};
-
-class FeatureCalculationException : public std::exception {
-private:
-    std::string message_;
-
-public:
-    FeatureCalculationException(const std::string &message) noexcept
-            : message_(message) {};
-
-    virtual const char *what() const noexcept {
-        std::cout << "Error computing feature vector: " << message_ << std::endl;
-        return message_.c_str();
-    }
-
-    ~FeatureCalculationException() noexcept {};
-};
-
-// Structure to hold a sparse computed feature vector
-typedef unsigned int feature_t;
-
-class FeatureVector {
-public:
-    FeatureVector() { fv_idx = 0; };
-
-    void addFeature(double value);
-
-    void addFeatureAtIdx(double value, unsigned int idx);
-
-    void addFeatures(const std::vector<double> &values);
-
-    void addFeatures(const std::vector<int> &values);
-
-    unsigned int getTotalLength() const { return fv_idx; };
-
-    feature_t getFeature(int idx) const { return fv[idx]; };
-
-    std::vector<feature_t>::const_iterator getFeatureBegin() const {
-        return fv.begin();
-    };
-
-    std::vector<feature_t>::const_iterator getFeatureEnd() const {
-        return fv.end();
-    };
-
-    unsigned int getNumSetFeatures() const { return fv.size(); };
-
-    void printDebugInfo() const;
-
-private:
-    std::vector<feature_t> fv;
-    unsigned int fv_idx;
-};
 
 // Base class to compute a feature - all features should inherit from this
 class Feature {
@@ -122,41 +60,10 @@ protected:
     unsigned int GetSizeOfOKSymbolsLess() const;
 };
 
-// Class to compute a feature vector
-class FeatureCalculator {
-
-public:
-    // Constructor: Initialise the calculator using a config file listing features
-    FeatureCalculator(std::string &config_filename);
-
-    // Constructor: Initialise the calculator using a list of feature names
-    FeatureCalculator(std::vector<std::string> &feature_list);
-
-    // Compute the expected number of total features
-    unsigned int getNumFeatures();
-
-    // Retrieve the list of feature names being used
-    std::vector<std::string> getFeatureNames();
-
-    // Retrieve a list of valid feature names (for testing)
-    static const std::vector<std::string> getValidFeatureNames();
-
-    // Compute the feature vector for the input ion and nl (with labeled Root
-    // atoms)
-    // - NB: responsibility of caller to delete.
-    FeatureVector *computeFeatureVector(const RootedROMolPtr *ion, const RootedROMolPtr *nl, int tree_depth);
-
-    bool includesFeature(const std::string &fname);
-
-private:
-    // List of feature classes ready to be used
-    static const boost::ptr_vector<Feature> &featureCogs();
-
-    // Indexes of feature classes that are selected for use
-    std::vector<int> used_feature_idxs;
-
-    // Helper function - Configure feature for use
-    void configureFeature(std::string &name);
+/*class BreakFeature: public Feature{
+    virtual void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const = 0;
 };
 
-#endif // __FEATURE_H__
+class FragmentFeature: public Feature{
+    virtual void compute(FeatureVector &fv, std::string fragment_smiles) const = 0;
+};*/

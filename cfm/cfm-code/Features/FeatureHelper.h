@@ -23,6 +23,7 @@ param.cpp.
 
 #include "../FunctionalGroups.h"
 #include "../Feature.h"
+#include "../FeatureCalculator.h"
 
 class FeatureHelperException : public std::exception {
 private:

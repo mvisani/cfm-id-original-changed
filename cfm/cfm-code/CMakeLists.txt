@@ -8,7 +8,7 @@
 # Last Modified: Sep 2017
 ##########################################################################
 
-set(BASE_HEADERS FragmentGraph.h Feature.h Config.h Spectrum.h
+set(BASE_HEADERS FragmentGraph.h Feature.h FeatureVector.h FeatureCalculator.h Config.h Spectrum.h
         FragmentGraphGenerator.h FragmentTreeNode.h Inference.h IPFP.h MILP.h Isotope.h
         MolData.h MspReader.h Param.h NNParam.h Util.h Message.h Identifier.h Comparators.h
         FunctionalGroups.h)
@@ -19,6 +19,8 @@ set(TRAIN_HEADERS Comms.h ModelBase.h EmModel.h EmNNModel.h Solver.h)
 
 set(BASE_SRC_FILES FragmentGraph.cpp
         Feature.cpp
+        FeatureVector.cpp
+        FeatureCalculator.cpp
         ${FEATURES_SRC_DIR}
         Config.cpp
         FragmentGraphGenerator.cpp
