@@ -556,7 +556,6 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
             // Step the parameters
             if (comm->isMaster()) {
-                std::cout << "breakpoint 1 " << &grads << std::endl;
                 updateGradientForRegularizationTerm(&grads[0]);
                 solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
                 // let us roll Dropouts

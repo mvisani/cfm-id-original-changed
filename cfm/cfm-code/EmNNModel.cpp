@@ -228,14 +228,12 @@ double EmNNModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_co
 
 void EmNNModel::updateGradientForRegularizationTerm(double *grads) {
 
-    std::cout << "updateParametersGradientAscent_1: " << &grads << std::endl;
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
         double weight = nn_param->getWeightAtIdx(*it);
-        *(grads + *it) -= cfg->lambda * weight;
+        if (grads != nullptr)
+            *(grads + *it) -= cfg->lambda * weight;
     }
-
-    std::cout << "updateParametersGradientAscent_2: " << &grads << std::endl;
 
     //Remove part of the Bias terms (regularize the bias terms 100 times less than the other weights!)
     unsigned int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
@@ -246,13 +244,13 @@ void EmNNModel::updateGradientForRegularizationTerm(double *grads) {
         int offset = energy * weights_per_energy;
         for (; it != bias_indexes.end(); ++it) {
             double bias = nn_param->getWeightAtIdx(offset + *it);
-            *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
+             if (grads != nullptr)
+                *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
         }
     }
 }
 
 double EmNNModel::getRegularizationTerm() {
-
 
     double req_term = 0.0;
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
