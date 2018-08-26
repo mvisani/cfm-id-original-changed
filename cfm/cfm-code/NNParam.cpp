@@ -210,7 +210,7 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
                 z_values[node_idx] = z_val;
                 a_values[node_idx] = act_funcs[node_idx](z_val);
                 if (is_train)
-                    a_values[node_idx] = a_values[node_idx]/(1.0 - hlayer_dropout_probs[hlayer_idx + 1]);
+                    a_values[node_idx] = a_values[node_idx]/(1.0 - hlayer_dropout_probs[hlayer_idx]);
 
             } else if (is_train && is_dropped[node_idx]){
                 // if dropped out move by num_input + 1
