@@ -244,8 +244,7 @@ void EmNNModel::updateGradientForRegularizationTerm(double *grads) {
         int offset = energy * weights_per_energy;
         for (; it != bias_indexes.end(); ++it) {
             double bias = nn_param->getWeightAtIdx(offset + *it);
-             if (grads != nullptr)
-                *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
+            *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
         }
     }
 }
