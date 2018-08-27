@@ -158,7 +158,6 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
                              bool already_sized, bool is_train) {
 
     //Check Feature Length
-    //Check Feature Length
     int len = fv.getTotalLength();
     if( len != expected_num_input_features ){
         std::cout << "Expecting feature vector of length " << expected_num_input_features;
@@ -173,6 +172,9 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
     if( !already_sized){ z_values.resize( total_nodes ); a_values.resize( total_nodes ); }
     azd_vals_t::iterator zit = z_values.begin();
     azd_vals_t::iterator ait = a_values.begin();
+    auto hit = is_dropped.begin();
+    auto h_layer_idx = 0;
+
     std::vector<double (*)(double)>::iterator itaf = act_funcs.begin();
 
     //The first hidden layer takes the fv as input (which already has a bias feature, so no addtional biases in this layer)
@@ -183,9 +185,20 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
         for( ; it != fv.getFeatureEnd(); ++it )
             z_val += *(wit + *it);
         wit += len;
-        *zit++ = z_val;
-        *ait++ = (*itaf++)(z_val);
+        *zit = z_val;
+        *ait = (*itaf++)(z_val);
+
+        if(is_train && !(*hit))
+            *ait /= (1.0 -  hlayer_dropout_probs[h_layer_idx]);
+        else if(is_train && !(*hit)){
+            *zit = 0.0;
+            *ait = 0.0;
+        }
+        zit++;
+        ait++;
+        hit++;
     }
+    h_layer_idx++;
 
     //Subsequent layers take the previous layer as input
     azd_vals_t::iterator ait_input_tmp, ait_input = a_values.begin();
@@ -194,13 +207,25 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
         for( int hnode = 0; hnode < (*itlayer); hnode++ ){
             ait_input_tmp = ait_input;
             double z_val = *wit++; //Bias
-            for( int i = 0; i < num_input; i++ ) z_val += (*ait_input_tmp++)*(*wit++);
-            *zit++ = z_val;
-            *ait++ = (*itaf++)(z_val);
+            for( int i = 0; i < num_input; i++ )
+                z_val += (*ait_input_tmp++)*(*wit++);
+            *zit = z_val;
+            *ait = (*itaf++)(z_val);
+
+            if(is_train && !(*hit))
+                *ait /= (1.0-  hlayer_dropout_probs[h_layer_idx]);
+            else if(is_train && !(*hit)){
+                *zit = 0.0;
+                *ait = 0.0;
+            }
+            zit++;
+            ait++;
+            hit++;
         }
-        
+
         num_input = *itlayer;
         ait_input = ait_input_tmp;
+        h_layer_idx ++;
     }
     return *(--ait);	//The output of the last layer is theta
 }
@@ -248,7 +273,7 @@ NNParam::NNParam(std::string &filename) : Param(filename) {
             //Get the hidden node number configuration
             getline(ifs, line);
             total_nodes = 0;
-            int num_layers = atoi(line.c_str());
+            int num_layers = std::stoi(line);
             hlayer_num_nodes.resize(num_layers);
             getline(ifs, line);
             std::stringstream ss1(line);
@@ -258,7 +283,7 @@ NNParam::NNParam(std::string &filename) : Param(filename) {
             }
             //Get the activation function configuration
             getline(ifs, line);
-            int act_func_size = atoi(line.c_str());
+            int act_func_size = std::stoi(line);
             act_func_ids.resize(act_func_size);
             getline(ifs, line);
             std::stringstream ss2(line);
