@@ -158,73 +158,51 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
                              bool already_sized, bool is_train) {
 
     //Check Feature Length
-    int fv_length = fv.getTotalLength();
-    if (fv_length != expected_num_input_features) {
+    //Check Feature Length
+    int len = fv.getTotalLength();
+    if( len != expected_num_input_features ){
         std::cout << "Expecting feature vector of length " << expected_num_input_features;
-        std::cout << " but found " << fv_length << std::endl;
-        throw (ParamFeatureMismatchException());
+        std::cout << " but found " << len << std::endl;
+        throw( ParamFeatureMismatchException() );
     }
-    int energy_offset = getNumWeightsPerEnergyLevel() * energy;
-    auto weights_it = weights.begin() + energy_offset;
+    int energy_offset = getNumWeightsPerEnergyLevel()*energy;
+    std::vector<double>::iterator wit = weights.begin() + energy_offset;
 
     //Resize the z and a vectors to the required sizes
-    if (!already_sized) {
-        z_values.resize(total_nodes);
-        std::fill(z_values.begin(), z_values.end(), 0);
-        a_values.resize(total_nodes);
-        std::fill(a_values.begin(), a_values.end(), 0);
-    }
+    std::vector<int>::iterator itlayer = hlayer_num_nodes.begin();
+    if( !already_sized){ z_values.resize( total_nodes ); a_values.resize( total_nodes ); }
+    azd_vals_t::iterator zit = z_values.begin();
+    azd_vals_t::iterator ait = a_values.begin();
+    std::vector<double (*)(double)>::iterator itaf = act_funcs.begin();
 
     //The first hidden layer takes the fv as input (which already has a bias feature, so no addtional biases in this layer)
-    int node_idx = 0;
-    auto itlayer = hlayer_num_nodes.begin();
-
-    for (int hnode = 0; hnode < (*itlayer); hnode++) {
-        if (!is_train || (is_train && !is_dropped[node_idx])) {
-            double z_val = 0.0;
-            for (auto it = fv.getFeatureBegin(); it != fv.getFeatureEnd(); ++it)
-                z_val += *(weights_it + *it);
-            weights_it += fv_length;
-            z_values[node_idx] = z_val;
-            a_values[node_idx] = act_funcs[node_idx](z_val);
-            if (is_train)
-                a_values[node_idx] = a_values[node_idx]/(1.0 - hlayer_dropout_probs[0]);
-
-        } else if (is_train && is_dropped[node_idx])
-            weights_it += fv_length;
-        node_idx++;
+    itlayer = hlayer_num_nodes.begin();
+    for( int hnode = 0; hnode < (*itlayer); hnode++ ){
+        double z_val = 0.0;
+        std::vector<feature_t>::const_iterator it = fv.getFeatureBegin();
+        for( ; it != fv.getFeatureEnd(); ++it )
+            z_val += *(wit + *it);
+        wit += len;
+        *zit++ = z_val;
+        *ait++ = (*itaf++)(z_val);
     }
 
     //Subsequent layers take the previous layer as input
-    int num_input = hlayer_num_nodes[0];
-    int input_layer_node_idx_start = 0;
-    for (int hlayer_idx = 1; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
-        for (int hnode = 0; hnode < hlayer_num_nodes[hlayer_idx]; ++hnode) {
-            if (!is_train || (is_train && !is_dropped[node_idx])) {
-                double z_val = *weights_it++; //Bias
-
-                // sum up and record z_val
-                for (int i = 0; i < num_input; i++)
-                    z_val += a_values[input_layer_node_idx_start + i] * (*weights_it++);
-
-                z_values[node_idx] = z_val;
-                a_values[node_idx] = act_funcs[node_idx](z_val);
-                if (is_train)
-                    a_values[node_idx] = a_values[node_idx]/(1.0 - hlayer_dropout_probs[hlayer_idx]);
-
-            } else if (is_train && is_dropped[node_idx]){
-                // if dropped out move by num_input + 1
-                // 1 for bais num_input weights
-                weights_it += 1 + num_input;
-            }
-            node_idx ++;
+    azd_vals_t::iterator ait_input_tmp, ait_input = a_values.begin();
+    int num_input = *itlayer++;
+    for( ; itlayer != hlayer_num_nodes.end(); ++itlayer ){
+        for( int hnode = 0; hnode < (*itlayer); hnode++ ){
+            ait_input_tmp = ait_input;
+            double z_val = *wit++; //Bias
+            for( int i = 0; i < num_input; i++ ) z_val += (*ait_input_tmp++)*(*wit++);
+            *zit++ = z_val;
+            *ait++ = (*itaf++)(z_val);
         }
-
-        input_layer_node_idx_start += num_input;
-        num_input = hlayer_num_nodes[hlayer_idx];
+        
+        num_input = *itlayer;
+        ait_input = ait_input_tmp;
     }
-
-    return a_values.back();    //The output of the last layer is theta
+    return *(--ait);	//The output of the last layer is theta
 }
 
 void NNParam::saveToFile(std::string &filename) {
