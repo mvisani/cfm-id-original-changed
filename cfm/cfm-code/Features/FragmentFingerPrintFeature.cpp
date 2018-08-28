@@ -26,12 +26,13 @@ param.cpp.
 void FragmentFingerPrintFeature::compute(FeatureVector &fv, romol_ptr_t precursor_ion) const{
 
     ExplicitBitVect *finger_print =
-            RDKit::MorganFingerprints::getFingerprintAsBitVect(*precursor_ion, 3,
+            RDKit::MorganFingerprints::getFingerprintAsBitVect(*precursor_ion, 2,
                                                                1024);
 
     for (unsigned int i = 0; i < finger_print->getNumBits(); ++i) {
         fv.addFeature((*finger_print)[i]);
     }
+    std::cout << std::endl;
 
     delete finger_print;
 }
