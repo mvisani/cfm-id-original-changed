@@ -19,7 +19,7 @@ param.cpp.
 
 #include "../Feature.h"
 
-class QuadraticFeatures : public Feature {
+class QuadraticFeatures : public BreakFeature {
 public:
     QuadraticFeatures() {
         size = 0;

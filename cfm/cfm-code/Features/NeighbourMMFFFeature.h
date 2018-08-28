@@ -19,7 +19,7 @@ param.cpp.
 
 #include "../Feature.h"
 
-class NeighbourMMFFFeature : public Feature {
+class NeighbourMMFFFeature : public BreakFeature {
 protected:
     void addNeighbourAtomTypes(FeatureVector &fv, const RootedROMolPtr *mol,
                                const RDKit::Atom *root, int offset) const;

@@ -320,9 +320,9 @@ void MolData::annotatePeaks(double abs_tol, double ppm_tol,
     }
 }
 
-void MolData::computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols) {
+/*void MolData::computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols) {
     fg->computeFeatureVectors(fc, tree_depth, delete_mols);
-}
+}*/
 
 void MolData::computeTransitionThetas(Param &param) {
 

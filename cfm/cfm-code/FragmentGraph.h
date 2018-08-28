@@ -165,10 +165,6 @@ public:
         tmp_thetas = *a_thetas;
     };
 
-    void computeFeatureVector(FeatureCalculator *fc, int tree_depth) {
-        feature_vector = fc->computeFeatureVector(getIon(), getNeutralLoss(), tree_depth);
-    };
-
 private:
     int from_id;
     int to_id;

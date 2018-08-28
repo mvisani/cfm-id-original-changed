@@ -52,12 +52,13 @@
 #include "Features/IonRootMatrixSimpleFP.h"
 #include "Features/NLRootMatrixSimpleFP.h"
 #include "Features/GraphDepthFeature.h"
+#include "Features/FragmentFingerPrintFeature.h"
 
 #include <boost/algorithm/string/trim.hpp>
 
-const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
+const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
 
-    static boost::ptr_vector<Feature> cogs;
+    static boost::ptr_vector<BreakFeature> cogs;
     static bool initialised = false;
 
     if (!initialised) {
@@ -108,6 +109,17 @@ const boost::ptr_vector<Feature> &FeatureCalculator::featureCogs() {
     return cogs;
 }
 
+const boost::ptr_vector<FragmentFeature> &FeatureCalculator::fragmentFeatureCogs() {
+    static boost::ptr_vector<FragmentFeature> cogs;
+    static bool initialised = false;
+
+    if (!initialised) {
+        cogs.push_back(new FragmentFingerPrintFeature());
+        initialised = true;
+    }
+    return cogs;
+}
+
 FeatureCalculator::FeatureCalculator(std::string &config_filename) {
 
     // Read the config file into a set containing the names of the features
@@ -127,8 +139,8 @@ FeatureCalculator::FeatureCalculator(std::string &config_filename) {
         configureFeature(name);
     }
 
-    if (used_feature_idxs.size() == 0) {
-        std::cout << "Error reading config file, no features found" << std::endl;
+    if (used_break_feature_idxs.empty() && used_fragement_feature_idxs.empty()) {
+        std::cout << "Warning: No features found in feature list" << std::endl;
         throw (InvalidConfigException());
     }
 }
@@ -140,18 +152,25 @@ FeatureCalculator::FeatureCalculator(std::vector<std::string> &feature_list) {
     for (; itname != feature_list.end(); ++itname)
         configureFeature(*itname);
 
-    if (used_feature_idxs.size() == 0)
+    if (used_break_feature_idxs.empty() && used_fragement_feature_idxs.empty()) {
         std::cout << "Warning: No features found in feature list" << std::endl;
+        throw (InvalidConfigException());
+    }
 }
 
 std::vector<std::string> FeatureCalculator::getFeatureNames() {
 
     std::vector<std::string> names;
-    std::vector<int>::iterator it = used_feature_idxs.begin();
-    for (; it != used_feature_idxs.end(); ++it) {
-        const Feature *cog = &(featureCogs()[*it]);
+    for (const auto &feature_idx : used_break_feature_idxs) {
+        const Feature *cog = &(breakFeatureCogs()[feature_idx]);
         names.push_back(cog->getName());
     }
+
+    for (const auto &feature_idx : used_fragement_feature_idxs) {
+        const Feature *cog = &(fragmentFeatureCogs()[feature_idx]);
+        names.push_back(cog->getName());
+    }
+
     return names;
 }
 
@@ -162,9 +181,11 @@ const std::vector<std::string> FeatureCalculator::getValidFeatureNames() {
     if (initialised)
         return output;
 
-    boost::ptr_vector<Feature>::const_iterator it = featureCogs().begin();
-    for (; it != featureCogs().end(); ++it)
-        output.push_back(it->getName());
+    for (const auto &break_feature: breakFeatureCogs())
+        output.push_back(break_feature.getName());
+
+    for (const auto &frag_feature: fragmentFeatureCogs())
+        output.push_back(frag_feature.getName());
 
     initialised = true;
     return output;
@@ -173,38 +194,50 @@ const std::vector<std::string> FeatureCalculator::getValidFeatureNames() {
 void FeatureCalculator::configureFeature(std::string &name) {
 
     // Find the relevant feature cog for this name
-    boost::ptr_vector<Feature>::const_iterator it = featureCogs().begin();
-    bool found = false;
-    for (int idx = 0; it != featureCogs().end(); ++it, idx++) {
-        if (it->getName() == name) {
-            used_feature_idxs.push_back(idx);
-            found = true;
-            break;
+    auto bf_it = breakFeatureCogs().begin();
+    for (int idx = 0; bf_it != breakFeatureCogs().end(); ++bf_it, idx++) {
+        if (bf_it->getName() == name) {
+            used_break_feature_idxs.push_back(idx);
+            return;
         }
     }
-    if (!found) {
-        std::cout << "Unrecognised feature: " << name << std::endl;
-        throw (InvalidConfigException());
+
+    // Find the relevant feature cog for this name
+    auto ff_it = fragmentFeatureCogs().begin();
+    for (int idx = 0; ff_it != fragmentFeatureCogs().end(); ++ff_it, idx++) {
+        if (ff_it->getName() == name) {
+            used_fragement_feature_idxs.push_back(idx);
+            return;
+        }
     }
+
+    std::cout << "Unrecognised feature: " << name << std::endl;
+    throw (InvalidConfigException());
+
 }
 
 unsigned int FeatureCalculator::getNumFeatures() {
 
     unsigned int count = 1; // Bias
     int quadratic = 0;
-    std::vector<int>::iterator it = used_feature_idxs.begin();
-    for (; it != used_feature_idxs.end(); ++it) {
-        count += featureCogs()[*it].getSize();
-        if (featureCogs()[*it].getName() == "QuadraticFeatures")
+    auto it = used_break_feature_idxs.begin();
+    for (; it != used_break_feature_idxs.end(); ++it) {
+        count += breakFeatureCogs()[*it].getSize();
+        if (breakFeatureCogs()[*it].getName() == "QuadraticFeatures")
             quadratic = 1;
     }
     if (quadratic)
         count += (count - 1) * (count - 2) / 2;
+
+    for (const auto &feature_idx : used_fragement_feature_idxs) {
+        count += fragmentFeatureCogs()[feature_idx].getSize();
+    }
     return count;
 }
 
 FeatureVector *
-FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedROMolPtr *nl, int tree_depth) {
+FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedROMolPtr *nl, int tree_depth,
+                                        const romol_ptr_t precursor_ion) {
 
     FeatureVector *fv = new FeatureVector();
 
@@ -212,25 +245,40 @@ FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedR
     fv->addFeature(1.0);
 
     // Compute all other features
-    std::vector<int>::iterator it = used_feature_idxs.begin();
-    for (; it != used_feature_idxs.end(); ++it) {
+    for (const auto &feature_idx : used_break_feature_idxs) {
+        auto feature = &breakFeatureCogs()[feature_idx];
         try {
-            featureCogs()[*it].compute(*fv, ion, nl, tree_depth);
-        } catch (std::exception e) {
-            std::cout << "Could not compute " << featureCogs()[*it].getName()
+            feature->compute(*fv, ion, nl, tree_depth);
+        } catch (std::exception &e) {
+            std::cout << "Could not compute " << feature->getName()
                       << std::endl;
             throw FeatureCalculationException("Could not compute " +
-                                              featureCogs()[*it].getName());
+                                              feature->getName());
         }
     }
 
+    if(precursor_ion != nullptr) {
+        for (const auto &feature_idx : used_fragement_feature_idxs) {
+            auto feature = &fragmentFeatureCogs()[feature_idx];
+            try {
+                feature->compute(*fv, precursor_ion);
+            } catch (std::exception &e) {
+                std::cout << "Could not compute " << feature->getName()
+                          << std::endl;
+                throw FeatureCalculationException("Could not compute " +
+                                                  feature->getName());
+            }
+        }
+    }
+    else {
+        std::cout << "Warning, None precursor ion" << std::endl;
+    }
     return fv;
 }
 
 bool FeatureCalculator::includesFeature(const std::string &fname) {
-    std::vector<int>::iterator it = used_feature_idxs.begin();
-    for (; it != used_feature_idxs.end(); ++it) {
-        const Feature *cog = &(featureCogs()[*it]);
+    for (auto it = used_break_feature_idxs.begin(); it != used_break_feature_idxs.end(); ++it) {
+        const Feature *cog = &(breakFeatureCogs()[*it]);
         if (cog->getName() == fname)
             return true;
     }

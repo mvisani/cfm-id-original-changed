@@ -18,7 +18,7 @@
 
 #include "../Feature.h"
 
-class BreakAtomPair : public Feature {
+class BreakAtomPair : public BreakFeature {
 public:
     BreakAtomPair() {
         size = 72;

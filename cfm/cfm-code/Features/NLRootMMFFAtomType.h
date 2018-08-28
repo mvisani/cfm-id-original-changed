@@ -19,7 +19,7 @@ param.cpp.
 
 #include "../Feature.h"
 
-class NLRootMMFFAtomType : public Feature {
+class NLRootMMFFAtomType : public BreakFeature {
 public:
     NLRootMMFFAtomType() {
         size = 100;

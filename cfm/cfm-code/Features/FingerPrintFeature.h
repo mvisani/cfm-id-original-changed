@@ -23,7 +23,7 @@ param.cpp.
 
 #include <GraphMol/RWMol.h>
 
-class FingerPrintFeature : public Feature {
+class FingerPrintFeature : public BreakFeature {
 protected:
     // function to get part of Mol from given root
     // and all atom within given range

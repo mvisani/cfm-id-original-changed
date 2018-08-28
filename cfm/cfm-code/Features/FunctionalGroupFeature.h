@@ -20,7 +20,7 @@ param.cpp.
 #include "../Feature.h"
 #include "../FunctionalGroups.h"
 
-class FunctionalGroupFeature : public Feature {
+class FunctionalGroupFeature : public BreakFeature {
 protected:
     void addFunctionalGroupFeaturesFromAtom(std::vector<int> &tmp_full_fv,
                                             const RDKit::Atom *atom,

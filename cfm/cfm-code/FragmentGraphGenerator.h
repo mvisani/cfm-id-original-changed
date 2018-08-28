@@ -132,8 +132,8 @@ public:
 
     //Compute a FragmentGraph starting at the given node and computing to the depth given.
     //The output will be appended to the current_graph
-    void compute(FragmentTreeNode &startnode, int remaining_depth, int depth, int parentid,
-                 double parent_log_prob, int remaining_ring_breaks);
+    void compute(FragmentTreeNode &startnode, int remaining_depth, int depth, int parentid, double parent_log_prob,
+                 int remaining_ring_breaks);
 
 private:
     Param *param;

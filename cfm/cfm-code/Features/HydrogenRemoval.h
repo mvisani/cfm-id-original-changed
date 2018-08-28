@@ -18,7 +18,7 @@
 
 #include "../Feature.h"
 
-class HydrogenRemoval : public Feature {
+class HydrogenRemoval : public BreakFeature {
 public:
     HydrogenRemoval() {
         size = 10;

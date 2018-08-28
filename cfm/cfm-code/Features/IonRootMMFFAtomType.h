@@ -18,7 +18,7 @@
 
 #include "../Feature.h"
 
-class IonRootMMFFAtomType : public Feature {
+class IonRootMMFFAtomType : public BreakFeature {
 public:
     IonRootMMFFAtomType() {
         size = 100;

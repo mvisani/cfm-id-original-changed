@@ -21,7 +21,7 @@ the feature
 #include "Feature.h"
 
 // Helper functions for multiple features
-const std::vector<std::string> &Feature::OKsymbols() {
+const std::vector<std::string> &BreakFeature::OKsymbols() {
 
     static std::vector<std::string> x;
     static bool initialised = false;
@@ -44,7 +44,7 @@ const std::vector<std::string> &Feature::OKsymbols() {
     return x;
 }
 
-const std::vector<std::string> &Feature::OKSymbolsLess() {
+const std::vector<std::string> &BreakFeature::OKSymbolsLess() {
 
     static std::vector<std::string> x;
     static bool initialised = false;
@@ -62,11 +62,11 @@ const std::vector<std::string> &Feature::OKSymbolsLess() {
     return x;
 }
 
-unsigned int Feature::GetSizeOfOKSymbolsLess() const {
+unsigned int BreakFeature::GetSizeOfOKSymbolsLess() const {
     return OKSymbolsLess().size();
 }
 
-void Feature::replaceUncommonWithX(std::string &symbol) const {
+void BreakFeature::replaceUncommonWithX(std::string &symbol) const {
 
     // Replace uncommon symbols with X
     const std::vector<std::string> *ok_symbols = &OKSymbolsLess();
@@ -79,7 +79,7 @@ void Feature::replaceUncommonWithX(std::string &symbol) const {
 }
 
 // assume last is always "X"
-int Feature::getSymbolsLessIndex(const std::string &symbol) const {
+int BreakFeature::getSymbolsLessIndex(const std::string &symbol) const {
     int index = 0;
     const std::vector<std::string> *ok_symbols = &OKSymbolsLess();
     for (auto str : *ok_symbols) {

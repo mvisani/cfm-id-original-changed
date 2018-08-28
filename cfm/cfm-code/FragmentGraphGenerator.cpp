@@ -196,8 +196,8 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 //Compute a FragmentGraph starting at the given node and computing to the depth given.
 //The output will be appended to the current_graph
 void
-LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int depth, int parentid,
-                                      double parent_log_prob, int remaining_ring_breaks) {
+LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int depth, int parentid, double parent_log_prob,
+                                      int remaining_ring_breaks) {
 
     //Check Timeout
     if (parentid < 0) start_time = time(nullptr);
@@ -251,7 +251,8 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
     std::vector<FragmentTreeNode>::iterator itt = node.children.begin();
     for (; itt != node.children.end(); ++itt) {
         Transition tmp_t(-1, -1, itt->nl, itt->ion);
-        FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), depth);
+        // NOTE Depth in here is child depth
+        FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), depth + 1, node.ion);
         for (int engy = cfg->spectrum_depths.size() - 1; engy >= 0; engy--) {
             if (is_nn_params)
                 itt->setTmpTheta(nnparam->computeTheta(*fv, engy), engy);

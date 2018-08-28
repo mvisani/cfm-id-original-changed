@@ -19,7 +19,7 @@ param.cpp.
 
 #include "../Feature.h"
 
-class NeighbourOrigBondTypes : public Feature {
+class NeighbourOrigBondTypes : public BreakFeature {
 public:
     NeighbourOrigBondTypes() {
         size = 12;

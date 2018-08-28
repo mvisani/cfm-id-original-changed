@@ -23,7 +23,7 @@ param.cpp.
 
 #include <GraphMol/RWMol.h>
 
-class RootPathFeature : public Feature {
+class RootPathFeature : public BreakFeature {
 protected:
     typedef std::vector<std::string> path_t;
 

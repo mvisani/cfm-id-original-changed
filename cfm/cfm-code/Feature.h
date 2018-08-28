@@ -34,11 +34,10 @@
 typedef std::pair<std::string, std::string> symbol_pair_t;
 
 // Base class to compute a feature - all features should inherit from this
+
 class Feature {
 
 public:
-    virtual void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const = 0;
-
     unsigned int getSize() const { return size; };
 
     std::string getName() const { return name; };
@@ -48,6 +47,13 @@ public:
 protected:
     unsigned int size;
     std::string name;
+};
+
+class BreakFeature: public Feature{
+public:
+    virtual void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const = 0;
+
+protected:
 
     static const std::vector<std::string> &OKsymbols();
 
@@ -60,10 +66,7 @@ protected:
     unsigned int GetSizeOfOKSymbolsLess() const;
 };
 
-/*class BreakFeature: public Feature{
-    virtual void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const = 0;
-};
-
 class FragmentFeature: public Feature{
-    virtual void compute(FeatureVector &fv, std::string fragment_smiles) const = 0;
-};*/
+public:
+    virtual void compute(FeatureVector &fv, romol_ptr_t precursor_ion) const = 0;
+};

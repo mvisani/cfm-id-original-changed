@@ -19,7 +19,7 @@ param.cpp.
 
 #include "../Feature.h"
 
-class RadicalFeatures : public Feature {
+class RadicalFeatures : public BreakFeature {
 public:
     RadicalFeatures() {
         size = 3;

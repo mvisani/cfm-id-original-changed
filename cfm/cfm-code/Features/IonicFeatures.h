@@ -18,7 +18,7 @@
 
 #include "../Feature.h"
 
-class IonicFeatures : public Feature {
+class IonicFeatures : public BreakFeature {
 
 public:
     IonicFeatures() {

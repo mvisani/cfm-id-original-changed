@@ -79,16 +79,21 @@ public:
     // Compute the feature vector for the input ion and nl (with labeled Root
     // atoms)
     // - NB: responsibility of caller to delete.
-    FeatureVector *computeFeatureVector(const RootedROMolPtr *ion, const RootedROMolPtr *nl, int tree_depth);
+    FeatureVector *computeFeatureVector(const RootedROMolPtr *ion, const RootedROMolPtr *nl, int tree_depth,
+                                        const romol_ptr_t precursor_ion);
 
     bool includesFeature(const std::string &fname);
 
 private:
     // List of feature classes ready to be used
-    static const boost::ptr_vector<Feature> &featureCogs();
+    static const boost::ptr_vector<BreakFeature> &breakFeatureCogs();
+
+    // List of fragmentation features ready to be used
+    static const boost::ptr_vector<FragmentFeature> &fragmentFeatureCogs();
 
     // Indexes of feature classes that are selected for use
-    std::vector<int> used_feature_idxs;
+    std::vector<int> used_break_feature_idxs;
+    std::vector<int> used_fragement_feature_idxs;
 
     // Helper function - Configure feature for use
     void configureFeature(std::string &name);

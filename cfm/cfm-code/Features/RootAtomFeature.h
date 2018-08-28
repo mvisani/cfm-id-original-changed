@@ -19,7 +19,7 @@ param.cpp.
 
 #include "../Feature.h"
 
-class RootAtomFeature : public Feature {
+class RootAtomFeature : public BreakFeature {
 protected:
     void computeRootAtomFeature(FeatureVector &fv, const RootedROMolPtr *mol,
                                 bool ring_break) const;

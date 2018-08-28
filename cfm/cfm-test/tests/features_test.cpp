@@ -94,7 +94,7 @@ void FeaturesTestBreakAtomPair::runTest(){
 	initMolProps(nl);
 	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom);
 
-	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -115,7 +115,7 @@ void FeaturesTestBreakAtomPair::runTest(){
 	initMolProps(nl);
 	rtd_nl = RootedROMolPtr( nl, nl.get()->getAtomWithIdx(0), null_atom );
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -137,7 +137,7 @@ void FeaturesTestBreakAtomPair::runTest(){
 	nl.get()->setProp("IsRingBreak", 1);
 	rtd_nl = RootedROMolPtr( nl, nl.get()->getAtomWithIdx(0), nl.get()->getAtomWithIdx(1) );
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -159,7 +159,7 @@ void FeaturesTestBreakAtomPair::runTest(){
 	rtd_nl = RootedROMolPtr( nl, nl.get()->getAtomWithIdx(0), nl.get()->getAtomWithIdx(1) );
 	nl.get()->setProp("IsRingBreak", 1);
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 3 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -199,7 +199,7 @@ void FeaturesTestRootPairs::runTest(){
 	RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
 	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
 
-	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -221,7 +221,7 @@ void FeaturesTestRootPairs::runTest(){
 	initMolProps(ion);
 	rtd_ion = RootedROMolPtr( ion, ion.get()->getAtomWithIdx(0), null_atom );
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 3 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -243,7 +243,7 @@ void FeaturesTestRootPairs::runTest(){
 	rtd_ion = RootedROMolPtr( ion, ion.get()->getAtomWithIdx(0), ion.get()->getAtomWithIdx(5) );
 	nl.get()->setProp("IsRingBreak", 1);
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 6 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -268,7 +268,7 @@ void FeaturesTestRootPairs::runTest(){
 	rtd_ion = RootedROMolPtr( ion, ion.get()->getAtomWithIdx(0), null_atom );
 	nl.get()->setProp("IsRingBreak", 0);
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -307,7 +307,7 @@ void FeaturesTestRootTriples::runTest(){
 	RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
 	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
 
-	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -329,7 +329,7 @@ void FeaturesTestRootTriples::runTest(){
 	initMolProps(nl);
 	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0), null_atom );
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -350,7 +350,7 @@ void FeaturesTestRootTriples::runTest(){
 	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0), nl.get()->getAtomWithIdx(8) );
 	nl.get()->setProp("IsRingBreak", 1);
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 5 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -373,7 +373,7 @@ void FeaturesTestRootTriples::runTest(){
 	initMolProps(nl);
 	rtd_nl = RootedROMolPtr( nl, nl.get()->getAtomWithIdx(0), null_atom );
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -413,7 +413,7 @@ void FeaturesTestGasteigerCharges::runTest(){
 	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
 	nl.get()->setProp("IsRingBreak",0);
 
-	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -440,7 +440,7 @@ void FeaturesTestGasteigerCharges::runTest(){
 	rtd_nl = RootedROMolPtr( nl, nl.get()->getAtomWithIdx(0), nl.get()->getAtomWithIdx(1) );
 
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 3 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -484,7 +484,7 @@ void FeaturesTestHydrogenMovement::runTest(){
 	initMolProps(nl);
 	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
 
-	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -500,7 +500,7 @@ void FeaturesTestHydrogenMovement::runTest(){
 	//Negative within range
 	h_movement = -1.115;
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OriginalMass", 16.0 - h_movement);
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -516,7 +516,7 @@ void FeaturesTestHydrogenMovement::runTest(){
 	//Zero
 	h_movement = 0.0;
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OriginalMass", 16.0 - h_movement);
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -532,7 +532,7 @@ void FeaturesTestHydrogenMovement::runTest(){
 	//Out of range positive
 	h_movement = 5.0;
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OriginalMass", 16.0 - h_movement);
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -548,7 +548,7 @@ void FeaturesTestHydrogenMovement::runTest(){
 	//Out of range negative
 	h_movement = -5.0;
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OriginalMass", 16.0 - h_movement);
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -588,7 +588,7 @@ void FeaturesTestFunctionalGroups::runTest(){
 
 	FragmentTreeNode *child = &(node->children[0]);
 	Transition tmp_t( -1, -1, child->nl, child->ion );
-	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 9 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -633,7 +633,7 @@ void FeaturesTestExtraFunctionalGroups::runTest(){
 
 	FragmentTreeNode *child = &(node->children[0]);
 	Transition tmp_t( -1, -1, child->nl, child->ion );
-	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 6 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -676,7 +676,7 @@ void FeaturesTestFunctionalGroupsRootOnly::runTest(){
 
 	FragmentTreeNode *child = &(node->children[0]);
 	Transition tmp_t( -1, -1, child->nl, child->ion );
-	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 5 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -713,7 +713,7 @@ void FeaturesTestRadicalFeatures::runTest(){
 	RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), ion.get()->getAtomWithIdx(2) );
 	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), nl.get()->getAtomWithIdx(2) );
 
-	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -732,7 +732,7 @@ void FeaturesTestRadicalFeatures::runTest(){
 	rtd_ion = RootedROMolPtr( ion, ion.get()->getAtomWithIdx(0), ion.get()->getAtomWithIdx(1) );
 	rtd_nl = RootedROMolPtr( nl, nl.get()->getAtomWithIdx(0), nl.get()->getAtomWithIdx(1) );
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -751,7 +751,7 @@ void FeaturesTestRadicalFeatures::runTest(){
 	rtd_ion = RootedROMolPtr( ion, ion.get()->getAtomWithIdx(0), ion.get()->getAtomWithIdx(1) );
 	rtd_nl = RootedROMolPtr( nl, nl.get()->getAtomWithIdx(0), nl.get()->getAtomWithIdx(1) );
 
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -791,7 +791,7 @@ void FeaturesTestRingFeatures::runTest(){
 
 	FragmentTreeNode *child = &(node->children[0]);
 	Transition tmp_t( -1, -1, child->nl, child->ion );
-	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 5 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -814,7 +814,7 @@ void FeaturesTestRingFeatures::runTest(){
 
 	child = &(node2->children[0]);
 	Transition tmp_t2( -1, -1, child->nl, child->ion );
-	fv = fc->computeFeatureVector(tmp_t2.getIon(), tmp_t2.getNeutralLoss(), 0);
+	fv = fc->computeFeatureVector(tmp_t2.getIon(), tmp_t2.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -854,7 +854,7 @@ void FeaturesTestExtraRingFeatures::runTest(){
 	node->generateChildrenOfBreak(breaks[0]);
 	FragmentTreeNode *child = &(node->children[0]);
 	Transition tmp_t( -1, -1, child->nl, child->ion );
-	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -875,7 +875,7 @@ void FeaturesTestExtraRingFeatures::runTest(){
 	node->generateChildrenOfBreak(breaks[1]);
 	child = &(node->children[0]);
 	Transition tmp_t2( -1, -1, child->nl, child->ion );
-	fv = fc->computeFeatureVector(tmp_t2.getIon(), tmp_t2.getNeutralLoss(), 0);
+	fv = fc->computeFeatureVector(tmp_t2.getIon(), tmp_t2.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 3 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -895,7 +895,7 @@ void FeaturesTestExtraRingFeatures::runTest(){
 	node->generateChildrenOfBreak(breaks[5]);
 	child = &(node->children[0]);
 	Transition tmp_t3( -1, -1, child->nl, child->ion );
-	fv = fc->computeFeatureVector(tmp_t3.getIon(), tmp_t3.getNeutralLoss(), 0);
+	fv = fc->computeFeatureVector(tmp_t3.getIon(), tmp_t3.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 1 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -929,7 +929,7 @@ void FeaturesTestRootMMFFAtomType::runTest(){
 
 	FragmentTreeNode *child = &(node->children[0]);
 	Transition tmp_t( -1, -1, child->nl, child->ion );
-	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 3 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -967,7 +967,7 @@ void FeaturesTestNeighbourMMFFAtomType::runTest(){
 
 	FragmentTreeNode *child = &(node->children[0]);
 	Transition tmp_t( -1, -1, child->nl, child->ion );
-	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -1020,7 +1020,7 @@ void FeaturesTestBrokenOrigBondType::runTest(){
 
 		FragmentTreeNode *child = &(node->children[0]);
 		Transition tmp_t( -1, -1, child->nl, child->ion );
-		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 		if( fv->getNumSetFeatures() != 2 ){
 			std::cout << "Unexpected number of non-zero features" << std::endl;
 			pass = false;
@@ -1074,7 +1074,7 @@ void FeaturesTestNeighbourOrigBondType::runTest(){
 
 		FragmentTreeNode *child = &(node->children[0]);	//Take first child of break
 		Transition tmp_t( -1, -1, child->nl, child->ion );
-		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 		if( fv->getNumSetFeatures() != testit->second.size()+1 ){
 			std::cout << "Unexpected number of non-zero features:" << fv->getNumSetFeatures() << std::endl;
 			pass = false;
@@ -1146,7 +1146,7 @@ void FeaturesTestRootAtom::runTest(){
 
 		FragmentTreeNode *child = &(node->children[0]);
 		Transition tmp_t( -1, -1, child->nl, child->ion );
-		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 		//std::cout << *(tmp_t.getNLSmiles()) << std::endl;
 		if( fv->getNumSetFeatures() != 3 ){
 			std::cout << "Unexpected number of non-zero features" << std::endl;
@@ -1240,7 +1240,7 @@ void FeaturesTestIonicFeatures::runTest(){
 		}
 
 		Transition tmp_t( -1, -1, child->nl, child->ion );
-		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+		FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 
 		if( fv->getNumSetFeatures() != testit->expected_output.size()+1 ){
 			std::cout << "Unexpected number of non-zero features. Expected " << testit->expected_output.size()+1 << " but found " <<  fv->getNumSetFeatures() << std::endl;
@@ -1290,7 +1290,7 @@ void FeaturesTestQuadraticFeatures::runTest(){
 	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
 	nl.get()->setProp("IsRingBreak",0);
 
-	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 4 ){
 		std::cout << "Unexpected number of non-zero features" << std::endl;
 		pass = false;
@@ -1355,7 +1355,7 @@ void FeaturesTestLength::runTest(){
 		FeatureCalculator fc( feature_list );
 
 		//Compute the feature vector
-		FeatureVector *fv = fc.computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0);
+		FeatureVector *fv = fc.computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 
 		//Check the length
 		if( fv->getTotalLength() != fc.getNumFeatures() ){
@@ -1388,8 +1388,8 @@ void FeaturesTestMetlinExample::runTest(){
 	cfg.fg_depth = 1; cfg.include_h_losses = true;
 	MolData mol( id, smiles_Metlin_21361, 0, &cfg );
 
-	mol.computeFragmentGraph(&fc);
-	mol.computeFeatureVectors(&fc, 0, false);
+	mol.computeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
+	//mol.computeFeatureVectors(&fc, 0, false);
 
 	//Transition 0: Check that the features are as expected
 	const FeatureVector *fv = mol.getFeatureVectorForIdx(0);
@@ -1477,7 +1477,7 @@ void FeaturesTestFingerPrint::runTest(){
     RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
     nl.get()->setProp("IsRingBreak",0);
 
-    FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0);
+    FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	//fv->printDebugInfo();
 
     delete fv;

@@ -20,7 +20,7 @@
 #include "../Feature.h"
 #include "FeatureHelper.h"
 
-class ExtraRingFeatures : public Feature {
+class ExtraRingFeatures : public BreakFeature {
 public:
     ExtraRingFeatures() {
         size = 3;

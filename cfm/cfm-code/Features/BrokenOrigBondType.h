@@ -18,7 +18,7 @@
 
 #include "../Feature.h"
 
-class BrokenOrigBondType : public Feature {
+class BrokenOrigBondType : public BreakFeature {
 public:
     BrokenOrigBondType() {
         size = 7;

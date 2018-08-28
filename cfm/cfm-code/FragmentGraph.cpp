@@ -16,6 +16,7 @@
 #########################################################################*/
 
 #include "FragmentGraph.h"
+#include "Util.h"
 
 #include <GraphMol/RWMol.h>
 #include <GraphMol/Substruct/SubstructMatch.h>
@@ -120,11 +121,14 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         //Compute a feature vector
         Transition *t = transitions.back();
         FeatureVector *fv;
+        std::string frag_smiles = *fragments[parentid]->getIonSmiles();
+        auto frag_ptr = createMolPtr(frag_smiles.c_str());
+
         try {
-            fv = fc->computeFeatureVector(t->getIon(), t->getNeutralLoss(), depth);
+            fv = fc->computeFeatureVector(t->getIon(), t->getNeutralLoss(), depth, frag_ptr);
             t->setFeatureVector(fv);
         }
-        catch (FeatureCalculationException fe) {
+        catch (FeatureCalculationException & e) {
             //If we couldn't compute the feature vector, set a dummy feature vector with bias only.
             fv = new FeatureVector();
             fv->addFeatureAtIdx(1.0, idx);
@@ -420,19 +424,6 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
         from_id_tmap[(*it)->getFromId()].push_back(idx);
     }
 }
-
-void FragmentGraph::computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols) {
-    for (auto &transition: transitions) {
-        transition->computeFeatureVector(fc, tree_depth);
-        if (delete_mols) {
-            transition->deleteIon();
-            transition->deleteNeutralLoss();
-
-        }
-    }
-    if (delete_mols)
-        clearAllSmiles();
-};
 
 //Function to remove detour transitions from the graph (used if !cfg.allow_frag_detours)
 void FragmentGraph::removeDetours() {

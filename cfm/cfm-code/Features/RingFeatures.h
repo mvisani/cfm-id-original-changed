@@ -19,7 +19,7 @@ param.cpp.
 
 #include "../Feature.h"
 
-class RingFeatures : public Feature {
+class RingFeatures : public BreakFeature {
 public:
     RingFeatures() {
         size = 12;
