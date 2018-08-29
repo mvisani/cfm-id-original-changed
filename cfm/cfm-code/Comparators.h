@@ -38,6 +38,8 @@ class Comparator {
 public:
     Comparator(double a_ppm_tol, double a_abs_tol) : ppm_tol(a_ppm_tol), abs_tol(a_abs_tol) {};
 
+    ~Comparator() = default;
+
     virtual double computeScore(const Spectrum *measured, const Spectrum *predicted) const = 0;
 
     double getPPMTol() const { return ppm_tol; };
@@ -45,6 +47,7 @@ public:
     double getAbsTol() const { return abs_tol; };
 
     void getMatchingPeakPairsWithNoneMatchs(std::vector<peak_pair_t> &peak_pairs, const Spectrum *measured, const Spectrum *predicted) const;
+
 protected:
     double ppm_tol;
     double abs_tol;
