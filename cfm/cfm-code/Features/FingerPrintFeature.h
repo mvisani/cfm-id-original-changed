@@ -66,18 +66,22 @@ private:
     std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
                                 const RDKit::Atom *parent_atom, int depth) const;
 
-    void addMorganFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol,
+    void addMorganFingerPrint(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
                               const RDKit::Atom *root,
-                              unsigned int max_nbr_distance,
-                              unsigned int finger_print_size,
-                              int radius) const;
+                              const unsigned int max_nbr_distance,
+                              const unsigned int finger_print_size,
+                              const int radius) const;
 
-    void addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
+    void addRDKitFingerPrint(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
                              unsigned int finger_print_size, unsigned int limitation_param,
                              unsigned int finger_print_min_path, unsigned int finger_print_max_path,
                              bool limited_by_distance) const;
 
-    void addAdjacentMatrixRepresentation(FeatureVector &fv, const RootedROMolPtr *mol,
+    void addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
                                          const RDKit::Atom *root, unsigned int num_atom,
                                          bool include_con_matrix) const;
+
+    void addFingerPrintsToFeatureVector(FeatureVector &fv,
+                                        std::vector<int> &root_tmp_fv,
+                                        std::vector<int> &other_root_tmp_fv) const;
 };

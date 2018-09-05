@@ -25,6 +25,7 @@ param.cpp.
 #include <GraphMol/MolOps.h>
 
 #include <queue>
+#include <bitset>
 
 void FingerPrintFeature::getRemoveAtomIdxByDisatnce(
         romol_ptr_t mol, const RDKit::Atom *root,
@@ -137,7 +138,8 @@ void FingerPrintFeature::removeAtomInTheList(
     }
 }
 
-void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
+void FingerPrintFeature::addRDKitFingerPrint(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
+                                             const RDKit::Atom *root,
                                              unsigned int finger_print_size, unsigned int limitation_param,
                                              unsigned int finger_print_min_path, unsigned int finger_print_max_path,
                                              bool limited_by_distance) const {
@@ -154,19 +156,13 @@ void FingerPrintFeature::addRDKitFingerPrint(FeatureVector &fv, const RootedROMo
     part.insertMol(*(mol->mol));
     removeAtomInTheList(part, remove_atom_ids);
 
-    // DO NOT sanitize mol because if we have a part of ring this going to break
-    // RDKit::MolOps::sanitizeMol(part);
-
-    // replace bond with OrigBondType
-    // replaceWithOrigBondType(part);
-
     // Get finger prints with size
     ExplicitBitVect *finger_print = RDKit::RDKFingerprintMol(
             part, finger_print_min_path, finger_print_max_path, finger_print_size);
 
-    for (unsigned int i = 0; i < finger_print->getNumBits(); ++i) {
-        fv.addFeature((*finger_print)[i]);
-    }
+    tmp_fv.resize(finger_print->getNumBits());
+    for (unsigned int i = 0; i < finger_print->getNumBits(); ++i)
+        tmp_fv[i] = (*finger_print)[i];
 
     delete finger_print;
 }
@@ -177,21 +173,22 @@ void FingerPrintFeature::addRDKitFingerPrintFeatures(FeatureVector &fv, const Ro
                                                      unsigned int finger_print_min_path,
                                                      unsigned int finger_print_max_path) const {
 
-    addRDKitFingerPrint(fv, mol, mol->root, finger_print_size, limitation_param, finger_print_min_path,
+    std::vector<int> root_tmp_fv;
+    std::vector<int> other_root_tmp_fv;
+
+    addRDKitFingerPrint(root_tmp_fv, mol, mol->root, finger_print_size, limitation_param, finger_print_min_path,
                         finger_print_max_path, limited_by_distance);
 
-    if (ring_break) {
-        addRDKitFingerPrint(fv, mol, mol->other_root, finger_print_size, limitation_param, finger_print_min_path,
+    if (ring_break)
+        addRDKitFingerPrint(other_root_tmp_fv, mol, mol->other_root, finger_print_size, limitation_param, finger_print_min_path,
                             finger_print_max_path, limited_by_distance);
-    } else {
-        for (int i = 0; i < finger_print_size; ++i) {
-            fv.addFeature(0.0);
-        }
-    }
+
+    addFingerPrintsToFeatureVector(fv, root_tmp_fv, other_root_tmp_fv);
+
 }
 
 void FingerPrintFeature::addMorganFingerPrint(
-        FeatureVector &fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
+        std::vector<int> &tmp_fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
         const unsigned int max_nbr_distance, const unsigned int finger_print_size,
         const int radius) const {
 
@@ -205,17 +202,14 @@ void FingerPrintFeature::addMorganFingerPrint(
     part.insertMol(*(mol->mol));
     removeAtomInTheList(part, remove_atom_ids);
 
-    // replace bond with OrigBondType
-    // replaceWithOrigBondType(part);
-
     // Get finger prints with size
     ExplicitBitVect *finger_print =
             RDKit::MorganFingerprints::getFingerprintAsBitVect(part, radius,
                                                                finger_print_size);
 
-    for (unsigned int i = 0; i < finger_print->getNumBits(); ++i) {
-        fv.addFeature((*finger_print)[i]);
-    }
+    tmp_fv.resize(finger_print->getNumBits());
+    for (unsigned int i = 0; i < finger_print->getNumBits(); ++i)
+        tmp_fv[i] = (*finger_print)[i];
 
     delete finger_print;
 }
@@ -225,17 +219,17 @@ void FingerPrintFeature::addMorganFingerPrintFeatures(
         const unsigned int finger_print_size, const unsigned int path_range,
         const int ring_break, const int radius) const {
 
-    addMorganFingerPrint(fv, mol, mol->root, finger_print_size, path_range,
-                         radius);
+    std::vector<int> root_tmp_fv;
+    std::vector<int> other_root_tmp_fv;
 
-    if (ring_break) {
-        addMorganFingerPrint(fv, mol, mol->other_root, finger_print_size,
+    addMorganFingerPrint(root_tmp_fv, mol, mol->root, finger_print_size, path_range,
+                         radius);
+    if (ring_break)
+        addMorganFingerPrint(other_root_tmp_fv, mol, mol->other_root, finger_print_size,
                              path_range, radius);
-    } else {
-        for (int i = 0; i < finger_print_size; ++i) {
-            fv.addFeature(0.0);
-        }
-    }
+
+    addFingerPrintsToFeatureVector(fv, root_tmp_fv, other_root_tmp_fv);
+
 }
 
 
@@ -343,7 +337,7 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit
     }
 }
 
-void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv, const RootedROMolPtr *mol,
+void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
                                                          const RDKit::Atom *root, unsigned int num_atom,
                                                          bool include_adjacency_matrix) const {
 
@@ -382,6 +376,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv, cons
         }
     }
 
+    unsigned int fv_idx = 0;
     if (include_adjacency_matrix) {
         // first bit indicate if there is a bond
         // rest 5 for each bond_type, one hot encoding
@@ -401,8 +396,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv, cons
                     int bond_type = adjacency_matrix[i][j] > 5 ? 5 : adjacency_matrix[i][j];
                     temp_feature[bond_type] = 1;
                 }
-                // TODO Change to C++11 array
-                fv.addFeatures(temp_feature);
+                tmp_fv.insert(tmp_fv.end(),temp_feature.begin(),temp_feature.end());
             }
         }
     }
@@ -438,17 +432,17 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(FeatureVector &fv, cons
             degree = degree > num_max_degree ? num_max_degree : degree;
             atom_degree_feature[degree] = 1;*/
         }
-
-        fv.addFeatures(atom_type_feature);
-        fv.addFeatures(atom_degree_feature);
+        tmp_fv.insert(tmp_fv.end(),atom_type_feature.begin(),atom_type_feature.end());
+        tmp_fv.insert(tmp_fv.end(),atom_degree_feature.begin(),atom_degree_feature.end());
     }
 
     const unsigned int size_path_fv = 5;
     for (int i = 1; i <= num_atom; ++i) {
         std::vector<int> tmp_path_fv(size_path_fv, 0);
+        // on hot encoding
         int idx = path_record[0] > (size_path_fv - 1) ? (size_path_fv - 1) : path_record[0];
         tmp_path_fv[idx] = 1;
-        fv.addFeatures(tmp_path_fv);
+        tmp_fv.insert(tmp_fv.end(),tmp_path_fv.begin(),tmp_path_fv.end());
     }
 }
 
@@ -459,17 +453,39 @@ void FingerPrintFeature::addAdjacentMatrixRepresentationFeature(FeatureVector &f
                                                                 unsigned int num_atom, int ring_break,
                                                                 bool include_adjacency_matrix) const {
 
-    addAdjacentMatrixRepresentation(fv, mol, mol->root, num_atom, include_adjacency_matrix);
+    std::vector<int> root_tmp_fv;
+    std::vector<int> other_root_tmp_fv;
+    addAdjacentMatrixRepresentation(root_tmp_fv, mol, mol->root, num_atom, include_adjacency_matrix);
     if (ring_break > 0) {
-        addAdjacentMatrixRepresentation(fv, mol, mol->other_root, num_atom, include_adjacency_matrix);
-    } else {
-        // TODO: Get ride of this magic numbers
-        unsigned int feature_size = num_atom * 11 + 5 * (num_atom);
-        if (include_adjacency_matrix) {
-            feature_size += num_atom * (num_atom - 1) / 2 * 6;
+        addAdjacentMatrixRepresentation(other_root_tmp_fv, mol, mol->other_root, num_atom, include_adjacency_matrix);
+    }
+    addFingerPrintsToFeatureVector(fv, root_tmp_fv, other_root_tmp_fv);
+}
+
+void FingerPrintFeature::addFingerPrintsToFeatureVector(FeatureVector &fv,
+                                                        std::vector<int> &root_tmp_fv,
+                                                        std::vector<int> &other_root_tmp_fv) const{
+    // figure out which one we should put in front
+    bool need_rearrange = false;
+    int feature_size = root_tmp_fv.size();
+    if(other_root_tmp_fv.empty())
+        other_root_tmp_fv.resize(feature_size);
+
+    for(int idx = 0;  idx < feature_size ; ++idx){
+        if (root_tmp_fv[idx] < other_root_tmp_fv[idx]) {
+            need_rearrange = true;
+            break;
         }
-        for (int i = 0; i < feature_size; ++i) {
-            fv.addFeature(0.0);
-        }
+        else if(root_tmp_fv[idx] > other_root_tmp_fv[idx])
+            break;
+    }
+
+    if(need_rearrange){
+        fv.addFeatures(other_root_tmp_fv);
+        fv.addFeatures(root_tmp_fv);
+    }
+    else{
+        fv.addFeatures(root_tmp_fv);
+        fv.addFeatures(other_root_tmp_fv);
     }
 }
