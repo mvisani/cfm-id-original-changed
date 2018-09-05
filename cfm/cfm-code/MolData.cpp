@@ -823,6 +823,7 @@ void MolData::getSelectedWeights(std::vector<double> &selected_weights, int enge
     std::vector<peak_pair_t> peak_pairs;
     cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[engery_level], &predicted_spectra[engery_level]);
 
+    /*
     std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
@@ -832,6 +833,22 @@ void MolData::getSelectedWeights(std::vector<double> &selected_weights, int enge
 
     for(const auto & diff:  difference){
         if(diff.first < 0.01 || selected_weights.size() >= peak_num)
+            break;
+        selected_weights.push_back(diff.second);
+    }*/
+
+
+    std::vector<std::pair<double, double>> difference;
+    for(const auto & peak_pair : peak_pairs){
+        double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
+        if(intensity_difference > 0.01)
+            difference.push_back(std::pair<double,double>(intensity_difference, peak_pair.second.mass));
+    }
+    delete(cmp);
+
+    //std::shuffle(difference.begin(),difference.end(),util_rng);
+    for(const auto & diff:  difference){
+        if(selected_weights.size() >= peak_num)
             break;
         selected_weights.push_back(diff.second);
     }
