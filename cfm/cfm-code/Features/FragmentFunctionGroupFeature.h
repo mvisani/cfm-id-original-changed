@@ -23,7 +23,6 @@ param.cpp.
 #include "../Feature.h"
 #include "../FunctionalGroups.h"
 
-
 class FragmentFunctionGroupFeature : public FragmentFeature {
 public:
     FragmentFunctionGroupFeature() {

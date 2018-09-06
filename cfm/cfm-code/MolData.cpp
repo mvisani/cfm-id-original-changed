@@ -320,10 +320,6 @@ void MolData::annotatePeaks(double abs_tol, double ppm_tol,
     }
 }
 
-/*void MolData::computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols) {
-    fg->computeFeatureVectors(fc, tree_depth, delete_mols);
-}*/
-
 void MolData::computeTransitionThetas(Param &param) {
 
     const unsigned int num_levels = param.getNumEnergyLevels();
@@ -823,7 +819,7 @@ void MolData::getSelectedWeights(std::vector<double> &selected_weights, int enge
     std::vector<peak_pair_t> peak_pairs;
     cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[engery_level], &predicted_spectra[engery_level]);
 
-    /*
+
     std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
@@ -835,9 +831,9 @@ void MolData::getSelectedWeights(std::vector<double> &selected_weights, int enge
         if(diff.first < 0.01 || selected_weights.size() >= peak_num)
             break;
         selected_weights.push_back(diff.second);
-    }*/
+    }
 
-
+    /*
     std::vector<std::pair<double, double>> difference;
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
@@ -851,7 +847,7 @@ void MolData::getSelectedWeights(std::vector<double> &selected_weights, int enge
         if(selected_weights.size() >= peak_num)
             break;
         selected_weights.push_back(diff.second);
-    }
+    }*/
 
 }
 
