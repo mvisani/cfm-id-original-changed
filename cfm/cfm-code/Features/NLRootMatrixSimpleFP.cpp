@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec PredictNL and Identification of Metabolites
 #
-# NLRootMatrixFP.cpp
+# NLRootMatrixFPN10.cpp
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see

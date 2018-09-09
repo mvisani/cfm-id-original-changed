@@ -17,7 +17,17 @@ param.cpp.
 ##################################################### ####################*/
 #include "IonRootMatrixFP.h"
 
-void IonRootMatrixFP::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,int depth) const {
+void IonRootMatrixFPN8::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,int depth) const {
+    int ring_break;
+    nl->mol.get()->getProp("IsRingBreak", ring_break);
+
+    unsigned int num_atoms = 8;
+    bool include_adjacency_matrix = true;
+
+    addAdjacentMatrixRepresentationFeature(fv, ion, num_atoms, ring_break, include_adjacency_matrix);
+}
+
+void IonRootMatrixFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 

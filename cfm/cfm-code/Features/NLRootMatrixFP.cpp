@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec PredictNL and Identification of Metabolites
 #
-# NLRootMatrixFP.cpp
+# NLRootMatrixFPN10.cpp
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
@@ -17,12 +17,23 @@ param.cpp.
 #########################################################################*/
 #include "NLRootMatrixFP.h"
 
-void NLRootMatrixFP::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+void NLRootMatrixFPN10::compute(FeatureVector &fv, const RootedROMolPtr *NL,
                              const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
     unsigned int num_atoms = 10;
+    bool include_adjacency_matrix = true;
+
+    addAdjacentMatrixRepresentationFeature(fv, NL, num_atoms, ring_break, include_adjacency_matrix);
+}
+
+void NLRootMatrixFPN8::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+                             const RootedROMolPtr *nl, const int depth) const {
+    int ring_break;
+    nl->mol.get()->getProp("IsRingBreak", ring_break);
+
+    unsigned int num_atoms = 8;
     bool include_adjacency_matrix = true;
 
     addAdjacentMatrixRepresentationFeature(fv, NL, num_atoms, ring_break, include_adjacency_matrix);

@@ -1,7 +1,7 @@
 /*#########################################################################
 # Mass Spec PredictNL and Identification of Metabolites
 #
-# NLRootMatrixFP.h
+# NLRootMatrixFPN10.h
 #
 # Description: 	Classes for communicating data (e.g. parameters, partial
 #				gradients..etc) during parameter update - see
@@ -18,17 +18,27 @@ param.cpp.
 #pragma once
 #include "FingerPrintFeature.h"
 
+//feature_size = num_atom * 11 + 5 * (num_atom) +   num_atom * (num_atom - 1) / 2 * 6;
 // Features use fingerprint encode NL fragmentation
-class NLRootMatrixFP : public FingerPrintFeature {
+class NLRootMatrixFPN8 : public FingerPrintFeature {
 public:
-    NLRootMatrixFP() {
-        size = 860;
-        name = "NLRootMatrixFP";
+    NLRootMatrixFPN8() {
+        size = 592;
+        name = "NLRootMatrixFPN8";
     };
 
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
 };
 
+// Features use fingerprint encode NL fragmentation
+class NLRootMatrixFPN10 : public FingerPrintFeature {
+public:
+    NLRootMatrixFPN10() {
+        size = 860;
+        name = "NLRootMatrixFPN10";
+    };
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+};
 
 class NLRootMatrixFPN16 : public FingerPrintFeature {
 public:

@@ -425,12 +425,6 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
             int degree = mol->mol->getAtomWithIdx(atom_idx)->getDegree();
             degree = degree > num_max_degree ? num_max_degree : degree;
             atom_degree_feature[degree] = 1;
-
-            // add second order degree info
-            /*int second_order_;p[
-            degree = mol->mol->getAtomWithIdx(atom_idx)->getDegree();
-            degree = degree > num_max_degree ? num_max_degree : degree;
-            atom_degree_feature[degree] = 1;*/
         }
         tmp_fv.insert(tmp_fv.end(),atom_type_feature.begin(),atom_type_feature.end());
         tmp_fv.insert(tmp_fv.end(),atom_degree_feature.begin(),atom_degree_feature.end());

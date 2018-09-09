@@ -1457,7 +1457,7 @@ void FeaturesTestFingerPrint::runTest(){
 	bool pass = true;
 
     std::vector<std::string> fnames;
-    //fnames.push_back("NLRootMatrixFP");
+    //fnames.push_back("NLRootMatrixFPN10");
 	fnames.push_back("NLRootEncodingD3");
     FeatureCalculator *fc = new FeatureCalculator( fnames );
 

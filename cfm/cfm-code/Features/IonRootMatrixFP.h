@@ -19,11 +19,24 @@ param.cpp.
 #include "FingerPrintFeature.h"
 
 // Features use fingerprint encode NL fragmentatNL
-class IonRootMatrixFP : public FingerPrintFeature {
+
+//feature_size = num_atom * 11 + 5 * (num_atom) +   num_atom * (num_atom - 1) / 2 * 6;
+// Features use fingerprint encode NL fragmentation
+class IonRootMatrixFPN8 : public FingerPrintFeature {
 public:
-    IonRootMatrixFP() {
+    IonRootMatrixFPN8() {
+        size = 592;
+        name = "IonRootMatrixFPN8";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+};
+
+class IonRootMatrixFPN10 : public FingerPrintFeature {
+public:
+    IonRootMatrixFPN10() {
         size = 860;
-        name = "IonRootMatrixFP";
+        name = "IonRootMatrixFPN10";
     };
 
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
