@@ -66,8 +66,9 @@ public:
     // which in Inverted Dropout Implementation, drop out only chance FowardPassing phase
     // this function also keeps a record of the z and a values along the way
     // (for forwards step in forwards-backwards algorithm)
+    // use_dropout flag should set to false during used_idx collection
     double computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_values, azd_vals_t &a_values,
-                        bool already_sized = false, bool is_train = false);
+                        bool already_sized = false, bool use_dropout = false);
 
     void
     computeDeltas(std::vector<azd_vals_t> &deltasA, std::vector<azd_vals_t> &deltasB, std::vector<azd_vals_t> &z_values,

@@ -277,7 +277,12 @@ FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedR
     }
     else {
         std::cout << "Warning, None precursor ion" << std::endl;
+        for (const auto &feature_idx : used_fragement_feature_idxs) {
+            auto feature = &fragmentFeatureCogs()[feature_idx];
+            fv->addFeatures(std::vector<int>(feature->getSize(),0));
+        }
     }
+
     return fv;
 }
 

@@ -123,7 +123,11 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
                 fvs[idx] = mol_data.getFeatureVectorForIdx(*it);
                 // use nn_param->compute theta in forward pass mode
                 // which uses Inverted Dropout
-                double theta = nn_param->computeTheta(*fvs[idx], energy, z_values[idx], a_values[idx], false, true);
+                // do not use drop outs during used idxs collection
+                // Otherwise this will cause segfault
+                // You have been warned
+                double theta = nn_param->computeTheta(*fvs[idx], energy,
+                        z_values[idx], a_values[idx], false, record_used_idxs_only);
                 denom += exp(theta);
                 nu_terms[idx] = (*suft_values)[*it + suft_offset];
             }
@@ -169,7 +173,6 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
 double EmNNModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft) {
 
     double Q = 0.0;
-    //const FragmentGraph *fg = moldata.getFragmentGraph();
     unsigned int num_transitions = moldata.getNumTransitions();
     unsigned int num_fragments = moldata.getNumFragments();
 

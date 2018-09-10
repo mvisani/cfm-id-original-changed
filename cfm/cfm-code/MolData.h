@@ -160,9 +160,7 @@ public:
                                            bool retain_smiles = false);
 
     // Note that the following should be called in this order
-    // since each one assumes all previous have already been called.
-    void computeFragmentGraph();
-
+    // since each one assumes all previous have already been called.E
     void computeFragmentGraph( FeatureCalculator *fc);
 
     // Use this option if computing features next

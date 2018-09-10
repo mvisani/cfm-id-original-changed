@@ -155,7 +155,7 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy) {
 }
 
 double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_values, azd_vals_t &a_values,
-                             bool already_sized, bool is_train) {
+                             bool already_sized, bool use_dropout) {
 
     //Check Feature Length
     int len = fv.getTotalLength();
@@ -188,9 +188,9 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
         *zit = z_val;
         *ait = (*itaf++)(z_val);
 
-        if(is_train && !(*hit))
+        if(use_dropout && !(*hit))
             *ait /= (1.0 -  hlayer_dropout_probs[h_layer_idx]);
-        else if(is_train && !(*hit)){
+        else if(use_dropout && !(*hit)){
             *zit = 0.0;
             *ait = 0.0;
         }
@@ -212,9 +212,9 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
             *zit = z_val;
             *ait = (*itaf++)(z_val);
 
-            if(is_train && !(*hit))
+            if(use_dropout && !(*hit))
                 *ait /= (1.0-  hlayer_dropout_probs[h_layer_idx]);
-            else if(is_train && !(*hit)){
+            else if(use_dropout && !(*hit)){
                 *zit = 0.0;
                 *ait = 0.0;
             }
@@ -532,15 +532,11 @@ void NNParam::rollDropouts() {
         is_dropped.resize(total_nodes);
 
     //adding dropouts in the all layer with the same prob
-    auto drop_out_idx = 0;
     for (int hlayer_idx = 0; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
+        // P(b|p) = p if b == true
+        // P(b|p) = 1-p if b == false
         std::bernoulli_distribution bernoulli_coin(hlayer_dropout_probs[hlayer_idx]);
-        for (int j = 0; j < hlayer_num_nodes[hlayer_idx]; ++j) {
-            if (0.0 == hlayer_dropout_probs[hlayer_idx])
-                is_dropped[drop_out_idx] = false;
-            else
-                is_dropped[drop_out_idx] = bernoulli_coin(util_rng);
-            drop_out_idx++;
-        }
+        for (int j = 0; j < hlayer_num_nodes[hlayer_idx]; ++j)
+            is_dropped[hlayer_idx] = bernoulli_coin(util_rng);
     }
 }

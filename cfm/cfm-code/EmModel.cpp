@@ -556,7 +556,9 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
             // Step the parameters
             if (comm->isMaster()) {
-                updateGradientForRegularizationTerm(&grads[0]);
+                // update L2 only if lambda > 0
+                if(cfg->lambda != 0.0)
+                    updateGradientForRegularizationTerm(&grads[0]);
                 solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
                 // let us roll Dropouts
                 param->rollDropouts();

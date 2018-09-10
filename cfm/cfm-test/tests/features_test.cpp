@@ -1355,7 +1355,7 @@ void FeaturesTestLength::runTest(){
 		FeatureCalculator fc( feature_list );
 
 		//Compute the feature vector
-		FeatureVector *fv = fc.computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
+		FeatureVector *fv = fc.computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, node->ion);
 
 		//Check the length
 		if( fv->getTotalLength() != fc.getNumFeatures() ){

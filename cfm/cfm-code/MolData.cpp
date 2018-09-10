@@ -80,21 +80,16 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
     fg = fgen.createNewGraph(cfg);
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
-    if (cfg->do_prelim_bfs && !cfg->allow_frag_detours && cfg->fg_depth > 1)
-        fgen.compute(*startnode, 1, 0, -1, cfg->max_ring_breaks); // Initial breadth-first to depth 1 (faster?)
+    //if (cfg->do_prelim_bfs && !cfg->allow_frag_detours && cfg->fg_depth > 1)
+    //    fgen.compute(*startnode, 1, 0, -1, cfg->max_ring_breaks); // Initial breadth-first to depth 1 (faster?)
+
     fgen.compute(*startnode, cfg->fg_depth, 0, -1, cfg->max_ring_breaks);
+
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
     fg->createNewGraphForComputation();
     delete startnode;
     graph_computed = true;
-}
-
-void MolData::computeFragmentGraph() {
-    // Note: Do not use this if you want to compute fvs after - FeatureHelper will
-    // not have run correctly. Use other computeFragmentGraph instead.
-    FragmentGraphGenerator fgen;
-    computeGraphWithGenerator(fgen);
 }
 
 void MolData::computeFragmentGraph(FeatureCalculator *fc) {
@@ -110,11 +105,6 @@ void MolData::computeFragmentGraphAndReplaceMolsWithFVs(FeatureCalculator *fc,
     // vectors
     FragmentGraphGenerator fgen(fc);
     computeGraphWithGenerator(fgen);
-
-    // Copy all the feature vector pointers up into the mol data
-    /*fvs.resize(fg->getNumTransitions());
-    for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
-        fvs[i] = fg->getTransitionAtIdx(i)->getFeatureVector();*/
 
     // Delete all the fragment smiles (we only need these while we're computing
     // the graph)
