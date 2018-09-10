@@ -375,7 +375,8 @@ EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy
         }
     }
 
-    if (comm->isMaster())
+    // update L2 only if lambda > 0
+    if (comm->isMaster() && cfg->lambda > 0.0)
         loss += getRegularizationTerm();
     loss = comm->collectQInMaster(loss);
     loss = comm->broadcastQ(loss);
@@ -557,7 +558,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             // Step the parameters
             if (comm->isMaster()) {
                 // update L2 only if lambda > 0
-                if(cfg->lambda != 0.0)
+                if(cfg->lambda > 0.0)
                     updateGradientForRegularizationTerm(&grads[0]);
                 solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
                 // let us roll Dropouts

@@ -512,17 +512,20 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
 void NNParam::getBiasIndexes(std::vector<unsigned int> &bias_indexes) {
 
     bias_indexes.resize(total_nodes);
-    int idx = 0, count = 0;
-    std::vector<int>::iterator itlayer = hlayer_num_nodes.begin();
-    for (int hnode = 0; hnode < *itlayer; hnode++, count++) {
+    unsigned int idx = 0, count = 0;
+    auto itlayer = hlayer_num_nodes.begin();
+    // Adding bias index for input layer
+    for (int hnode = 0; hnode < hlayer_num_nodes[0]; hnode++, count++) {
         bias_indexes[count] = idx;
         idx += expected_num_input_features;
     }
-    int num_input = *itlayer++;
+
+    itlayer ++;
+    // Adding bias index for hidden layers
     for (; itlayer != hlayer_num_nodes.end(); ++itlayer) {
         for (int hnode = 0; hnode < *itlayer; hnode++, count++) {
             bias_indexes[count] = idx;
-            idx += (num_input + 1);
+            idx += (*(itlayer - 1) + 1);
         }
     }
 }

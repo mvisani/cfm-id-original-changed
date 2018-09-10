@@ -526,8 +526,8 @@ void NNParamsTestBiasIndexes::runTest(){
 	int expected_idxs[7] = {0,6,12,18,24,29,34};
 
 	if( bias_indexes.size() != 7 ){
-			std::cout << "Unexpected bias indexes length " << bias_indexes.size() << std::endl;
-			pass = false;	
+		std::cout << "Unexpected bias indexes length " << bias_indexes.size() << std::endl;
+		pass = false;
 	}
 	else{
 		for( unsigned int i = 0; i < 7; i++ ){
