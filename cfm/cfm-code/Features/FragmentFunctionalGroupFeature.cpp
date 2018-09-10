@@ -16,7 +16,7 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 
-#include "FragmentFunctionGroupFeature.h"
+#include "FragmentFunctionalGroupFeature.h"
 
 #include <GraphMol/MolOps.h>
 #include <GraphMol/Substruct/SubstructMatch.h>
@@ -25,7 +25,7 @@ param.cpp.
 #include <GraphMol/ForceFieldHelpers/MMFF/AtomTyper.h>
 
 
-void FragmentFunctionGroupFeature::compute(FeatureVector &fv, romol_ptr_t precursor_ion) const {
+void FragmentFunctionalGroupFeature::compute(FeatureVector &fv, romol_ptr_t precursor_ion) const {
 
     auto fparams = new RDKit::FragCatParams(FGRPS_PICKLE);
 

@@ -15,21 +15,16 @@ param.cpp.
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-
-
-#ifndef CFM_FRAGMENTFUNCTIONGROUP_H
-#define CFM_FRAGMENTFUNCTIONGROUP_H
+#pragma once
 
 #include "../Feature.h"
 #include "../FunctionalGroups.h"
 
-class FragmentFunctionGroupFeature : public FragmentFeature {
+class FragmentFunctionalGroupFeature : public FragmentFeature {
 public:
-    FragmentFunctionGroupFeature() {
+    FragmentFunctionalGroupFeature() {
         size = NUM_FGRPS;
-        name = "FragmentFunctionGroup";
+        name = "FragmentFunctionalGroup";
     };
     virtual void compute(FeatureVector &fv, romol_ptr_t precursor_ion) const override;
 };
-
-#endif //CFM_FRAGMENTFUNCTIONGROUP_H

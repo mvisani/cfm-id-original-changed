@@ -53,7 +53,7 @@
 #include "Features/NLRootMatrixSimpleFP.h"
 #include "Features/GraphDepthFeature.h"
 #include "Features/FragmentFingerPrintFeature.h"
-#include "Features/FragmentFunctionGroupFeature.h"
+#include "Features/FragmentFunctionalGroupFeature.h"
 
 
 #include <boost/algorithm/string/trim.hpp>
@@ -121,7 +121,7 @@ const boost::ptr_vector<FragmentFeature> &FeatureCalculator::fragmentFeatureCogs
 
     if (!initialised) {
         cogs.push_back(new FragmentFingerPrintFeature());
-        cogs.push_back(new FragmentFunctionGroupFeature());
+        cogs.push_back(new FragmentFunctionalGroupFeature());
         initialised = true;
     }
     return cogs;
