@@ -71,7 +71,7 @@ void NNParamsTestComputeTransitionThetas::runTest(){
 	fv.addFeatureAtIdx(1.0, 0); fv.addFeatureAtIdx(1.0, 2); fv.addFeatureAtIdx(1.0, 5);
 
 	//Compute the theta
-	double theta = param.computeTheta(fv, 0);
+	double theta = param.computeTheta(fv, 0);https://www.facebook.com/thenextweb/videos/497642920707625/
 
 	if( fabs(theta - 12.0 )  > tol ){
 		std::cout << "Expected theta of 12.0 but found theta of " << theta << std::endl;
@@ -507,15 +507,18 @@ NNParamsTestBiasIndexes::NNParamsTestBiasIndexes(){
 void NNParamsTestBiasIndexes::runTest(){
 	
 	bool pass = true;
-    double tol = 1e-10;
 
 	std::vector<std::string> fnames;
 	fnames.push_back("IonicFeatures");	//5 features + bias =  6 features
-	std::vector<int> hlayer_numnodes(3), act_ids(3);
-	hlayer_numnodes[0] = 4; hlayer_numnodes[1] = 2; hlayer_numnodes[2] = 1;
-	act_ids[0] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
-	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
-	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
+	std::vector<int> hlayer_numnodes(4), act_ids(4);
+	hlayer_numnodes[0] = 4;
+	hlayer_numnodes[1] = 2;
+    hlayer_numnodes[2] = 2;
+	hlayer_numnodes[3] = 1;
+	act_ids[0] = RELU_NN_ACTIVATION_FUNCTION;
+	act_ids[1] = RELU_NN_ACTIVATION_FUNCTION;
+    act_ids[2] = RELU_NN_ACTIVATION_FUNCTION;
+	act_ids[3] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
 
     std::vector<double> dropout_probs(2, 0.0);
 	NNTestParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
@@ -523,14 +526,14 @@ void NNParamsTestBiasIndexes::runTest(){
 	std::vector<unsigned int> bias_indexes;
 	param.getBiasIndexes( bias_indexes );
 	
-	int expected_idxs[7] = {0,6,12,18,24,29,34};
+	int expected_idxs[9] = {0,6,12,18,24,29,34,37,40};
 
-	if( bias_indexes.size() != 7 ){
+	if( bias_indexes.size() != 9 ){
 		std::cout << "Unexpected bias indexes length " << bias_indexes.size() << std::endl;
 		pass = false;
 	}
 	else{
-		for( unsigned int i = 0; i < 7; i++ ){
+		for( unsigned int i = 0; i < 9; i++ ){
 			if( bias_indexes[i] != expected_idxs[i] ){
 				std::cout << "Unexpected bias index " << bias_indexes[i] << std::endl;
 				pass = false;

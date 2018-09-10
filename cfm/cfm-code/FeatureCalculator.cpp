@@ -99,6 +99,8 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new IonRootEncodingD4());
         cogs.push_back(new NLRootEncodingN10());
         cogs.push_back(new IonRootEncodingN10());
+        cogs.push_back(new NLRootMatrixFPN6());
+        cogs.push_back(new IonRootMatrixFPN6());
         cogs.push_back(new NLRootMatrixFPN8());
         cogs.push_back(new IonRootMatrixFPN8());
         cogs.push_back(new NLRootMatrixFPN10());
