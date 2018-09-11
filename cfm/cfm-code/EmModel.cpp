@@ -584,9 +584,9 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         if(1 == iter)
             init_loss = loss;
 
-        if(fabs(loss - init_loss) > fabs(init_loss * cfg->ga_early_stop_ratio)){
-            if(comm->isMaster())
-                std::cout << "Early Stop" << std::endl;
+        // early stop after 10 iter
+        if((fabs(loss - init_loss) > fabs(init_loss * cfg->ga_early_stop_ratio))
+            && (iter >= 10) ){
             break;
         }
     }
