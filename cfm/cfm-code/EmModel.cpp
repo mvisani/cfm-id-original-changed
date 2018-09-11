@@ -378,6 +378,7 @@ EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy
     // update L2 only if lambda > 0
     if (comm->isMaster() && cfg->lambda > 0.0)
         loss += getRegularizationTerm();
+
     loss = comm->collectQInMaster(loss);
     loss = comm->broadcastQ(loss);
 
@@ -488,7 +489,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
-    double loss = 0.0, prev_loss = -DBL_MAX, best_q = -DBL_MAX;
+    double loss = 0, prev_loss = -DBL_MAX, init_loss = -DBL_MAX;
 
     std::vector<double> grads(param->getNumWeights(), 0.0);
 
@@ -574,11 +575,20 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         loss = computeLoss(data, suft, energy_level, switch_to_wjaccard);
 
         if (comm->isMaster()) {
-            std::cout << iter << ":  Loss=" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
+                std::cout << iter << ":  Loss=" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
                       << std::endl;
         }
 
         ga_no_progress_count = prev_loss >= loss ? ga_no_progress_count + 1 : 0;
+
+        if(1 == iter)
+            init_loss = loss;
+
+        if(fabs(loss - init_loss) > fabs(init_loss * cfg->ga_early_stop_ratio)){
+            if(comm->isMaster())
+                std::cout << "Early Stop" << std::endl;
+            break;
+        }
     }
 
     if (comm->isMaster()) {

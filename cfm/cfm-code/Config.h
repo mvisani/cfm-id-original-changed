@@ -244,6 +244,7 @@ struct config_t {
     double starting_step_size;
     int ga_max_iterations;
     int ga_use_best_q;
+    double ga_early_stop_ratio;
 
     // Decay
     double decay_rate;
