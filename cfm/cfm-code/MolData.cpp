@@ -803,7 +803,7 @@ double MolData::getWeightedJaccardScore(int engery_level){
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::getSelectedWeights(std::vector<double> &selected_weights, int engery_level, int peak_num) {
+void MolData::getSelectedWeights(std::vector<double> &selected_weights, int engery_level) {
 
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
@@ -821,8 +821,8 @@ void MolData::getSelectedWeights(std::vector<double> &selected_weights, int enge
     double select_intensity_sum = 0.0;
     for(const auto & diff:  difference){
         if(diff.first < 0.1 ||
-        ((selected_weights.size() >= peak_num)
-        && (select_intensity_sum > intensity_sum * 0.5)))
+        ((selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
+        && (select_intensity_sum > intensity_sum * cfg->ga_select_intensity_sum_ratio)))
             break;
         selected_weights.push_back(diff.second);
         select_intensity_sum += diff.first;

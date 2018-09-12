@@ -85,6 +85,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.em_use_weighted_jaccard = false;
     cfg.em_wjaccard_swicth_threshold = -2.5;
     cfg.ga_diff_sampling_peak_num = 10;
+    cfg.ga_select_intensity_sum_ratio = 0.25;
 }
 
 
@@ -167,6 +168,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "em_use_weighted_jaccard") cfg.em_use_weighted_jaccard = (bool) value;
         else if (name == "em_wjaccard_swicth_threshold") cfg.em_wjaccard_swicth_threshold = (double)value;
         else if (name == "ga_diff_sampling_peak_num") cfg.ga_diff_sampling_peak_num = (int) value;
+        else if (name == "ga_select_intensity_sum_ratio") cfg.ga_select_intensity_sum_ratio = (double) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
