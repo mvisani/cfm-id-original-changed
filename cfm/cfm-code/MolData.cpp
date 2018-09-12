@@ -809,18 +809,23 @@ void MolData::getSelectedWeights(std::vector<double> &selected_weights, int enge
     std::vector<peak_pair_t> peak_pairs;
     cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[engery_level], &predicted_spectra[engery_level]);
 
-
+    double intensity_sum = 0.0;
     std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
         difference.insert(std::pair<double,double>(intensity_difference, peak_pair.second.mass));
+        intensity_sum += intensity_difference;
     }
     delete(cmp);
 
+    double select_intensity_sum = 0.0;
     for(const auto & diff:  difference){
-        if(diff.first < 0.01 || selected_weights.size() >= peak_num)
+        if(diff.first < 0.1 ||
+        ((selected_weights.size() >= peak_num)
+        && (select_intensity_sum > intensity_sum * 0.5)))
             break;
         selected_weights.push_back(diff.second);
+        select_intensity_sum += diff.first;
     }
 
     /*
