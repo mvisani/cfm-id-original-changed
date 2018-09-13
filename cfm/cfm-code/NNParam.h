@@ -88,6 +88,14 @@ public:
 
     virtual boost::container::vector<bool> *getDropoutsPtr() override { return &is_dropped; };
 
+    virtual void updateDropoutsRate(double ratio) {
+        for(auto & hlayer_dropout_prob : hlayer_dropout_probs){
+            if(hlayer_dropout_prob * ratio > 0.01){
+                hlayer_dropout_prob *= ratio;
+            }
+        }
+    };
+    
     void rollDropouts() override;
 
 protected:
