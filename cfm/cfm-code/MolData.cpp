@@ -803,7 +803,8 @@ double MolData::getWeightedJaccardScore(int engery_level){
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::getSelectedWeights(std::vector<double> &selected_weights, int engery_level) {
+void MolData::getSelectedWeights(std::vector<double> &selected_weights, int engery_level,
+                                 bool peaknum_only) {
 
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
@@ -819,31 +820,26 @@ void MolData::getSelectedWeights(std::vector<double> &selected_weights, int enge
     delete(cmp);
 
     double select_intensity_sum = 0.0;
-    for(const auto & diff:  difference){
-        if(diff.first < 0.1 ||
-        ((selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
-        && (select_intensity_sum > intensity_sum * cfg->ga_select_intensity_sum_ratio)))
-            break;
-        selected_weights.push_back(diff.second);
-        select_intensity_sum += diff.first;
+
+    if(peaknum_only){
+        for(const auto & diff:  difference){
+            if(diff.first < 0.1 || (selected_weights.size() >= cfg->ga_diff_sampling_peak_num))
+                break;
+            selected_weights.push_back(diff.second);
+            select_intensity_sum += diff.first;
+        }
+
     }
-
-    /*
-    std::vector<std::pair<double, double>> difference;
-    for(const auto & peak_pair : peak_pairs){
-        double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
-        if(intensity_difference > 0.01)
-            difference.push_back(std::pair<double,double>(intensity_difference, peak_pair.second.mass));
+    else {
+        for(const auto & diff:  difference){
+            if(diff.first < 0.1 ||
+               ((selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
+                && (select_intensity_sum > intensity_sum * cfg->ga_select_intensity_sum_ratio)))
+                break;
+            selected_weights.push_back(diff.second);
+            select_intensity_sum += diff.first;
+        }
     }
-    delete(cmp);
-
-    //std::shuffle(difference.begin(),difference.end(),util_rng);
-    for(const auto & diff:  difference){
-        if(selected_weights.size() >= peak_num)
-            break;
-        selected_weights.push_back(diff.second);
-    }*/
-
 }
 
 MolData::~MolData() {

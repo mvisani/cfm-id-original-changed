@@ -721,9 +721,11 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
     } else if (sampling_method == USE_DIFFERENCE_SAMPLING) {
         moldata.computePredictedSpectra(*param, false, false, energy);
         std::vector<double> weights;
-        moldata.getSelectedWeights(weights, energy);
+        if(sampling_method == USE_FAST_DIFFERENCE_SAMPLING)
+            moldata.getSelectedWeights(weights, energy, true);
+        else
+            moldata.getSelectedWeights(weights, energy, false);
         moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
-
     }
 }
 

@@ -251,7 +251,8 @@ public:
         fg->createNewGraphForComputation();
     }
 
-    void getSelectedWeights(std::vector<double> &selected_weights, int engery_level);
+    void getSelectedWeights(std::vector<double> &selected_weights, int engery_level,
+                            bool peaknum_only = false);
 
     double getWeightedJaccardScore(int engery_level);
 
