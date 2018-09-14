@@ -89,7 +89,7 @@ public:
 
     // do nothing roolDropots function
     // we may add Dropouts for linear model later
-    virtual void updateDropoutsRate(double ratio) {};
+    virtual void updateDropoutsRate(double delta, double lower_bound) {};
     virtual void rollDropouts() {};
 
 protected:

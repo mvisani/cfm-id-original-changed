@@ -267,12 +267,15 @@ struct config_t {
     int max_search_count;
     int update_bias_first;
     int ga_minibatch_nth_size;
+    double ga_dropout_delta;
+    double ga_dropout_lowerbond;
 
     int fragraph_compute_timeout_in_secs;
 
     //  flag swicth
     bool em_use_weighted_jaccard;
     double em_wjaccard_swicth_threshold;
+
     //noise
     bool add_noise;
     double noise_sum;
