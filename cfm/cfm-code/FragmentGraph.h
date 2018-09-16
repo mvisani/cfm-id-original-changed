@@ -324,9 +324,9 @@ public:
     };
 
     // Get a list of transitions ids , with random walk
-    void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                   std::vector<double> &selected_weights) {
-        current_graph->getSampledTransitionIdsDifferenceWeighted(selected_ids,selected_weights);
+    void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids, std::set<double> &selected_weights,
+                                                   std::set<double> &all_weights) {
+        current_graph->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights, all_weights);
     };
 
     void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio) {
@@ -379,19 +379,21 @@ protected:
                                                        std::vector<double> &thetas,
                                                        double explore_weight);
 
-        void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                       std::vector<double> &selected_weights);
+        void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids, std::set<double> &selected_weights,
+                                                       std::set<double> &all_weights);
 
         void
-        getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<int> &visited, int frag_id,
-                                                             std::vector<int> &path,
-                                                             std::map<double, std::set<int>> &selected_trans_map);
+        getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<double> &all_weights,
+                                                             std::set<int> &visited, int frag_id, std::vector<int> &path,
+                                                             std::set<int> &selected_ids);
 
         void getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
                                         int frag_id, std::vector<std::pair<int, int>> &path,
                                         std::map<int, std::vector<int>> &trans_to_interest_frags_map);
 
         void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio);
+
+        bool is_match(std::set<double> &weights, double mass) const;
 
         std::vector<Fragment*> fragments;
         std::vector<Transition*> transitions;

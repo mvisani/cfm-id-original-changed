@@ -202,7 +202,8 @@ public:
 
     void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
 
-    void getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::vector<double> &selected_weights);
+    void getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<double> &selected_weights,
+                                            std::set<double> &all_weights);
 
     void getRandomSampledTransitions(std::set<int> &selected_ids, double ratio);
 
@@ -251,8 +252,8 @@ public:
         fg->createNewGraphForComputation();
     }
 
-    void getSelectedWeights(std::vector<double> &selected_weights, int engery_level,
-                            bool peaknum_only = false);
+    void getSelectedWeights(std::set<double> &selected_weights, std::set<double> &all_weights, int engery_level,
+                                bool peaknum_only = false);
 
     double getWeightedJaccardScore(int engery_level);
 

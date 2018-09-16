@@ -704,17 +704,15 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsWeightedRa
     }
 }
 
-void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                                                         std::vector<double> &selected_weights) {
+void
+FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
+                                                                                    std::set<double> &selected_weights,
+                                                                                    std::set<double> &all_weights) {
 
     std::set<int> visited;
-    std::map<double, std::set<int>> selected_trans_map;
-    std::set<double> selected_weights_set;
 
-    std::copy(selected_weights.begin(), selected_weights.end(),
-            std::inserter(selected_weights_set, selected_weights_set.begin()));
-
-    /*std::map<int, std::vector<int>> frag_trans_map;
+    /*std::map<double, std::set<int>> selected_trans_map;
+    std::map<int, std::vector<int>> frag_trans_map;
     std::vector<std::pair<int,int>> frag_trans_pair_path;
     getCommonAncestors(selected_weights_set, visited, 0, frag_trans_pair_path, frag_trans_map);
 
@@ -725,12 +723,8 @@ void FragmentGraph::ComputationalFragmenGraph::getSampledTransitionIdsDifference
     }*/
 
     std::vector<int> path;
-    //visited.clear();
-    getSampledTransitionIdsDifferenceWeightedBFS(selected_weights_set, visited, 0, path, selected_trans_map);
-
-    for(const auto & key : selected_weights)
-        for(const auto & trans_id: selected_trans_map[key])
-            selected_ids.insert(trans_id);
+    getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, all_weights, visited, 0, path,
+                                                 selected_ids);
 }
 
 void FragmentGraph::ComputationalFragmenGraph::
@@ -780,50 +774,68 @@ getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
 }
 
 void FragmentGraph::ComputationalFragmenGraph::
-getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<int> &visited, int frag_id,
-                                             std::vector<int> &path,
-                                             std::map<double, std::set<int>> &selected_trans_map) {
-
-    double frag_mass = fragments[frag_id]->getMass();
-
-    auto lower_bound = selected_weights.lower_bound(frag_mass);
-    auto upper_bound = selected_weights.upper_bound(frag_mass);
-
-    bool save = false;
-    double matched_mass = 0.0;
-    if(selected_weights.find(frag_mass) != selected_weights.end()){
-        save = true;
-        matched_mass = frag_mass;
-    }
-    else if(lower_bound != selected_weights.end()){
-        save = (std::fabs(*lower_bound - frag_mass) <= 0.00001);
-        matched_mass = *lower_bound;
-    }
-    else if(upper_bound != selected_weights.end()){
-        save = (std::fabs(*upper_bound - frag_mass) <= 0.00001);
-        matched_mass = *upper_bound;
-    }
-    if(save){
-        for(const auto & trans_id : path){
-            if(selected_trans_map.find(matched_mass) == selected_trans_map.end())
-                selected_trans_map[matched_mass];
-            selected_trans_map[matched_mass].insert(trans_id);
-        }
-    }
+getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<double> &all_weights,
+                                             std::set<int> &visited, int frag_id, std::vector<int> &path,
+                                             std::set<int> &selected_ids) {
+    // Note since we always start from root
+    // and there is no arc lead to root ( or we does not care )
+    // we should check all the child fragments
 
     // if we have see this before
     if(visited.find(frag_id) != visited.end())
         return;
 
     visited.insert(frag_id);
+    // matched ids in childs
+    std::vector<int> matched_selected_ids;
+    std::vector<int> matched_ids;
+
     for(const auto & trans_id : from_id_tmap[frag_id]){
-        std::vector<int> current_path = path;
-        //std::cout << trans_id << std::endl;
-        current_path.push_back(trans_id);
-        getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, visited, transitions[trans_id]->getToId(),
-                                                     current_path, selected_trans_map);
+        std::vector<int> path_to_current_child = path;
+        path_to_current_child.push_back(trans_id);
+        auto child_frag_id = transitions[trans_id]->getToId();
+        // check child fragmentation weights
+        double child_frag_mass = fragments[child_frag_id]->getMass();
+
+        // check if child mass matches what we are looking for
+        if(is_match(selected_weights,child_frag_mass))
+            matched_selected_ids.push_back(trans_id);
+
+        if(is_match(all_weights, child_frag_mass))
+            matched_ids.push_back(trans_id);
+
+        getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, all_weights, visited, child_frag_id,
+                                                     path_to_current_child,
+                                                     selected_ids);
+    }
+
+    if(!matched_selected_ids.empty()) {
+        for ( const auto & trans_id : path )
+            selected_ids.insert(trans_id);
+
+        for (const auto &trans_id : matched_ids)
+            selected_ids.insert(trans_id);
+
+        for (const auto &trans_id : matched_selected_ids)
+            selected_ids.insert(trans_id);
     }
 }
+
+bool FragmentGraph::ComputationalFragmenGraph::is_match(std::set<double> &weights, double mass) const {
+    auto lower_bound = weights.lower_bound(mass);
+    auto upper_bound = weights.upper_bound(mass);
+
+    bool is_match = false;
+    if(weights.find(mass) != weights.end())
+        is_match = true;
+    else if(lower_bound != weights.end())
+        is_match = (fabs(*lower_bound - mass) <= 0.00001);
+    else if(upper_bound != weights.end())
+        is_match = (fabs(*upper_bound - mass) <= 0.00001);
+
+    return is_match;
+}
+
 void FragmentGraph::ComputationalFragmenGraph::getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio) {
     int limited = (int)std::ceil((double)transitions.size() * ratio);
 

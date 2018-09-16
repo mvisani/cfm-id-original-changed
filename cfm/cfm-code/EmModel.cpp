@@ -636,7 +636,7 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
 
         std::set<int> selected_trans_id;
         if (!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
-            getRandomWalkedTransitions(mol_data, sampling_method, energy, selected_trans_id);
+            getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
 
         // Iterate over from_id (i)
         auto frag_trans_map = mol_data.getFromIdTMap()->begin();
@@ -708,8 +708,8 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
 }
 
 
-void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, unsigned int energy,
-                                         std::set<int> &selected_trans_id) const {
+void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, unsigned int energy,
+                                       std::set<int> &selected_trans_id) const {
 
     int num_trans = moldata.getNumTransitions();
     int num_iterations = (int) ((cfg->ga_graph_sampling_k * num_trans) / (double) (cfg->fg_depth * cfg->fg_depth));
@@ -721,12 +721,12 @@ void EmModel::getRandomWalkedTransitions(MolData &moldata, int sampling_method, 
         moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, 0.1);
     } else if (sampling_method == USE_DIFFERENCE_SAMPLING) {
         moldata.computePredictedSpectra(*param, false, false, energy);
-        std::vector<double> weights;
+        std::set<double> selected_weights;
+        std::set<double> all_weights;
 
-        moldata.getSelectedWeights(weights, energy, false);
-        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, weights);
-        moldata.getSampledTransitionIdsWeightedRandomWalk(selected_trans_id, num_trans, energy,
-                                                          moldata.getWeightedJaccardScore(energy));
+        moldata.getSelectedWeights(selected_weights, all_weights, energy, true);
+        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, all_weights, all_weights);
+        // std::cout << selected_trans_id.size() << "/" << moldata.getNumTransitions() << std::endl;
     }
 }
 

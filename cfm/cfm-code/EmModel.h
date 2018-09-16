@@ -88,8 +88,8 @@ protected:
 
     virtual void updateGradientForRegularizationTerm(double *grads);
 
-    void getRandomWalkedTransitions(MolData &moldata, int sampling_method, unsigned int energy,
-                                        std::set<int> &selected_trans_id) const;
+    void getSubSampledTransitions(MolData &moldata, int sampling_method, unsigned int energy,
+                                  std::set<int> &selected_trans_id) const;
     void
     computeValidationMetrics(int energy_level, int molidx, std::vector<MolData, std::allocator<MolData>>::iterator &itdata,
                              suft_counts_t &suft, double &val_q, int &num_val_mols, double &jaccard, double &w_jaccard);

@@ -91,7 +91,7 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
 
         std::set<int> selected_trans_id;
         if(!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
-            getRandomWalkedTransitions(mol_data, sampling_method, energy, selected_trans_id);
+            getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
 
         //Iterate over from_id (i)
         const tmap_t *from_map = mol_data.getFromIdTMap();
