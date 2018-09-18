@@ -90,7 +90,7 @@ public:
     // do nothing roolDropots function
     // we may add Dropouts for linear model later
     virtual void updateDropoutsRate(double delta, double lower_bound) {};
-    virtual void rollDropouts() {};
+    virtual void rollDropouts(int iter, double delta) {};
 
 protected:
     std::vector<double> weights;

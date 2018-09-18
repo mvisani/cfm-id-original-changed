@@ -96,7 +96,7 @@ public:
         }
     };
     
-    void rollDropouts() override;
+    void rollDropouts(int iter, double delta) override;
 
 protected:
     //Initialisation options

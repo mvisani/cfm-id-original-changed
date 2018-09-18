@@ -75,9 +75,9 @@ protected:
 
     //Simple gradient ascent
     double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
-                                          int energy_level, int sampling_method, bool switch_to_wjaccard);
+                                          int sampling_method);
 
-    double computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy_level, bool use_weighted_jaccard);
+    double computeLoss(std::vector<MolData> &data, suft_counts_t &suft);
 
     //Helper functions
 

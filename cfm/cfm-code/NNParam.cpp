@@ -64,7 +64,7 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
     //add this one for not to break stuff
     while (hlayer_dropout_probs.size() < hlayer_num_nodes.size())
         hlayer_dropout_probs.push_back(0);
-    rollDropouts();
+    rollDropouts(0, 0);
 }
 
 void NNParam::initWeights(int init_type) {
@@ -297,7 +297,7 @@ NNParam::NNParam(std::string &filename) : Param(filename) {
             // get  and roll drop outs
             for (int i = 0; i < num_layers; i++)
                 ss3 >> hlayer_dropout_probs[i];
-            rollDropouts();
+            rollDropouts(0, 0);
 
             tmp_z_values.resize(total_nodes);
             tmp_a_values.resize(total_nodes);
@@ -530,7 +530,7 @@ void NNParam::getBiasIndexes(std::vector<unsigned int> &bias_indexes) {
     }
 }
 
-void NNParam::rollDropouts() {
+void NNParam::rollDropouts(int iter, double delta) {
     if (is_dropped.empty())
         is_dropped.resize(total_nodes);
 

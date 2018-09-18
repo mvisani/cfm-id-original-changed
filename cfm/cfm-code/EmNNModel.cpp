@@ -127,7 +127,7 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
                 // Otherwise this will cause segfault
                 // You have been warned
                 double theta = nn_param->computeTheta(*fvs[idx], energy,
-                        z_values[idx], a_values[idx], false, !record_used_idxs_only);
+                        z_values[idx], a_values[idx], false, true);
                 denom += exp(theta);
                 nu_terms[idx] = (*suft_values)[*it + suft_offset];
             }

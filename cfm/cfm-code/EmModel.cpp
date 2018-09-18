@@ -177,8 +177,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         before = time(nullptr);
 
-        loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, energy_level, sampling_method,
-                                              switch_to_weighted_jaccard);
+        loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, sampling_method);
 
         after = time(nullptr);
         std::string param_update_time_msg =
@@ -358,20 +357,14 @@ EmModel::updateTraningParams(double loss, double prev_loss, double q_ratio, doub
 }
 
 double
-EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, int energy_level, bool use_weighted_jaccard) {
+EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft) {
 
     double loss = 0.0;
     auto mol_it = data.begin();
     for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
         if (mol_it->getGroup() != validation_group) {
-            if (!use_weighted_jaccard) {
-                double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
-                loss += mol_loss;
-            }
-            else {
-                mol_it->computePredictedSpectra(*param, true, false, energy_level);
-                loss += mol_it->getWeightedJaccardScore(energy_level);
-            }
+            double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
+            loss += mol_loss;
         }
     }
 
@@ -484,7 +477,7 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
 }
 
 double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
-                                               int energy_level, int sampling_method, bool switch_to_wjaccard) {
+                                               int sampling_method) {
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
@@ -561,9 +554,6 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 if(cfg->lambda > 0.0)
                     updateGradientForRegularizationTerm(&grads[0]);
                 solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
-                // let us roll Dropouts
-                // param->updateDropoutsRate(cfg->ga_dropout_delta, cfg->ga_dropout_lowerbond);
-                param->rollDropouts();
             }
 
             // this should be a better way in large number of cores
@@ -571,12 +561,14 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             //comm->broadcastParams(param.get());
         }
 
+        // End of batch
         // compute loss
-        loss = computeLoss(data, suft, energy_level, switch_to_wjaccard);
-
+        loss = computeLoss(data, suft);
         if (comm->isMaster()) {
             std::cout << iter << ":  Loss=" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
                       << std::endl;
+            // let us roll Dropouts
+            param->rollDropouts(iter, cfg->ga_dropout_delta);
         }
 
         ga_no_progress_count = prev_loss >= loss ? ga_no_progress_count + 1 : 0;
