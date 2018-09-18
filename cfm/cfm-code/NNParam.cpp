@@ -538,7 +538,8 @@ void NNParam::rollDropouts(int iter, double delta) {
     for (int hlayer_idx = 0; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
         // P(b|p) = p if b == true
         // P(b|p) = 1-p if b == false
-        std::bernoulli_distribution bernoulli_coin(hlayer_dropout_probs[hlayer_idx]);
+        double drop_ratio = hlayer_dropout_probs[hlayer_idx];// + iter * delta;
+        std::bernoulli_distribution bernoulli_coin(drop_ratio);
         for (int j = 0; j < hlayer_num_nodes[hlayer_idx]; ++j)
             is_dropped[hlayer_idx] = bernoulli_coin(util_rng);
     }

@@ -61,7 +61,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
     if (!initial_params_provided)
         param->initWeights(cfg->param_init_type);
-    comm->broadcastInitialParams(param.get());
+    comm->broadcastParamsOrigMpi(param.get());
     validation_group = group;
 
     // Write the initialised params to file (we may get want to reload and use
@@ -557,8 +557,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             }
 
             // this should be a better way in large number of cores
-            comm->broadcastInitialParams(param.get());
-            //comm->broadcastParams(param.get());
+            comm->broadcastParamsOrigMpi(param.get());
         }
 
         // End of batch
@@ -568,6 +567,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             std::cout << iter << ":  Loss=" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
                       << std::endl;
             // let us roll Dropouts
+            param->updateDropoutsRate(cfg->ga_dropout_delta, cfg->ga_dropout_lowerbond);
             param->rollDropouts(iter, cfg->ga_dropout_delta);
         }
 
