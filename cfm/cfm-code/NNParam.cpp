@@ -21,7 +21,7 @@
 NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_levels,
                  std::vector<int> &a_hlayer_num_nodes, std::vector<int> &a_act_func_ids,
                  std::vector<double> &a_dropout_probs) :
-        hlayer_num_nodes(a_hlayer_num_nodes), act_func_ids(a_act_func_ids),
+        h_layer_num_nodes(a_hlayer_num_nodes), act_func_ids(a_act_func_ids),
         hlayer_dropout_probs(a_dropout_probs),
         Param(a_feature_list, a_num_energy_levels) {
 
@@ -31,7 +31,7 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
 
     // set input layer
     int total_len = 0, num_input;
-    auto hlayer_node_num = hlayer_num_nodes.begin();
+    auto hlayer_node_num = h_layer_num_nodes.begin();
     int num_input_layer_weights = (*hlayer_node_num) * num_features;
     total_len += num_input_layer_weights;//The first layer takes the fv as input (which has in-built bias).
     num_weights_per_layer.push_back(num_input_layer_weights);
@@ -41,7 +41,7 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
     num_input = (*hlayer_node_num);
     ++hlayer_node_num;
 
-    for (; hlayer_node_num != hlayer_num_nodes.end(); ++hlayer_node_num) {
+    for (; hlayer_node_num != h_layer_num_nodes.end(); ++hlayer_node_num) {
         int num_weights = (*hlayer_node_num) * (num_input + 1);
         num_weights_per_layer.push_back(num_weights);
 
@@ -62,7 +62,7 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
     //Roll Drop outs
     //last dropped out for output node
     //add this one for not to break stuff
-    while (hlayer_dropout_probs.size() < hlayer_num_nodes.size())
+    while (hlayer_dropout_probs.size() < h_layer_num_nodes.size())
         hlayer_dropout_probs.push_back(0);
     rollDropouts(0, 0);
 }
@@ -126,11 +126,11 @@ void NNParam::varianceScalingInit() {
     unsigned int energy_length = getNumWeightsPerEnergyLevel();
     for (unsigned int energy_level_idx = 0; energy_level_idx < getNumEnergyLevels(); energy_level_idx++) {
         int weight_offset = 0;
-        for (int hlayer_idx = 0; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
+        for (int hlayer_idx = 0; hlayer_idx < h_layer_num_nodes.size(); ++hlayer_idx) {
             int fan_in = input_layer_node_num;
             if (hlayer_idx > 0)
-                fan_in = hlayer_num_nodes[hlayer_idx - 1];
-            int fan_out = hlayer_num_nodes[hlayer_idx];
+                fan_in = h_layer_num_nodes[hlayer_idx - 1];
+            int fan_out = h_layer_num_nodes[hlayer_idx];
             int num_weights = num_weights_per_layer[hlayer_idx];
 
             double std_dev = sqrt(factor / double(fan_out + fan_in));
@@ -158,86 +158,82 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
                              bool already_sized, bool use_dropout) {
 
     //Check Feature Length
-    int len = fv.getTotalLength();
-    if( len != expected_num_input_features ){
+    int fv_length = fv.getTotalLength();
+    if( fv_length != expected_num_input_features ){
         std::cout << "Expecting feature vector of length " << expected_num_input_features;
-        std::cout << " but found " << len << std::endl;
+        std::cout << " but found " << fv_length << std::endl;
         throw( ParamFeatureMismatchException() );
     }
     int energy_offset = getNumWeightsPerEnergyLevel()*energy;
-    std::vector<double>::iterator wit = weights.begin() + energy_offset;
-
+    auto weights_it = weights.begin() + energy_offset;
     //Resize the z and a vectors to the required sizes
-    std::vector<int>::iterator itlayer = hlayer_num_nodes.begin();
-    if( !already_sized){ z_values.resize( total_nodes ); a_values.resize( total_nodes ); }
-    azd_vals_t::iterator zit = z_values.begin();
-    azd_vals_t::iterator ait = a_values.begin();
-    auto hit = is_dropped.begin();
-    auto h_layer_idx = 0;
-
-    std::vector<double (*)(double)>::iterator itaf = act_funcs.begin();
-
-    //The first hidden layer takes the fv as input (which already has a bias feature, so no addtional biases in this layer)
-    itlayer = hlayer_num_nodes.begin();
-    for( int hnode = 0; hnode < (*itlayer); hnode++ ){
-        double z_val = 0.0;
-        std::vector<feature_t>::const_iterator it = fv.getFeatureBegin();
-        for( ; it != fv.getFeatureEnd(); ++it )
-            z_val += *(wit + *it);
-        wit += len;
-        *zit = z_val;
-        *ait = (*itaf++)(z_val);
-
-        // use dropout
-        if(use_dropout){
-            // if this node is dropped
-            if(*hit){
-                *zit = 0.0;
-                *ait = 0.0;
-            }
-            // else update with scalar
-            else
-                *ait /= (1.0 -  hlayer_dropout_probs[h_layer_idx]);
-        }
-        zit++;
-        ait++;
-        hit++;
+    if( !already_sized) {
+        z_values.resize( total_nodes );
+        a_values.resize( total_nodes );
     }
-    h_layer_idx++;
+
+    //The first hidden layer takes the fv as input (which already has a bias feature,
+    // so no additional biases in this layer)
+    int neuron_idx = 0;
+    auto layer_it = h_layer_num_nodes.begin();
+
+    for (int h_node = 0; h_node < (*layer_it); h_node++) {
+        if (!use_dropout || !is_dropped[neuron_idx]) {
+            double z_val = 0.0;
+            // for each feature, note feature_it is the index of feature
+            // since we are using a sparse binary feature vector
+            // each value is the index of value one
+            for (auto feature_it = fv.getFeatureBegin(); feature_it != fv.getFeatureEnd(); ++feature_it)
+                z_val += *(weights_it + *feature_it);
+            weights_it += fv_length;
+            // set input value z and active value a
+            z_values[neuron_idx] = z_val;
+            a_values[neuron_idx] = act_funcs[neuron_idx](z_val);
+            // update act value if we are using drop out
+            if (use_dropout)
+                a_values[neuron_idx] = a_values[neuron_idx]/(1.0 - hlayer_dropout_probs[0]);
+
+        } else if (is_dropped[neuron_idx]){
+            // if we are using drop out
+            // and current node is dropped
+            weights_it += fv_length;
+        }
+        neuron_idx++;
+    }
 
     //Subsequent layers take the previous layer as input
-    azd_vals_t::iterator ait_input_tmp, ait_input = a_values.begin();
-    int num_input = *itlayer++;
-    for( ; itlayer != hlayer_num_nodes.end(); ++itlayer ){
-        for( int hnode = 0; hnode < (*itlayer); hnode++ ){
-            ait_input_tmp = ait_input;
-            double z_val = *wit++; //Bias
-            for( int i = 0; i < num_input; i++ )
-                z_val += (*ait_input_tmp++)*(*wit++);
-            *zit = z_val;
-            *ait = (*itaf++)(z_val);
+    int num_input = h_layer_num_nodes[0];
+    int input_layer_node_idx_start = 0;
+    for (int h_layer_idx = 1; h_layer_idx < h_layer_num_nodes.size(); ++h_layer_idx) {
+        for (int h_node_idx = 0; h_node_idx < h_layer_num_nodes[h_layer_idx]; ++h_node_idx) {
+            if (!use_dropout || !is_dropped[neuron_idx]) {
+                double z_val = *weights_it++; //Bias
 
-            // use dropout
-            if(use_dropout){
-                // if this node is dropped
-                if(*hit){
-                    *zit = 0.0;
-                    *ait = 0.0;
-                }
-                // else update  oupout with scalar
-                else
-                    *ait /= (1.0 -  hlayer_dropout_probs[h_layer_idx]);
+                // sum up and record z_val
+                for (int i = 0; i < num_input; i++)
+                    z_val += a_values[input_layer_node_idx_start + i] * (*weights_it++);
+
+                // set input value z and active value a
+                z_values[neuron_idx] = z_val;
+                a_values[neuron_idx] = act_funcs[neuron_idx](z_val);
+
+                // update output value if we are using drop out
+                if (use_dropout)
+                    a_values[neuron_idx] = a_values[neuron_idx]/(1.0 - hlayer_dropout_probs[h_layer_idx]);
+
+            } else if (is_dropped[neuron_idx]){
+                // if dropped out move by num_input + 1
+                // 1 for bais num_input weights
+                weights_it += 1 + num_input;
             }
-            zit++;
-            ait++;
-            hit++;
+            neuron_idx ++;
         }
 
-        num_input = *itlayer;
-        ait_input = ait_input_tmp;
-        h_layer_idx ++;
+        input_layer_node_idx_start += num_input;
+        num_input = h_layer_num_nodes[h_layer_idx];
     }
-    return *(--ait);	//The output of the last layer is theta
+
+    return a_values.back();    //The output of the last layer is theta
 }
 
 void NNParam::saveToFile(std::string &filename) {
@@ -252,9 +248,9 @@ void NNParam::saveToFile(std::string &filename) {
         std::cout << "Warning: Trouble opening parameter file" << std::endl;
     } else {
         out << "Neural Net Config" << std::endl;
-        out << hlayer_num_nodes.size() << std::endl;
-        std::vector<int>::iterator iit = hlayer_num_nodes.begin();
-        for (; iit != hlayer_num_nodes.end(); ++iit)
+        out << h_layer_num_nodes.size() << std::endl;
+        std::vector<int>::iterator iit = h_layer_num_nodes.begin();
+        for (; iit != h_layer_num_nodes.end(); ++iit)
             out << *iit << " ";
         out << std::endl;
         out << act_func_ids.size() << std::endl;
@@ -284,12 +280,12 @@ NNParam::NNParam(std::string &filename) : Param(filename) {
             getline(ifs, line);
             total_nodes = 0;
             int num_layers = std::stoi(line);
-            hlayer_num_nodes.resize(num_layers);
+            h_layer_num_nodes.resize(num_layers);
             getline(ifs, line);
             std::stringstream ss1(line);
             for (int i = 0; i < num_layers; i++) {
-                ss1 >> hlayer_num_nodes[i];
-                total_nodes += hlayer_num_nodes[i];
+                ss1 >> h_layer_num_nodes[i];
+                total_nodes += h_layer_num_nodes[i];
             }
             //Get the activation function configuration
             getline(ifs, line);
@@ -323,7 +319,7 @@ NNParam::NNParam(std::string &filename) : Param(filename) {
 void NNParam::setActivationFunctionsFromIds() {
 
     std::vector<int>::iterator it, itt;
-    itt = hlayer_num_nodes.begin();
+    itt = h_layer_num_nodes.begin();
     for (it = act_func_ids.begin(); it != act_func_ids.end(); ++it, ++itt) {
         for (int hnode = 0; hnode < *itt; hnode++) {
             if (*it == LINEAR_NN_ACTIVATION_FUNCTION) {
@@ -372,7 +368,7 @@ void NNParam::computeDeltas(std::vector<azd_vals_t> &deltasA, std::vector<azd_va
         itBs[idx] = deltasB[idx].rbegin();
     }
     std::vector<double (*)(double)>::reverse_iterator itdf = deriv_funcs.rbegin();
-    std::vector<int>::reverse_iterator itlayer = hlayer_num_nodes.rbegin();
+    std::vector<int>::reverse_iterator itlayer = h_layer_num_nodes.rbegin();
     std::vector<azd_vals_t::reverse_iterator> itAs_input = itAs, itBs_input = itBs;
 
     int energy_offset = (num_energy_levels - energy - 1) * getNumWeightsPerEnergyLevel();
@@ -392,7 +388,7 @@ void NNParam::computeDeltas(std::vector<azd_vals_t> &deltasA, std::vector<azd_va
 
     //Compute the deltas for the subsequent layers
     std::vector<double>::reverse_iterator itA_input_tmp, itB_input_tmp, wit_tmp;
-    for (; itlayer != hlayer_num_nodes.rend(); ++itlayer) {
+    for (; itlayer != h_layer_num_nodes.rend(); ++itlayer) {
         std::vector<double (*)(double)>::reverse_iterator itdf_tmp;
         for (int idx = num_trans_from_id - 1; idx >= 0; idx--) {
             itdf_tmp = itdf;
@@ -456,13 +452,13 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
     for (int idx = 0; idx < num_trans_from_id; idx++) {
         for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
             tmp_used_idxs.insert(*fit);
-            for (int hnode = 0; hnode < hlayer_num_nodes[0]; hnode++)
+            for (int hnode = 0; hnode < h_layer_num_nodes[0]; hnode++)
                 used_idxs.insert(hnode * feature_len + *fit);
         }
     }
 
     //First layer (only compute gradients for indices relevant to used features)
-    std::vector<int>::iterator itlayer = hlayer_num_nodes.begin();
+    std::vector<int>::iterator itlayer = h_layer_num_nodes.begin();
     for (int hnode = 0; hnode < *itlayer; hnode++) {
 
         //Compute the unnormalized terms, tracking the normalizers (persistence terms) as we go
@@ -488,7 +484,7 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
 
     //Subsequent layers
     int num_input = *itlayer++;
-    for (; itlayer != hlayer_num_nodes.end(); ++itlayer) {
+    for (; itlayer != h_layer_num_nodes.end(); ++itlayer) {
         for (int hnode = 0; hnode < *itlayer; hnode++) {
 
             //Compute the unnormalized terms, tracking the normalizers (persistence terms) as we go
@@ -523,16 +519,16 @@ void NNParam::getBiasIndexes(std::vector<unsigned int> &bias_indexes) {
 
     bias_indexes.resize(total_nodes);
     unsigned int idx = 0, count = 0;
-    auto itlayer = hlayer_num_nodes.begin();
+    auto itlayer = h_layer_num_nodes.begin();
     // Adding bias index for input layer
-    for (int hnode = 0; hnode < hlayer_num_nodes[0]; hnode++, count++) {
+    for (int hnode = 0; hnode < h_layer_num_nodes[0]; hnode++, count++) {
         bias_indexes[count] = idx;
         idx += expected_num_input_features;
     }
 
     itlayer ++;
     // Adding bias index for hidden layers
-    for (; itlayer != hlayer_num_nodes.end(); ++itlayer) {
+    for (; itlayer != h_layer_num_nodes.end(); ++itlayer) {
         for (int hnode = 0; hnode < *itlayer; hnode++, count++) {
             bias_indexes[count] = idx;
             idx += (*(itlayer - 1) + 1);
@@ -545,12 +541,15 @@ void NNParam::rollDropouts(int iter, double delta) {
         is_dropped.resize(total_nodes);
 
     //adding dropouts in the all layer with the same prob
-    for (int hlayer_idx = 0; hlayer_idx < hlayer_num_nodes.size(); ++hlayer_idx) {
+    int neuron_idx = 0;
+    for (int hlayer_idx = 0; hlayer_idx < h_layer_num_nodes.size(); ++hlayer_idx) {
         // P(b|p) = p if b == true
         // P(b|p) = 1-p if b == false
         double drop_ratio = hlayer_dropout_probs[hlayer_idx];// + iter * delta;
         std::bernoulli_distribution bernoulli_coin(drop_ratio);
-        for (int j = 0; j < hlayer_num_nodes[hlayer_idx]; ++j)
-            is_dropped[hlayer_idx] = bernoulli_coin(util_rng);
+        for (int h_node_idx = 0; h_node_idx < h_layer_num_nodes[hlayer_idx]; ++h_node_idx){
+            is_dropped[neuron_idx] = bernoulli_coin(util_rng);
+            neuron_idx++;
+        }
     }
 }

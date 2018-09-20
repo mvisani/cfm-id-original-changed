@@ -80,7 +80,7 @@ public:
                                std::vector<azd_vals_t> &deltasB, std::vector<azd_vals_t> &a_values);
 
     unsigned int getTotalNumNodes() const { return total_nodes; };    //Only hidden and output nodes (not input nodes)
-    unsigned int getSecondLayerWeightOffset() const { return hlayer_num_nodes[0] * expected_num_input_features; };
+    unsigned int getSecondLayerWeightOffset() const { return h_layer_num_nodes[0] * expected_num_input_features; };
 
     virtual void getBiasIndexes(std::vector<unsigned int> &bias_indexes) override;
 
@@ -106,7 +106,7 @@ protected:
 
 private:
     // hold num of node for each hlayer
-    std::vector<int> hlayer_num_nodes;
+    std::vector<int> h_layer_num_nodes;
     // hold drop out prob for each hlayer
     std::vector<double> hlayer_dropout_probs;
     // addition paramenter for drop outs
