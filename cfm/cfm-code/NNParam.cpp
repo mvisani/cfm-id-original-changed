@@ -188,11 +188,16 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
         *zit = z_val;
         *ait = (*itaf++)(z_val);
 
-        if(use_dropout && !(*hit))
-            *ait /= (1.0 -  hlayer_dropout_probs[h_layer_idx]);
-        else if(use_dropout && !(*hit)){
-            *zit = 0.0;
-            *ait = 0.0;
+        // use dropout
+        if(use_dropout){
+            // if this node is dropped
+            if(*hit){
+                *zit = 0.0;
+                *ait = 0.0;
+            }
+            // else update with scalar
+            else
+                *ait /= (1.0 -  hlayer_dropout_probs[h_layer_idx]);
         }
         zit++;
         ait++;
@@ -212,11 +217,16 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
             *zit = z_val;
             *ait = (*itaf++)(z_val);
 
-            if(use_dropout && !(*hit))
-                *ait /= (1.0-  hlayer_dropout_probs[h_layer_idx]);
-            else if(use_dropout && !(*hit)){
-                *zit = 0.0;
-                *ait = 0.0;
+            // use dropout
+            if(use_dropout){
+                // if this node is dropped
+                if(*hit){
+                    *zit = 0.0;
+                    *ait = 0.0;
+                }
+                // else update  oupout with scalar
+                else
+                    *ait /= (1.0 -  hlayer_dropout_probs[h_layer_idx]);
             }
             zit++;
             ait++;

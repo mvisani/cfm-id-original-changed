@@ -567,7 +567,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             std::cout << iter << ":  Loss=" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
                       << std::endl;
             // let us roll Dropouts
-            param->updateDropoutsRate(cfg->ga_dropout_delta, cfg->ga_dropout_lowerbond);
+            // param->updateDropoutsRate(cfg->ga_dropout_delta, cfg->ga_dropout_lowerbond);
             param->rollDropouts(iter, cfg->ga_dropout_delta);
         }
 
