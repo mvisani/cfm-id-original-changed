@@ -553,6 +553,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 // update L2 only if lambda > 0
                 if(cfg->lambda > 0.0)
                     updateGradientForRegularizationTerm(&grads[0]);
+                param->rollDropouts(iter, cfg->ga_dropout_delta);
                 solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
             }
 
@@ -568,7 +569,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                       << std::endl;
             // let us roll Dropouts
             // param->updateDropoutsRate(cfg->ga_dropout_delta, cfg->ga_dropout_lowerbond);
-            param->rollDropouts(iter, cfg->ga_dropout_delta);
+            // param->rollDropouts(iter, cfg->ga_dropout_delta);
         }
 
         ga_no_progress_count = prev_loss >= loss ? ga_no_progress_count + 1 : 0;
