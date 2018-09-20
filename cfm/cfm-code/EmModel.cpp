@@ -553,7 +553,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 // update L2 only if lambda > 0
                 if(cfg->lambda > 0.0)
                     updateGradientForRegularizationTerm(&grads[0]);
-                param->rollDropouts(iter, cfg->ga_dropout_delta);
+                param->rollDropouts();
                 solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
             }
 

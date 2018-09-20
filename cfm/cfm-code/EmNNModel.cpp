@@ -27,7 +27,8 @@
 
 
 EmNNModel::EmNNModel(config_t *a_cfg, FeatureCalculator *an_fc, std::string &a_status_filename,
-             std::string initial_params_filename) : EmModel(a_cfg, an_fc, a_status_filename, initial_params_filename) {
+                     std::string initial_params_filename) : EmModel(a_cfg, an_fc, a_status_filename,
+                                                                    initial_params_filename) {
     int num_energies_to_include = cfg->map_d_to_energy.back() + 1;
     if (!initial_params_provided) {
         nn_param = boost::shared_ptr<NNParam>(
@@ -90,7 +91,7 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
         unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
         std::set<int> selected_trans_id;
-        if(!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
+        if (!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
             getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
 
         //Iterate over from_id (i)
@@ -127,7 +128,7 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
                 // Otherwise this will cause segfault
                 // You have been warned
                 double theta = nn_param->computeTheta(*fvs[idx], energy,
-                        z_values[idx], a_values[idx], false, true);
+                                                      z_values[idx], a_values[idx], false, true);
                 denom += exp(theta);
                 nu_terms[idx] = (*suft_values)[*it + suft_offset];
             }
@@ -275,4 +276,3 @@ double EmNNModel::getRegularizationTerm() {
     }
     return req_term;
 }
-

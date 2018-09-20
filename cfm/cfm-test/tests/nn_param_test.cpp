@@ -544,3 +544,76 @@ void NNParamsTestBiasIndexes::runTest(){
 	passed = pass;
 
 }
+
+NNParamsTestDropout::NNParamsTestDropout(){
+	description = "Test return of dropout";
+}
+
+void NNParamsTestDropout::runTest(){
+
+	bool pass = true;
+
+	std::vector<std::string> fnames;
+	fnames.push_back("IonicFeatures");	//5 features + bias =  6 features
+	std::vector<int> hlayer_numnodes {64,32,32,1};
+	std::vector<int> act_ids {RELU_NN_ACTIVATION_FUNCTION,RELU_NN_ACTIVATION_FUNCTION,
+						   RELU_NN_ACTIVATION_FUNCTION,LINEAR_NN_ACTIVATION_FUNCTION};
+
+	std::vector<double> dropout_probs {0.5,0.5,0,0};
+	NNTestParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
+
+	auto dropout_prob_ptr = param.getDropoutsProbPtr();
+	if(dropout_prob_ptr->size() != dropout_probs.size()) {
+		passed = false;
+		std::cout << "Unexpected dropout prob number " << dropout_prob_ptr->size()
+		<< " expecting:" << dropout_probs.size() << std::endl;
+	}
+
+	for(int i = 0; i < dropout_probs.size(); ++i){
+		if((*dropout_prob_ptr)[i] != dropout_probs[i]){
+			passed = false;
+			std::cout << "Unexpected dropout prob " << (*dropout_prob_ptr)[i]
+					  << "at layer: " << i << " expecting:" << dropout_probs[i] << std::endl;
+		}
+	}
+
+	std::string prev_selection = "";
+    std::string current_selection = "";
+
+    for(int trail = 0 ; trail < 10; ++ trail){
+        param.rollDropouts();
+        auto dropout_ptr = param.getDropoutsPtr();
+        auto neuron_idx = 0;
+        prev_selection = current_selection;
+
+        for(auto h_layer_idx = 0;  h_layer_idx < hlayer_numnodes.size();  ++h_layer_idx){
+            int num_active_neuron = 0;
+            auto num_neuron = hlayer_numnodes[h_layer_idx];
+            for(int i = 0 ; i < num_neuron; ++i){
+                if(!(*dropout_ptr)[neuron_idx]){
+                    num_active_neuron++;
+                    current_selection += '0';
+                } else{
+                    current_selection += '1';
+                }
+                neuron_idx++;
+            }
+
+            double expected_active_ratio = 1.0 - dropout_probs[h_layer_idx];
+            double active_ratio = (double) num_active_neuron/(double)num_neuron;
+            double active_ratio_diff = std::fabs( expected_active_ratio - active_ratio);
+            if(active_ratio_diff > 0.05){
+                pass = false;
+                double expected_count = (double)num_neuron * (1.0 - dropout_probs[h_layer_idx]);
+                std::cout << "Unexpected active neuron count: " << num_active_neuron
+                          << " at layer: " << h_layer_idx << " expecting: " << expected_count << std::endl;
+            }
+            if(current_selection == prev_selection){
+                pass = false;
+                std::cout << "same neurons dropped out bettwen two selection" << std::endl;
+            }
+        }
+	}
+	passed = pass;
+
+}

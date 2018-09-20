@@ -51,5 +51,10 @@ public:
 	void runTest();
 };
 
+class NNParamsTestDropout : public Test {
+public:
+	NNParamsTestDropout();
+	void runTest();
+};
 
 #endif // __NN_PARAM_TEST_H__

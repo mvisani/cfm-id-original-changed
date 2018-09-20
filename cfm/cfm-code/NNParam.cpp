@@ -64,7 +64,7 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
     //add this one for not to break stuff
     while (hlayer_dropout_probs.size() < h_layer_num_nodes.size())
         hlayer_dropout_probs.push_back(0);
-    rollDropouts(0, 0);
+    rollDropouts();
 }
 
 void NNParam::initWeights(int init_type) {
@@ -303,7 +303,7 @@ NNParam::NNParam(std::string &filename) : Param(filename) {
             // get  and roll drop outs
             for (int i = 0; i < num_layers; i++)
                 ss3 >> hlayer_dropout_probs[i];
-            rollDropouts(0, 0);
+            rollDropouts();
 
             tmp_z_values.resize(total_nodes);
             tmp_a_values.resize(total_nodes);
@@ -536,9 +536,11 @@ void NNParam::getBiasIndexes(std::vector<unsigned int> &bias_indexes) {
     }
 }
 
-void NNParam::rollDropouts(int iter, double delta) {
+void NNParam::rollDropouts() {
     if (is_dropped.empty())
         is_dropped.resize(total_nodes);
+    // set everything to false
+    std::fill(is_dropped.begin(),is_dropped.end(), false);
 
     //adding dropouts in the all layer with the same prob
     int neuron_idx = 0;
@@ -546,10 +548,18 @@ void NNParam::rollDropouts(int iter, double delta) {
         // P(b|p) = p if b == true
         // P(b|p) = 1-p if b == false
         double drop_ratio = hlayer_dropout_probs[hlayer_idx];// + iter * delta;
-        std::bernoulli_distribution bernoulli_coin(drop_ratio);
+
+        std::vector<int> indice;
         for (int h_node_idx = 0; h_node_idx < h_layer_num_nodes[hlayer_idx]; ++h_node_idx){
-            is_dropped[neuron_idx] = bernoulli_coin(util_rng);
-            neuron_idx++;
+            indice.push_back(neuron_idx);
+            neuron_idx ++;
         }
+
+        auto expected_deactive_count = (unsigned int)std::floor(drop_ratio * h_layer_num_nodes[hlayer_idx]);
+        std::shuffle(indice.begin(),indice.end(),util_rng);
+        indice.resize(expected_deactive_count);
+
+        for (const auto & idx: indice)
+            is_dropped[idx] = true;
     }
 }

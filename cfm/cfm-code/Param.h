@@ -75,6 +75,8 @@ public:
     // because std vector can not return bool&
     virtual boost::container::vector<bool> *getDropoutsPtr() { return nullptr; };
 
+    virtual std::vector<double> *getDropoutsProbPtr() { return nullptr; };
+
     unsigned int getNumWeights() { return weights.size(); };
 
     unsigned int getNumWeightsPerEnergyLevel() { return weights.size() / num_energy_levels; };
@@ -90,7 +92,7 @@ public:
     // do nothing roolDropots function
     // we may add Dropouts for linear model later
     virtual void updateDropoutsRate(double delta, double lower_bound) {};
-    virtual void rollDropouts(int iter, double delta) {};
+    virtual void rollDropouts() {};
 
 protected:
     std::vector<double> weights;

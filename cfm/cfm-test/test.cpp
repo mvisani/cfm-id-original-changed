@@ -122,6 +122,7 @@ int main(int argc, char *argv[])
 	if( mpi_nump == 1 ){
 		tests.push_back( new EMTestMiniBatchSelection() );
 		tests.push_back( new NNParamsTestBiasIndexes() );
+		tests.push_back( new NNParamsTestDropout());
 		tests.push_back( new NNParamsTestComputeAndAccumulateGradient() );
 		tests.push_back( new NNParamsTestComputeUnweightedGradients() );
 		tests.push_back( new NNParamsTestComputeDeltas() );
