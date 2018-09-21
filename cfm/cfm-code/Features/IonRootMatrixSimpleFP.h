@@ -21,7 +21,7 @@ param.cpp.
 class IonRootMatrixSimpleFP : public FingerPrintFeature {
 public:
     IonRootMatrixSimpleFP() {
-        size = 320;
+        size = 220;
         name = "IonRootMatrixSimpleFP";
     };
 
