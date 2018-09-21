@@ -16,7 +16,7 @@ param.cpp.
 #########################################################################*/
 #include "NLRootEncodings.h"
 
-void NLRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+void NLRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
@@ -26,11 +26,11 @@ void NLRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *NL,
     unsigned int distance_to_root = 2;
     unsigned int finger_print_size = 512;
 
-    addRDKitFingerPrintFeatures(fv, NL, finger_print_size, distance_to_root, ring_break, true, min_path, max_path);
+    addRDKitFingerPrintFeatures(fv, nl, finger_print_size, distance_to_root, ring_break, true, min_path, max_path);
 
 }
 
-void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                 const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
@@ -40,10 +40,10 @@ void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *NL,
     unsigned int atom_count = 10;
     unsigned finger_print_size = 512;
 
-    addRDKitFingerPrintFeatures(fv, NL, finger_print_size, atom_count, ring_break, false, min_path, max_path);
+    addRDKitFingerPrintFeatures(fv, nl, finger_print_size, atom_count, ring_break, false, min_path, max_path);
 }
 
-void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                      const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
@@ -52,10 +52,10 @@ void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *NL
     unsigned int finger_print_size = 512;
     unsigned int morgan_radius = 2;
 
-    addMorganFingerPrintFeatures(fv, NL, finger_print_size, distance_to_root, ring_break, morgan_radius);
+    addMorganFingerPrintFeatures(fv, nl, finger_print_size, distance_to_root, ring_break, morgan_radius);
 }
 
-void NLRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+void NLRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
@@ -65,5 +65,5 @@ void NLRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *NL,
     unsigned int distance_to_root = 3;
     unsigned finger_print_size = 512;
 
-    addRDKitFingerPrintFeatures(fv, NL, finger_print_size, distance_to_root, ring_break, true, min_path, max_path);
+    addRDKitFingerPrintFeatures(fv, nl, finger_print_size, distance_to_root, ring_break, true, min_path, max_path);
 }

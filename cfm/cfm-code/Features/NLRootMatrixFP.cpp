@@ -17,7 +17,7 @@ param.cpp.
 #########################################################################*/
 #include "NLRootMatrixFP.h"
 
-void NLRootMatrixFPN6::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+void NLRootMatrixFPN6::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
@@ -25,10 +25,10 @@ void NLRootMatrixFPN6::compute(FeatureVector &fv, const RootedROMolPtr *NL,
     unsigned int num_atoms = 6;
     bool include_adjacency_matrix = true;
 
-    addAdjacentMatrixRepresentationFeature(fv, NL, num_atoms, ring_break, include_adjacency_matrix);
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, ring_break, include_adjacency_matrix);
 }
 
-void NLRootMatrixFPN8::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+void NLRootMatrixFPN8::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
@@ -36,10 +36,10 @@ void NLRootMatrixFPN8::compute(FeatureVector &fv, const RootedROMolPtr *NL,
     unsigned int num_atoms = 8;
     bool include_adjacency_matrix = true;
 
-    addAdjacentMatrixRepresentationFeature(fv, NL, num_atoms, ring_break, include_adjacency_matrix);
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, ring_break, include_adjacency_matrix);
 }
 
-void NLRootMatrixFPN10::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+void NLRootMatrixFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                              const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
@@ -47,11 +47,11 @@ void NLRootMatrixFPN10::compute(FeatureVector &fv, const RootedROMolPtr *NL,
     unsigned int num_atoms = 10;
     bool include_adjacency_matrix = true;
 
-    addAdjacentMatrixRepresentationFeature(fv, NL, num_atoms, ring_break, include_adjacency_matrix);
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, ring_break, include_adjacency_matrix);
 }
 
 
-void NLRootMatrixFPN16::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+void NLRootMatrixFPN16::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                              const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
@@ -59,5 +59,5 @@ void NLRootMatrixFPN16::compute(FeatureVector &fv, const RootedROMolPtr *NL,
     unsigned int num_atoms = 16;
     bool include_adjacency_matrix = true;
 
-    addAdjacentMatrixRepresentationFeature(fv, NL, num_atoms, ring_break, include_adjacency_matrix);
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, ring_break, include_adjacency_matrix);
 }

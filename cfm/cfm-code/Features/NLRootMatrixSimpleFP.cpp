@@ -1,5 +1,5 @@
 /*#########################################################################
-# Mass Spec PredictNL and Identification of Metabolites
+# Mass Spec Prediction and Identification of Metabolites
 #
 # NLRootMatrixFPN10.cpp
 #
@@ -17,14 +17,13 @@ param.cpp.
 #########################################################################*/
 #include "NLRootMatrixSimpleFP.h"
 
-void NLRootMatrixSimpleFP::compute(FeatureVector &fv, const RootedROMolPtr *NL,
+void NLRootMatrixSimpleFP::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                    const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
-    unsigned int distance_to_root = 2;
     unsigned int num_atoms = 10;
     bool include_adjacency_matrix = false;
 
-    addAdjacentMatrixRepresentationFeature(fv, NL, num_atoms, ring_break, include_adjacency_matrix);
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, ring_break, include_adjacency_matrix);
 }
