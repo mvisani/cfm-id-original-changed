@@ -38,7 +38,9 @@ public:
 
     virtual void printToMasterOnly(const char *msg) = 0;
 
-    void broadcastParamsOrigMpi(Param *param);
+    void broadcastParamsWeightsOrigMpi(Param *param);
+
+    void broadcastDropouts(Param *param);
 
     void printWithWorkerId(const char *msg);
 

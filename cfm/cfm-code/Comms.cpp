@@ -118,9 +118,13 @@ double Comms::collectQInMaster(double Q) {
     return Qsum;    //Note: Only the master has the real Qsum.
 }
 
-void Comms::broadcastParamsOrigMpi(Param *param) {
+void Comms::broadcastParamsWeightsOrigMpi(Param *param) {
     std::vector<double> *weights = param->getWeightsPtr();
     MPI_Bcast(&((*weights)[0]), weights->size(), MPI::DOUBLE, MASTER, MPI_COMM_WORLD);
+}
+
+
+void Comms::broadcastDropouts(Param *param) {
 
     auto dropouts = param->getDropoutsPtr();
     if(nullptr != dropouts)

@@ -61,7 +61,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
     if (!initial_params_provided)
         param->initWeights(cfg->param_init_type);
-    comm->broadcastParamsOrigMpi(param.get());
+
+    // mpi broadcast init weights and dropouts for nn
+    comm->broadcastParamsWeightsOrigMpi(param.get());
+    comm->broadcastDropouts(param.get());
+
     validation_group = group;
 
     // Write the initialised params to file (we may get want to reload and use
@@ -201,21 +205,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 computeValidationMetrics(energy_level, molidx, mol_it, suft, val_q, num_val_mols, jaccard,
                                          w_jaccard);
             } else{
-                /*double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
-                std::cout << mol_it->getId() << " Loss=" << mol_loss;
-
-                mol_it->computePredictedSpectra(*param, true, true, energy_level);
-                Comparator *jaccard_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
-                Comparator *weighted_jaccard_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
-                std::cout << " Jaccard="
-                << jaccard_cmp->computeScore(mol_it->getSpectrum(energy_level),
-                        mol_it->getPredictedSpectrum(energy_level))
-                << " Weighted Jaccard=" << weighted_jaccard_cmp->computeScore(
-                        mol_it->getSpectrum(energy_level),
-                        mol_it->getPredictedSpectrum(energy_level)) << " ";
-                delete jaccard_cmp;
-                delete weighted_jaccard_cmp;
-                std::cout << std::endl;*/
                 num_training_mols++;
             }
 
@@ -553,12 +542,11 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 // update L2 only if lambda > 0
                 if(cfg->lambda > 0.0)
                     updateGradientForRegularizationTerm(&grads[0]);
-                param->rollDropouts();
                 solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
             }
 
             // this should be a better way in large number of cores
-            comm->broadcastParamsOrigMpi(param.get());
+            comm->broadcastParamsWeightsOrigMpi(param.get());
         }
 
         // End of batch
@@ -569,8 +557,9 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                       << std::endl;
             // let us roll Dropouts
             // param->updateDropoutsRate(cfg->ga_dropout_delta, cfg->ga_dropout_lowerbond);
-            // param->rollDropouts(iter, cfg->ga_dropout_delta);
+            param->rollDropouts();
         }
+        comm->broadcastDropouts(param.get());
 
         ga_no_progress_count = prev_loss >= loss ? ga_no_progress_count + 1 : 0;
     }
