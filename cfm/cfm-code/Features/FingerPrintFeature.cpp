@@ -387,7 +387,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
             for (int j = i + 1; j < num_atom; ++j) {
                 std::vector<int> temp_feature(num_bits_per_bond, 0);
                 // check if bond exits/defined
-                std::cout << adjacency_matrix[i][j];
+                //std::cout << adjacency_matrix[i][j];
                 if (adjacency_matrix[i][j] > 0) {
                     // one hot encoding bond type
                     int bond_type = adjacency_matrix[i][j] > 5 ? 5 : adjacency_matrix[i][j];
@@ -395,7 +395,7 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
                 }
                 tmp_fv.insert(tmp_fv.end(),temp_feature.begin(),temp_feature.end());
             }
-            std::cout << std::endl;
+            //std::cout << std::endl;
         }
     }
 

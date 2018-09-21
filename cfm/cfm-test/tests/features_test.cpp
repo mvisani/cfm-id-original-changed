@@ -1491,7 +1491,7 @@ void FeaturesTestFingerPrint::runTest(){
     }
     delete fv;
     delete fc;
-    
+
     //Rings
     //C1CCCCC1
     //C1=CC=CC=C1
