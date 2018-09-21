@@ -1448,8 +1448,8 @@ void FeaturesTestMetlinExample::runTest(){
 }
 
 FeaturesTestFingerPrint::FeaturesTestFingerPrint(){
-	name = "FeaturesTestFingerPrint";
-	description = "Test FingerPrint Features";
+	name = "FeaturesTestMatrixFP";
+	description = "Test TestMatrixFP Features";
 }
 
 void FeaturesTestFingerPrint::runTest(){
@@ -1457,28 +1457,33 @@ void FeaturesTestFingerPrint::runTest(){
 	bool pass = true;
 
     std::vector<std::string> fnames;
-    //fnames.push_back("NLRootMatrixFPN10");
-	fnames.push_back("NLRootEncodingD3");
+    fnames.push_back("NLRootMatrixFPN6");
+	fnames.push_back("IonRootMatrixFPN6");
+
     FeatureCalculator *fc = new FeatureCalculator( fnames );
 
     // test case #1
     // init a mol ptr
     RDKit::Atom *null_atom = nullptr;
 
+    // test case 1
+	romol_ptr_t ion = createMolPtr("CCCCCCCCCC");
+	initMolProps(ion);
+	RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
+
+	romol_ptr_t nl = createMolPtr("N");
+	initMolProps(nl);
+	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
+	nl.get()->setProp("IsRingBreak",0);
+
+	std::vector<int> expected_ion_fv{};
+	std::vector<int> expected_nl_fv{};
+
 	//Rings
 	//C1CCCCC1
 	//C1=CC=CC=C1
-    romol_ptr_t ion = createMolPtr("CCCCCCCCCC");
-    initMolProps(ion);
-    RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
-
-    romol_ptr_t nl = createMolPtr("N");
-    initMolProps(nl);
-    RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
-    nl.get()->setProp("IsRingBreak",0);
 
     FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
-	//fv->printDebugInfo();
 
     delete fv;
     delete fc;

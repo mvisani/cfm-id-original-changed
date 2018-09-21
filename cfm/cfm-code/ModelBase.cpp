@@ -74,7 +74,7 @@ void ModelBase::setMiniBatchFlags(std::vector<int> &minibatch_flags, int num_bat
         if(idx == num_batch)
             idx = 0;
     }
-    std::random_shuffle(minibatch_flags.begin(),minibatch_flags.end());
+    std::shuffle(minibatch_flags.begin(),minibatch_flags.end(), util_rng);
 }
 
 Solver *ModelBase::getSolver(int ga_method, double learning_rate) const {

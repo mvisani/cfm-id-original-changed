@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 		tests.push_back( new FeaturesTestQuadraticFeatures() );
 		tests.push_back( new FeaturesTestMetlinExample() );
 		tests.push_back( new FeaturesTestLength() );
-        //tests.push_back( new FeaturesTestFingerPrint());
+        tests.push_back( new FeaturesTestFingerPrint());
 		tests.push_back( new ParamsTestComputeTransitionThetas() );
 		tests.push_back( new ParamsTestComputeAndAccumulateGradient());
         //tests.push_back( new SpectrumCleanTest() ); NOTE: Missing File
