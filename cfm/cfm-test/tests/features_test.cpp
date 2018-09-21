@@ -1467,7 +1467,7 @@ void FeaturesTestFingerPrint::runTest(){
     RDKit::Atom *null_atom = nullptr;
 
     // test case 1
-	romol_ptr_t ion = createMolPtr("CCCCCCCCCC");
+	romol_ptr_t ion = createMolPtr("C=CCCCCCC");
 	initMolProps(ion);
 	RootedROMolPtr rtd_ion( ion, ion.get()->getAtomWithIdx(0), null_atom );
 
@@ -1476,17 +1476,25 @@ void FeaturesTestFingerPrint::runTest(){
 	RootedROMolPtr rtd_nl( nl, nl.get()->getAtomWithIdx(0), null_atom );
 	nl.get()->setProp("IsRingBreak",0);
 
-	std::vector<int> expected_ion_fv{};
-	std::vector<int> expected_nl_fv{};
-
-	//Rings
-	//C1CCCCC1
-	//C1=CC=CC=C1
-
+	std::vector<int> expected_fv{0,77,82,285, 309, 329, 344, 358, 365, 369, 377, 380, 388, 391, 399, 402, 410};
     FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 
+    if(fv->getNumSetFeatures() != expected_fv.size()){
+        pass = false;
+        std::cout << "unexpected number of set features " << fv->getNumSetFeatures() << std::endl;
+    }
+    for(int i = 0; i < expected_fv.size(); ++i){
+        if(expected_fv[i] !=  fv->getFeature(i)){
+            pass = false;
+            std::cout << "unexpected feature " << std::endl;
+        }
+    }
     delete fv;
     delete fc;
+    
+    //Rings
+    //C1CCCCC1
+    //C1=CC=CC=C1
 
 	passed = pass;
 };

@@ -380,19 +380,16 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
     if (include_adjacency_matrix) {
         // first bit indicate if there is a bond
         // rest 5 for each bond_type, one hot encoding
-        const unsigned int num_bits_per_bond = 6;
+        const unsigned int num_bits_per_bond = 5;
         // we only need half of matrix exclude diagonal
         // so i start from 1 not 0
         for (int i = 0; i < num_atom; ++i) {
             for (int j = i + 1; j < num_atom; ++j) {
                 std::vector<int> temp_feature(num_bits_per_bond, 0);
                 // check if bond exits/defined
-                std::cout << adjacency_matrix[i][j] << " ";
+                std::cout << adjacency_matrix[i][j];
                 if (adjacency_matrix[i][j] > 0) {
-                    // first bit indicate if there is a bond
-                    temp_feature[0] = 1;
                     // one hot encoding bond type
-                    // since adjacency_matrix[i][j] > 0, bondtype 0 does not make sense
                     int bond_type = adjacency_matrix[i][j] > 5 ? 5 : adjacency_matrix[i][j];
                     temp_feature[bond_type] = 1;
                 }
@@ -406,7 +403,6 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
     // add atoms information into FP
     // TODO FIX THOSE MAGIC NUMBERS
     const unsigned int num_max_degree = 4;
-
     const unsigned int num_atom_types = 6;
     const unsigned int num_degree_feature_size = 5;
     for (int i = 0; i < num_atom; ++i) {
@@ -431,14 +427,16 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
         tmp_fv.insert(tmp_fv.end(),atom_degree_feature.begin(),atom_degree_feature.end());
     }
 
-    const unsigned int size_path_fv = 5;
-    for (int i = 1; i <= num_atom; ++i) {
+    /*const unsigned int size_path_fv = 5;
+    for (int i = 0; i < num_atom; ++i) {
         std::vector<int> tmp_path_fv(size_path_fv, 0);
         // on hot encoding
-        int idx = path_record[0] > (size_path_fv - 1) ? (size_path_fv - 1) : path_record[0];
-        tmp_path_fv[idx] = 1;
+        if(visit_order_map.size() > i) {
+            int idx = path_record[i] > (size_path_fv - 1) ? (size_path_fv - 1) : path_record[i];
+            tmp_path_fv[idx] = 1;
+        }
         tmp_fv.insert(tmp_fv.end(),tmp_path_fv.begin(),tmp_path_fv.end());
-    }
+    }*/
 }
 
 // for all the samples we have max atoms with a 3 atom group is 10
