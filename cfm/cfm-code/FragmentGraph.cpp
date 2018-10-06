@@ -928,7 +928,7 @@ void FragmentGraph::ComputationalFragmenGraph::removeTransitions(std::vector<int
 }
 
 void FragmentGraph::clearAllSmiles() {
-    for (auto fragment: fragments) {
+    for (auto & fragment: fragments) {
         fragment->clearSmiles();
     }
 };
