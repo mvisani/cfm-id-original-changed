@@ -43,7 +43,7 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
     int isringbrk = brk.isRingBreak();
     int brk_ringidx = isringbrk * brk.getRingIdx() - (1 - isringbrk);
 
-    //Ccompute how many electrons were allocated to each side originally
+    //Compute how many electrons were allocated to each side originally
     std::pair<int, int> orig_epairs = computeOrigFreeElectronsPerFrag();
 
     //Determine the upper limit for how many electron pairs can be allocated
@@ -261,20 +261,40 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
         //Separate the ion and nl mols and add the child node
         recordOrigAtomIdxs(rwmol);
         std::vector<romol_ptr_t> mols = RDKit::MolOps::getMolFrags(rwmol, false);
-        if (mols.size() == 2) {
+
+        if(mols.size() == 1){
+            // if there is bond break on the ring
+            romol_ptr_t child_ion = mols[0];
+            // make a copy of ion/nl
+            romol_ptr_t child_nl = boost::make_shared<RDKit::ROMol>(RDKit::ROMol(*mols[0]));
+
+            //Record some of the properties of the break in the neutral loss
+            //e.g. ring break? aromaticity etc.
+            labelBreakPropertiesInNL(child_nl, ion, brk);
+
+            //Add the child node
+            std::vector<int> child_e_loc;
+            // this should be case like production ion
+            createChildIonElectronLocRecord(child_e_loc, child_ion);
+            children.push_back(
+                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc));
+        }
+        else if (mols.size() == 2) {
             int mol0_q = RDKit::MolOps::getFormalCharge(*mols[0].get());
             int ion_idx = (mol0_q == 0);
 
             //Record some of the properties of the break in the neutral loss
             //e.g. ring break? aromaticity etc.
-            romol_ptr_t nl = mols[1 - ion_idx];
-            labelBreakPropertiesInNL(nl, ion, brk);
+            romol_ptr_t child_ion = mols[ion_idx];
+            romol_ptr_t child_nl = mols[1 - ion_idx];
+
+            labelBreakPropertiesInNL(child_ion, ion, brk);
 
             //Add the child node
             std::vector<int> child_e_loc;
-            createChildIonElectronLocRecord(child_e_loc, mols[ion_idx]);
+            createChildIonElectronLocRecord(child_e_loc, child_ion);
             children.push_back(
-                    FragmentTreeNode(mols[ion_idx], nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc));
+                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc));
         } else if (mols.size() > 2) {
 
             //Collect the NL and ion parts (which may be multiple fragments each)
@@ -290,12 +310,13 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                     acc_mols[fragidx] = mols[mol_idx];
                 }
             }
-            romol_ptr_t nl = acc_mols[1 - charge_frag];
-            labelBreakPropertiesInNL(nl, ion, brk);
+            romol_ptr_t child_ion = acc_mols[charge_frag];
+            romol_ptr_t child_nl = acc_mols[1 - charge_frag];
+            labelBreakPropertiesInNL(child_ion, ion, brk);
             std::vector<int> child_e_loc;
-            createChildIonElectronLocRecord(child_e_loc, acc_mols[charge_frag]);
+            createChildIonElectronLocRecord(child_e_loc, child_ion);
             children.push_back(
-                    FragmentTreeNode(acc_mols[charge_frag], nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc));
+                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc));
         }
 
         //Undo the charge (and radical) assignment
@@ -625,28 +646,29 @@ void FragmentTreeNode::undoChargeAndRadical(RDKit::RWMol &rwmol, int charge_idx,
     atom->calcExplicitValence();
 }
 
-void FragmentTreeNode::labelBreakPropertiesInNL(romol_ptr_t &nl, romol_ptr_t &parent_ion, Break &brk) {
+void FragmentTreeNode::labelBreakPropertiesInNL(romol_ptr_t &current_nl, romol_ptr_t &parent_ion, Break &brk) {
 
     //Ring Properties
-    nl.get()->setProp("IsRingBreak", brk.isRingBreak());
+    current_nl.get()->setProp("IsRingBreak", brk.isRingBreak());
     int is_arom = 0, is_dbl_arom = 0;
     if (brk.getBondIdx() != -1) {
         RDKit::Bond *bond = parent_ion->getBondWithIdx(brk.getBondIdx());
         bond->getProp("InAromaticRing", is_arom);
         bond->getProp("InDblAromaticRing", is_dbl_arom);
     }
-    nl.get()->setProp("IsAromaticRingBreak", is_arom);
-    nl.get()->setProp("IsAromaticDblRingBreak", is_dbl_arom);
+    current_nl.get()->setProp("IsAromaticRingBreak", is_arom);
+    current_nl.get()->setProp("IsAromaticDblRingBreak", is_dbl_arom);
 
     //Broken Bond Type Properties
     if (fh->getExecFlag(3)) {
-        if (brk.isIonicBreak()) nl.get()->setProp("BrokenOrigBondType", 6);
-        else if (brk.isHydrogenOnlyBreak()) nl.get()->setProp("BrokenOrigBondType", 7);
+
+        if (brk.isIonicBreak()) current_nl.get()->setProp("BrokenOrigBondType", 6);
+        else if (brk.isHydrogenOnlyBreak()) current_nl.get()->setProp("BrokenOrigBondType", 7);
         else {
             RDKit::Bond *brokenbond = parent_ion.get()->getBondWithIdx(brk.getBondIdx());
             int bondtype;
             brokenbond->getProp("OrigBondType", bondtype);
-            nl.get()->setProp("BrokenOrigBondType", bondtype);
+            current_nl.get()->setProp("BrokenOrigBondType", bondtype);
         }
     }
 
@@ -706,23 +728,22 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
         //Only include rings with size less than MAX_BREAKABLE_RING_SIZE
         //(larger rings can exist, but will not break since it blows out the computation)
-        if (bit->size() > MAX_BREAKABLE_RING_SIZE) continue;
+        if (bit->size() > MAX_BREAKABLE_RING_SIZE)
+            continue;
 
         //All pairs of bonds within the ring, that don't
         //belong to any other ring
-        RDKit::RingInfo::INT_VECT::iterator it1, it2;
-        for (it1 = bit->begin(); it1 != bit->end(); ++it1) {
-            if (rinfo->numBondRings(*it1) != 1) continue;
-            for (it2 = it1 + 1; it2 != bit->end(); ++it2) {
-                if (rinfo->numBondRings(*it2) != 1) continue;
-
-                breaks.push_back(Break(std::pair<int, int>(*it1, *it2), ringidx, computeNumIonicAlloc(num_ionic)));
-            }
+        RDKit::RingInfo::INT_VECT::iterator it;
+        for (it = bit->begin(); it != bit->end(); ++it) {
+            if (rinfo->numBondRings(*it) != 1)
+                continue;
+            breaks.push_back(Break(*it,ringidx, computeNumIonicAlloc(num_ionic)));
         }
     }
 
     //Hydrogen only breaks (-1 bond_idx, and -1 ring_idx)
-    if (include_H_only_loss) breaks.push_back(Break());
+    if (include_H_only_loss)
+        breaks.push_back(Break());
 }
 
 void FragmentTreeNode::applyBreak(Break &brk, int ionic_allocation_idx) {
@@ -766,12 +787,7 @@ void FragmentTreeNode::applyBreak(Break &brk, int ionic_allocation_idx) {
         broken_bond->setProp("Broken", 1);
         broken_bond->getBeginAtom()->setProp("Root", 1);
         broken_bond->getEndAtom()->setProp("Root", 1);
-        if (brk.isRingBreak()) {
-            RDKit::Bond *broken_bond2 = ion.get()->getBondWithIdx(brk.getSecondBondIdx());
-            broken_bond2->setProp("Broken", 1);
-            broken_bond2->getBeginAtom()->setProp("OtherRoot", 1);
-            broken_bond2->getEndAtom()->setProp("OtherRoot", 1);
-        }
+
         allocatedCtdToFragment(ion.get(), broken_bond->getBeginAtom());
     }
 
@@ -848,12 +864,12 @@ void FragmentTreeNode::undoBreak(Break &brk, int ionic_allocation_idx) {
         broken_bond->getEndAtom()->setProp("Root", 0);
     }
 
-    if (brk.isRingBreak()) {
+    /*if (brk.isRingBreak()) {
         RDKit::Bond *broken_bond2 = ion.get()->getBondWithIdx(brk.getSecondBondIdx());
         broken_bond2->setProp("Broken", 0);
         broken_bond2->getBeginAtom()->setProp("OtherRoot", 0);
         broken_bond2->getEndAtom()->setProp("OtherRoot", 0);
-    }
+    }*/
 
     //Un-assign fragment indexes for any ionic fragments (which are otherwise always FragIdx=0)
     int ionic_idx = ionic_allocation_idx;

@@ -44,17 +44,14 @@ public:
     };
 
     // Constructor for a Ring Break
-    Break(std::pair<int, int> bond_idxs, int a_ring_idx,
+    Break(int a_bond_or_ionic_atom_idx, int a_ring_idx,
           int a_num_ionic_frag_allocations = 1)
             : h_only_break(false), ring_break(true), ionic_break(false),
               num_ionic_frag_allocations(a_num_ionic_frag_allocations),
-              bond_idx(bond_idxs.first), second_bond_idx(bond_idxs.second),
-              ring_idx(a_ring_idx), ionic_idx(-1) {};
+              bond_idx(a_bond_or_ionic_atom_idx), ring_idx(a_ring_idx), ionic_idx(-1) {};
 
     // Access functions (note: bools convert to ints for use in RDKit properties)
     int getBondIdx() const { return bond_idx; };
-
-    int getSecondBondIdx() const { return second_bond_idx; };
 
     int isRingBreak() const { return ring_break; };
 
@@ -127,8 +124,6 @@ public:
 
     double getTmpTheta(int energy) const { return tmp_thetas[energy]; };
 
-    bool hasTmpThetas() const { return tmp_thetas.size() > 0; };
-
     const std::vector<double> *getAllTmpThetas() const { return &tmp_thetas; };
 
     // Static Utility functions:
@@ -187,7 +182,7 @@ private:
 
     // Utility function to store various properties of the break in the generated
     // neutral loss
-    void labelBreakPropertiesInNL(romol_ptr_t &nl, romol_ptr_t &parent_ion,
+    void labelBreakPropertiesInNL(romol_ptr_t &current_nl, romol_ptr_t &parent_ion,
                                   Break &brk);
 
     // Utility function to label properties of the ion: is it negative? is it a
