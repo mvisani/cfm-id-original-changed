@@ -47,7 +47,7 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
     std::pair<int, int> orig_epairs = computeOrigFreeElectronsPerFrag();
 
     //Determine the upper limit for how many electron pairs can be allocated
-    int total_free_epairs = ion_free_epairs + !brk.isIonicBreak() + isringbrk;
+    int total_free_epairs = ion_free_epairs + !brk.isIonicBreak(); //+ isringbrk;
     int f0_max_limit = std::min(total_free_epairs, orig_epairs.first + MAX_E_MOVE);
     int f1_max_limit = std::min(total_free_epairs, orig_epairs.second + MAX_E_MOVE);
 
@@ -788,7 +788,10 @@ void FragmentTreeNode::applyBreak(Break &brk, int ionic_allocation_idx) {
         broken_bond->getBeginAtom()->setProp("Root", 1);
         broken_bond->getEndAtom()->setProp("Root", 1);
 
-        allocatedCtdToFragment(ion.get(), broken_bond->getBeginAtom());
+        // only label None Ring Break
+        // if it is ring break, we only have one item
+        if(!brk.isRingBreak())
+            allocatedCtdToFragment(ion.get(), broken_bond->getBeginAtom());
     }
 
     //Assign fragment indexes for any (other) ionic fragments (which are otherwise always FragIdx=0)
@@ -797,13 +800,14 @@ void FragmentTreeNode::applyBreak(Break &brk, int ionic_allocation_idx) {
         int ionic_q;
         (*ai)->getProp("IonicFragmentCharge", ionic_q);
         if (ionic_q != 0 && (!brk.isIonicBreak() || (*ai)->getIdx() != brk.getIonicIdx())) {
-            if (ionic_idx & 0x1) (*ai)->setProp("FragIdx", 1);
+            if (ionic_idx & 0x1)
+                (*ai)->setProp("FragIdx", 1);
             ionic_idx = ionic_idx >> 1;
         }
     }
 
     //Decrement the NumUnbrokenRings setting for atoms and bonds in a broken ring
-    if (brk.isRingBreak()) {
+    /*if (brk.isRingBreak()) {
         int ringidx = brk.getRingIdx();
         RDKit::RingInfo *rinfo = ion.get()->getRingInfo();
         RDKit::RingInfo::INT_VECT::iterator it;
@@ -823,7 +827,7 @@ void FragmentTreeNode::applyBreak(Break &brk, int ionic_allocation_idx) {
             bond->getProp("NumUnbrokenRings", numrings);
             bond->setProp("NumUnbrokenRings", numrings - 1);
         }
-    }
+    }*/
 }
 
 void FragmentTreeNode::undoBreak(Break &brk, int ionic_allocation_idx) {
@@ -907,10 +911,14 @@ void FragmentTreeNode::undoBreak(Break &brk, int ionic_allocation_idx) {
     }
 }
 
+
 void FragmentTreeNode::allocatedCtdToFragment(RDKit::ROMol *romol, RDKit::Atom *atom) {
 
+    // set fragidx to 1 until we meet the broken bone
+    // this works if there is only two fragments since all fragidx already set to 1
     int broken, fragidx;
     atom->setProp("FragIdx", 1);
+
     RDKit::ROMol::ADJ_ITER_PAIR itp = romol->getAtomNeighbors(atom);
     for (; itp.first != itp.second; ++itp.first) {
         RDKit::Atom *nbr_atom = romol->getAtomWithIdx(*itp.first);

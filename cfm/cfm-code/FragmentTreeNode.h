@@ -167,6 +167,8 @@ private:
 
     // Helper functions:
     // Used to produce FragIdx labels for a broken molecule
+    // assume all FragIdx set to 0 already
+    // set atom's FragIdx to 1 recursively until we meet the broken bond
     void allocatedCtdToFragment(RDKit::ROMol *romol, RDKit::Atom *atom);
 
     // Creates all the details and adds the children (with charge on either side)
