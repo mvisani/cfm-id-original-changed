@@ -24,7 +24,7 @@ param.cpp.
 class NLRootMatrixFPN6 : public FingerPrintFeature {
 public:
     NLRootMatrixFPN6() {
-        size = 282;
+        size = 141;
         name = "NLRootMatrixFPN6";
     };
 
@@ -34,7 +34,7 @@ public:
 class NLRootMatrixFPN8 : public FingerPrintFeature {
 public:
     NLRootMatrixFPN8() {
-        size = 456;
+        size = 228;
         name = "NLRootMatrixFPN8";
     };
 
@@ -45,7 +45,7 @@ public:
 class NLRootMatrixFPN10 : public FingerPrintFeature {
 public:
     NLRootMatrixFPN10() {
-        size = 670;
+        size = 335;
         name = "NLRootMatrixFPN10";
     };
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
@@ -54,7 +54,7 @@ public:
 class NLRootMatrixFPN16 : public FingerPrintFeature {
 public:
     NLRootMatrixFPN16() {
-        size = 1552;
+        size = 776;
         name = "NLRootMatrixFPN16";
     };
 

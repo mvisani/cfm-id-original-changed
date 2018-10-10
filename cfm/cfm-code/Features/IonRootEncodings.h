@@ -22,7 +22,7 @@ param.cpp.
 class IonRootEncodingD3 : public FingerPrintFeature {
 public:
     IonRootEncodingD3() {
-        size = 1024;
+        size = 512;
         name = "IonRootEncodingD3";
     };
 
@@ -34,7 +34,7 @@ public:
 class IonRootEncodingN10 : public FingerPrintFeature {
 public:
     IonRootEncodingN10() {
-        size = 1024;
+        size = 512;
         name = "IonRootEncodingN10";
     };
 
@@ -46,7 +46,7 @@ public:
 class IonRootEncodingD4 : public FingerPrintFeature {
 public:
     IonRootEncodingD4() {
-        size = 1024;
+        size = 512;
         name = "IonRootEncodingD4";
     };
 
@@ -58,7 +58,7 @@ public:
 class IonRootEncodingMorganD3 : public FingerPrintFeature {
 public:
     IonRootEncodingMorganD3() {
-        size = 1024;
+        size = 512;
         name = "IonRootEncodingMorganD3";
     };
 

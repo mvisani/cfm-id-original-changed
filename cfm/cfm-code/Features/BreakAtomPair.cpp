@@ -22,20 +22,18 @@ void
 BreakAtomPair::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const {
 
     int ring_break;
-    //nl->mol.get()->getProp("IsRingBreak", ring_break);
+    nl->mol.get()->getProp("IsRingBreak", ring_break);
 
-    //Ion Symbol(s)
-    std::string irootsymbol;
-    irootsymbol = ion->root->getSymbol();
-    replaceUncommonWithX(irootsymbol);
+    //Ion Symbol
+    std::string ion_root_symbol = ion->root->getSymbol();
+    replaceUncommonWithX(ion_root_symbol);
 
-    //Neutral Loss Symbol(s)
-    std::string nlrootsymbol;
-    nlrootsymbol = nl->root->getSymbol();
-    replaceUncommonWithX(nlrootsymbol);
+    //Neutral Loss Symbol
+    std::string nl_root_symbol = nl->root->getSymbol();
+    replaceUncommonWithX(nl_root_symbol);
 
     //Pairs
-    symbol_pair_t pair(irootsymbol, nlrootsymbol);
+    symbol_pair_t pair(ion_root_symbol, nl_root_symbol);
 
     //Iterate through all combinations of atom pairs, appending
     //a feature for each; 1 if it matches, 0 otherwise.
@@ -51,4 +49,8 @@ BreakAtomPair::compute(FeatureVector &fv, const RootedROMolPtr *ion, const Roote
             fv.addFeature(feature);
         }
     }
+    if(ring_break)
+        fv.addFeature(1);
+    else
+        fv.addFeature(0);
 }

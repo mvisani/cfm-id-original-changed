@@ -40,22 +40,15 @@ protected:
     void removeAtomInTheList(RDKit::RWMol &mol,
                              std::vector<unsigned int> &remove_atom_ids) const;
 
-    void addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
-                                     unsigned int finger_print_size, unsigned int limitation_param,
-                                     int ring_break, bool limited_by_distance,
-                                     unsigned int finger_print_min_path,
-                                     unsigned int finger_print_max_path) const;
+    void addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol, unsigned int finger_print_size,
+                                         unsigned int limitation_param, bool limited_by_distance,
+                                         unsigned int finger_print_min_path, unsigned int finger_print_max_path) const;
 
-    void addMorganFingerPrintFeatures(FeatureVector &fv,
-                                      const RootedROMolPtr *mol,
-                                      unsigned int finger_print_size,
-                                      unsigned int path_range,
-                                      int ring_break,
-                                      int radius) const;
+    void addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol, unsigned int finger_print_size,
+                                          unsigned int path_range, int radius) const;
 
-    void addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol,
-                                                unsigned int num_atom, int ring_break,
-                                                bool include_adjacency_matrix) const;
+    void addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol, unsigned int num_atom,
+                                                    bool include_adjacency_matrix) const;
 
 private:
 

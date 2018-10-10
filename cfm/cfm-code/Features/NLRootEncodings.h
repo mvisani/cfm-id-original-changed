@@ -23,7 +23,7 @@ class NLRootEncodingD3 : public FingerPrintFeature {
 
 public:
     NLRootEncodingD3() {
-        size = 1024;
+        size = 512;
         name = "NLRootEncodingD3";
     };
 
@@ -35,7 +35,7 @@ public:
 class NLRootEncodingN10 : public FingerPrintFeature {
 public:
     NLRootEncodingN10() {
-        size = 1024;
+        size = 512;
         name = "NLRootEncodingN10";
     };
 
@@ -47,7 +47,7 @@ public:
 class NLRootEncodingMorganD3 : public FingerPrintFeature {
 public:
     NLRootEncodingMorganD3() {
-        size = 1024;
+        size = 512;
         name = "NLRootEncodingMorganD3";
     };
 
@@ -58,7 +58,7 @@ public:
 class NLRootEncodingD4 : public FingerPrintFeature {
 public:
     NLRootEncodingD4() {
-        size = 1024;
+        size = 512;
         name = "NLRootEncodingD4";
     };
 

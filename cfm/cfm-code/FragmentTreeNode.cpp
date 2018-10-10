@@ -288,7 +288,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             romol_ptr_t child_ion = mols[ion_idx];
             romol_ptr_t child_nl = mols[1 - ion_idx];
 
-            labelBreakPropertiesInNL(child_ion, ion, brk);
+            labelBreakPropertiesInNL(child_nl, ion, brk);
 
             //Add the child node
             std::vector<int> child_e_loc;
@@ -312,7 +312,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             }
             romol_ptr_t child_ion = acc_mols[charge_frag];
             romol_ptr_t child_nl = acc_mols[1 - charge_frag];
-            labelBreakPropertiesInNL(child_ion, ion, brk);
+            labelBreakPropertiesInNL(child_nl, ion, brk);
             std::vector<int> child_e_loc;
             createChildIonElectronLocRecord(child_e_loc, child_ion);
             children.push_back(

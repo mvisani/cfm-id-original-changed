@@ -21,7 +21,7 @@
 class BreakAtomPair : public BreakFeature {
 public:
     BreakAtomPair() {
-        size = 36;
+        size = 37;
         name = "BreakAtomPair";
     };
 
