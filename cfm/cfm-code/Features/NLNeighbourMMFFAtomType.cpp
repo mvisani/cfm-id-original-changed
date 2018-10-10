@@ -26,6 +26,4 @@ void NLNeighbourMMFFAtomType::compute(FeatureVector &fv,
     fv.addFeatureAtIdx(0.0,
                        offset + 101); // Make the feature vector the right length
     addNeighbourAtomTypes(fv, nl, nl->root, offset);
-    if (ring_break)
-        addNeighbourAtomTypes(fv, nl, nl->other_root, offset);
 }

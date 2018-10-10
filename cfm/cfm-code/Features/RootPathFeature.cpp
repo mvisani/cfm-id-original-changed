@@ -20,17 +20,11 @@ param.cpp.
 #include <GraphMol/MolOps.h>
 
 
-void RootPathFeature::computeRootPaths(std::vector<path_t> &paths,
-                                       const RootedROMolPtr *mol, int len,
-                                       bool ring_break,
+void RootPathFeature::computeRootPaths(std::vector<path_t> &paths, const RootedROMolPtr *mol, int len,
                                        bool with_bond = false) const {
     path_t path_so_far;
     addPathsFromAtom(paths, mol->root, mol->mol, mol->root, path_so_far, len,
                      with_bond);
-    if (ring_break) {
-        addPathsFromAtom(paths, mol->other_root, mol->mol, mol->other_root,
-                         path_so_far, len, with_bond);
-    }
 }
 
 void RootPathFeature::addPathsFromAtom(std::vector<path_t> &paths,

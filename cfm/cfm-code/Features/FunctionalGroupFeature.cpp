@@ -28,9 +28,6 @@ void FunctionalGroupFeature::addFunctionalGroupFeatures(FeatureVector &fv, const
     std::vector<int> tmp_full_fv((num_grps + 1) * (max_depth + 1), 0);
     int initial_length = fv.getTotalLength();
     addFunctionalGroupFeaturesFromAtom(tmp_full_fv, mol->root, mol->mol, mol->root, max_depth, 0, extra);
-    if (is_ring_break)
-        addFunctionalGroupFeaturesFromAtom(tmp_full_fv, mol->other_root, mol->mol, mol->other_root, max_depth, 0,
-                                           extra);
 
     //Then copy the array into the sparse format fv
     std::vector<int>::iterator it = tmp_full_fv.begin();

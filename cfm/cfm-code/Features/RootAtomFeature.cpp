@@ -45,22 +45,4 @@ void RootAtomFeature::computeRootAtomFeature(FeatureVector &fv,
         fv.addFeatureAtIdx(1.0, offset + idx);
     else
         fv.addFeatureAtIdx(0.0, offset + idx);
-
-    // Add the other root atom (in case of ring break)
-    idx = 0;
-    found = false;
-    if (ring_break && mol->root->getSymbol() != mol->other_root->getSymbol()) {
-        for (it1 = ok_symbols->begin(); it1 != ok_symbols->end(); ++it1, idx++) {
-            if (ring_break && *it1 == mol->other_root->getSymbol()) {
-                fv.addFeatureAtIdx(1.0, offset + idx);
-                found = true;
-            }
-        }
-        if (mol->root->getSymbol() == "H") {
-            fv.addFeatureAtIdx(1.0, offset + idx++);
-            found = true;
-        }
-        if (!found)
-            fv.addFeatureAtIdx(1.0, offset + idx);
-    }
 }

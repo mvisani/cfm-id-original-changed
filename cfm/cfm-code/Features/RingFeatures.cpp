@@ -64,10 +64,6 @@ int RingFeatures::calcRootDistance(const RootedROMolPtr *mol) const {
         int depth = item.second;
         seen_idxs.insert(at->getIdx());
 
-        // Have we found the root?
-        if (at == mol->other_root)
-            return depth;
-
         // If not, keep looking
         RDKit::ROMol::ADJ_ITER_PAIR itp = mol->mol.get()->getAtomNeighbors(at);
         for (; itp.first != itp.second; ++itp.first) {

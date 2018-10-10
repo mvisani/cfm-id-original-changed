@@ -40,11 +40,10 @@ double getMassTol(double abs_tol, double ppm_tol, double mass);
 class RootedROMolPtr {
 public:
     RootedROMolPtr() = default;;    //Default Constructor
-    RootedROMolPtr(romol_ptr_t a_mol, RDKit::Atom *a_root, RDKit::Atom *an_other_root) :
-            mol(a_mol), root(a_root), other_root(an_other_root) {};
+    RootedROMolPtr(romol_ptr_t a_mol, RDKit::Atom *a_root) :
+            mol(a_mol), root(a_root) {};
     romol_ptr_t mol;
-    RDKit::Atom *root;
-    RDKit::Atom *other_root;    //Optional - for rings only
+    RDKit::Atom *root = nullptr;
 };
 
 //Helper function to compute the monoisotopic mass of a molecule

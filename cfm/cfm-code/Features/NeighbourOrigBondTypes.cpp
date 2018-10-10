@@ -43,19 +43,7 @@ void addNeighbourOrigBondFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
             fv.addFeatureAtIdx(1.0, idx);
         seen_types[bondtype] = 1;
     }
-    if (ring_break) {
-        itp = mol->mol->getAtomNeighbors(mol->other_root);
-        for (; itp.first != itp.second; ++itp.first) {
-            RDKit::Bond *bond =
-                    mol->mol->getBondBetweenAtoms(*itp.first, mol->other_root->getIdx());
-            int bondtype;
-            bond->getProp("OrigBondType", bondtype);
-            int idx = feature_offset + bondtype;
-            if (!seen_types[bondtype])
-                fv.addFeatureAtIdx(1.0, idx);
-            seen_types[bondtype] = 1;
-        }
-    }
+
     if (fv.getTotalLength() - feature_offset == 0)
         fv.addFeatureAtIdx(1.0, feature_offset); // No connected bonds
     if (fv.getTotalLength() - feature_offset < 6)

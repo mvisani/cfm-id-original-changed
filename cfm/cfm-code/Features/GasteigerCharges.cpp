@@ -47,19 +47,16 @@ GasteigerCharges::compute(FeatureVector &fv, const RootedROMolPtr *ion, const Ro
     //Ion
     double icharge, iothercharge;
     ion->root->getProp<double>("OrigGasteigerCharge", icharge);
-    if (ring_break) ion->other_root->getProp<double>("OrigGasteigerCharge", iothercharge);
 
     //Neutral Loss
     double nlcharge, nlothercharge;
     nl->root->getProp<double>("OrigGasteigerCharge", nlcharge);
-    if (ring_break) nl->other_root->getProp<double>("OrigGasteigerCharge", nlothercharge);
 
     //Collate the charges
     gasteigers.push_back(gasteiger_t(icharge, nlcharge));
     if (ring_break) gasteigers.push_back(gasteiger_t(iothercharge, nlothercharge));
 
     if (!ring_break) {
-
         //Then there are 6 x 6 = 36 possible configurations of the charge
         // - Allocate one bit to each
         int gc_ion = discretizeGasteigerCharge(gasteigers[0].first);
@@ -71,10 +68,12 @@ GasteigerCharges::compute(FeatureVector &fv, const RootedROMolPtr *ion, const Ro
             }
         }
         //Ring break charges
-        for (int i = 0; i < 36; i++) fv.addFeature(0.0);
+        for (int i = 0; i < 36; i++)
+            fv.addFeature(0.0);
     } else {
         //Non-Ring charges
-        for (int i = 0; i < 36; i++) fv.addFeature(0.0);
+        for (int i = 0; i < 36; i++)
+            fv.addFeature(0.0);
 
         //Ring Charges - set bit if either breaks fit the rule
         int gc0_ion = discretizeGasteigerCharge(gasteigers[0].first);
