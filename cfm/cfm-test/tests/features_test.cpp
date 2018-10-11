@@ -50,8 +50,9 @@ void FeaturesTestInit::runTest(){
 			std::cout << "Unexpected feature names" << std::endl;
 			pass = false;
 		}
-		if( fc->getNumFeatures() != 85 ){
-			std::cout << "Unexpected feature count";
+		// 1 for bias
+		if( fc->getNumFeatures() != (37 + 12 + 1) ){
+			std::cout << "Unexpected feature count" << std::endl;
 			pass = false;
 		}
 	}
@@ -100,7 +101,7 @@ void FeaturesTestBreakAtomPair::runTest(){
 		pass = false;
 	}
 	else{
-		if(fv->getFeature(1) != 3 ){
+		if(fv->getFeature(1) != 2 ){
 			std::cout << "Unexpected value for non-ring C-N root pair" << std::endl;
 			pass = false;
 		}
@@ -121,61 +122,14 @@ void FeaturesTestBreakAtomPair::runTest(){
 		pass = false;
 	}
 	else{
-		if(fv->getFeature(1) != 61 ){
+	    // 30 + 1 (bias)
+		if(fv->getFeature(1) != 31 ){
 			std::cout << "Unexpected value for non-ring X-C root pair" << std::endl;
 			pass = false;
 		}
 	}
 	delete fv;
 
-	//Ring Break double C-N
-	ion = createMolPtr("CC");
-	initMolProps(ion);
-	rtd_ion = RootedROMolPtr(ion, ion.get()->getAtomWithIdx(0));
-	nl = romol_ptr_t(RDKit::SmilesToMol("NN"));
-	initMolProps(nl);
-	nl.get()->setProp("IsRingBreak", 1);
-	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0));
-
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
-	if( fv->getNumSetFeatures() != 2 ){
-		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;
-	}
-	else{
-		if(fv->getFeature(1) != 4 ){
-			std::cout << "Unexpected value for ring double C-N root pair" << std::endl;
-			pass = false;
-		}
-	}
-	delete fv;
-
-	//Ring Break C-N, X-X
-	ion = createMolPtr("CB");
-	initMolProps(ion);
-	rtd_ion = RootedROMolPtr(ion, ion.get()->getAtomWithIdx(0));
-	nl = createMolPtr("NB");
-	initMolProps(nl);
-	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0));
-	nl.get()->setProp("IsRingBreak", 1);
-
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
-	if( fv->getNumSetFeatures() != 3 ){
-		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;
-	}
-	else{
-		if(fv->getFeature(1) != 4 ){
-			std::cout << "Unexpected value for ring C-N, X-X root pair" << std::endl;
-			pass = false;
-		}
-		if(fv->getFeature(2) != 72 ){
-			std::cout << "Unexpected value for ring C-N, X-X root pair" << std::endl;
-			pass = false;
-		}
-	}
-	delete fv;
-	delete fc;
 	passed = pass;
 }
 
@@ -237,31 +191,6 @@ void FeaturesTestRootPairs::runTest(){
 	}
 	delete fv;
 
-	//Ring "C-N,C-N,X-X,C-X,X-N"
-	ion = createMolPtr("C(N)(B)NNBB");
-	initMolProps(ion);
-	rtd_ion = RootedROMolPtr(ion, ion.get()->getAtomWithIdx(0));
-	nl.get()->setProp("IsRingBreak", 1);
-
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
-	if( fv->getNumSetFeatures() != 6 ){
-		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;
-	}
-	else{
-		bool ok = true;
-        if( fv->getFeature(1) != 8 ) ok = false;
-        if( fv->getFeature(2) != 9 ) ok = false;
-        if( fv->getFeature(3) != 24 ) ok = false;
-        if( fv->getFeature(4) != 128 ) ok = false;
-        if( fv->getFeature(5) != 144 ) ok = false;
-        if(!ok){
-			std::cout << "Unexpected value for ring C-N,C-N,X-X,C-X,X-N" << std::endl;
-			pass = false;
-		}
-	}
-	delete fv;
-
 	//Empty pairs (set feature indicating no pairs)
 	ion = createMolPtr("C");
 	initMolProps(ion);
@@ -279,8 +208,8 @@ void FeaturesTestRootPairs::runTest(){
 			pass = false;
 		}
 	}
-	delete fv;
 
+	delete fv;
 	delete fc;
 	passed = pass;
 
@@ -340,50 +269,7 @@ void FeaturesTestRootTriples::runTest(){
 			pass = false;
 		}
 	}
-	delete fv;
 
-	//Ring "C-C-N,C-C-N,C-X-C,N-X-X"
-	ion = createMolPtr("C");
-	nl = createMolPtr("C(BC)C(N)NBBN");
-	initMolProps(ion);
-	initMolProps(nl);
-	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0));
-	nl.get()->setProp("IsRingBreak", 1);
-
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
-	if( fv->getNumSetFeatures() != 5 ){
-		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;
-	}
-	else{
-		bool ok = true;
-        if( fv->getFeature(1) != 8 ) ok = false;
-        if( fv->getFeature(2) != 9 ) ok = false;
-        if( fv->getFeature(3) != 124 ) ok = false;
-        if( fv->getFeature(4) != 288 ) ok = false;
-        if(!ok){
-			std::cout << "Unexpected value for non-ring C-C-N,C-C-N,C-X-C,N-X-X" << std::endl;
-			pass = false;
-		}
-	}
-	delete fv;
-
-	//Empty triples (set feature indicating no pairs)
-	nl = createMolPtr("C");
-	initMolProps(nl);
-	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0));
-
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
-	if( fv->getNumSetFeatures() != 2 ){
-		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;
-	}
-	else{
-		if(fv->getFeature(1) != 1.0 ){
-			std::cout << "Missing feature flagging no triples" << std::endl;
-			pass = false;
-		}
-	}
 	delete fv;
 	delete fc;
 	passed = pass;
@@ -1003,8 +889,8 @@ void FeaturesTestBrokenOrigBondType::runTest(){
 
 	typedef std::pair<int, int> bond_test_spec_t;	//Break_idx, Expected Bond Type
 	std::vector<bond_test_spec_t> test_cases;
-	test_cases.push_back( bond_test_spec_t(0, 6) );	//IONIC
-	test_cases.push_back( bond_test_spec_t(31, 7) );	//H ONLY
+	test_cases.push_back( bond_test_spec_t(0, 6) );	 //IONIC
+	test_cases.push_back( bond_test_spec_t(31, 7) ); //H ONLY
 	test_cases.push_back( bond_test_spec_t(1, 3) );	//TRIPLE
 	test_cases.push_back( bond_test_spec_t(2, 1) );	//SINGLE
 	test_cases.push_back( bond_test_spec_t(5, 2) );	//DOUBLE

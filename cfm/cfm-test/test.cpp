@@ -120,16 +120,16 @@ int main(int argc, char *argv[])
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_nump );
 
 	if( mpi_nump == 1 ){
-		tests.push_back( new EMTestMiniBatchSelection() );
+		/*tests.push_back( new EMTestMiniBatchSelection() );
 		tests.push_back( new NNParamsTestBiasIndexes() );
 		tests.push_back( new NNParamsTestDropout());
 		tests.push_back( new NNParamsTestComputeAndAccumulateGradient() );
 		tests.push_back( new NNParamsTestComputeUnweightedGradients() );
 		tests.push_back( new NNParamsTestComputeDeltas() );
 		tests.push_back( new NNParamsTestComputeTransitionThetas() );
-		tests.push_back( new NNParamsTestSaveAndLoadFromFile() );
-		tests.push_back( new FragGenTestMaxRingBreaks() );
-		tests.push_back( new FVFragGraphSaveAndLoadState() );
+		tests.push_back( new NNParamsTestSaveAndLoadFromFile() );*/
+		//tests.push_back( new FragGenTestMaxRingBreaks() );
+		/*tests.push_back( new FVFragGraphSaveAndLoadState() );
 		tests.push_back( new FragGenTestDisallowDetourTransitions() );
 		tests.push_back( new InferenceTestSpectrumMessageWithIsotopesAndNoisePeak() );
 		tests.push_back( new InferenceTestSpectrumMessageNoisePeak() );
@@ -154,10 +154,10 @@ int main(int argc, char *argv[])
 		tests.push_back( new MessageTestBasics() );
 		tests.push_back( new MessageTestIteration() );
 		tests.push_back( new MessageTestCopyAssignment() );
-		tests.push_back( new IPFPTestComputeBeliefsSingleEnergy() );
-		tests.push_back( new FeaturesTestInit() );
+		tests.push_back( new IPFPTestComputeBeliefsSingleEnergy() );*/
+		// tests.push_back( new FeaturesTestInit() );
 		tests.push_back( new FeaturesTestBreakAtomPair() );
-		tests.push_back( new FeaturesTestBrokenOrigBondType() );
+		// tests.push_back( new FeaturesTestBrokenOrigBondType() );
 		tests.push_back( new FeaturesTestNeighbourOrigBondType() );
 		tests.push_back( new FeaturesTestRootPairs() );
 		tests.push_back( new FeaturesTestRootTriples() );

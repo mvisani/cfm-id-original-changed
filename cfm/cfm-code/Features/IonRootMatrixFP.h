@@ -45,7 +45,7 @@ public:
 class IonRootMatrixFPN10 : public FingerPrintFeature {
 public:
     IonRootMatrixFPN10() {
-        size = 235;
+        size = 335;
         name = "IonRootMatrixFPN10";
     };
 

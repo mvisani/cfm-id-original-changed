@@ -305,6 +305,7 @@ void FragGenTestPositiveEIMultibreak::runTest(){
 }
 
 FragGenTestPositiveEIOxygenAromatic::FragGenTestPositiveEIOxygenAromatic(){
+	name = "FragGenTestPositiveEIOxygenAromatic";
 	description = "Test generation of positive mode EI fragment tree for previous exception case NIST30539 C1=CC2OC=CC12 (aromatic oxygen)";
 }
 
@@ -321,7 +322,7 @@ void FragGenTestPositiveEIOxygenAromatic::runTest(){
 	config_t cfg; initDefaultConfig(cfg); cfg.ionization_mode = POSITIVE_EI_IONIZATION_MODE;
 	cfg.include_h_losses = true; 
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+    gg.compute(*startNode, 3, 0, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
