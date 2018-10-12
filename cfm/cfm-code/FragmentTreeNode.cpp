@@ -728,34 +728,42 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
     }
 
     //Generate Non-Ring Breaks
+    int ring_bound_count = 0;
     for (unsigned int bidx = 0; bidx < ion.get()->getNumBonds(); bidx++) {
         RDKit::Bond *bond = ion.get()->getBondWithIdx(bidx);
         bond->setProp("Broken", 0);
         bond->setProp("NumUnbrokenRings", rinfo->numBondRings(bidx));
         if (rinfo->numBondRings(bidx) == 0)
             breaks.push_back(Break(bidx, false, computeNumIonicAlloc(num_ionic)));
+        else
+            ring_bound_count ++;
     }
 
     //Ring Breaks
-    RDKit::RingInfo::VECT_INT_VECT brings = rinfo->bondRings();
-    RDKit::RingInfo::VECT_INT_VECT::iterator bit = brings.begin();
-    for (int ringidx = 0; bit != brings.end(); ++bit, ringidx++) {
+    // assume ring break are less likely to occur
+    // only create ring break if there is less than 5 none ring bond in the ion
+    if(ion.get()->getNumBonds() < (ring_bound_count + 5)) {
+        auto brings = rinfo->bondRings();
+        auto bit = brings.begin();
 
-        //Only include rings with size less than MAX_BREAKABLE_RING_SIZE
-        //(larger rings can exist, but will not break since it blows out the computation)
-        if (bit->size() > MAX_BREAKABLE_RING_SIZE)
-            continue;
+        for (int ringidx = 0; bit != brings.end(); ++bit, ringidx++) {
 
-        //All pairs of bonds within the ring, that don't
-        //belong to any other ring
-        RDKit::RingInfo::INT_VECT::iterator it;
-        for (it = bit->begin(); it != bit->end(); ++it) {
-            if (rinfo->numBondRings(*it) != 1)
+            //Only include rings with size less than MAX_BREAKABLE_RING_SIZE
+            //(larger rings can exist, but will not break since it blows out the computation)
+            if (bit->size() > MAX_BREAKABLE_RING_SIZE)
                 continue;
-            breaks.push_back(Break(*it,ringidx, computeNumIonicAlloc(num_ionic)));
+
+            //All pairs of bonds within the ring, that don't
+            //belong to any other ring
+            RDKit::RingInfo::INT_VECT::iterator it;
+            for (it = bit->begin(); it != bit->end(); ++it) {
+                //if (rinfo->numBondRings(*it) != 1)
+                //    continue;
+                breaks.push_back(Break(*it,ringidx, computeNumIonicAlloc(num_ionic)));
+            }
         }
     }
-
+    
     //Hydrogen only breaks (-1 bond_idx, and -1 ring_idx)
     if (include_H_only_loss)
         breaks.push_back(Break());
