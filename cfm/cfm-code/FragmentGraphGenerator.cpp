@@ -138,9 +138,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 
     if (verbose)
         std::cout << current_graph->getOriginalNumFragments() << ":" << RDKit::MolToSmiles(*node.ion.get()) << std::endl;
-
-    std::cout << current_graph->getOriginalNumFragments() << ":" << RDKit::MolToSmiles(*node.ion.get()) << std::endl;
-
+    
     //Add the node to the graph, and return a fragment id
     int id = -1;
     if (mols_to_fv)
