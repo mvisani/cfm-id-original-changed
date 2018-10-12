@@ -138,7 +138,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 
     if (verbose)
         std::cout << current_graph->getOriginalNumFragments() << ":" << RDKit::MolToSmiles(*node.ion.get()) << std::endl;
-    
+
     //Add the node to the graph, and return a fragment id
     int id = -1;
     if (mols_to_fv)
@@ -164,27 +164,13 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
     node.generateBreaks(breaks, h_loss_allowed);
 
-    bool ring_break_only = false;
-    for(auto &brk :breaks){
-        ring_break_only = ring_break_only || brk.isRingBreak();
-        if(ring_break_only)
-            break;
-    }
+    bool ring_can_break = (remaining_ring_breaks > 0);
 
-    if(ring_break_only)
-        ring_break_only = remaining_ring_breaks > 0;
-
-    ring_break_only = false;
     //Iterate over the possible breaks
     for (auto it =  breaks.begin(); it != breaks.end(); ++it) {
 
-        if (ring_break_only && !it->isRingBreak())
+        if(!ring_can_break && it->isRingBreak())
             continue;
-
-        if (it->isRingBreak() && !ring_break_only)
-            continue;
-
-        int child_remaining_depth = remaining_depth - 1;
 
         for (int ifrag_idx = 0; ifrag_idx < it->getNumIonicFragAllocations(); ifrag_idx++) {
 
@@ -192,6 +178,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
             node.generateChildrenOfBreak(*it);
 
             int child_remaining_ring_breaks = remaining_ring_breaks;
+            int child_remaining_depth = remaining_depth - 1;
             if (it->isRingBreak() && remaining_ring_breaks > 0) {
                 child_remaining_depth ++;
                 child_remaining_ring_breaks--;
