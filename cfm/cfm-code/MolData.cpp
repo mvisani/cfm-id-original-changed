@@ -83,7 +83,7 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
     //if (cfg->do_prelim_bfs && !cfg->allow_frag_detours && cfg->fg_depth > 1)
     //    fgen.compute(*startnode, 1, 0, -1, cfg->max_ring_breaks); // Initial breadth-first to depth 1 (faster?)
 
-    fgen.compute(*startnode, cfg->fg_depth, 0, -1, cfg->model_depth);
+    fgen.compute(*startnode, cfg->fg_depth, 0, -1, cfg->max_ring_breaks);
 
     if (!cfg->allow_frag_detours)
         fg->removeDetours();

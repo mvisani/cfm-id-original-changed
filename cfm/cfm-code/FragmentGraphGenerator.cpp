@@ -128,7 +128,7 @@ int FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 //The output will be appended to the current_graph
 void
 FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int depth, int parentid,
-                                int hard_depth_max) {
+                                int remaining_ring_breaks) {
 
     if (current_graph->getOriginalNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
         || current_graph->getOriginalNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
@@ -139,6 +139,8 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
     if (verbose)
         std::cout << current_graph->getOriginalNumFragments() << ":" << RDKit::MolToSmiles(*node.ion.get()) << std::endl;
 
+    std::cout << current_graph->getOriginalNumFragments() << ":" << RDKit::MolToSmiles(*node.ion.get()) << std::endl;
+
     //Add the node to the graph, and return a fragment id
     int id = -1;
     if (mols_to_fv)
@@ -147,14 +149,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
         id = current_graph->addToGraph(node, parentid);
 
     //Only compute to the desired depth
-    if (remaining_depth <= 0)
-        return;
-
-    //Or max depth limitation reached
-    //this means depth of tree with ring break can not pass this point
-    //hard_depth_max == 0, ignore this check
-    if(hard_depth_max == depth && hard_depth_max != 0)
-        return;
+    if (remaining_depth <= 0) return;
 
     //If the node was already in the graph at sufficient depth, skip any further computation
     if (alreadyComputed(id, remaining_depth)) {
@@ -171,22 +166,44 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
     node.generateBreaks(breaks, h_loss_allowed);
 
+    bool ring_break_only = false;
+    for(auto &brk :breaks){
+        ring_break_only = ring_break_only || brk.isRingBreak();
+        if(ring_break_only)
+            break;
+    }
+
+    if(ring_break_only)
+        ring_break_only = remaining_ring_breaks > 0;
+
+    ring_break_only = false;
     //Iterate over the possible breaks
-    std::vector<Break>::iterator it = breaks.begin();
-    for (; it != breaks.end(); ++it) {
+    for (auto it =  breaks.begin(); it != breaks.end(); ++it) {
+
+        if (ring_break_only && !it->isRingBreak())
+            continue;
+
+        if (it->isRingBreak() && !ring_break_only)
+            continue;
+
+        int child_remaining_depth = remaining_depth - 1;
 
         for (int ifrag_idx = 0; ifrag_idx < it->getNumIonicFragAllocations(); ifrag_idx++) {
 
             node.applyBreak(*it, ifrag_idx);
             node.generateChildrenOfBreak(*it);
 
-            //int child_remaining_ring_breaks = remaining_ring_breaks;
-            int child_remaining_depth_depth = it->isRingBreak() ? remaining_depth : remaining_depth -1;
+            int child_remaining_ring_breaks = remaining_ring_breaks;
+            if (it->isRingBreak() && remaining_ring_breaks > 0) {
+                child_remaining_depth ++;
+                child_remaining_ring_breaks--;
+            }
 
             //Recur over children
             std::vector<FragmentTreeNode>::iterator itt = node.children.begin();
-            for (; itt != node.children.end(); ++itt)
-                compute(*itt, child_remaining_depth_depth, depth + 1, id, hard_depth_max);
+            for (; itt != node.children.end(); ++itt) {
+                compute(*itt, child_remaining_depth, depth + 1, id, child_remaining_ring_breaks);
+            }
 
             //Undo and remove children
             node.undoBreak(*it, ifrag_idx);
