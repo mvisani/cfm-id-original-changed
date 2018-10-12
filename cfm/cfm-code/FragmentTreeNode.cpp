@@ -747,7 +747,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
     //Ring Breaks
     // assume ring break are less likely to occur
     // only create ring break if there is less than 5 none ring bond
-    if(ion.get()->getNumBonds() < (breakbale_ring_bound_count + 5)) {
+    if(ion.get()->getNumBonds() < (breakbale_ring_bound_count + 10)) {
 
         auto brings = rinfo->bondRings();
         auto bit = brings.begin();
@@ -763,14 +763,13 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
             //belong to any other ring
             RDKit::RingInfo::INT_VECT::iterator it;
             for (it = bit->begin(); it != bit->end(); ++it) {
-                //if (rinfo->numBondRings(*it) != 1)
-                //    continue;
                 if ((ion.get()->getBondWithIdx(*it))->getBondType() == RDKit::Bond::AROMATIC)
                     continue;
                 breaks.push_back(Break(*it, ringidx, computeNumIonicAlloc(num_ionic)));
             }
         }
     }
+
     //Hydrogen only breaks (-1 bond_idx, and -1 ring_idx)
     if (include_H_only_loss)
         breaks.push_back(Break());
