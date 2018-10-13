@@ -728,26 +728,50 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
     }
 
     //Generate Non-Ring Breaks
-    int breakbale_ring_bound_count = 0;
-    int aromatic_bound_count = 0;
+    //int breakbale_ring_bound_count = 0;
+    //int aromatic_bound_count = 0;
     for (unsigned int bidx = 0; bidx < ion.get()->getNumBonds(); bidx++) {
         RDKit::Bond *bond = ion.get()->getBondWithIdx(bidx);
         bond->setProp("Broken", 0);
         bond->setProp("NumUnbrokenRings", rinfo->numBondRings(bidx));
         if (rinfo->numBondRings(bidx) == 0)
             breaks.push_back(Break(bidx, false, computeNumIonicAlloc(num_ionic)));
-        else{
+        /*else{
             if(bond->getBondType() == RDKit::Bond::AROMATIC)
                 aromatic_bound_count ++;
             else
                 breakbale_ring_bound_count ++;
-        }
+        }*/
     }
 
     //Ring Breaks
+    // Find Ring Groups
+    auto bond_rings = rinfo->bondRings();
+    auto bond_ring_it = bond_rings.begin();
+
+    std::set<int> breakable_rings;
+    for (int ringidx = 0; bond_ring_it != bond_rings.end(); ++bond_ring_it, ringidx++) {
+        bool is_independent = true;
+        bool has_aromatic_bond = false;
+        RDKit::RingInfo::INT_VECT::iterator ring_bond_idx_it;
+        for (ring_bond_idx_it = bond_ring_it->begin(); ring_bond_idx_it != bond_ring_it->end(); ++ring_bond_idx_it) {
+            if(rinfo->numBondRings(*ring_bond_idx_it) > 1)
+                // found connected rings
+                is_independent = false;
+            if((ion.get()->getBondWithIdx(*ring_bond_idx_it))->getBondType() == RDKit::Bond::AROMATIC)
+                // or aromtic ring
+                has_aromatic_bond = true;
+        }
+        if(is_independent)
+            breakable_rings.insert(ringidx);
+        else if(!has_aromatic_bond)
+            breakable_rings.insert(ringidx);
+
+    }
+
     // assume ring break are less likely to occur
     // only create ring break if there is less than 5 none ring bond
-    if(ion.get()->getNumBonds() < (breakbale_ring_bound_count + 10)) {
+    //if(ion.get()->getNumBonds() < (breakbale_ring_bound_count + 10)) {
 
         auto brings = rinfo->bondRings();
         auto bit = brings.begin();
@@ -759,6 +783,9 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
             if (bit->size() > MAX_BREAKABLE_RING_SIZE)
                 continue;
 
+            if( breakable_rings.find(ringidx) == breakable_rings.end())
+                continue;
+
             //All pairs of bonds within the ring, that don't
             //belong to any other ring
             RDKit::RingInfo::INT_VECT::iterator it;
@@ -768,7 +795,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
                 breaks.push_back(Break(*it, ringidx, computeNumIonicAlloc(num_ionic)));
             }
         }
-    }
+    //}
 
     //Hydrogen only breaks (-1 bond_idx, and -1 ring_idx)
     if (include_H_only_loss)
