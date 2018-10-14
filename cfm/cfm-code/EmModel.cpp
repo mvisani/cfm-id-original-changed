@@ -306,10 +306,6 @@ void EmModel::molDataPreProcessing(std::vector<MolData> &molDataSet, int energy_
                 mol.pruneGraphBySpectra(-1, cfg->abs_mass_tol, cfg->ppm_mass_tol, cfg->aggressive_graph_pruning);
             }
         }
-        if (cfg->add_noise) {
-            mol.addNoise(cfg->noise_max, cfg->noise_sum, cfg->abs_mass_tol, cfg->ppm_mass_tol);
-            mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-        }
     }
 }
 
