@@ -251,7 +251,8 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
     for (; it != breaks.end(); ++it) {
 
         //Record the index where the children for this break start (if there are any)
-        if (remaining_ring_breaks == 0 && it->isRingBreak()) continue;
+        if (remaining_ring_breaks == 0 && it->isRingBreak())
+            continue;
 
         int start_idx = node.children.size();
 

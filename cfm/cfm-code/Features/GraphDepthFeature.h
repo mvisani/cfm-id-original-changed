@@ -30,6 +30,4 @@ class GraphDepthFeature: public BreakFeature{
         void
         compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
 };
-
-
 #endif //CFM_GRAPHDEPTHFEATURE_H
