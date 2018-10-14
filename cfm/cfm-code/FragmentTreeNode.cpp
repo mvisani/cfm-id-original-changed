@@ -691,7 +691,6 @@ void FragmentTreeNode::labelBreakPropertiesInNL(romol_ptr_t &current_nl, romol_p
 
 void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H_only_loss) {
 
-    int israd = moleculeHasSingleRadical(ion.get());
     int num_ionic = countNumIonicFragments(ion.get());
     RDKit::PeriodicTable *pt = RDKit::PeriodicTable::getTable();
 
@@ -727,18 +726,49 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
             breaks.push_back(Break((*ai)->getIdx(), true, computeNumIonicAlloc(num_ionic - 1)));
     }
 
+    // if previous break is a ring break
+    // we only want to break on the rest of ring bonds
+    std::set<int> half_broke_ring_bonds;
+    for (unsigned int bidx = 0; bidx < ion.get()->getNumBonds(); bidx++) {
+        int was_on_the_ring;
+        RDKit::Bond *bond = ion.get()->getBondWithIdx(bidx);
+        bond->getProp("OnTheRing", was_on_the_ring);
+        // if bond was on the ring and now is not
+        // it is the bond on the half broke ring
+        if (rinfo->numBondRings(bidx) == 0 && was_on_the_ring){
+            half_broke_ring_bonds.insert(bidx);
+            bond->setProp("OnTheRing", 0);
+        }
+    }
+
+    /*if(!half_broke_ring_bonds.empty()){
+        for(auto & idx : half_broke_ring_bonds)
+            std::cout << idx << " ";
+        std::cout << std::endl;
+    }*/
+
     //Generate Non-Ring Breaks
     //and count how many bonds are ring bond
     // how many bonds are attached to ring
     int ring_bonds_count = 0;
     for (unsigned int bidx = 0; bidx < ion.get()->getNumBonds(); bidx++) {
+        // if we only want to do half ring break
+        if(!half_broke_ring_bonds.empty()
+        && half_broke_ring_bonds.find(bidx) != half_broke_ring_bonds.end())
+            continue;
+
         RDKit::Bond *bond = ion.get()->getBondWithIdx(bidx);
         bond->setProp("Broken", 0);
         bond->setProp("NumUnbrokenRings", rinfo->numBondRings(bidx));
-        if (rinfo->numBondRings(bidx) == 0)
+
+        if (rinfo->numBondRings(bidx) == 0) {
             breaks.push_back(Break(bidx, false, computeNumIonicAlloc(num_ionic)));
-        else
+            bond->setProp("OnTheRing", 0);
+        }
+        else{
             ring_bonds_count ++;
+            bond->setProp("OnTheRing", 1);
+        }
     }
 
     //Ring Breaks
@@ -749,6 +779,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
     std::set<int> breakable_rings;
     for (int ringidx = 0; bond_ring_it != bond_rings.end(); ++bond_ring_it, ringidx++) {
+
         bool is_independent = true;
         bool has_aromatic_bond = false;
         RDKit::RingInfo::INT_VECT::iterator ring_bond_idx_it;
@@ -767,8 +798,8 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
     }
 
     // assume ring break are less likely to occur
-    // only create ring break if there is less than 5 none ring bond
-    //if(ion.get()->getNumBonds() < (ring_bonds_count + 5)) {
+    // only create ring break if there is less than 10 none ring bond
+    if(ion.get()->getNumBonds() < (ring_bonds_count + 10)) {
 
         auto brings = rinfo->bondRings();
         auto bit = brings.begin();
@@ -787,12 +818,17 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
             //belong to any other ring
             RDKit::RingInfo::INT_VECT::iterator it;
             for (it = bit->begin(); it != bit->end(); ++it) {
+
+                if(!half_broke_ring_bonds.empty()
+                   && half_broke_ring_bonds.find(*it) != half_broke_ring_bonds.end())
+                    continue;
+
                 if ((ion.get()->getBondWithIdx(*it))->getBondType() == RDKit::Bond::AROMATIC)
                     continue;
                 breaks.push_back(Break(*it, ringidx, computeNumIonicAlloc(num_ionic)));
             }
         }
-    //}
+    }
 
     //Hydrogen only breaks (-1 bond_idx, and -1 ring_idx)
     if (include_H_only_loss)
