@@ -87,6 +87,15 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
         throw FragmentGraphGenerationException();
     }
 
+    // init to avoid crash
+    // value does matter at this stage
+    for (unsigned int bidx = 0; bidx < rwmol->getNumBonds(); bidx++) {
+        RDKit::Bond *bond =   rwmol->getBondWithIdx(bidx);
+        bond->setProp("OnTheRing", rinfo->numBondRings(bidx));
+    }
+
+    rwmol->setProp("HadRingBreak", 0);
+
     //Ionize the molecule
     applyIonization(rwmol, ionization_mode);
 
