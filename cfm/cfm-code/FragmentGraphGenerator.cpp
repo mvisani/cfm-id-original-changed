@@ -91,7 +91,10 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
     // value does matter at this stage
     for (unsigned int bidx = 0; bidx < rwmol->getNumBonds(); bidx++) {
         RDKit::Bond *bond =   rwmol->getBondWithIdx(bidx);
-        bond->setProp("OnTheRing", rinfo->numBondRings(bidx));
+        if(rinfo->numBondRings(bidx) == 0)
+            bond->setProp("OnTheRing", 0);
+        else
+            bond->setProp("OnTheRing", 1);
     }
 
     rwmol->setProp("HadRingBreak", 0);

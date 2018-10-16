@@ -291,6 +291,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 }
             }
 
+            child_ion->setProp("HadRingBreak", 1);
             children.push_back(
                     FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc));
         }
@@ -308,6 +309,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             //Add the child node
             std::vector<int> child_e_loc;
             createChildIonElectronLocRecord(child_e_loc, child_ion);
+            child_ion->setProp("HadRingBreak", 0);
             children.push_back(
                     FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc));
         } else if (mols.size() > 2) {
@@ -330,6 +332,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             labelBreakPropertiesInNL(child_nl, ion, brk);
             std::vector<int> child_e_loc;
             createChildIonElectronLocRecord(child_e_loc, child_ion);
+            child_ion->setProp("HadRingBreak", 0);
             children.push_back(
                     FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc));
         }
@@ -729,7 +732,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
     // if previous break is a ring break
     // we only want to break on the rest of ring bonds
     std::set<int> half_broke_ring_bonds;
-    int had_ring_break = 0;
+    int had_ring_break;
     ion.get()->getProp("HadRingBreak", had_ring_break);
     if(had_ring_break){
         for (unsigned int bidx = 0; bidx < ion.get()->getNumBonds(); bidx++) {
@@ -771,30 +774,10 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
     auto bond_rings = rinfo->bondRings();
     auto bond_ring_it = bond_rings.begin();
 
-    std::set<int> breakable_rings;
-    for (int ringidx = 0; bond_ring_it != bond_rings.end(); ++bond_ring_it, ringidx++) {
-
-        bool is_independent = true;
-        bool has_aromatic_bond = false;
-        RDKit::RingInfo::INT_VECT::iterator ring_bond_idx_it;
-        for (ring_bond_idx_it = bond_ring_it->begin(); ring_bond_idx_it != bond_ring_it->end(); ++ring_bond_idx_it) {
-            if(rinfo->numBondRings(*ring_bond_idx_it) > 1)
-                // found connected rings
-                is_independent = false;
-            if((ion.get()->getBondWithIdx(*ring_bond_idx_it))->getBondType() == RDKit::Bond::AROMATIC)
-                // or aromtic ring
-                has_aromatic_bond = true;
-        }
-        if(is_independent)
-            breakable_rings.insert(ringidx);
-        else if(!has_aromatic_bond)
-            breakable_rings.insert(ringidx);
-    }
-
     // assume ring break are less likely to occur
     // only create ring break if there is less than 10 none ring bond
-    if(ion.get()->getNumBonds() < (ring_bonds_count + 10)) {
 
+    if(!half_broke_ring_bonds.empty()){
         auto brings = rinfo->bondRings();
         auto bit = brings.begin();
 
@@ -805,26 +788,21 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
             if (bit->size() > MAX_BREAKABLE_RING_SIZE)
                 continue;
 
-            if( breakable_rings.find(ringidx) == breakable_rings.end())
-                continue;
-
-            ion.get()->setProp("HadRingBreak", 1);
-
             //All pairs of bonds within the ring, that don't
             //belong to any other ring
             RDKit::RingInfo::INT_VECT::iterator it;
             for (it = bit->begin(); it != bit->end(); ++it) {
 
-                if(!half_broke_ring_bonds.empty()
-                   && half_broke_ring_bonds.find(*it) != half_broke_ring_bonds.end())
-                    continue;
-
                 if ((ion.get()->getBondWithIdx(*it))->getBondType() == RDKit::Bond::AROMATIC)
                     continue;
+
                 breaks.push_back(Break(*it, ringidx, computeNumIonicAlloc(num_ionic)));
             }
         }
+
     }
+
+
 
     //Hydrogen only breaks (-1 bond_idx, and -1 ring_idx)
     if (include_H_only_loss)
