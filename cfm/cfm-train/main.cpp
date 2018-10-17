@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
                 } else {
                     time_t before, after;
                     before = time(nullptr);
-                    mit->computeFragmentGraphAndReplaceMolsWithFVs(&fc);
+                    mit->computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
                     std::ofstream eout;
                     eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
                     after = time(nullptr);

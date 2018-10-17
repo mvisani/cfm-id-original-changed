@@ -88,7 +88,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     int em_no_progress_count = 0;
     bool switch_to_weighted_jaccard = false;
 
-    molDataPreProcessing(molDataSet, energy_level);
+    molDataPreProcessing(molDataSet);
 
     auto mol_it = molDataSet.begin();
     for (int molidx = 0; mol_it != molDataSet.end(); ++mol_it, molidx++) {
@@ -297,21 +297,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     return best_loss;
 }
 
-void EmModel::molDataPreProcessing(std::vector<MolData> &molDataSet, int energy_level) const {// pre process data
+void EmModel::molDataPreProcessing(std::vector<MolData> &molDataSet) const {// pre process data
     for (auto &mol : molDataSet) {
         if (mol.getGroup() == validation_group)
             continue;
-
         mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-        if (cfg->use_graph_pruning) {
-            if (cfg->use_single_energy_cfm) {
-                mol.createNewGraphForComputation();
-                mol.pruneGraphBySpectra(energy_level, cfg->abs_mass_tol, cfg->ppm_mass_tol,
-                                        cfg->aggressive_graph_pruning);
-            } else {
-                mol.pruneGraphBySpectra(-1, cfg->abs_mass_tol, cfg->ppm_mass_tol, cfg->aggressive_graph_pruning);
-            }
-        }
     }
 }
 

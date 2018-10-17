@@ -102,7 +102,7 @@ protected:
     void updateWJaccardFlag(bool &switch_to_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss,
                             double threshold) const;
 
-    void molDataPreProcessing(std::vector<MolData> &molDataSet, int energy_level) const;
+    void molDataPreProcessing(std::vector<MolData> &molDataSet) const;
 
 };
 
