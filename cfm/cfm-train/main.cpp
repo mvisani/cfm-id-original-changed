@@ -264,7 +264,7 @@ int main(int argc, char *argv[]) {
                 mit->readInSpectraFromFile(spec_file);
             }
 
-            mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
+            //mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
