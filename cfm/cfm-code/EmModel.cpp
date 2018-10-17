@@ -90,6 +90,14 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
     molDataPreProcessing(molDataSet, energy_level);
 
+    auto mol_it = molDataSet.begin();
+    for (int molidx = 0; mol_it != molDataSet.end(); ++mol_it, molidx++) {
+        if (mol_it->hasEmptySpectrum() && mol_it->getGroup() != validation_group)
+            std::cout << "Warning: No peaks with explanatory fragment found for "
+                      << mol_it->getId() << ", ignoring this input molecule."
+                      << std::endl;
+    }
+
     while (iter < MAX_EM_ITERATIONS) {
         std::string iter_out_param_filename =
                 out_param_filename + "_" + std::to_string(iter);
@@ -110,13 +118,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         int tot_numc = 0, total_numnonc = 0;
         before = time(nullptr);
 
-        mol_it = molDataSet.begin();
-        for (int molidx = 0; mol_it != molDataSet.end(); ++mol_it, molidx++) {
-            if (mol_it->hasEmptySpectrum())
-                std::cout << "Warning: No peaks with explanatory fragment found for "
-                          << mol_it->getId() << ", ignoring this input molecule."
-                          << std::endl;
-        }
+
 
         // Do the inference part (E-step)
         mol_it = molDataSet.begin();
