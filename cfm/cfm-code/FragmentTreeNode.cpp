@@ -774,10 +774,8 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
     auto bond_rings = rinfo->bondRings();
     auto bond_ring_it = bond_rings.begin();
 
-    // assume ring break are less likely to occur
-    // only create ring break if there is less than 10 none ring bond
-
-    if(!half_broke_ring_bonds.empty()){
+    // only create ring break if this is not a half ring break
+    if(half_broke_ring_bonds.empty()){
         auto brings = rinfo->bondRings();
         auto bit = brings.begin();
 
