@@ -262,6 +262,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 comm->printToMasterOnly(progress_str.c_str());
                 writeParamsToFile(iter_out_param_filename);
                 writeParamsToFile(out_param_filename);
+                param->backupWeights();
             }
         }
 
@@ -272,6 +273,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             comm->printToMasterOnly(
                     ("EM Stopped after " + std::to_string(em_no_progress_count) + " No Progress Iterations").c_str());
             comm->printToMasterOnly(("EM Converged after " + std::to_string(iter) + " iterations").c_str());
+
+            // if current model is not the best we have
+            // restore weights
+            if(best_loss != loss)
+                param->restoreWeightsFromBackup();
+            //time to stop
             break;
         }
 
@@ -565,7 +572,6 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             std::cout << iter << ":  Loss=" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
                       << std::endl;
             // let us roll Dropouts
-            // param->updateDropoutsRate(cfg->ga_dropout_delta, cfg->ga_dropout_lowerbond);
             param->rollDropouts();
         }
         comm->broadcastDropouts(param.get());
