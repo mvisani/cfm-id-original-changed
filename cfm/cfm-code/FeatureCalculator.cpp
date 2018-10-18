@@ -54,6 +54,8 @@
 #include "Features/GraphDepthFeature.h"
 #include "Features/FragmentFingerPrintFeature.h"
 #include "Features/FragmentFunctionalGroupFeature.h"
+#include "Features/NLFingerPrintFeature.h"
+#include "Features/IonFingerPrintFeature.h"
 
 
 #include <boost/algorithm/string/trim.hpp>
@@ -110,6 +112,8 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new IonRootMatrixSimpleFP());
         cogs.push_back(new NLRootMatrixSimpleFP());
         cogs.push_back(new GraphDepthFeature());
+        cogs.push_back(new NLFingerPrintFeature());
+        cogs.push_back(new IonFingerPrintFeature());
         initialised = true;
     }
     return cogs;
