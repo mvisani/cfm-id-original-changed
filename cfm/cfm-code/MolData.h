@@ -123,7 +123,7 @@ public:
 
     void removePeaksWithNoFragment(double abs_tol, double ppm_tol);
 
-    bool hasEmptySpectrum() const;
+    bool hasEmptySpectrum(int energy_level = -1) const;
 
     void writePredictedSpectraToFile(std::string &filename);
 

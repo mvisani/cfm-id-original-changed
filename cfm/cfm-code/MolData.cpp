@@ -444,12 +444,16 @@ void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
     }
 }
 
-bool MolData::hasEmptySpectrum() const {
+bool MolData::hasEmptySpectrum(int energy_level) const {
 
     bool result = false;
-    for (auto &spectrum : spectra) {
-        result = (result || (spectrum.size() == 0));
-    }
+    if(energy_level < 0){
+        for (auto &spectrum : spectra) {
+            result = (result || (spectrum.size() == 0));
+        }
+    } else
+        result = spectra[energy_level].size() == 0;
+
     return result;
 }
 
@@ -769,24 +773,24 @@ std::string MolData::getFVsAsSparseCSVString() {
 void MolData::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                         double explore_weight) {
 
-    if(!hasEmptySpectrum() && hasComputedGraph())
+    if(!hasEmptySpectrum(0) && hasComputedGraph())
         fg->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, thetas[energy], explore_weight);
 }
 
 void MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio) {
 
-    if(!hasEmptySpectrum() && hasComputedGraph())
+    if(!hasEmptySpectrum(0) && hasComputedGraph())
         fg->getSampledTransitionIdsRandomWalk(selected_ids, ratio);
 }
 
 void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<double> &selected_weights,
                                                  std::set<double> &all_weights) {
-    if (!hasEmptySpectrum() && hasComputedGraph())
+    if (!hasEmptySpectrum(0) && hasComputedGraph())
         fg->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights, all_weights);
 }
 
 void MolData::getRandomSampledTransitions(std::set<int> &selected_ids, double ratio){
-    if (!hasEmptySpectrum() && hasComputedGraph())
+    if (!hasEmptySpectrum(0) && hasComputedGraph())
         fg->getRandomSampledTransitions(selected_ids, ratio);
 }
 
