@@ -193,10 +193,6 @@ public:
                        bool prune_deadends = true);
 
 
-    // Functions to dump all fvs to a csv file
-    // one fv per line
-    std::string getFVsAsSparseCSVString();
-
     void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                    double explore_weight);
 
@@ -206,8 +202,6 @@ public:
                                             std::set<double> &all_weights);
 
     void getRandomSampledTransitions(std::set<int> &selected_ids, double ratio);
-
-    void addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
 
     unsigned int getOriginalNumTransitions() const {
         return fg->getOriginalNumTransitions();
@@ -219,15 +213,19 @@ public:
     unsigned int getNumTransitions() const {
         return fg->getNumTransitions();
     };
+
     unsigned int getNumFragments() const {
         return fg->getNumFragments();
     };
+
     const Transition *getTransitionAtIdx(int index) const {
         return fg->getTransitionAtIdx(index);
     };
+
     virtual const Fragment *getFragmentAtIdx(int index) const {
         return  fg->getFragmentAtIdx(index);
     };
+
     const tmap_t *getFromIdTMap() const {
         return fg->getFromIdTMap();
     };
@@ -248,9 +246,6 @@ public:
         return fg->hasIsotopesIncluded();
     }
 
-    void createNewGraphForComputation() {
-        fg->createNewGraphForComputation();
-    }
 
     void getSelectedWeights(std::set<double> &selected_weights, std::set<double> &all_weights, int engery_level,
                                 bool peaknum_only = false);

@@ -779,7 +779,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
     if((ion.get()->getNumBonds() < ring_bonds_count + 5)
         && half_broke_ring_bonds.empty()) {
         auto brings = rinfo->bondRings();
-        
+
         auto bit = brings.begin();
 
         for (int ring_idx = 0; bit != brings.end(); ++bit, ring_idx++) {

@@ -265,8 +265,6 @@ public:
 
     void computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols);
 
-    void createNewGraphForComputation();
-
     // For current graph in use
     virtual unsigned int getNumTransitions() const {
         return transitions.size();
