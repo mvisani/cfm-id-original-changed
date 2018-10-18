@@ -215,6 +215,26 @@ void FingerPrintFeature::addMorganFingerPrintFeatures(FeatureVector &fv, const R
     fv.addFeatures(local_tmp_fv);
 }
 
+
+void FingerPrintFeature::addMorganFingerPrintFeatures(FeatureVector &fv,
+        const RootedROMolPtr *mol, unsigned int finger_print_size, int radius) const {
+
+    std::vector<int> local_tmp_fv;
+
+    // Get finger prints with size
+    ExplicitBitVect *finger_print =
+            RDKit::MorganFingerprints::getFingerprintAsBitVect((*mol->mol), radius,
+                                                               finger_print_size);
+
+    local_tmp_fv.resize(finger_print->getNumBits());
+    for (unsigned int i = 0; i < finger_print->getNumBits(); ++i)
+        local_tmp_fv[i] = (*finger_print)[i];
+
+
+    fv.addFeatures(local_tmp_fv);
+    delete finger_print;
+}
+
 std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol,
                                                 const RDKit::Atom *atom,
                                                 const RDKit::Atom *parent_atom,

@@ -50,6 +50,9 @@ protected:
     void addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol, unsigned int num_atom,
                                                     bool include_adjacency_matrix) const;
 
+    void addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+                                      unsigned int finger_print_size, int radius) const;
+
 private:
 
     void getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit::Atom *root,
@@ -58,6 +61,7 @@ private:
 
     std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
                                 const RDKit::Atom *parent_atom, int depth) const;
+
 
     void addMorganFingerPrint(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
                               const RDKit::Atom *root,
