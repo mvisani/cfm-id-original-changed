@@ -127,7 +127,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             if (mol_it->hasEmptySpectrum(energy_level))
                 continue; // Ignore any molecule with poor (no peaks matched a fragment)
                 // or missing spectra.
-            }
 
             if (mol_it->getGroup() == validation_group)
                 continue;
