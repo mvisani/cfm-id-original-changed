@@ -257,6 +257,9 @@ void Param::readFromFile(const std::string &filename) {
 
     //Get the number of feature names
     int num_features = atoi(line.c_str());
+    // make sure feature list is clean
+    feature_list.clear();
+    feature_list.resize(num_features);
 
     //Get the feature names and compute the expected number of features
     std::string fname;
@@ -264,7 +267,7 @@ void Param::readFromFile(const std::string &filename) {
     std::stringstream ss1(line);
     for (int i = 0; i < num_features; i++) {
         ss1 >> fname;
-        feature_list.push_back(fname);
+        feature_list[i] = fname;
     }
     FeatureCalculator fc(feature_list);
     expected_num_input_features = fc.getNumFeatures();
