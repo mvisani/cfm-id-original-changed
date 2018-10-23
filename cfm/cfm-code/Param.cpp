@@ -237,11 +237,16 @@ void Param::saveToFile(std::string &filename) {
 }
 
 Param::Param(std::string &filename) {
+    LoadFromFile(filename);
+}
+
+void Param::LoadFromFile(const std::string &filename) {
 
     std::string line;
-    std::ifstream ifs(filename.c_str(), std::ifstream::in);
+    std::ifstream ifs(filename.c_str(), std::ios_base::in);
 
-    if (!ifs) std::cout << "Could not open file " << filename << std::endl;
+    if (!ifs)
+        std::cout << "Could not open file " << filename << std::endl;
 
     //Check for sparse representation
     getline(ifs, line);
