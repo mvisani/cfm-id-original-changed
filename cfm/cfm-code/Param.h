@@ -95,10 +95,9 @@ public:
     virtual void rollDropouts() {};
 
     void readFromFile(const std::string &filename);
-    
+
 protected:
     std::vector<double> weights;
-    std::vector<double> backup_weights;
 
     unsigned int num_energy_levels;
     std::vector<std::string> feature_list;
