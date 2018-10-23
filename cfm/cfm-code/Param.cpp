@@ -237,6 +237,10 @@ void Param::saveToFile(std::string &filename) {
 }
 
 Param::Param(std::string &filename) {
+    readFromFile(filename);
+}
+
+void Param::readFromFile(const std::string &filename) {
 
     std::string line;
     std::ifstream ifs(filename.c_str(), std::ifstream::in);

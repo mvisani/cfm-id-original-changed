@@ -272,6 +272,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                     ("EM Stopped after " + std::to_string(em_no_progress_count) + " No Progress Iterations").c_str());
             comm->printToMasterOnly(("EM Converged after " + std::to_string(iter) + " iterations").c_str());
             //time to stop
+            //before stop, let us load best model
+            param->readFromFile(out_param_filename);
             break;
         }
 
