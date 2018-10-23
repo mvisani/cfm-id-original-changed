@@ -94,6 +94,8 @@ public:
     virtual void updateDropoutsRate(double delta, double lower_bound) {};
     virtual void rollDropouts() {};
 
+    void readFromFile(const std::string &filename);
+    
 protected:
     std::vector<double> weights;
     std::vector<double> backup_weights;
@@ -108,7 +110,7 @@ protected:
     void zeroInit();
     void fullZeroInit();
 
-    void LoadFromFile(const std::string &filename);
+
 };
 
 #endif // __PARAM_H__

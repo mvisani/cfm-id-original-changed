@@ -237,10 +237,10 @@ void Param::saveToFile(std::string &filename) {
 }
 
 Param::Param(std::string &filename) {
-    LoadFromFile(filename);
+    readFromFile(filename);
 }
 
-void Param::LoadFromFile(const std::string &filename) {
+void Param::readFromFile(const std::string &filename) {
 
     std::string line;
     std::ifstream ifs(filename.c_str(), std::ios_base::in);
