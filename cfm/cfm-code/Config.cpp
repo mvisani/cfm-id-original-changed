@@ -76,12 +76,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_use_best_q = DEFAULT_USE_BEST_Q_IN_GA;
     cfg.ga_sampling_method = USE_NO_SAMPLING;
     cfg.ga_graph_sampling_k = DEFAULT_GRAPH_SAMPLING_K;
-    cfg.aggressive_graph_pruning = false;
     cfg.reset_sampling = false;
     cfg.reset_sampling_lr_ratio = 1.0;
-    cfg.add_noise = false;
-    cfg.noise_max = 1.0;
-    cfg.noise_sum = 5;
     cfg.em_use_weighted_jaccard = false;
     cfg.em_wjaccard_swicth_threshold = -2.5;
     cfg.ga_diff_sampling_peak_num = 10;
@@ -160,12 +156,12 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_use_best_q") cfg.ga_use_best_q = (int) value;
         else if (name == "ga_sampling_method") cfg.ga_sampling_method = (int) value;
         else if (name == "ga_graph_sampling_k") cfg.ga_graph_sampling_k = (double) value;
-        else if (name == "aggressive_graph_pruning") cfg.aggressive_graph_pruning = (bool) value;
+        else if (name == "aggressive_graph_pruning");
         else if (name == "reset_sampling") cfg.reset_sampling = (bool) value;
         else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double) value;
-        else if (name == "add_noise") cfg.add_noise = (bool) value;
-        else if (name == "noise_max") cfg.noise_max = (double) value;
-        else if (name == "noise_sum") cfg.noise_sum = (double) value;
+        else if (name == "add_noise");
+        else if (name == "noise_max");
+        else if (name == "noise_sum");
         else if (name == "ga_sampling_explore_weight") cfg.ga_sampling_explore_weight = (double) value;
         else if (name == "em_use_weighted_jaccard") cfg.em_use_weighted_jaccard = (bool) value;
         else if (name == "em_wjaccard_swicth_threshold") cfg.em_wjaccard_swicth_threshold = (double)value;
@@ -295,7 +291,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
         if (cfg.use_graph_pruning != DEFAULT_NOT_USE_GRAPH_PRUNING) {
             std::cout << "Using graph pruning" << std::endl;
-            std::cout << "Using aggressive graph pruning: " << cfg.aggressive_graph_pruning << std::endl;
             std::cout << "Reset_sampling: " << cfg.reset_sampling << std::endl;
             std::cout << "reset_sampling_lr_rati: " << cfg.reset_sampling_lr_ratio << std::endl;
         }

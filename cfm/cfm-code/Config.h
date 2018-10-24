@@ -198,7 +198,6 @@ struct config_t {
 
     // For sampling
     int use_graph_pruning;
-    bool aggressive_graph_pruning;
     bool reset_sampling;
     double reset_sampling_lr_ratio;
     int ga_sampling_method;
@@ -276,10 +275,6 @@ struct config_t {
     bool em_use_weighted_jaccard;
     double em_wjaccard_swicth_threshold;
 
-    //noise
-    bool add_noise;
-    double noise_sum;
-    double noise_max;
 };
 
 void initDefaultConfig(config_t &cfg);

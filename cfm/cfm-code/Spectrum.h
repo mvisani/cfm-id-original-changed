@@ -31,12 +31,10 @@ class Peak {
 public:
     Peak() = default;;
 
-    Peak(double a_mass, double an_intensity, bool noise_flag = false) :
-            mass(a_mass), intensity(an_intensity), is_noise(noise_flag) {};
+    Peak(double a_mass, double an_intensity) :
+            mass(a_mass), intensity(an_intensity){};
     double mass;
     double intensity;
-    // flag to indicate if this is a noise
-    bool is_noise;
     std::vector<annotation_t> annotations;
 };
 
@@ -106,11 +104,6 @@ public:
     void quantisePeaksByMass(int num_dec_places);
 
     bool hasPeakByMassWithinTol(double target_mass, double abs_tol, double ppm_tol, double ratio) const;
-
-    // a function to add noise with in abs or ppm to the existing peaks
-    // this may helps on overfitting
-    void addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol);
-    void removeNoisePeak();
 
 
 private:

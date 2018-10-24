@@ -263,7 +263,6 @@ int main(int argc, char *argv[]) {
                 std::string spec_file = peakfile_dir_or_msp + "/" + mit->getId() + ".txt";
                 mit->readInSpectraFromFile(spec_file);
             }
-
             //mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
         }
     }

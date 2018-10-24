@@ -759,17 +759,6 @@ void MolData::quantiseMeasuredSpectra(int num_dec_places) {
 }
 
 
-std::string MolData::getFVsAsSparseCSVString() {
-    /*std::string csv_str = "";
-    for (auto fv : fvs) {
-        if (csv_str != "") {
-            csv_str += "\n";
-        }
-        csv_str += fv->toSparseCSVString();
-    }*/
-    return "";
-}
-
 void MolData::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                         double explore_weight) {
 
@@ -792,12 +781,6 @@ void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, st
 void MolData::getRandomSampledTransitions(std::set<int> &selected_ids, double ratio){
     if (!hasEmptySpectrum(0) && hasComputedGraph())
         fg->getRandomSampledTransitions(selected_ids, ratio);
-}
-
-void MolData::addNoise(double max_intensity, double total_intensity, double abs_tol, double ppm_tol) {
-    for (auto &spectrum: spectra) {
-        spectrum.addNoise(max_intensity, total_intensity, abs_tol, ppm_tol);
-    }
 }
 
 double MolData::getWeightedJaccardScore(int engery_level){

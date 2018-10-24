@@ -101,6 +101,3 @@ add_subdirectory(cfm-annotate)
 add_subdirectory(compute-stats)
 
 add_subdirectory(cfm-id-precomputed)
-
-#Feature Calculator
-add_subdirectory(cfm-feature-calculator)
