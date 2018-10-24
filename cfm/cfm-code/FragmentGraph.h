@@ -206,7 +206,6 @@ public:
         for (auto & transition : transitions) {
             delete transition;
         }
-        current_graph.reset();
     };
 
     // Add a fragment node to the graph (should be the only way to modify the
@@ -268,47 +267,32 @@ public:
 
     // For current graph in use
     virtual unsigned int getNumTransitions() const {
-        if(!current_graph)
-            return transitions.size();
-        return current_graph->transitions.size();
+        return transitions.size();
     };
 
     virtual unsigned int getNumFragments() const {
-        if(!current_graph)
-            return fragments.size();
-        return current_graph->fragments.size();
+        return fragments.size();
     };
 
     virtual const Transition *getTransitionAtIdx(int index) const {
-        if(!current_graph)
-            return transitions[index];
-        return current_graph->transitions[index];
+        return transitions[index];
     };
 
     const Fragment *getFragmentAtIdx(int index) const {
-        if(!current_graph)
-            return fragments[index];
-        return  current_graph->fragments[index];
+        return fragments[index];
     };
 
     const tmap_t *getFromIdTMap() const {
-        if(!current_graph)
-            return &from_id_tmap;
-        return &current_graph->from_id_tmap;
+        return &from_id_tmap;
     };
 
     const tmap_t *getToIdTMap() const {
-        if(!current_graph)
-            return &to_id_tmap;
-        return &current_graph->to_id_tmap;
+        return &to_id_tmap;
     };
 
     // Function to remove detour transitions from the graph (used if
     // !cfg.allow_frag_detours)
     void removeDetours();
-
-    void pruneGraph(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
-                    bool aggressive);
 
     // Get a list of transitions ids , with weighted prob
     // Function do some not so random selection
@@ -316,20 +300,15 @@ public:
                                                    std::vector<double> &thetas, double explore_weight);
 
     // Get a list of transitions ids , with random walk
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids,
-                                           double ratio) {
-        current_graph->getSampledTransitionIdsRandomWalk(selected_ids, ratio);
-    };
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
 
     // Get a list of transitions ids , with random walk
     void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids, std::set<double> &selected_weights,
-                                                   std::set<double> &all_weights) {
-        current_graph->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights, all_weights);
-    };
+                                                   std::set<double> &all_weights);
 
-    void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio) {
-        current_graph->getRandomSampledTransitions(selected_trans_id,ratio);
-    };
+    void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio);
+
+
 
 protected:
     std::vector<Fragment*> fragments;
@@ -338,68 +317,22 @@ protected:
     tmap_t from_id_tmap; // Mapping between from_id and transitions with that from_id
     tmap_t to_id_tmap; // Mapping between to_id and transitions with that to_id
 
-    // only used when do tree pruning
-    struct ComputationalFragmenGraph {
-            ComputationalFragmenGraph(const std::vector<Fragment*>& fragments,
-                                       const std::vector<Transition*>& transitions,
-                                       const tmap_t& from_id_tmap,
-                                       const tmap_t& to_id_tmap)
-                   : fragments(fragments), transitions(transitions),
-                     from_id_tmap(from_id_tmap), to_id_tmap(to_id_tmap) {};
 
-        // Function to remove give transitions and update id maps
-        void removeTransitions(std::vector<int> &input_ids);
-
-        // Function to remove give fragments and update id maps
-        void removeFragments(std::vector<int> &input_ids);
-
-        // Function to remove lonely frags in the tree
-        // where there is no trans lead or from those frags
-        void removeLonelyFrags();
-
-        // Function do get list of transitions can be removed
-        bool getPruningTransitionIds(int fg_id, std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
-                                             std::vector<int> &removed_transitions_ids, std::map<int, bool> &visited, bool aggressive);
-
-        // Tree pruning
-        // Function to do branching cutting
-        void pruneGraphBySpectra(std::vector<Spectrum> &spectra, int energy_level, double abs_tol, double ppm_tol,
-                                 bool aggressive);
-
-        // Get a list of transitions ids , with weighted prob
-        // Function do some not so random selection
-
-
-        void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
-
-        void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids,
-                                                       int max_num_iter,
-                                                       std::vector<double> &thetas,
-                                                       double explore_weight);
-
-        void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids, std::set<double> &selected_weights,
-                                                       std::set<double> &all_weights);
-
-        void
-        getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<double> &all_weights,
+    void getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<double> &all_weights,
                                                              std::set<int> &visited, int frag_id, std::vector<int> &path,
                                                              std::set<int> &selected_ids);
 
-        void getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
+    void getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
                                         int frag_id, std::vector<std::pair<int, int>> &path,
                                         std::map<int, std::vector<int>> &trans_to_interest_frags_map);
 
-        void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio);
+    bool is_match(std::set<double> &weights, double mass) const;
 
-        bool is_match(std::set<double> &weights, double mass) const;
+    // Function to remove give transitions and update id maps
+    void removeTransitions(std::vector<int> &input_ids);
 
-        std::vector<Fragment*> fragments;
-        std::vector<Transition*> transitions;
-        tmap_t from_id_tmap;
-        tmap_t to_id_tmap;
-    };
-
-    std::unique_ptr<ComputationalFragmenGraph> current_graph;
+    // Function to remove give fragments and update id maps
+    void removeFragments(std::vector<int> &input_ids);
 
     bool include_isotopes;
     IsotopeCalculator *isotope;

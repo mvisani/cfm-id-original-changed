@@ -42,11 +42,6 @@ void MolData::readInFVFragmentGraphFromStream(std::istream &ifs) {
     fg = fgen.createNewGraph(cfg);
     fg->readFeatureVectorGraph(ifs);
 
-    // Copy all the feature vector pointers up into the mol data
-    /*fvs.resize(fg->getNumTransitions());
-    for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
-        fvs[i] = fg->getTransitionAtIdx(i)->getFeatureVector();
-    */
     graph_computed = true;
 }
 
@@ -80,14 +75,11 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
     fg = fgen.createNewGraph(cfg);
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
-    //if (cfg->do_prelim_bfs && !cfg->allow_frag_detours && cfg->fg_depth > 1)
-    //    fgen.compute(*startnode, 1, 0, -1, cfg->max_ring_breaks); // Initial breadth-first to depth 1 (faster?)
 
     fgen.compute(*startnode, cfg->fg_depth, 0, -1, cfg->max_ring_breaks);
 
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
-    fg->createNewGraphForComputation();
     delete startnode;
     graph_computed = true;
 }
@@ -124,7 +116,7 @@ void MolData::computeLikelyFragmentGraphAndSetThetas(
     fgen.compute(*startnode, cfg->fg_depth, 0, -1, 0.0, cfg->max_ring_breaks);
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
-    fg->createNewGraphForComputation();
+
     delete startnode;
     graph_computed = true;
 
@@ -428,10 +420,6 @@ void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
     std::vector<Spectrum>::iterator it = spectra.begin();
     for (; it != spectra.end(); ++it)
         it->clean(abs_tol, ppm_tol);
-}
-
-void MolData::pruneGraphBySpectra(int energy_level, double abs_tol, double ppm_tol, bool aggressive) {
-    fg->pruneGraph(spectra, energy_level, abs_tol, ppm_tol, aggressive);
 }
 
 void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
