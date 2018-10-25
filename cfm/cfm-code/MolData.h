@@ -65,6 +65,8 @@ public:
 
     const Spectrum *getSpectrum(int energy) const { return &(spectra[energy]); };
 
+    const Spectrum *getOrigSpectrum(int energy) const { return &(orig_spectra[energy]); };
+
     const std::vector<Spectrum> *getSpectra() const { return &spectra; };
 
     const Spectrum *getPredictedSpectrum(int energy) const {
@@ -262,7 +264,11 @@ protected
     EvidenceFragmentGraph *ev_fg;
     bool graph_computed;
     bool ev_graph_computed;
+    // spectra , which will be pruned during traning
     std::vector<Spectrum> spectra;
+    // origonal copy of spectra;
+    std::vector<Spectrum> orig_spectra;
+    // predicted spectra
     std::vector<Spectrum> predicted_spectra;
     //std::vector<FeatureVector *> fvs;
     std::vector<std::vector<double>> thetas;

@@ -164,7 +164,8 @@ int main(int argc, char *argv[]) {
         }
     }
     std::ofstream fv_out;
-    if (min_group == 0) fv_out.open(fv_filename_out.c_str(), std::ios::out | std::ios::binary);
+    if (min_group == 0)
+        fv_out.open(fv_filename_out.c_str(), std::ios::out | std::ios::binary);
 
     //Fragment Graph Computation (or load from file)
     time_t before_fg, after_fg;
@@ -263,7 +264,7 @@ int main(int argc, char *argv[]) {
                 std::string spec_file = peakfile_dir_or_msp + "/" + mit->getId() + ".txt";
                 mit->readInSpectraFromFile(spec_file);
             }
-            //mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
+            mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);

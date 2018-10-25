@@ -50,6 +50,14 @@ class Spectrum {
 public:
     Spectrum() : is_normalized(false), is_sorted(false) {};
 
+    // copy constructor
+    Spectrum(const Spectrum & spectrum) {
+        is_normalized = spectrum.is_normalized;
+        is_sorted = spectrum.is_sorted;
+        for(const auto & peak : spectrum)
+            push_back(peak);
+    };
+
     //Iterating over the spectrum = iterating over the peaks
     typedef std::vector<Peak>::const_iterator const_iterator;
 
@@ -81,9 +89,7 @@ public:
 
     const std::vector<Peak> *getPeaks() const { return &peaks; };
 
-    bool isNormalizedAndSorted() const { return is_normalized && is_sorted; };
-
-    double getLastMass() const { return peaks.back().mass; };
+    bool isNormalizedAndSorted() const { return is_normalized && is_sorted; };;
 
     void postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_intensity = 0.0);
 
@@ -102,8 +108,6 @@ public:
     void removePeaksWithNoFragment(std::vector<double> &frag_masses, double abs_tol, double ppm_tol);
 
     void quantisePeaksByMass(int num_dec_places);
-
-    bool hasPeakByMassWithinTol(double target_mass, double abs_tol, double ppm_tol, double ratio) const;
 
 
 private:

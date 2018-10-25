@@ -88,7 +88,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     int em_no_progress_count = 0;
     bool switch_to_weighted_jaccard = false;
 
-    molDataPreProcessing(molDataSet);
 
     auto mol_it = molDataSet.begin();
     for (int molidx = 0; mol_it != molDataSet.end(); ++mol_it, molidx++) {
@@ -119,7 +118,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         before = time(nullptr);
 
 
-
         // Do the inference part (E-step)
         mol_it = molDataSet.begin();
         for (int molidx = 0; mol_it != molDataSet.end(); ++mol_it, molidx++) {
@@ -130,8 +128,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 continue; // Ignore any molecule with poor (no peaks matched a fragment)
                 // or missing spectra.
 
-            if (mol_it->getGroup() == validation_group)
-                continue;
+            //if (mol_it->getGroup() == validation_group)
+            //    continue;
 
             MolData *moldata = &(*mol_it);
 
@@ -281,12 +279,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         prev_loss = loss;
 
-        if (comm->isMaster()) {
-            double loss_before_reg = loss - getRegularizationTerm();
-            updateWJaccardFlag(switch_to_weighted_jaccard, prev_loss,
-                               best_loss, loss_before_reg / num_training_mols, cfg->em_wjaccard_swicth_threshold);
-
-        }
         switch_to_weighted_jaccard = comm->broadcastBooleanFlag(switch_to_weighted_jaccard);
         iter++;
     }
@@ -298,25 +290,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                                         .c_str());
 
     return best_loss;
-}
-
-void EmModel::molDataPreProcessing(std::vector<MolData> &molDataSet) const {// pre process data
-    for (auto &mol : molDataSet) {
-        if (mol.getGroup() == validation_group)
-            continue;
-        mol.removePeaksWithNoFragment(cfg->abs_mass_tol, cfg->ppm_mass_tol);
-    }
-}
-
-void
-EmModel::updateWJaccardFlag(bool &switch_to_weighted_jaccard, double &prev_loss, double &best_loss, double avg_loss,
-                            double threshold) const {
-    if (!switch_to_weighted_jaccard && avg_loss > threshold && cfg->em_use_weighted_jaccard) {
-        switch_to_weighted_jaccard = true;
-        prev_loss = 0.0;
-        best_loss = 0.0;
-        std::cout << "[EM INFO]Switching to Jaccard " << std::endl;
-    }
 }
 
 void
@@ -375,7 +348,7 @@ void EmModel::computeValidationMetrics(int energy_level, int molidx,
         moldata->computePredictedSpectra(*param, false, false, energy_level);
         moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
         jaccard += jaccard_cmp->computeScore(moldata->getSpectrum(energy_level), moldata->getPredictedSpectrum(energy_level));
-        w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getSpectrum(energy_level),
+        w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                           moldata->getPredictedSpectrum(energy_level));
     } else {
         moldata->computePredictedSpectra(*param, false, false);
@@ -384,7 +357,7 @@ void EmModel::computeValidationMetrics(int energy_level, int molidx,
         getEnergiesLevels(energies);
         for (auto &energy: energies) {
             jaccard += jaccard_cmp->computeScore(moldata->getSpectrum(energy), moldata->getPredictedSpectrum(energy));
-            w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getSpectrum(energy), moldata->getPredictedSpectrum(energy));
+            w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy), moldata->getPredictedSpectrum(energy));
         }
         jaccard /= (double) energies.size();
         w_jaccard /= (double) energies.size();
