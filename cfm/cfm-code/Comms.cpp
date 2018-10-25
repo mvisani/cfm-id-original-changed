@@ -163,7 +163,8 @@ void MasterComms::collectGradsInMaster(double *grads) {
     }
 }
 
-void WorkerComms::broadcastParams(Param *param) {
+
+void WorkerComms::broadcastParamsWeights(Param *param) {
 
     //Receive updated params from master
     MPI_Status status;
@@ -180,8 +181,8 @@ void WorkerComms::broadcastParams(Param *param) {
 }
 
 //careful, this is only a good idea if we only have small amount of process
-//MPIBroadcast use tree pattern which are much more effective
-void MasterComms::broadcastParams(Param *param) {
+//MPIBroadcast use tree pattern which could be  more effective
+void MasterComms::broadcastParamsWeights(Param *param) {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
 
@@ -199,9 +200,9 @@ void MasterComms::broadcastParams(Param *param) {
         MPI_Send(&(used_params[0]), worker_num_used[i], MPI::DOUBLE, i, 0, MPI_COMM_WORLD);
     }
 
-    auto dropouts = param->getDropoutsPtr();
-    if(nullptr != dropouts)
-        MPI_Bcast(&((*dropouts)[0]), dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
+    //auto dropouts = param->getDropoutsPtr();
+    //if(nullptr != dropouts)
+    //    MPI_Bcast(&((*dropouts)[0]), dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
 }
 
 int Comms::broadcastConverged(int converged) {

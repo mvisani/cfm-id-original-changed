@@ -231,7 +231,7 @@ void CommsTestBroadcastParams::runTest(){
 	}
 
 	//Run the code
-	comm->broadcastParams(&param);
+    comm->broadcastParamsWeights(&param);
 
 	//Check the results
 	if( param.getWeightAtIdx(mpi_rank) != mpi_rank
