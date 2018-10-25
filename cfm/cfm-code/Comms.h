@@ -34,7 +34,7 @@ public:
 
     virtual void collectGradsInMaster(double *grads) = 0;
 
-    virtual void broadcastParams(Param *param) = 0;
+    virtual void broadcastParamsWeights(Param *param) = 0;
 
     virtual void printToMasterOnly(const char *msg) = 0;
 
@@ -75,7 +75,7 @@ public:
 
     void collectGradsInMaster(double *grads) override;
 
-    void broadcastParams(Param *param) override;
+    void broadcastParamsWeights(Param *param) override;
 
     void printToMasterOnly(const char *msg) override {};    //Do nothing
 };
@@ -87,7 +87,7 @@ public:
 
     void collectGradsInMaster(double *grads) override;
 
-    void broadcastParams(Param *param) override;
+    void broadcastParamsWeights(Param *param) override;
 
     std::set<unsigned int> master_used_idxs;
     std::vector<std::set<unsigned int> > worker_used_idxs;
