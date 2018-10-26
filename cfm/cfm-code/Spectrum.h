@@ -52,10 +52,14 @@ public:
 
     // copy constructor
     Spectrum(const Spectrum & spectrum) {
-        is_normalized = spectrum.is_normalized;
-        is_sorted = spectrum.is_sorted;
         for(const auto & peak : spectrum)
             push_back(peak);
+
+        // overwrite the those flags
+        // do not move it up, those flags are set to false by pusb_back function
+        is_normalized = spectrum.is_normalized;
+        is_sorted = spectrum.is_sorted;
+
     };
 
     //Iterating over the spectrum = iterating over the peaks

@@ -397,6 +397,7 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
 
     //once finished, copy specturm to orig spectrum
     //because we already  sort and normalized
+    orig_spectra.clear();
     for(const auto & spec : spectra)
         orig_spectra.push_back(spec);
 }
@@ -421,6 +422,7 @@ void MolData::readInSpectraFromMSP(MspReader &msp, bool readToPredicted) {
 
     //once finished, copy specturm to orig
     //because we already  sort and normalized
+    orig_spectra.clear();
     for(const auto & spec: spectra)
         orig_spectra.push_back(spec);
 }
