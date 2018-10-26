@@ -251,11 +251,12 @@ int main(int argc, char *argv[]) {
     }
 
     //MSP Setup
-    MspReader *msp;
+    MspReader *msp = nullptr;
     std::ostream *out_enum_msp, *out_pred_msp;
     std::ofstream of_emsp, of_pmsp;
     //Create the MSP lookup
-    if (spectra_in_msp) msp = new MspReader(peakfile_dir_or_msp.c_str(), "");
+    if (spectra_in_msp)
+        msp = new MspReader(peakfile_dir_or_msp.c_str(), "");
     for (mit = data.begin(); mit != data.end(); ++mit) {
         if ((mit->getGroup() >= min_group && mit->getGroup() <= max_group) || !no_train) {
             if (spectra_in_msp)
