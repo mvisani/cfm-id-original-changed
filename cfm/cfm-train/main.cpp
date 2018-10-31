@@ -324,7 +324,8 @@ int main(int argc, char *argv[]) {
             //Predicted spectrum
             mit->computePredictedSpectra(*param, false);
 
-            if (spectra_in_msp) mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
+            if (spectra_in_msp)
+                mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
             else {
                 std::string spectra_filename = data_folder + "/predicted_output/" + mit->getId() + ".log";
                 mit->writePredictedSpectraToFile(spectra_filename);
