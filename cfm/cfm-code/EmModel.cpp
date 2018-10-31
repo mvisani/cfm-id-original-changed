@@ -347,7 +347,7 @@ void EmModel::computeValidationMetrics(int energy_level, int molidx,
     if (cfg->use_single_energy_cfm) {
         moldata->computePredictedSpectra(*param, false, false, energy_level);
         moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
-        jaccard += jaccard_cmp->computeScore(moldata->getSpectrum(energy_level), moldata->getPredictedSpectrum(energy_level));
+        jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level), moldata->getPredictedSpectrum(energy_level));
         w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                           moldata->getPredictedSpectrum(energy_level));
     } else {
@@ -356,7 +356,7 @@ void EmModel::computeValidationMetrics(int energy_level, int molidx,
         std::vector<unsigned int> energies;
         getEnergiesLevels(energies);
         for (auto &energy: energies) {
-            jaccard += jaccard_cmp->computeScore(moldata->getSpectrum(energy), moldata->getPredictedSpectrum(energy));
+            jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy), moldata->getPredictedSpectrum(energy));
             w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy), moldata->getPredictedSpectrum(energy));
         }
         jaccard /= (double) energies.size();
