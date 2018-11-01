@@ -394,6 +394,11 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
     for (; it != spec_dest->end(); ++it)
         it->normalizeAndSort();
     ifs.close();
+
+    //once finished, copy specturm to orig spectrum
+    //because we already  sort and normalized
+    for(const auto & spec : spectra)
+        orig_spectra.push_back(spec);
 }
 
 void MolData::readInSpectraFromMSP(MspReader &msp, bool readToPredicted) {
@@ -413,6 +418,11 @@ void MolData::readInSpectraFromMSP(MspReader &msp, bool readToPredicted) {
         spec_dest->push_back((*spec)[energy]);
         (*spec_dest)[energy].normalizeAndSort();
     }
+
+    //once finished, copy specturm to orig
+    //because we already  sort and normalized
+    for(const auto & spec: spectra)
+        orig_spectra.push_back(spec);
 }
 
 void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
@@ -423,6 +433,7 @@ void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
 }
 
 void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
+
 
     std::vector<double> all_masses;
     getEnumerationSpectraMasses(all_masses);
