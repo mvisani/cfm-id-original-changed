@@ -692,7 +692,7 @@ void FragmentTreeNode::labelBreakPropertiesInNL(romol_ptr_t &current_nl, romol_p
 
 }
 
-void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H_only_loss) {
+void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H_only_loss, int num_rbreak_nrbonds) {
 
     int num_ionic = countNumIonicFragments(ion.get());
     RDKit::PeriodicTable *pt = RDKit::PeriodicTable::getTable();
@@ -776,9 +776,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
     // assume ring break are less likely to occur
     // only create ring break if there is less than 5 none ring bond and  this is not a half ring break
-    //(ion.get()->getNumBonds() < ring_bonds_count + 5)
-    //        &&
-    if(half_broke_ring_bonds.empty()) {
+    if ((ion.get()->getNumBonds() < ring_bonds_count + 5) && (half_broke_ring_bonds.empty())) {
         auto brings = rinfo->bondRings();
 
         auto bit = brings.begin();

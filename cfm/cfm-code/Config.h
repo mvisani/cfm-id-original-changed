@@ -218,6 +218,7 @@ struct config_t {
     std::vector<int> dv_spectrum_indexes;    //Index of each spectrum in the list of spectra in MolData
     std::vector<double> dv_spectrum_weights;
     int obs_function;    //Function used for the observation function
+    int num_rbreak_nrbonds;
 
     //Theta function Configuration (Linear or Neural Net)
     int theta_function;

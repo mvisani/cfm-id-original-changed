@@ -104,7 +104,11 @@ public:
     int depth; // The depth of the tree at which the node was
 
     // Generate all possible breaks of the ion
-    void generateBreaks(std::vector<Break> &output, bool include_H_only_loss);
+    // num_rbreak_nrbonds is used to reduce mount of ring breaks
+    // if a ion has less than give none ring break bonds, a ring break can happen
+    // not the best idea ever
+    void generateBreaks(std::vector<Break> &output, bool include_H_only_loss,
+                        int num_rbreak_nrbonds = 10000);
 
     // Record a break in the properties of the ion
     void applyBreak(Break &brk, int ionic_allocation_idx);

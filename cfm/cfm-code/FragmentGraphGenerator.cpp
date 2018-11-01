@@ -140,7 +140,7 @@ int FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 //The output will be appended to the current_graph
 void
 FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int depth, int parentid,
-                                int remaining_ring_breaks, int absolute_depth_max) {
+                                int remaining_ring_breaks, int absolute_depth_max, int num_rbreak_nrbonds) {
 
     if (current_graph->getOriginalNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
         || current_graph->getOriginalNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
@@ -182,7 +182,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
         h_loss_allowed = current_graph->includesHLossesPrecursorOnly() || current_graph->includesHLosses();
     else                //Break from Non-Precursor
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
-    node.generateBreaks(breaks, h_loss_allowed);
+    node.generateBreaks(breaks, h_loss_allowed, num_rbreak_nrbonds);
 
     bool ring_can_break = (remaining_ring_breaks > 0);
 
@@ -257,7 +257,8 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
         h_loss_allowed = current_graph->includesHLossesPrecursorOnly() || current_graph->includesHLosses();
     else                //Break from Non-Precursor
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
-    node.generateBreaks(breaks, h_loss_allowed);
+
+    node.generateBreaks(breaks, h_loss_allowed, cfg->num_rbreak_nrbonds);
     std::vector<Break>::iterator it = breaks.begin();
     std::vector<int> children_isring;
     for (; it != breaks.end(); ++it) {
