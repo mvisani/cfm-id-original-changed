@@ -165,9 +165,6 @@ public:
     // since each one assumes all previous have already been called.E
     void computeFragmentGraph( FeatureCalculator *fc);
 
-    // Use this option if computing features next
-    //void computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols = false);
-
     void computeTransitionThetas(Param &param);
 
     void computeLogTransitionProbabilities();

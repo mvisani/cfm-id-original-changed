@@ -263,8 +263,6 @@ public:
 
     void clearAllSmiles();
 
-    void computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols);
-
     // For current graph in use
     virtual unsigned int getNumTransitions() const {
         return transitions.size();
