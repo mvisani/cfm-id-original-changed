@@ -328,12 +328,6 @@ protected:
 
     bool is_match(std::set<double> &weights, double mass) const;
 
-    // Function to remove give transitions and update id maps
-    void removeTransitions(std::vector<int> &input_ids);
-
-    // Function to remove give fragments and update id maps
-    void removeFragments(std::vector<int> &input_ids);
-
     bool include_isotopes;
     IsotopeCalculator *isotope;
     bool allow_frag_detours;
