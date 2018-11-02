@@ -36,12 +36,12 @@ void Inference::calculateBeliefs(beliefs_t &beliefs) {
 
     //Pass the messages down
     std::vector<Message> down_msgs, up_msgs;
-    runInferenceDownwardPass(down_msgs, config->model_depth);
+    runInferenceDownwardPass(down_msgs, mol_depth);
 
     //Create Spectrum Message
     Message spec_msg;
-    int energy = config->map_d_to_energy[config->model_depth - 1];
-    createSpectrumMessage(spec_msg, energy, down_msgs[config->model_depth - 1]);
+    int energy = config->map_d_to_energy[mol_depth - 1];
+    createSpectrumMessage(spec_msg, energy, down_msgs[mol_depth - 1]);
 
     //Apply IPFP modification to message to account for marginal observation
     Message modified_msg;
@@ -49,7 +49,7 @@ void Inference::calculateBeliefs(beliefs_t &beliefs) {
     Message::const_iterator it = spec_msg.begin();
     for (; it != spec_msg.end(); ++it) {
         int i = it.index();
-        modified_msg.addToIdx(i, spec_msg.getIdx(i) - down_msgs[config->model_depth - 1].getIdx(i));
+        modified_msg.addToIdx(i, spec_msg.getIdx(i) - down_msgs[mol_depth - 1].getIdx(i));
     }
 
     //Pass the messages back up
@@ -79,11 +79,11 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
 
     
     //Initialise the messages
-    down_msgs.resize(config->model_depth);
+    down_msgs.resize(mol_depth);
 
     //Create the tmp factor probs
     factor_probs_t tmp_log_probs;
-    initTmpFactorProbSizes(tmp_log_probs, moldata->getNumFragments(), moldata->getNumTransitions(), config->model_depth);
+    initTmpFactorProbSizes(tmp_log_probs, moldata->getNumFragments(), moldata->getNumTransitions(), mol_depth);
 
     //Factor (F0,F1) => Create F1 Message
     int energy = config->map_d_to_energy[0];
@@ -109,17 +109,17 @@ void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &s
 
     
     //Initialise the messages
-    up_msgs.resize(config->model_depth);
+    up_msgs.resize(mol_depth);
 
     //Create the tmp factor probs
     factor_probs_t tmp_log_probs;
-    initTmpFactorProbSizes(tmp_log_probs, moldata->getNumFragments(), moldata->getNumTransitions(), config->model_depth);
+    initTmpFactorProbSizes(tmp_log_probs, moldata->getNumFragments(), moldata->getNumTransitions(), mol_depth);
 
     //Apply spectrum message
-    up_msgs[config->model_depth - 1] = spec_msg;
+    up_msgs[mol_depth - 1] = spec_msg;
 
     //Update Factor (Fd-1,Fd) => Create Message Fd-1  ...etc as per MODEL_DEPTH
-    for (int i = config->model_depth - 2; i >= 0; i--) {
+    for (int i = mol_depth - 2; i >= 0; i--) {
         int energy = config->map_d_to_energy[i + 1];
         passMessage(tmp_log_probs, UP, i, up_msgs[i + 1], energy);
         createMessage(tmp_log_probs, up_msgs[i], up_msgs[i + 1], UP, i);
@@ -176,14 +176,14 @@ void Inference::passMessage(factor_probs_t &tmp_log_probs, int direction, int de
 void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<Message> &down_msgs,
                                                 std::vector<Message> &up_msgs) {
 
-    std::vector<double> norms(config->model_depth);
+    std::vector<double> norms(mol_depth);
     
     //Compute Persistence Beliefs (and track norms)
     beliefs.ps.resize(moldata->getNumFragments());
     for (unsigned int i = 0; i < moldata->getNumFragments(); i++) {
-        beliefs.ps[i].resize(config->model_depth);
+        beliefs.ps[i].resize(mol_depth);
 
-        for (unsigned int d = 0; d < config->model_depth; d++) {
+        for (unsigned int d = 0; d < mol_depth; d++) {
 
             double tmp;
             if ((d == 0 && i == 0) || (d > 0 && down_msgs[d - 1].getIdx(i) > -DBL_MAXIMUM)) {
@@ -202,9 +202,9 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
     beliefs.tn.resize(moldata->getNumTransitions());
     for (unsigned int i = 0; i < moldata->getNumTransitions(); i++) {
         const Transition *t = moldata->getTransitionAtIdx(i);
-        beliefs.tn[i].resize(config->model_depth);
+        beliefs.tn[i].resize(mol_depth);
 
-        for (unsigned int d = 0; d < config->model_depth; d++) {
+        for (unsigned int d = 0; d < mol_depth; d++) {
 
             double tmp;
             if ((d == 0 && t->getFromId() == 0) || (d > 0 && down_msgs[d - 1].getIdx(t->getFromId()) > -DBL_MAXIMUM)) {
@@ -221,12 +221,12 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
 
     //Normalise
     for (unsigned int i = 0; i < beliefs.tn.size(); i++) {
-        for (unsigned int d = 0; d < config->model_depth; d++) {
+        for (unsigned int d = 0; d < mol_depth; d++) {
             beliefs.tn[i][d] -= norms[d];
         }
     }
     for (unsigned int i = 0; i < beliefs.ps.size(); i++) {
-        for (unsigned int d = 0; d < config->model_depth; d++) {
+        for (unsigned int d = 0; d < mol_depth; d++) {
             beliefs.ps[i][d] -= norms[d];
         }
     }

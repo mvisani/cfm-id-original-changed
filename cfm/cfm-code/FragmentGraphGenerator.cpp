@@ -140,7 +140,7 @@ int FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 //The output will be appended to the current_graph
 void
 FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int depth, int parentid,
-                                int remaining_ring_breaks, int absolute_depth_max, int num_rbreak_nrbonds) {
+                                int remaining_ring_breaks, int num_rbreak_nrbonds) {
 
     if (current_graph->getOriginalNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
         || current_graph->getOriginalNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
@@ -162,18 +162,14 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
     if (remaining_depth <= 0)
         return;
 
-    // or can not break  absolute_depth_max
-    // because ring break does not take depth budget
-    // this is the check to prevent training crash
-    // if absolute_depth_max == -1, this check with be ignored
-    if (depth >= absolute_depth_max && absolute_depth_max != -1)
-        return;
-
     //If the node was already in the graph at sufficient depth, skip any further computation
     if (alreadyComputed(id, remaining_depth)) {
         if (verbose) std::cout << "Node already computed: Skipping" << std::endl;
         return;
     }
+
+    if ( current_graph->getDepth() < depth)
+        current_graph->setDepth(depth);
 
     //Generate Breaks
     std::vector<Break> breaks;
@@ -213,7 +209,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
             //Recur over children
             std::vector<FragmentTreeNode>::iterator itt = node.children.begin();
             for (; itt != node.children.end(); ++itt) {
-                compute(*itt, child_remaining_depth, depth + 1, id, child_remaining_ring_breaks, absolute_depth_max);
+                compute(*itt, child_remaining_depth, depth + 1, id, child_remaining_ring_breaks);
             }
 
             //Undo and remove children

@@ -795,8 +795,8 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
                 if ((ion.get()->getBondWithIdx(*it))->getBondType() == RDKit::Bond::AROMATIC)
                     continue;
-
-                breaks.push_back(Break(*it, ring_idx, computeNumIonicAlloc(num_ionic)));
+                else
+                    breaks.push_back(Break(*it, ring_idx, computeNumIonicAlloc(num_ionic)));
             }
         }
     }

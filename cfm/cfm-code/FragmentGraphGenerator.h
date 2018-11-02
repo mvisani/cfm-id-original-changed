@@ -83,8 +83,7 @@ public:
     //Compute a FragmentGraph starting at the given node and computing to the depth given.
     //The output will be appended to the current_graph
     void compute(FragmentTreeNode &startnode, int remaining_depth, int depth, int parentid,
-                 int remaining_ring_breaks, int absolute_depth_max = -1,
-                 int num_rbreak_nrbonds = 100000);
+                 int remaining_ring_breaks, int num_rbreak_nrbonds = 100000);
 
 protected:
     FeatureCalculator *fc;

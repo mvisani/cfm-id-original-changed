@@ -245,6 +245,7 @@ public:
         return fg->hasIsotopesIncluded();
     }
 
+    int getFGDepth() const { return fg->getDepth(); };
 
     void getSelectedWeights(std::set<double> &selected_weights, std::set<double> &all_weights, int engery_level,
                                 bool peaknum_only = false);

@@ -306,11 +306,14 @@ public:
 
     void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio);
 
+    int getDepth() { return depth; };
 
+    int setDepth(int d) { return depth = d; };
 
 protected:
     std::vector<Fragment*> fragments;
     std::vector<Transition*> transitions;
+    int depth = 0;
 
     tmap_t from_id_tmap; // Mapping between from_id and transitions with that from_id
     tmap_t to_id_tmap; // Mapping between to_id and transitions with that to_id

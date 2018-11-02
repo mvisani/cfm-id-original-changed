@@ -40,7 +40,12 @@ struct factor_probs_t {
 class Inference {
 
 public:
-    Inference(const MolData *data, config_t *cfg) : moldata(data), config(cfg) {};
+    Inference(const MolData *data, config_t *cfg) : moldata(data), config(cfg) {
+        if(data->getFGDepth() <= config->model_depth)
+            mol_depth = config->model_depth;
+        else
+            mol_depth = data->getFGDepth();
+    };
 
     void calculateBeliefs(beliefs_t &beliefs);    //Note: Only supports single energy mode
     void runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth);
@@ -51,6 +56,7 @@ private:
     const MolData *moldata;
     config_t *config;
     std::vector<Message> spec_messages;
+    int mol_depth;
 
     void initTmpFactorProbSizes(factor_probs_t &tmp_log_probs, unsigned int num_frag, unsigned int num_trans,
                                 unsigned int model_depth);
