@@ -734,10 +734,18 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
     std::set<int> half_broke_ring_bonds;
     int had_ring_break;
     ion.get()->getProp("HadRingBreak", had_ring_break);
-    if(had_ring_break){
-        for (unsigned int bidx = 0; bidx < ion.get()->getNumBonds(); bidx++) {
-            int was_on_the_ring;
-            RDKit::Bond *bond = ion.get()->getBondWithIdx(bidx);
+
+
+    //Generate Non-Ring Breaks
+    //and count how many bonds are ring bond
+    // how many bonds are attached to ring
+    int ring_bonds_count = 0;
+    for (unsigned int bidx = 0; bidx < ion.get()->getNumBonds(); bidx++) {
+
+        RDKit::Bond *bond = ion.get()->getBondWithIdx(bidx);
+
+        int was_on_the_ring;
+        if(had_ring_break){
             bond->getProp("OnTheRing", was_on_the_ring);
             // if bond was on the ring and now is not
             // it is the bond on the half broke ring
@@ -746,19 +754,11 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
                 bond->setProp("OnTheRing", 0);
             }
         }
-    }
 
-    //Generate Non-Ring Breaks
-    //and count how many bonds are ring bond
-    // how many bonds are attached to ring
-    int ring_bonds_count = 0;
-    for (unsigned int bidx = 0; bidx < ion.get()->getNumBonds(); bidx++) {
-        // if we only want to do half ring break
-        if(!half_broke_ring_bonds.empty()
-        && half_broke_ring_bonds.find(bidx) != half_broke_ring_bonds.end())
+
+        if(had_ring_break && !was_on_the_ring)
             continue;
 
-        RDKit::Bond *bond = ion.get()->getBondWithIdx(bidx);
         bond->setProp("Broken", 0);
         bond->setProp("NumUnbrokenRings", rinfo->numBondRings(bidx));
 
@@ -768,7 +768,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
             ring_bonds_count ++;
     }
 
-    //Ring Breaks
+    // Ring Breaks
     // Find Ring Groups
     // idea is that, a group of rings has AROMATIC bonds are not likely to brea
     auto bond_rings = rinfo->bondRings();
@@ -776,7 +776,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
     // assume ring break are less likely to occur
     // only create ring break if there is less than 5 none ring bond and  this is not a half ring break
-    if ((ion.get()->getNumBonds() < ring_bonds_count + 5) && (half_broke_ring_bonds.empty())) {
+    if ((ion.get()->getNumBonds() < ring_bonds_count + 5) && (had_ring_break == 0)) {
         auto brings = rinfo->bondRings();
 
         auto bit = brings.begin();
