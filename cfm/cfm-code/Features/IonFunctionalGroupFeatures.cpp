@@ -21,6 +21,6 @@ void IonFunctionalGroupFeatures::compute(FeatureVector &fv,
                                          const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
-    addFunctionalGroupFeatures(fv, ion, 1, ring_break);
+    addFunctionalGroupFeatures(fv, ion, 1, false);
 }
 

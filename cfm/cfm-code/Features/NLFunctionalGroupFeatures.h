@@ -22,7 +22,7 @@ param.cpp.
 class NLFunctionalGroupFeatures : public FunctionalGroupFeature {
 public:
     NLFunctionalGroupFeatures() {
-        size = (NUM_FGRPS + 1) * 2;
+        size = (NUM_FGRPS + 1);
         name = "NLFunctionalGroupFeatures";
     };
 

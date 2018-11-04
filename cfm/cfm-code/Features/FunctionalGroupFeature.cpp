@@ -17,7 +17,7 @@
 #include "FunctionalGroupFeature.h"
 
 void FunctionalGroupFeature::addFunctionalGroupFeatures(FeatureVector &fv, const RootedROMolPtr *mol, int max_depth,
-                                                        int is_ring_break, bool extra) const {
+                                                        bool extra) const {
 
     int offset = fv.getTotalLength();
 
@@ -26,7 +26,6 @@ void FunctionalGroupFeature::addFunctionalGroupFeatures(FeatureVector &fv, const
 
     //Fill an array to begin with
     std::vector<int> tmp_full_fv((num_grps + 1) * (max_depth + 1), 0);
-    int initial_length = fv.getTotalLength();
     addFunctionalGroupFeaturesFromAtom(tmp_full_fv, mol->root, mol->mol, mol->root, max_depth, 0, extra);
 
     //Then copy the array into the sparse format fv
@@ -45,8 +44,11 @@ void FunctionalGroupFeature::addFunctionalGroupFeaturesFromAtom(std::vector<int>
     //Check for functional groups at the current atom, and add them to the feature vector
     //iff they were not already found at a lesser depth.
     std::vector<unsigned int> fgrps;
-    if (extra) atom->getProp<std::vector<unsigned int> >("ExtraFunctionalGroups", fgrps);
-    else atom->getProp<std::vector<unsigned int> >("FunctionalGroups", fgrps);
+    if (extra)
+        atom->getProp<std::vector<unsigned int> >("ExtraFunctionalGroups", fgrps);
+    else
+        atom->getProp<std::vector<unsigned int> >("FunctionalGroups", fgrps);
+
     std::vector<unsigned int>::iterator it = fgrps.begin();
     for (; it != fgrps.end(); ++it) {
         bool added_at_lesser_depth = false;
@@ -57,7 +59,8 @@ void FunctionalGroupFeature::addFunctionalGroupFeaturesFromAtom(std::vector<int>
                 break;
             }
         }
-        if (!added_at_lesser_depth) tmp_full_fv[*it + depth * (num_grps + 1)] = 1;
+        if (!added_at_lesser_depth)
+            tmp_full_fv[*it + depth * (num_grps + 1)] = 1;
     }
 
     //Iterate until max_depth is reached

@@ -20,5 +20,5 @@ void IonFunctionalGroupRootOnlyFeatures::compute(FeatureVector &fv, const Rooted
                                                  const RootedROMolPtr *nl, const int depth) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
-    addFunctionalGroupFeatures(fv, ion, 0, ring_break);
+    addFunctionalGroupFeatures(fv, ion, 0, false);
 }
