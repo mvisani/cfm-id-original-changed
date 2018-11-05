@@ -127,20 +127,20 @@ int FragmentGraphGenerator::countExtraElectronPairs(RDKit::RWMol *rwmol, std::ve
 }
 
 //Helper function - check if the fragment has already been computed to at least this depth
-int FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
+bool FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
     if (id_depth_computed_cache.find(id) == id_depth_computed_cache.end()    //Not found
-        || id_depth_computed_cache[id] < remaining_depth) {                    //Or computed previously to less depth
+        || id_depth_computed_cache[id] < remaining_depth) {         //Or computed previously higher on the tree
         id_depth_computed_cache[id] = remaining_depth;
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
 }
 
 //Compute a FragmentGraph starting at the given node and computing to the depth given.
 //The output will be appended to the current_graph
 void
-FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int depth, int parentid,
-                                int remaining_ring_breaks, int num_rbreak_nrbonds) {
+FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parentid, int remaining_ring_breaks,
+                                int num_rbreak_nrbonds) {
 
     if (current_graph->getOriginalNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
         || current_graph->getOriginalNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
@@ -154,7 +154,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
     //Add the node to the graph, and return a fragment id
     int id = -1;
     if (mols_to_fv)
-        id = current_graph->addToGraphAndReplaceMolWithFV(node, parentid, fc, depth);
+        id = current_graph->addToGraphAndReplaceMolWithFV(node, parentid, fc);
     else
         id = current_graph->addToGraph(node, parentid);
 
@@ -168,8 +168,8 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
         return;
     }
 
-    if ( current_graph->getDepth() < depth)
-        current_graph->setDepth(depth);
+    if ( current_graph->getDepth() < node.depth)
+        current_graph->setDepth(node.depth);
 
     //Generate Breaks
     std::vector<Break> breaks;
@@ -209,7 +209,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
             //Recur over children
             std::vector<FragmentTreeNode>::iterator itt = node.children.begin();
             for (; itt != node.children.end(); ++itt) {
-                compute(*itt, child_remaining_depth, depth + 1, id, child_remaining_ring_breaks);
+                compute(*itt, child_remaining_depth, id, child_remaining_ring_breaks, 0);
             }
 
             //Undo and remove children
@@ -224,7 +224,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 //Compute a FragmentGraph starting at the given node and computing to the depth given.
 //The output will be appended to the current_graph
 void
-LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int depth, int parentid, double parent_log_prob,
+LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parentid, double parent_log_prob,
                                       int remaining_ring_breaks) {
 
     //Check Timeout
@@ -282,7 +282,7 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
     for (; itt != node.children.end(); ++itt) {
         Transition tmp_t(-1, -1, itt->nl, itt->ion);
         // NOTE Depth in here is child depth
-        FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), depth + 1, node.ion);
+        FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), node.depth + 1, node.ion);
         for (int engy = cfg->spectrum_depths.size() - 1; engy >= 0; engy--) {
             if (is_nn_params)
                 itt->setTmpTheta(nnparam->computeTheta(*fv, engy), engy);
@@ -313,7 +313,7 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
             int child_remaining_ring_breaks = remaining_ring_breaks;
             if (children_isring[child_idx] && child_remaining_ring_breaks > 0)
                 child_remaining_ring_breaks--;
-            compute(*itt, remaining_depth - 1, depth + 1, id, max_child_prob, child_remaining_ring_breaks);
+            compute(*itt, remaining_depth - 1, id, max_child_prob, child_remaining_ring_breaks);
         }
     }
 

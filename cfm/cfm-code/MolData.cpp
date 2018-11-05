@@ -76,7 +76,7 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
 
-    fgen.compute(*startnode, cfg->fg_depth, 0, -1, cfg->max_ring_breaks, cfg->num_rbreak_nrbonds);
+    fgen.compute(*startnode, cfg->fg_depth, -1, cfg->max_ring_breaks, cfg->num_rbreak_nrbonds);
 
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
@@ -113,7 +113,7 @@ void MolData::computeLikelyFragmentGraphAndSetThetas(
     fg = fgen.createNewGraph(cfg);
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
-    fgen.compute(*startnode, cfg->fg_depth, 0, -1, 0.0, cfg->max_ring_breaks);
+    fgen.compute(*startnode, cfg->fg_depth, -1, 0.0, cfg->max_ring_breaks);
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
 
@@ -148,12 +148,12 @@ void MolData::computeEvidenceFragmentGraph(beliefs_t *beliefs,
     ev_fg = new EvidenceFragmentGraph(cfg);
 
     // Add the root fragment
-    Transition null_t;
+    Transition null_trans;
     std::vector<int> id_lookup(num_fragments, -1);
     std::vector<double> main_ev;
     computeFragmentEvidenceValues(main_ev, 0, beliefs);
     id_lookup[0] = ev_fg->addToGraphDirectNoCheck(
-            EvidenceFragment(*(fg->getFragmentAtIdx(0)), -1, main_ev), &null_t, -1);
+            EvidenceFragment(*(fg->getFragmentAtIdx(0)), -1, main_ev), &null_trans, -1);
 
     // Add the fragments and transitions if the beliefs are high enough
     std::vector<int> t_added_flags(num_transitions, 0);
@@ -550,8 +550,7 @@ void MolData::createSpeactraSingleEnergry(unsigned int energy_level) {
     int msg_depth = se_cfg.spectrum_depths[0] - 1;
     Message *msg = &(msgs[msg_depth]);
     if (cfg->include_isotopes)
-            translatePeaksFromMsgToSpectraWithIsotopes(predicted_spectra[energy_level],
-                                                       msg);
+            translatePeaksFromMsgToSpectraWithIsotopes(predicted_spectra[energy_level], msg);
         else
             translatePeaksFromMsgToSpectra(predicted_spectra[energy_level], msg);
 }

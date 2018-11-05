@@ -40,20 +40,19 @@ public:
     // not needed and takes more space.
     Fragment() {};
 
-    Fragment(std::string &a_ion_smiles,std::string &a_reduced_smiles, int an_id,
-             double a_mass)
+    Fragment(std::string &a_ion_smiles, std::string &a_reduced_smiles, int an_id, double a_mass, bool is_intermediate)
             : id(an_id), ion_smiles(a_ion_smiles), reduced_smiles(a_reduced_smiles),
-              mass(a_mass), depth(-1) {};
+              mass(a_mass), depth(-1), is_intermediate(is_intermediate) {};
 
-    Fragment(std::string &a_ion_smiles,std::string &a_reduced_smiles, int an_id,
-             double a_mass, Spectrum &a_isotope_spec)
+    Fragment(std::string &a_ion_smiles, std::string &a_reduced_smiles, int an_id, double a_mass,
+                 Spectrum &a_isotope_spec, bool is_intermediate)
             : id(an_id), ion_smiles(a_ion_smiles), reduced_smiles(a_reduced_smiles),
-              mass(a_mass), isotope_spectrum(a_isotope_spec), depth(-1) {};
+              mass(a_mass), isotope_spectrum(a_isotope_spec), depth(-1), is_intermediate(is_intermediate) {};
 
     Fragment(const Fragment &a_fragment, int an_id)
             : id(an_id), ion_smiles(*a_fragment.getIonSmiles()),
               reduced_smiles(*a_fragment.getReducedSmiles()),
-              mass(a_fragment.getMass()), depth(-1) {};
+              mass(a_fragment.getMass()), depth(-1), is_intermediate(false) {};
 
     // Access Functions
     double getMass() const { return mass; };
@@ -63,6 +62,10 @@ public:
     int getId() const { return id; };
 
     void setId(int an_id) { id = an_id; };
+
+    void setIntermediate(bool flag) { is_intermediate = flag; };
+
+    bool isIntermediate() const { return is_intermediate; };
 
     const std::string *getReducedSmiles() const { return &reduced_smiles; };
 
@@ -79,12 +82,12 @@ public:
 
 protected:
     int id;
-   std::string
-            reduced_smiles; // Reduced version of the smiles string (just backbone)
-   std::string ion_smiles; // Full ion smiles (for writing out if called for)
+    std::string reduced_smiles; // Reduced version of the smiles string (just backbone)
+    std::string ion_smiles; // Full ion smiles (for writing out if called for)
     double mass;
     Spectrum isotope_spectrum;
     int depth; // Depth -1 means hasn't been set yet.
+    bool is_intermediate = false;
 };
 
 class EvidenceFragment : public Fragment {
@@ -220,8 +223,7 @@ public:
 
     // As for previous function, but delete the mols in the transition and compute
     // and store a feature vector instead
-    int addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid, FeatureCalculator *fc,
-                                      int depth);
+    int addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid, FeatureCalculator *fc);
 
     // As for previous function, but don't store the mols in the transition and
     // insert the pre-computed thetas instead
@@ -341,7 +343,7 @@ protected:
 
     // Find the id for an existing fragment that matches the input ion and mass
     // or create a new fragment in the case where no such fragment is found
-    int addFragmentOrFetchExistingId(romol_ptr_t ion, double mass);
+    int addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bool is_intermediate);
 
     // Determine if the two fragments match - assumes the masses have already
     // been checked to be roughly the same, now check reduced structure.

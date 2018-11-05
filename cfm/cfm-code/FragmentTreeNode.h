@@ -83,17 +83,18 @@ public:
     // Constructors
     FragmentTreeNode(FeatureHelper *a_fh) : fh(a_fh) {};
 
-    FragmentTreeNode(romol_ptr_t an_ion, romol_ptr_t a_nl, int a_ion_free_ep,
-                     int a_depth, FeatureHelper *a_fh, std::vector<int> &a_e_loc)
+    FragmentTreeNode(romol_ptr_t an_ion, romol_ptr_t a_nl, int a_ion_free_ep, int a_depth, FeatureHelper *a_fh,
+                         std::vector<int> &a_e_loc, bool is_intermediate = false)
             : ion(an_ion), nl(a_nl), ion_free_epairs(a_ion_free_ep), depth(a_depth),
-              fh(a_fh), e_loc(a_e_loc) {
+              fh(a_fh), e_loc(a_e_loc), is_intermediate(is_intermediate) {
         labelIonProperties();
     };
 
+    // used for creat start node
     FragmentTreeNode(romol_ptr_t an_ion, int a_ion_free_ep, int a_depth,
                      FeatureHelper *a_fh, std::vector<int> &a_e_loc)
             : ion(an_ion), ion_free_epairs(a_ion_free_ep), depth(a_depth), fh(a_fh),
-              e_loc(a_e_loc) {
+              e_loc(a_e_loc), is_intermediate(false)  {
         labelIonProperties();
     };
 
@@ -158,6 +159,7 @@ public:
     undoAlreadyChargedOrSplitCharge(RDKit::RWMol &rwmol,
                                     boost::tuple<int, int, int> &pidx_nidx_ridx);
 
+    bool isIntermediate() const { return is_intermediate; };
 private:
     // Helper class for feature labels that need to be added during fragment graph
     // computation
@@ -208,6 +210,8 @@ private:
     static int computeNumIonicAlloc(int num_ionic_fragments);
 
     static void recordOrigAtomIdxs(RDKit::RWMol &rwmol);
+
+    bool is_intermediate = false;
 };
 
 #endif // __FRAG_TREE_NODE_H__

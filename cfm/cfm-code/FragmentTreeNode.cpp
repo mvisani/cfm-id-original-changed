@@ -219,6 +219,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
         atom->setProp("NumUnbrokenRings", (unsigned int) 0);
         atom->setProp("IonicFragmentCharge", 0);
         rwmol.addAtom(atom, true);
+        rwmol.setProp("HadRingBreak", 0);
         delete h2mol;
     }
 
@@ -293,7 +294,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
 
             child_ion->setProp("HadRingBreak", 1);
             children.push_back(
-                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc));
+                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, true));
         }
         else if (mols.size() == 2) {
             int mol0_q = RDKit::MolOps::getFormalCharge(*mols[0].get());
@@ -311,7 +312,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             createChildIonElectronLocRecord(child_e_loc, child_ion);
             child_ion->setProp("HadRingBreak", 0);
             children.push_back(
-                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc));
+                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false));
         } else if (mols.size() > 2) {
 
             //Collect the NL and ion parts (which may be multiple fragments each)
@@ -334,7 +335,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             createChildIonElectronLocRecord(child_e_loc, child_ion);
             child_ion->setProp("HadRingBreak", 0);
             children.push_back(
-                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc));
+                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false));
         }
 
         //Undo the charge (and radical) assignment
@@ -346,10 +347,11 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
     }
 
     //For Hydrogen loss only, remove the added hydrogens (should be just the last atom, but doesn't assume...)
-    if (brk.getBondIdx() == -1) {
+    if (brk.getBondIdx() == -1 && !brk.isRingBreak()) {
         for (int i = rwmol.getNumAtoms() - 1; i >= 0; i--) {
             RDKit::Atom *atom = rwmol.getAtomWithIdx(i);
-            if (atom->getSymbol() == "H") rwmol.removeAtom(atom);
+            if (atom->getSymbol() == "H")
+                rwmol.removeAtom(atom);
         }
     }
 }
@@ -401,8 +403,10 @@ FragmentTreeNode::findChargeLocation(RDKit::RWMol &rwmol, int charge_side, int r
             RDKit::Atom *atom = rwmol.getAtomWithIdx(i);
             int fragidx;
             atom->getProp("FragIdx", fragidx);
-            if (fragidx != radical_side) continue;
-            if (atom->getIsAromatic()) continue;    //Don't allow on aromatic atom
+            if (fragidx != radical_side)
+                continue;
+            if (atom->getIsAromatic())
+                continue;    //Don't allow on aromatic atom
             if (atom->getTotalNumHs() > 0) {
                 qidx_ridx.second = i;
                 return qidx_ridx;
@@ -776,7 +780,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
     // assume ring break are less likely to occur
     // only create ring break if there is less than 5 none ring bond and  this is not a half ring break
-    if ((ion.get()->getNumBonds() < ring_bonds_count + 5) && (had_ring_break == 0)) {
+    if ((ion.get()->getNumBonds() < ring_bonds_count + num_rbreak_nrbonds) && (had_ring_break == 0)) {
         auto brings = rinfo->bondRings();
 
         auto bit = brings.begin();
@@ -795,8 +799,10 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
                 if ((ion.get()->getBondWithIdx(*it))->getBondType() == RDKit::Bond::AROMATIC)
                     continue;
-                else
-                    breaks.push_back(Break(*it, ring_idx, computeNumIonicAlloc(num_ionic)));
+                if (rinfo->numBondRings(*it) != 1)
+                    continue;
+
+                breaks.push_back(Break(*it, ring_idx, computeNumIonicAlloc(num_ionic)));
             }
         }
     }

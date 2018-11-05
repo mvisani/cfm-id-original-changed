@@ -65,7 +65,7 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int id = addFragmentOrFetchExistingId(node.ion, mass);
+    int id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
 
     if (parentid < 0 || fragments[id]->getDepth() == -1)
         fragments[id]->setDepth(node.depth);    //Set start fragment depth
@@ -93,12 +93,11 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
 }
 
 //As for previous function, but delete the mols in the transition and compute and store a feature vector instead
-int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid, FeatureCalculator *fc,
-                                                 int depth) {
+int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid, FeatureCalculator *fc) {
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int id = addFragmentOrFetchExistingId(node.ion, mass);
+    int id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
 
     if (parentid < 0 || fragments[id]->getDepth() == -1)
         fragments[id]->setDepth(node.depth);    //Set start fragment depth
@@ -124,7 +123,7 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         auto frag_ptr = createMolPtr(frag_smiles.c_str());
 
         try {
-            fv = fc->computeFeatureVector(t->getIon(), t->getNeutralLoss(), depth, frag_ptr);
+            fv = fc->computeFeatureVector(t->getIon(), t->getNeutralLoss(), node.depth, frag_ptr);
             t->setFeatureVector(fv);
         }
         catch (FeatureCalculationException & e) {
@@ -137,7 +136,6 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         //Delete the mols
         t->deleteIon();
         t->deleteNeutralLoss();
-
     }
 
     return id;
@@ -147,7 +145,7 @@ int FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std:
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int id = addFragmentOrFetchExistingId(node.ion, mass);
+    int id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
 
     if (parentid < 0 || fragments[id]->getDepth() == -1)
         fragments[id]->setDepth(node.depth);    //Set start fragment depth
@@ -174,7 +172,7 @@ int FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std:
 }
 
 
-int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass) {
+int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bool is_intermediate) {
 
     std::string reduced_smiles;
 
@@ -205,7 +203,8 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass) {
             }
         }
         reduced_smiles = RDKit::MolToSmiles(f1_copy);
-    } else frag_mass_lookup[rounded_mass];
+    } else
+        frag_mass_lookup[rounded_mass];
 
     //No match found, create the fragment
     if (reduced_smiles.size() == 0) {
@@ -219,8 +218,10 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass) {
         Spectrum isotope_spectrum;
         long charge = RDKit::MolOps::getFormalCharge(*ion.get());
         isotope->computeIsotopeSpectrum(isotope_spectrum, ion, charge);
-        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, isotope_spectrum));
-    } else fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass));
+        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, isotope_spectrum, is_intermediate));
+    } else
+        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, is_intermediate));
+
     frag_mass_lookup[rounded_mass].push_back(newid);
     from_id_tmap.resize(newid + 1);
     to_id_tmap.resize(newid + 1);
@@ -297,7 +298,11 @@ void FragmentGraph::writeFragmentsOnly(std::ostream &out) const {
     for (auto &it : fragments) {
         out << it->getId() << " ";
         out << std::setprecision(10) << it->getMass() << " ";
-        out << *(it->getIonSmiles()) << std::endl;
+        out << *(it->getIonSmiles());
+
+        if(it->isIntermediate())
+            out << "Intermediate Fragment ";
+        out << std::endl;
     }
 }
 
@@ -326,10 +331,16 @@ void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isot
     out.write(reinterpret_cast<const char *>(&numf), sizeof(numf));
     auto it = fragments.begin();
     for (; it != fragments.end(); ++it) {
+        // write id
         int id = (*it)->getId();
         out.write(reinterpret_cast<const char *>(&id), sizeof(id));
+        // write mass
         double mass = (*it)->getMass();
         out.write(reinterpret_cast<const char *>(&mass), sizeof(mass));
+        // write flag
+        bool is_intermediate = (*it)->isIntermediate();
+        out.write(reinterpret_cast<const char *>(&is_intermediate), sizeof(is_intermediate));
+
         if (include_isotopes) {
             const Spectrum *isospec = (*it)->getIsotopeSpectrum();
             unsigned int iso_size = isospec->size();
@@ -376,6 +387,10 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
         ifs.read(reinterpret_cast<char *>(&id), sizeof(id));
         double mass;
         ifs.read(reinterpret_cast<char *>(&mass), sizeof(mass));
+
+        bool is_intermediate;
+        ifs.read(reinterpret_cast<char *>(&is_intermediate), sizeof(is_intermediate));
+
         if (include_isotopes) {
             Spectrum isospec;
             unsigned int iso_size;
@@ -387,8 +402,9 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
                 ifs.read(reinterpret_cast<char *>(&pintensity), sizeof(pintensity));
                 isospec.push_back(Peak(pmass, pintensity));
             }
-            fragments.push_back(new Fragment(null, null, id, mass, isospec));
-        } else fragments.push_back(new Fragment(null, null, id, mass));
+            fragments.push_back(new Fragment(null, null, id, mass, isospec, is_intermediate));
+        } else
+            fragments.push_back(new Fragment(null, null, id, mass, is_intermediate));
     }
     //Transitions
     unsigned int numt;

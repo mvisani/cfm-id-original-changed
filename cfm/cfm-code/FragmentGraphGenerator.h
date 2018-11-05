@@ -82,8 +82,8 @@ public:
 
     //Compute a FragmentGraph starting at the given node and computing to the depth given.
     //The output will be appended to the current_graph
-    void compute(FragmentTreeNode &startnode, int remaining_depth, int depth, int parentid,
-                 int remaining_ring_breaks, int num_rbreak_nrbonds = 100000);
+    void compute(FragmentTreeNode &startnode, int remaining_depth, int parentid,
+                 int remaining_ring_breaks, int num_rbreak_nrbonds);
 
 protected:
     FeatureCalculator *fc;
@@ -98,7 +98,7 @@ private:
     std::map<int, int> id_depth_computed_cache;
 
     //Helper function - check if the fragment has already been computed to at least this depth
-    int alreadyComputed(int id, int remaining_depth);
+    bool alreadyComputed(int id, int remaining_depth);
 
     //Static Helper functions
     static int countExtraElectronPairs(RDKit::RWMol *rwmol, std::vector<int> &output_e_loc);
@@ -132,8 +132,8 @@ public:
 
     //Compute a FragmentGraph starting at the given node and computing to the depth given.
     //The output will be appended to the current_graph
-    void compute(FragmentTreeNode &startnode, int remaining_depth, int depth, int parentid, double parent_log_prob,
-                 int remaining_ring_breaks);
+    void compute(FragmentTreeNode &startnode, int remaining_depth, int parentid,
+                 double parent_log_prob, int remaining_ring_breaks);
 
 private:
     Param *param;
