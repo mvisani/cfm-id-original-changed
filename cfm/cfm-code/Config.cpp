@@ -170,7 +170,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_select_intensity_sum_ratio") cfg.ga_select_intensity_sum_ratio = (double) value;
         else if (name == "ga_dropout_delta") cfg.ga_dropout_delta = (double) value;
         else if (name == "ga_dropout_lowerbond") cfg.ga_dropout_lowerbond = (double) value;
-        else if (name == "cfg.num_rbreak_nrbonds") cfg.num_rbreak_nrbonds = (int) value;
+        else if (name == "num_rbreak_nrbonds") cfg.num_rbreak_nrbonds = (int) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
