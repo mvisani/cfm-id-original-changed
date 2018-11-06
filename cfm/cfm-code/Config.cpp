@@ -307,6 +307,9 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                              << cfg.ga_graph_sampling_k << " explore weight=" << cfg.ga_sampling_explore_weight
                           << std::endl;
                 break;
+            case USE_DIFFERENCE_SAMPLING:
+                std::cout << "Using Difference sampling" << std::endl;
+                break;
             case USE_NO_SAMPLING:
             default:
                 std::cout << "NOT Using Sampling Method" << std::endl;
