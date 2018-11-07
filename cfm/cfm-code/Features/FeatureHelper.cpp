@@ -53,7 +53,9 @@ void FeatureHelper::labelFunctionalGroups(RDKit::RWMol *rwmol, bool extra) {
     const RDKit::MOL_SPTR_VECT &fgrps = fparams->getFuncGroups();
     const RDKit::MOL_SPTR_VECT &xfgrps = xfparams->getFuncGroups();
 
-    std::vector<std::vector<unsigned int>> atom_fgidxs(rwmol->getNumAtoms());
+    std::vector<std::vector<unsigned int>> atom_fg_idxs(rwmol->getNumAtoms());
+
+    std::vector<std::string> atom_fg_str(rwmol->getNumAtoms());
 
     std::string prop_name;
     int num_grps, idx = 0;
@@ -72,6 +74,7 @@ void FeatureHelper::labelFunctionalGroups(RDKit::RWMol *rwmol, bool extra) {
 
     for (; fgrpi != fgrpe; ++fgrpi, idx++) {
         std::string fname;
+        std::string fg_str = "";
         (*fgrpi)->getProp("_Name", fname);
         std::vector<RDKit::MatchVectType>
                 fgpMatches; // The format for each match is (queryAtomIdx, molAtomIdx)
@@ -79,20 +82,25 @@ void FeatureHelper::labelFunctionalGroups(RDKit::RWMol *rwmol, bool extra) {
 
         std::vector<RDKit::MatchVectType>::const_iterator mat_it =
                 fgpMatches.begin();
-        for (; mat_it != fgpMatches.end(); ++mat_it) {
-            auto it = (*mat_it).begin();
-            for (; it != (*mat_it).end(); ++it)
-                atom_fgidxs[it->second].push_back(idx);
-        }
+        for (; mat_it != fgpMatches.end(); ++mat_it)
+            for (auto it = (*mat_it).begin(); it != (*mat_it).end(); ++it)
+                atom_fg_idxs[it->second].push_back(idx);
     }
+
     // For each atom, store the list of functional group indexes in property
     // "FunctionalGroups"
     RDKit::ROMol::AtomIterator ai;
     for (ai = rwmol->beginAtoms(); ai != rwmol->endAtoms(); ++ai) {
         // Add an additional function group to indicate 'No Functional Groups'
-        if (atom_fgidxs[(*ai)->getIdx()].empty())
-            atom_fgidxs[(*ai)->getIdx()].push_back(num_grps);
-        (*ai)->setProp(prop_name, atom_fgidxs[(*ai)->getIdx()]);
+        if (atom_fg_idxs[(*ai)->getIdx()].empty())
+            atom_fg_idxs[(*ai)->getIdx()].push_back(num_grps);
+        (*ai)->setProp(prop_name, atom_fg_idxs[(*ai)->getIdx()]);
+    }
+
+    // For each bond figure out if it is between two function groups
+    // "FunctionalGroups"
+    for (auto bi = rwmol->beginBonds(); bi != rwmol->endBonds(); ++bi) {
+
     }
 }
 

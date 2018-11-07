@@ -63,47 +63,22 @@ public:
 
         exec_flags[3] = fc->includesFeature("BrokenOrigBondType") ||
                         fc->includesFeature("NeighbourOrigBondTypes");
-        /*||
-        fc->includesFeature("IonRootEncodingD3") ||
-        fc->includesFeature("NLRootEncodingD3") ||
-        fc->includesFeature("NLRootEncodingD4") ||
-        fc->includesFeature("IonRootEncodingD4") ||
-        fc->includesFeature("NLRootEncodingD4Long") ||
-        fc->includesFeature("IonRootEncodingD4Long") ||
-        fc->includesFeature("NLRootEncodingMorganD3") ||
-        fc->includesFeature("IonRootEncodingMorganD3") ||
-        fc->includesFeature("NLRootEncodingMorganD3Long") ||
-        fc->includesFeature("IonRootEncodingMorganD3Long");*/
 
-        exec_flags[4] = fc->includesFeature("IonFunctionalGroupFeatures") ||
-                        fc->includesFeature("NLFunctionalGroupFeatures") ||
-                        fc->includesFeature("IonFunctionalGroupFeaturesD2") ||
-                        fc->includesFeature("NLFunctionalGroupFeaturesD2") ||
-                        fc->includesFeature("IonFunctionalGroupRootOnlyFeatures") ||
-                        fc->includesFeature("NLFunctionalGroupRootOnlyFeatures");
-
-        exec_flags[5] = fc->includesFeature("IonExtraFunctionalGroupFeatures") ||
-                        fc->includesFeature("NLExtraFunctionalGroupFeatures");
-
-        if (exec_flags[4]) {
-            fparams = new RDKit::FragCatParams(FGRPS_PICKLE);
-            if (fparams->getNumFuncGroups() != NUM_FGRPS)
-                throw FeatureHelperException(
+        fparams = new RDKit::FragCatParams(FGRPS_PICKLE);
+        if (fparams->getNumFuncGroups() != NUM_FGRPS)
+            throw FeatureHelperException(
                         "Mismatch in expected and found number of functional groups");
-        }
-        if (exec_flags[5]) {
-            xfparams = new RDKit::FragCatParams(EXTRA_FGRPS_PICKLE);
-            if (xfparams->getNumFuncGroups() != NUM_EXTRA_FGRPS)
+
+        xfparams = new RDKit::FragCatParams(EXTRA_FGRPS_PICKLE);
+        if (xfparams->getNumFuncGroups() != NUM_EXTRA_FGRPS)
                 throw FeatureHelperException(
                         "Mismatch in expected and found number of extra functional groups");
-        }
+
     };
 
     ~FeatureHelper() {
-        if (exec_flags[4])
-            delete fparams;
-        if (exec_flags[5])
-            delete xfparams;
+        delete fparams;
+        delete xfparams;
     }
 
     void addLabels(RDKit::RWMol *rwmol) {
@@ -117,10 +92,9 @@ public:
             labelMMFFAtomTypes(rwmol);
         if (exec_flags[3])
             labelOriginalBondTypes(rwmol);
-        if (exec_flags[4])
-            labelFunctionalGroups(rwmol, false);
-        if (exec_flags[5])
-            labelFunctionalGroups(rwmol, true);
+
+        labelFunctionalGroups(rwmol, false);
+        labelFunctionalGroups(rwmol, true);
         labelAtomsWithLonePairs(rwmol);
     };
 
