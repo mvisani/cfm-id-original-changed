@@ -735,36 +735,48 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
     // if previous break is a ring break
     // we only want to break on the rest of ring bonds
-    std::set<int> half_broke_ring_bonds;
     int had_ring_break;
     ion.get()->getProp("HadRingBreak", had_ring_break);
 
+    // let us figure out if we have any bond between fg
+    // this should break first
+    std::set<unsigned int> between_fg_bonds;
+    for (unsigned int bidx = 0; bidx < ion.get()->getNumBonds(); bidx++) {
+        RDKit::Bond *bond = ion.get()->getBondWithIdx(bidx);
+        int between_fg;
+        bond->getProp("BetweenFG", between_fg);
+        if(between_fg)
+            between_fg_bonds.insert(bidx);
+    }
 
     //Generate Non-Ring Breaks
     //and count how many bonds are ring bond
     // how many bonds are attached to ring
+
     int ring_bonds_count = 0;
     for (unsigned int bidx = 0; bidx < ion.get()->getNumBonds(); bidx++) {
 
         RDKit::Bond *bond = ion.get()->getBondWithIdx(bidx);
+
+        bond->setProp("Broken", 0);
+        bond->setProp("NumUnbrokenRings", rinfo->numBondRings(bidx));
 
         int was_on_the_ring;
         if(had_ring_break){
             bond->getProp("OnTheRing", was_on_the_ring);
             // if bond was on the ring and now is not
             // it is the bond on the half broke ring
-            if (rinfo->numBondRings(bidx) == 0 && was_on_the_ring){
-                half_broke_ring_bonds.insert(bidx);
+            if (rinfo->numBondRings(bidx) == 0 && was_on_the_ring)
                 bond->setProp("OnTheRing", 0);
-            }
         }
 
-
+        // if this is a node right after ring break
         if(had_ring_break && !was_on_the_ring)
             continue;
 
-        bond->setProp("Broken", 0);
-        bond->setProp("NumUnbrokenRings", rinfo->numBondRings(bidx));
+        // make sure all functional group break first
+        if(between_fg_bonds.count(bidx) == 0 && !between_fg_bonds.empty())
+            continue;
 
         if (rinfo->numBondRings(bidx) == 0)
             breaks.push_back(Break(bidx, false, computeNumIonicAlloc(num_ionic)));
@@ -780,6 +792,8 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
     // assume ring break are less likely to occur
     // only create ring break if there is less than 5 none ring bond and  this is not a half ring break
+    // NOTE we may want to add FG break check here
+    // but for now , we are not going to worry about it
     if ((ion.get()->getNumBonds() < ring_bonds_count + num_rbreak_nrbonds) && (had_ring_break == 0)) {
         auto brings = rinfo->bondRings();
 

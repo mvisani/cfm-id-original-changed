@@ -45,13 +45,13 @@ class FeatureHelper {
 public:
     FeatureHelper() {
         // TODO fix this: magic number is evil
-        exec_flags.resize(6);
-        for (int i = 0; i < 6; i++)
+        exec_flags.resize(4);
+        for (int i = 0; i < 4; i++)
             exec_flags[i] = 0;
     };
 
     explicit FeatureHelper(FeatureCalculator *fc) {
-        exec_flags.resize(6);
+        exec_flags.resize(4);
         exec_flags[0] = fc->includesFeature("GasteigerCharges");
         exec_flags[1] = fc->includesFeature("HydrogenMovement") ||
                         fc->includesFeature("HydrogenRemoval");
