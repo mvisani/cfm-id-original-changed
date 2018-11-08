@@ -811,8 +811,8 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
             RDKit::RingInfo::INT_VECT::iterator it;
             for (it = bit->begin(); it != bit->end(); ++it) {
 
-                if ((ion.get()->getBondWithIdx(*it))->getBondType() == RDKit::Bond::AROMATIC)
-                    continue;
+                //if ((ion.get()->getBondWithIdx(*it))->getBondType() == RDKit::Bond::AROMATIC)
+                //    continue;
                 if (rinfo->numBondRings(*it) != 1)
                     continue;
 
