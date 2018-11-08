@@ -181,43 +181,67 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
     node.generateBreaks(breaks, h_loss_allowed, num_rbreak_nrbonds);
 
     bool ring_can_break = (remaining_ring_breaks > 0);
-
+    int num_fg_break_child = 0;
     //Iterate over the possible breaks
-    for (auto it =  breaks.begin(); it != breaks.end(); ++it) {
+    for (auto it = breaks.begin(); it != breaks.end(); ++it) {
 
         if(!ring_can_break && it->isRingBreak())
             continue;
 
-        for (int ifrag_idx = 0; ifrag_idx < it->getNumIonicFragAllocations(); ifrag_idx++) {
+        if (!it->isFgBreak())
+            continue;
 
-            node.applyBreak(*it, ifrag_idx);
-            node.generateChildrenOfBreak(*it);
+        CreateChildNodes(node, remaining_depth, remaining_ring_breaks, id, &(*it));
+        num_fg_break_child += node.children.size();
+        node.children = std::vector<FragmentTreeNode>();
+    }
+
+    //Iterate over the possible breaks
+    if(num_fg_break_child == 0){
+        for (auto it =  breaks.begin(); it != breaks.end(); ++it) {
+
+            if(!ring_can_break && it->isRingBreak())
+                continue;
+
+            if (it->isFgBreak())
+                continue;
+
+            CreateChildNodes(node, remaining_depth, remaining_ring_breaks, id, &(*it));
+            node.children = std::vector<FragmentTreeNode>();
+        }
+    }
+}
+
+void
+FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id,
+                                         Break *brk) {
+    for (int ifrag_idx = 0; ifrag_idx < brk->getNumIonicFragAllocations(); ifrag_idx++) {
+
+            node.applyBreak(*brk, ifrag_idx);
+            node.generateChildrenOfBreak(*brk);
 
             // if no more ring break
-            if (it->isRingBreak() && remaining_ring_breaks <= 0)
+            if (brk->isRingBreak() && remaining_ring_breaks <= 0)
                 continue;
 
             // if this is ring break
             // update control vars
             int child_remaining_ring_breaks = remaining_ring_breaks;
             int child_remaining_depth = remaining_depth - 1;
-            if (it->isRingBreak() && remaining_ring_breaks > 0) {
+            if (brk->isRingBreak() && remaining_ring_breaks > 0) {
                 child_remaining_depth ++;
                 child_remaining_ring_breaks--;
             }
 
             //Recur over children
-            std::vector<FragmentTreeNode>::iterator itt = node.children.begin();
+            auto itt = node.children.begin();
             for (; itt != node.children.end(); ++itt) {
                 compute(*itt, child_remaining_depth, id, child_remaining_ring_breaks, 0);
             }
 
             //Undo and remove children
-            node.undoBreak(*it, ifrag_idx);
-        }
-        node.children = std::vector<FragmentTreeNode>();
+            node.undoBreak(*brk, ifrag_idx);
     }
-
 }
 
 

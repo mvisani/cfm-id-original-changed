@@ -738,17 +738,6 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
     int had_ring_break;
     ion.get()->getProp("HadRingBreak", had_ring_break);
 
-    // let us figure out if we have any bond between fg
-    // this should break first
-    std::set<unsigned int> between_fg_bonds;
-    for (unsigned int bidx = 0; bidx < ion.get()->getNumBonds(); bidx++) {
-        RDKit::Bond *bond = ion.get()->getBondWithIdx(bidx);
-        int between_fg;
-        bond->getProp("BetweenFG", between_fg);
-        if(between_fg)
-            between_fg_bonds.insert(bidx);
-    }
-
     //Generate Non-Ring Breaks
     //and count how many bonds are ring bond
     // how many bonds are attached to ring
@@ -774,12 +763,12 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
         if(had_ring_break && !was_on_the_ring)
             continue;
 
-        // make sure all functional group break first
-        if(between_fg_bonds.count(bidx) == 0 && !between_fg_bonds.empty())
-            continue;
+        //find all functional group break
+        int between_fg;
+        bond->getProp("BetweenFG", between_fg);
 
         if (rinfo->numBondRings(bidx) == 0)
-            breaks.push_back(Break(bidx, false, computeNumIonicAlloc(num_ionic)));
+            breaks.push_back(Break(bidx, false, computeNumIonicAlloc(num_ionic), between_fg));
         else
             ring_bonds_count ++;
     }

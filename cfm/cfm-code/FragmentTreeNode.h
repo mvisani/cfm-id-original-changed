@@ -28,15 +28,15 @@ public:
     // Constructor for a Hydrogen only break
     Break()
             : h_only_break(true), ring_break(false), ionic_break(false), bond_idx(-1),
-              second_bond_idx(-1), ring_idx(-1), num_ionic_frag_allocations(1),
-              ionic_idx(-1) {};
+              ring_idx(-1), num_ionic_frag_allocations(1),
+              ionic_idx(-1), fg_break(false) {};
 
     // Constructor for a Non-Ring Break (ionic or standard)
     Break(int a_bond_or_ionic_atom_idx, bool a_ionic_break = false,
-          int a_num_ionic_frag_allocations = 1)
+          int a_num_ionic_frag_allocations = 1, bool is_fg_break = false)
             : h_only_break(false), ring_break(false), ionic_break(a_ionic_break),
-              bond_idx(-1), second_bond_idx(-1), ring_idx(-1), ionic_idx(-1),
-              num_ionic_frag_allocations(a_num_ionic_frag_allocations) {
+              bond_idx(-1), ring_idx(-1), ionic_idx(-1),
+              num_ionic_frag_allocations(a_num_ionic_frag_allocations), fg_break(is_fg_break) {
         if (ionic_break)
             ionic_idx = a_bond_or_ionic_atom_idx;
         else
@@ -65,15 +65,20 @@ public:
 
     int getNumIonicFragAllocations() const { return num_ionic_frag_allocations; };
 
+    bool isFgBreak() {return fg_break; };
 private:
-    bool ring_break; // Flag indicating ring break
     int bond_idx;    // Indexes of the broken bond(s)
-    int second_bond_idx;
+
+    bool ring_break; // Flag indicating ring break
     int ring_idx; // Index of the ring that is broken
+
     bool ionic_break;
-    int num_ionic_frag_allocations;
     int ionic_idx;
+    int num_ionic_frag_allocations;
+
     bool h_only_break;
+
+    bool fg_break; // Flag indicating if this is break between functional groups
 };
 
 // Class for generating fragments via the systematic bond disconnection approach

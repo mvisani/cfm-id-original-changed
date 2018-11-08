@@ -106,6 +106,8 @@ private:
 
     static void applyIonization(RDKit::RWMol *rwmol, int ionization_mode);
 
+    void CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id,
+                          Break *brk);
 };
 
 //Class to be used if a graph is to be pruned as it's created 
