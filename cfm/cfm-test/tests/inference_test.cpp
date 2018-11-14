@@ -195,7 +195,7 @@ bool runInferenceTestCompareVsIPFP( MolData &moldata, config_t &cfg ){
 	//Run the inference code
 	Inference infer( &moldata, &cfg ); 
     beliefs_t infer_beliefs;
-	infer.calculateBeliefs(infer_beliefs);
+    infer.calculateBeliefs(infer_beliefs, 0);
     
 	//Run code for IPFP_OSC
 	cfg.ipfp_algorithm = IPFP_WITH_MOD_ALGORITHM;

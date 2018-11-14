@@ -481,7 +481,7 @@ void MolData::computePredictedSpectra(Param &param, bool postprocess, bool use_e
     // Run forward inference
     std::vector<Message> msgs;
     Inference infer(this, cfg);
-    infer.runInferenceDownwardPass(msgs, cfg->model_depth);
+    infer.runInferenceDownwardPass(msgs, cfg->model_depth, 0);
 
     // Generate and collect the peak results
     predicted_spectra.resize(cfg->spectrum_depths.size());
@@ -550,7 +550,7 @@ void MolData::createSpeactraSingleEnergry(unsigned int energy_level) {
     // Run forward inference
     std::vector<Message> msgs;
     Inference infer(this, &se_cfg);
-    infer.runInferenceDownwardPass(msgs, se_cfg.model_depth);
+    infer.runInferenceDownwardPass(msgs, se_cfg.model_depth, 0);
 
     // Extract the peaks from the relevant message
     int msg_depth = se_cfg.spectrum_depths[0] - 1;

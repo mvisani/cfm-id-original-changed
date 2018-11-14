@@ -47,8 +47,8 @@ public:
             mol_depth = data->getFGDepth();
     };
 
-    void calculateBeliefs(beliefs_t &beliefs);    //Note: Only supports single energy mode
-    void runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth);
+    void calculateBeliefs(beliefs_t &beliefs, int energy);    //Note: Only supports single energy mode
+    void runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth, int energy);
 
     void createSpectrumMessage(Message &msg, int energy, Message &down_msg);
 
@@ -61,14 +61,15 @@ private:
     void initTmpFactorProbSizes(factor_probs_t &tmp_log_probs, unsigned int num_frag, unsigned int num_trans,
                                 unsigned int model_depth);
 
-    void runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &spec_msg);
+    void runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &spec_msg, int energy);
 
     void createMessage(factor_probs_t &tmp_log_probs, Message &m, Message &prev_m, int direction, int depth);
 
     void passMessage(factor_probs_t &tmp_log_probs, int direction, int depth, Message &m, int energy);
 
     void
-    combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<Message> &down_msgs, std::vector<Message> &up_msgs);
+    combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<Message> &down_msgs,
+                                        std::vector<Message> &up_msgs, int energy);
 
     void createSpectrumMessageWithIsotopes(Message &msg, int energy, Message &down_msg);
 

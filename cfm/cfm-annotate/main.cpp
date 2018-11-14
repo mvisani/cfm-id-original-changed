@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 			initSingleEnergyConfig(se_cfg, cfg, energy);
 			Inference infer( &moldata, &se_cfg );
 			beliefs_t sbeliefs;
-			infer.calculateBeliefs( sbeliefs );
+            infer.calculateBeliefs(sbeliefs, 0);
 			concatBeliefs(&beliefs, &sbeliefs);
 		}
 	}

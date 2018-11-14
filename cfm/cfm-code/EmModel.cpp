@@ -143,7 +143,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             if (cfg->use_single_energy_cfm) {
                 beliefs_t beliefs;
                 Inference infer(moldata, cfg);
-                infer.calculateBeliefs(beliefs);
+                infer.calculateBeliefs(beliefs, energy_level);
                 recordSufficientStatistics(suft, molidx, moldata, &beliefs);
             } else {
                 IPFP ipfp(moldata, cfg);

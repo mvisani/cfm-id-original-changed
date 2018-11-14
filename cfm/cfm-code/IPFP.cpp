@@ -100,7 +100,7 @@ beliefs_t *IPFP::calculateBeliefs() {
 
     //Intialise all messages using simple junction tree inference
     Inference infer(moldata, cfg);
-    infer.runInferenceDownwardPass(down_msgs, cfg->model_depth);
+    infer.runInferenceDownwardPass(down_msgs, cfg->model_depth, -1);
 
     //Initialise factor transition/persistence probabilities
     //(these will change on evidence so we need this copy)
