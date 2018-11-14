@@ -271,9 +271,7 @@ struct config_t {
 
     int fragraph_compute_timeout_in_secs;
 
-    //  flag swicth
-    bool em_use_weighted_jaccard;
-    double em_wjaccard_swicth_threshold;
+    bool disable_cross_val_computation;
 
 };
 

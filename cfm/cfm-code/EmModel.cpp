@@ -128,8 +128,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 continue; // Ignore any molecule with poor (no peaks matched a fragment)
                 // or missing spectra.
 
-            //if (mol_it->getGroup() == validation_group)
-            //    continue;
+            // do noting if disbaled
+            if (mol_it->getGroup() == validation_group && cfg->disable_cross_val_computation)
+                continue;
 
             MolData *moldata = &(*mol_it);
 
@@ -205,12 +206,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         int molidx = 0, num_val_mols = 0, num_training_mols = 0;
         double jaccard = 0.0, w_jaccard = 0.0;
         for (mol_it = molDataSet.begin(); mol_it != molDataSet.end(); ++mol_it, molidx++) {
-            if (mol_it->getGroup() == validation_group) {
+            if (mol_it->getGroup() == validation_group && !cfg->disable_cross_val_computation)
                 computeValidationMetrics(energy_level, molidx, mol_it, suft, val_q, num_val_mols, jaccard,
                                          w_jaccard);
-            } else{
+            else
                 num_training_mols++;
-            }
 
         }
 
@@ -222,30 +222,37 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         if (comm->isMaster())
             writeStatus(q_time_msg.c_str());
 
-        val_q = comm->collectQInMaster(val_q);
-        num_val_mols = comm->collectSumInMaster(num_val_mols);
         num_training_mols = comm->collectSumInMaster(num_training_mols);
-        jaccard = comm->collectQInMaster(jaccard);
-        w_jaccard = comm->collectQInMaster(w_jaccard);
+
+        if(!cfg->disable_cross_val_computation){
+            val_q = comm->collectQInMaster(val_q);
+            num_val_mols = comm->collectSumInMaster(num_val_mols);
+            jaccard = comm->collectQInMaster(jaccard);
+            w_jaccard = comm->collectQInMaster(w_jaccard);
+
+        }
 
         // Check for convergence
-        double q_ratio = fabs((loss - prev_loss) / loss);
-        double best_q_ratio = fabs((loss - best_loss) / loss);
+        double Loss_ratio = fabs((loss - prev_loss) / loss);
+        double best_Loss_ratio = fabs((loss - best_loss) / loss);
         if (comm->isMaster()) {
             std::string qdif_str = "[M-Step]";
+            qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols) + "\n";
+
             if (prev_loss != -DBL_MAX)
-                qdif_str += "Q_ratio= " + std::to_string(q_ratio) + " prev_Q=" + std::to_string(prev_loss) + "\n";
+                qdif_str += "Loss_Ratio= " + std::to_string(Loss_ratio) + " Prev_Loss=" + std::to_string(prev_loss);
 
             if (best_loss != -DBL_MAX)
-                qdif_str += "Best_Q_ratio= " + std::to_string(best_q_ratio) +
-                            " best_Q=" + std::to_string(best_loss) + "\n";
+                qdif_str += "\nBest_Loss_Ratio= " + std::to_string(best_Loss_ratio) +
+                            " Best_Loss=" + std::to_string(best_loss);
 
-            qdif_str += "Q=" + std::to_string(loss) + " Validation_Q=" + std::to_string(val_q) + "\n";
-            qdif_str +=
-            "Q_avg=" + std::to_string(loss / num_training_mols)
-            + " Validation_Q_avg=" + std::to_string(val_q / num_val_mols)
-            + " Validation Jaccard_Avg=" + std::to_string(jaccard / num_val_mols)
-            + " Weighted Validation Jaccard_Avg=" += std::to_string(w_jaccard / num_val_mols);
+            if(!cfg->disable_cross_val_computation){
+                qdif_str +="\nValidation_Loss=" + std::to_string(val_q)
+                + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
+                + " Validation_Jaccard_Avg=" + std::to_string(jaccard / num_val_mols)
+                + " Weighted_Validation_Jaccard_Avg=" += std::to_string(w_jaccard / num_val_mols);
+            }
+
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
         }
@@ -265,7 +272,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         // check if EM meet halt flag
-        updateTraningParams(loss, prev_loss, q_ratio, learning_rate, sampling_method, em_no_progress_count);
+        updateTraningParams(loss, prev_loss, Loss_ratio, learning_rate, sampling_method, em_no_progress_count);
 
         if (em_no_progress_count >= 3) {
             comm->printToMasterOnly(
@@ -293,9 +300,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 }
 
 void
-EmModel::updateTraningParams(double loss, double prev_loss, double q_ratio, double &learning_rate, int &sampling_method,
+EmModel::updateTraningParams(double loss, double prev_loss, double Loss_ratio, double &learning_rate, int &sampling_method,
                              int &count_no_progress) const {
-    if (q_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
+    if (Loss_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
 
         if (learning_rate > cfg->starting_step_size) {
             learning_rate *= 0.5;
@@ -438,7 +445,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
-    double loss = 0.0, prev_loss = -DBL_MAX, best_q = -DBL_MAX;
+    double loss = 0.0, prev_loss = -DBL_MAX, Best_Loss = -DBL_MAX;
 
     std::vector<double> grads(param->getNumWeights(), 0.0);
 
