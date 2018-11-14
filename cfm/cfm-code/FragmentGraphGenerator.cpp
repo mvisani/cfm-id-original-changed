@@ -199,7 +199,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
     }
 
     //Iterate over the possible breaks
-    if(num_fg_break_child == 0){
+    if(num_fg_break_child == 0 || !use_fg_graph){
         for (auto it =  breaks.begin(); it != breaks.end(); ++it) {
 
             if(!ring_can_break && it->isRingBreak())
