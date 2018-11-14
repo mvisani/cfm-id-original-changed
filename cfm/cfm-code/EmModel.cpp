@@ -211,7 +211,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                                          w_jaccard);
             else
                 num_training_mols++;
-
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
