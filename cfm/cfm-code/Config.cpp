@@ -84,6 +84,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_dropout_lowerbond = 0.01;
     cfg.num_rbreak_nrbonds = 100000;
     cfg.disable_cross_val_computation = false;
+    cfg.use_fg_graph = false;
 }
 
 
@@ -165,6 +166,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_dropout_lowerbond") cfg.ga_dropout_lowerbond = (double) value;
         else if (name == "num_rbreak_nrbonds") cfg.num_rbreak_nrbonds = (int) value;
         else if (name == "disable_cross_val_computation")    cfg.disable_cross_val_computation = (int) value;
+        else if (name == "use_fg_graph") cfg.use_fg_graph = (int) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
