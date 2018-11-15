@@ -237,10 +237,10 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double best_Loss_ratio = fabs((loss - best_loss) / loss);
         if (comm->isMaster()) {
             std::string qdif_str = "[M-Step]";
-            qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols) + "\n";
+            qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols);
 
             if (prev_loss != -DBL_MAX)
-                qdif_str += "Loss_Ratio= " + std::to_string(Loss_ratio) + " Prev_Loss=" + std::to_string(prev_loss);
+                qdif_str += "\nLoss_Ratio= " + std::to_string(Loss_ratio) + " Prev_Loss=" + std::to_string(prev_loss);
 
             if (best_loss != -DBL_MAX)
                 qdif_str += "\nBest_Loss_Ratio= " + std::to_string(best_Loss_ratio) +
@@ -249,7 +249,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             if(!cfg->disable_cross_val_computation){
                 qdif_str +="\nValidation_Loss=" + std::to_string(val_q)
                 + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
-                + " Validation_Jaccard_Avg=" + std::to_string(jaccard / num_val_mols)
+                + "\nValidation_Jaccard_Avg=" + std::to_string(jaccard / num_val_mols)
                 + " Weighted_Validation_Jaccard_Avg=" += std::to_string(w_jaccard / num_val_mols);
             }
 
@@ -343,10 +343,10 @@ EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft) {
 
 void EmModel::computeValidationMetrics(int energy_level, int molidx,
                                        std::vector<MolData, std::allocator<MolData>>::iterator &moldata,
-                                       suft_counts_t &suft, double &val_q, int &num_val_mols, double &jaccard,
+                                       suft_counts_t &suft, double &val_loss, int &num_val_mols, double &jaccard,
                                        double &w_jaccard) {
 
-    val_q += computeLogLikelihoodLoss(molidx, *moldata, suft);
+    val_loss += computeLogLikelihoodLoss(molidx, *moldata, suft);
     num_val_mols++;
     Comparator *jaccard_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *weighed_jaccard_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);

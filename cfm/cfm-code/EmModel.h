@@ -91,8 +91,10 @@ protected:
     void getSubSampledTransitions(MolData &moldata, int sampling_method, unsigned int energy,
                                   std::set<int> &selected_trans_id) const;
     void
-    computeValidationMetrics(int energy_level, int molidx, std::vector<MolData, std::allocator<MolData>>::iterator &itdata,
-                             suft_counts_t &suft, double &val_q, int &num_val_mols, double &jaccard, double &w_jaccard);
+    computeValidationMetrics(int energy_level, int molidx,
+                             std::vector<MolData, std::allocator<MolData>>::iterator &itdata,
+                             suft_counts_t &suft, double &val_loss, int &num_val_mols, double &jaccard,
+                             double &w_jaccard);
 
     double getUpdatedLearningRate(double learning_rate, double current_loss, double prev_loss, int iter) const;
 
