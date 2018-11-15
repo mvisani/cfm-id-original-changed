@@ -200,14 +200,7 @@ public:
     void getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<double> &selected_weights,
                                             std::set<double> &all_weights);
 
-    void getRandomSampledTransitions(std::set<int> &selected_ids, double ratio);
-
-    unsigned int getOriginalNumTransitions() const {
-        return fg->getOriginalNumTransitions();
-    };
-    unsigned int getOriginalNumFragments() const {
-        return fg->getOriginalNumFragments();
-    };
+    void getRandomSampledTransitions(std::set<int> &selected_ids, double ratio);;;
 
     unsigned int getNumTransitions() const {
         return fg->getNumTransitions();
