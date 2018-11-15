@@ -84,7 +84,8 @@ public:
     //The output will be appended to the current_graph
     // num_rbreak_nrbonds defualt to a huge number
     void compute(FragmentTreeNode &startnode, int remaining_depth, int parent_id, int remaining_ring_breaks,
-                 int num_rbreak_nrbonds = 100000, bool use_fg_graph = false);
+                 int num_rbreak_nrbonds = 100000, bool use_fg_graph = false,
+                 int ring_break_depth_cap = -1);
 
 protected:
     FeatureCalculator *fc;

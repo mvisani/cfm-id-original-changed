@@ -301,7 +301,7 @@ void FragmentGraph::writeFragmentsOnly(std::ostream &out) const {
         out << *(it->getIonSmiles());
 
         if(it->isIntermediate())
-            out << "Intermediate Fragment ";
+            out << " Intermediate Fragment ";
         out << std::endl;
     }
 }
