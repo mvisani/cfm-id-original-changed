@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
     std::vector<MolData>::iterator mit = data.begin();
     int success_count = 0, except_count = 0;
     for (; mit != data.end(); ++mit) {
-        //try {
+        try {
             //If we're not training, only load the ones we'll be testing
             if ((mit->getGroup() >= min_group && mit->getGroup() <= max_group) || !no_train) {
                 if (mit->getId() == next_id) {
@@ -208,8 +208,8 @@ int main(int argc, char *argv[]) {
                 }
                 success_count++;
             }
-        //}
-        /*catch (std::exception e) {
+        }
+        catch (std::exception e) {
             std::ofstream eout;
             eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
             eout << "Exception occurred computing fragment graph for " << mit->getId() << std::endl;
@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
             except_count++;
             eout << except_count << " exceptions, from " << except_count + success_count << " total" << std::endl;
             eout.close();
-        }*/
+        }
     }
     MPI_Barrier(MPI_COMM_WORLD);
     after_fg = time(nullptr);
