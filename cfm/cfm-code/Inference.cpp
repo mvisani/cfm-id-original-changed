@@ -26,7 +26,7 @@ static const double NULL_PROB = -1000000000000.0;
 static const int DOWN = 0;
 static const int UP = 1;
 
-void Inference::calculateBeliefs(beliefs_t &beliefs, int energy) {
+void Inference::calculateBeliefs(beliefs_t &beliefs, int current_energy) {
 
     if (!config->use_single_energy_cfm) {
         std::cout << "Error: Use of inference calculateBeliefs only valid for single energy model. Try IPFP instead."
@@ -40,7 +40,7 @@ void Inference::calculateBeliefs(beliefs_t &beliefs, int energy) {
 
     //Create Spectrum Message
     Message spec_msg;
-    createSpectrumMessage(spec_msg, energy, down_msgs[mol_depth - 1]);
+    createSpectrumMessage(spec_msg, current_energy, down_msgs[mol_depth - 1]);
 
     //Apply IPFP modification to message to account for marginal observation
     Message modified_msg;
@@ -52,10 +52,10 @@ void Inference::calculateBeliefs(beliefs_t &beliefs, int energy) {
     }
 
     //Pass the messages back up
-    runInferenceUpwardPass(up_msgs, modified_msg, energy);
+    runInferenceUpwardPass(up_msgs, modified_msg, current_energy);
 
     //Combine the messages and initial probabilities to compute the beliefs
-    combineMessagesToComputeBeliefs(beliefs, down_msgs, up_msgs, energy);
+    combineMessagesToComputeBeliefs(beliefs, down_msgs, up_msgs, current_energy);
 }
 
 
@@ -84,12 +84,14 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
     initTmpFactorProbSizes(tmp_log_probs, moldata->getNumFragments(), moldata->getNumTransitions(), mol_depth);
 
     //Factor (F0,F1) => Create F1 Message
+    // start energy level
     int energy = config->map_d_to_energy[0];
 
     const std::vector<int> *tmap = &((*moldata->getFromIdTMap())[0]);
     std::vector<int>::const_iterator it = tmap->begin();
     down_msgs[0].reset(moldata->getNumFragments());
     down_msgs[0].addToIdx(0, moldata->getLogPersistenceProbForIdx(energy, 0));
+
     for (; it != tmap->end(); ++it) {
         const Transition *t = moldata->getTransitionAtIdx(*it);
         down_msgs[0].addToIdx(t->getToId(), moldata->getLogTransitionProbForIdx(energy, *it));
@@ -103,7 +105,7 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
 
 }
 
-void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &spec_msg, int energy) {
+void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &spec_msg, int current_energy) {
 
     
     //Initialise the messages
@@ -118,6 +120,9 @@ void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &s
 
     //Update Factor (Fd-1,Fd) => Create Message Fd-1  ...etc as per MODEL_DEPTH
     for (int i = mol_depth - 2; i >= 0; i--) {
+        // make sure we are not go to far
+        int energy = (i+1 <= current_energy) ? config->map_d_to_energy[i + 1] : current_energy;
+
         passMessage(tmp_log_probs, UP, i, up_msgs[i + 1], energy);
         createMessage(tmp_log_probs, up_msgs[i], up_msgs[i + 1], UP, i);
     }
@@ -171,7 +176,7 @@ void Inference::passMessage(factor_probs_t &tmp_log_probs, int direction, int de
 }
 
 void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<Message> &down_msgs,
-                                                std::vector<Message> &up_msgs, int energy) {
+                                                std::vector<Message> &up_msgs, int current_energy) {
 
     std::vector<double> norms(mol_depth);
     
@@ -184,6 +189,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
 
             double tmp;
             if ((d == 0 && i == 0) || (d > 0 && down_msgs[d - 1].getIdx(i) > -DBL_MAXIMUM)) {
+                int energy = config->map_d_to_energy[d] > current_energy ? current_energy : config->map_d_to_energy[d];
                 tmp = moldata->getLogPersistenceProbForIdx(energy, i);
                 tmp += up_msgs[d].getIdx(i);
                 if (d > 0) tmp += down_msgs[d - 1].getIdx(i);
@@ -204,6 +210,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
 
             double tmp;
             if ((d == 0 && t->getFromId() == 0) || (d > 0 && down_msgs[d - 1].getIdx(t->getFromId()) > -DBL_MAXIMUM)) {
+                int energy = config->map_d_to_energy[d] > current_energy ? current_energy : config->map_d_to_energy[d];
                 tmp = moldata->getLogTransitionProbForIdx(energy, i);
                 tmp += up_msgs[d].getIdx(t->getToId());
                 if (d > 0) tmp += down_msgs[d - 1].getIdx(t->getFromId());
