@@ -36,7 +36,7 @@ void Inference::calculateBeliefs(beliefs_t &beliefs, int energy) {
 
     //Pass the messages down
     std::vector<Message> down_msgs, up_msgs;
-    runInferenceDownwardPass(down_msgs, mol_depth, energy);
+    runInferenceDownwardPass(down_msgs, mol_depth);
 
     //Create Spectrum Message
     Message spec_msg;
@@ -74,7 +74,7 @@ void Inference::initTmpFactorProbSizes(factor_probs_t &tmp_log_probs, unsigned i
 }
 
 
-void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth, int energy) {
+void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth) {
 
     //Initialise the messages
     down_msgs.resize(mol_depth);
@@ -84,8 +84,7 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
     initTmpFactorProbSizes(tmp_log_probs, moldata->getNumFragments(), moldata->getNumTransitions(), mol_depth);
 
     //Factor (F0,F1) => Create F1 Message
-    if(energy < 0)
-        energy = config->map_d_to_energy[0];
+    int energy = config->map_d_to_energy[0];
 
     const std::vector<int> *tmap = &((*moldata->getFromIdTMap())[0]);
     std::vector<int>::const_iterator it = tmap->begin();
