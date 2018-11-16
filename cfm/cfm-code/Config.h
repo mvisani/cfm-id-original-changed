@@ -273,7 +273,7 @@ struct config_t {
 
     bool disable_cross_val_computation;
     bool use_fg_graph;
-
+    int ring_break_depth_cap;
 };
 
 void initDefaultConfig(config_t &cfg);

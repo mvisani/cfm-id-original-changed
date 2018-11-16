@@ -139,9 +139,8 @@ bool FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 //Compute a FragmentGraph starting at the given node and computing to the depth given.
 //The output will be appended to the current_graph
 void
-FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parent_id,
-                                int remaining_ring_breaks, int num_rbreak_nrbonds,
-                                bool use_fg_graph) {
+FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parent_id, int remaining_ring_breaks,
+                                int num_rbreak_nrbonds, bool use_fg_graph, int ring_break_depth_cap) {
 
     if (current_graph->getOriginalNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
         || current_graph->getOriginalNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
@@ -181,7 +180,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
     node.generateBreaks(breaks, h_loss_allowed, num_rbreak_nrbonds);
 
-    bool ring_can_break = (remaining_ring_breaks > 0);
+    bool ring_can_break = (remaining_ring_breaks > 0) && (remaining_depth > ring_break_depth_cap);
     int num_fg_break_child = 0;
     //Iterate over the possible breaks
     for (auto it = breaks.begin(); it != breaks.end(); ++it) {
@@ -193,7 +192,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
             continue;
 
         CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
-                id, &(*it), num_rbreak_nrbonds, use_fg_graph);
+                         id, &(*it), num_rbreak_nrbonds, use_fg_graph, ring_break_depth_cap);
         num_fg_break_child += node.children.size();
         node.children = std::vector<FragmentTreeNode>();
     }
@@ -209,25 +208,21 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
                 continue;
 
             CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
-                    id, &(*it), num_rbreak_nrbonds, use_fg_graph);
+                             id, &(*it), num_rbreak_nrbonds, use_fg_graph, ring_break_depth_cap);
             node.children = std::vector<FragmentTreeNode>();
         }
     }
 }
 
 void
-FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id,
-                                         Break *brk, int num_rbreak_nrbonds, bool use_fg_graph) {
+FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id, Break *brk,
+                                         int num_rbreak_nrbonds, bool use_fg_graph, int ring_break_depth_cap) {
     for (int ifrag_idx = 0; ifrag_idx < brk->getNumIonicFragAllocations(); ifrag_idx++) {
 
-            node.applyBreak(*brk, ifrag_idx);
-            node.generateChildrenOfBreak(*brk);
+        node.applyBreak(*brk, ifrag_idx);
+        node.generateChildrenOfBreak(*brk);
 
-            // if no more ring break
-            if (brk->isRingBreak() && remaining_ring_breaks <= 0)
-                continue;
-
-            // if this is ring break
+        // if this is ring break
             // update control vars
             int child_remaining_ring_breaks = remaining_ring_breaks;
             int child_remaining_depth = remaining_depth - 1;
@@ -239,7 +234,8 @@ FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_d
             //Recur over children
             auto itt = node.children.begin();
             for (; itt != node.children.end(); ++itt)
-                compute(*itt, child_remaining_depth, id, child_remaining_ring_breaks, num_rbreak_nrbonds, use_fg_graph);
+                compute(*itt, child_remaining_depth, id, child_remaining_ring_breaks, num_rbreak_nrbonds, use_fg_graph,
+                        ring_break_depth_cap);
 
             //Undo and remove children
             node.undoBreak(*brk, ifrag_idx);
