@@ -17,12 +17,13 @@
 #########################################################################*/
 
 #include "Inference.h"
+#include "Util.h"
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/distributions.hpp>
 
 //Big log negative value that will effectively result in zero probability
-static const double NULL_PROB = -1000000000000.0;
+static const double NULL_PROB = -A_BIG_DBL;
 static const int DOWN = 0;
 static const int UP = 1;
 
@@ -139,19 +140,19 @@ void Inference::createMessage(factor_probs_t &tmp_log_probs, Message &m, Message
         else tmap = &((*moldata->getFromIdTMap())[id]);
 
         //Marginalize out the upper/lower variable
-        double log_sum = -DBL_MAXIMUM;
-        if (prev_m.getIdx(id) > -DBL_MAXIMUM)
+        double log_sum = -A_BIG_DBL;
+        if (prev_m.getIdx(id) > -A_BIG_DBL)
             log_sum = tmp_log_probs.ps[id][depth];
 
         std::vector<int>::const_iterator itt = tmap->begin();
         for (; itt != tmap->end(); ++itt) {
             const Transition *t = moldata->getTransitionAtIdx(*itt);
-            if ((direction == DOWN && prev_m.getIdx(t->getFromId()) > -DBL_MAXIMUM) ||
-                (direction == UP && prev_m.getIdx(t->getToId()) > -DBL_MAXIMUM)) {
+            if ((direction == DOWN && prev_m.getIdx(t->getFromId()) > -A_BIG_DBL) ||
+                (direction == UP && prev_m.getIdx(t->getToId()) > -A_BIG_DBL)) {
                 log_sum = logAdd(log_sum, tmp_log_probs.tn[*itt][depth]);
             }
         }
-        if (log_sum > -DBL_MAXIMUM) m.addToIdx(id, log_sum);
+        if (log_sum > -A_BIG_DBL) m.addToIdx(id, log_sum);
     }
 }
 
@@ -188,7 +189,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
         for (unsigned int d = 0; d < mol_depth; d++) {
 
             double tmp;
-            if ((d == 0 && i == 0) || (d > 0 && down_msgs[d - 1].getIdx(i) > -DBL_MAXIMUM)) {
+            if ((d == 0 && i == 0) || (d > 0 && down_msgs[d - 1].getIdx(i) > -A_BIG_DBL)) {
                 int energy = config->map_d_to_energy[d] > current_energy ? current_energy : config->map_d_to_energy[d];
                 tmp = moldata->getLogPersistenceProbForIdx(energy, i);
                 tmp += up_msgs[d].getIdx(i);
@@ -209,7 +210,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
         for (unsigned int d = 0; d < mol_depth; d++) {
 
             double tmp;
-            if ((d == 0 && t->getFromId() == 0) || (d > 0 && down_msgs[d - 1].getIdx(t->getFromId()) > -DBL_MAXIMUM)) {
+            if ((d == 0 && t->getFromId() == 0) || (d > 0 && down_msgs[d - 1].getIdx(t->getFromId()) > -A_BIG_DBL)) {
                 int energy = config->map_d_to_energy[d] > current_energy ? current_energy : config->map_d_to_energy[d];
                 tmp = moldata->getLogTransitionProbForIdx(energy, i);
                 tmp += up_msgs[d].getIdx(t->getToId());

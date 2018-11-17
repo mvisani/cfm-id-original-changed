@@ -17,18 +17,19 @@
 
 #ifndef __MESSAGE_H__
 #define __MESSAGE_H__
+#include "Util.h"
 
 #include <boost/numeric/ublas/vector_sparse.hpp>
 #include <limits>
 
 // This is a hack
-static const double DBL_MAXIMUM = 2000000000000.0; //std::numeric_limits<double>::max();
+//static const double A_BIG_DBL = 1000000000.0; //std::numeric_limits<double>::max();
 
-//Log Domain Double (converts null entry to -DBL_MAX)
+//Log Domain Double (converts null entry to -A_BIG_DBL)
 class logdbl {
     double value;
 public:
-    logdbl(double f = -DBL_MAXIMUM) {
+    logdbl(double f = -A_BIG_DBL) {
         value = f;
     }
 

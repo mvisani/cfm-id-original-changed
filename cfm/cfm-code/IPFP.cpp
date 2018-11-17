@@ -427,13 +427,13 @@ double IPFP::computeBeliefs() {
         for (unsigned int d = 0; d < cfg->model_depth; d++) {
 
             double tmp;
-            if ((d == 0 && i == 0) || (d > 0 && down_msgs[d - 1].getIdx(i) > -DBL_MAXIMUM)) {
+            if ((d == 0 && i == 0) || (d > 0 && down_msgs[d - 1].getIdx(i) > -A_BIG_DBL)) {
                 tmp = fprobs.ps[i][d];
                 if (d < cfg->model_depth - 1)
                     tmp += up_msgs[d].getIdx(i);
                 if (d > 0) {
                     double msg_val = down_msgs[d - 1].getIdx(i);
-                    if (msg_val > -DBL_MAXIMUM)
+                    if (msg_val > -A_BIG_DBL)
                         tmp += msg_val;
                     else tmp = NULL_PROB;
                 }
@@ -454,13 +454,13 @@ double IPFP::computeBeliefs() {
         for (unsigned int d = 0; d < cfg->model_depth; d++) {
 
             double tmp;
-            if ((d == 0 && t->getFromId() == 0) || (d > 0 && down_msgs[d - 1].getIdx(t->getFromId()) > -DBL_MAXIMUM)) {
+            if ((d == 0 && t->getFromId() == 0) || (d > 0 && down_msgs[d - 1].getIdx(t->getFromId()) > -A_BIG_DBL)) {
                 tmp = fprobs.tn[i][d];
                 if (d < cfg->model_depth - 1)
                     tmp += up_msgs[d].getIdx(t->getToId());
                 if (d > 0) {
                     double msg_val = down_msgs[d - 1].getIdx(t->getFromId());
-                    if (msg_val > -DBL_MAXIMUM)
+                    if (msg_val > -A_BIG_DBL)
                         tmp += msg_val;
                     else tmp = NULL_PROB;
                 }

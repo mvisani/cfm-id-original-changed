@@ -90,4 +90,6 @@ void softmax(std::vector<double> &weight, std::vector<double> &prob);
 static std::random_device util_rd;
 static std::mt19937 util_rng(util_rd());
 
+// A Big DBL number
+static const double A_BIG_DBL = 1000000000.0;
 #endif // __UTIL_H__

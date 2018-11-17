@@ -43,8 +43,8 @@ void MessageTestBasics::runTest(){
 		pass = false;
 	}
 	tmp = m.getIdx(5);	//Other index
-	if( tmp > -DBL_MAXIMUM ){
-		std::cout << "Expecting -DBL_MAXIMUM at idx 5, but found " << tmp << std::endl;
+	if( tmp > -A_BIG_DBL ){
+		std::cout << "Expecting -A_BIG_DBL at idx 5, but found " << tmp << std::endl;
 		pass = false;
 	}
 
@@ -111,7 +111,7 @@ void MessageTestCopyAssignment::runTest(){
 	//Check index 5
 	double tmp = m.getIdx(5);
 	double tmp2 = m2.getIdx(5);
-	if( fabs( tmp - tmp2 ) < tol || tmp2 > -DBL_MAXIMUM || fabs( tmp - -1.910282456760932) > tol){
+	if( fabs( tmp - tmp2 ) < tol || tmp2 > -A_BIG_DBL || fabs( tmp - -1.910282456760932) > tol){
 		std::cout << "Unexpected values at index 5 after copy: " << tmp << " vs " << tmp2 << std::endl;
 		pass = false;
 	}

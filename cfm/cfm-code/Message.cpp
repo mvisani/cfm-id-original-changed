@@ -46,14 +46,14 @@ void Message::addToIdx(unsigned int i, double value) {
 
 void Message::multIdx(unsigned int i, double value) {
     logdbl dbl = message[i];
-    if (dbl > -DBL_MAXIMUM) message[i] = dbl + value;
+    if (dbl > -A_BIG_DBL) message[i] = dbl + value;
     else message[i] = value;
     empty = 0;
     normalized = 0;
 }
 
 void Message::normalize() {
-    log_sum = -DBL_MAXIMUM;
+    log_sum = -A_BIG_DBL;
     iterator it = message.begin();
     for (; it != message.end(); ++it)
         log_sum = logAdd(log_sum, *it);
@@ -69,7 +69,7 @@ void Message::reset(unsigned int size) {
     normalized = 1;
     message.resize(size);
     message.clear();
-    log_sum = -DBL_MAXIMUM;
+    log_sum = -A_BIG_DBL;
 }
 
 unsigned int Message::isEmpty() {
