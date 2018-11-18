@@ -393,6 +393,7 @@ void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
 void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
                                          MolData *moldata, beliefs_t *beliefs) {
 
+    int depth = cfg->model_depth > moldata->getFGDepth() ? cfg->model_depth : moldata->getFGDepth();
     unsigned int num_transitions = moldata->getNumTransitions();
     unsigned int num_fragments = moldata->getNumFragments();
     int len_offset = num_transitions + num_fragments;
@@ -407,7 +408,7 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
         if (t->getFromId() == 0) // main ion is always id = 0
             belief += exp(beliefs->tn[i][0]);
 
-        for (unsigned int d = 1; d < cfg->model_depth; d++) {
+        for (unsigned int d = 1; d < depth; d++) {
             energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
                 suft.values[molidx][i + cfg->map_d_to_energy[d - 1] * len_offset] =
@@ -428,7 +429,7 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
 
         if (i == 0) // main ion is always id = 0
             belief += exp(beliefs->ps[i][0]);
-        for (unsigned int d = 1; d < cfg->model_depth; d++) {
+        for (unsigned int d = 1; d < depth; d++) {
             energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
                 suft.values[molidx][i + offset +
