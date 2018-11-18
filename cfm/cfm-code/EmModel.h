@@ -70,7 +70,8 @@ protected:
     void initSuft(suft_counts_t &suft, std::vector<MolData> &data);
 
     //Update sufficient statistics based on beliefs
-    void recordSufficientStatistics(suft_counts_t &suft, int molidx, MolData *moldata, beliefs_t *beliefs);
+    void recordSufficientStatistics(suft_counts_t &suft, int molidx, MolData *moldata, beliefs_t *beliefs,
+                                    unsigned int energy);
 
 
     //Simple gradient ascent

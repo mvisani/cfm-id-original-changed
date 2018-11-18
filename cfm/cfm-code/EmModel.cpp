@@ -144,16 +144,16 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 beliefs_t beliefs;
                 Inference infer(moldata, cfg);
                 infer.calculateBeliefs(beliefs, energy_level);
-                recordSufficientStatistics(suft, molidx, moldata, &beliefs);
+                recordSufficientStatistics(suft, molidx, moldata, &beliefs, energy_level);
             } else {
-                IPFP ipfp(moldata, cfg);
+                /*IPFP ipfp(moldata, cfg);
                 beliefs_t *beliefs = ipfp.calculateBeliefs();
                 int status = ipfp.status;
                 if (status == NON_CONVERGE || status == OSC_CONVERGE)
                     num_nonconverged++;
                 else if (status == COMPLETE_CONVERGE || status == CONVERGE_AFTER_MOD)
                     num_converged++;
-                recordSufficientStatistics(suft, molidx, moldata, beliefs);
+                recordSufficientStatistics(suft, molidx, moldata, beliefs, 0);*/
             }
         }
 
@@ -390,8 +390,8 @@ void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
     }
 }
 
-void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
-                                         MolData *moldata, beliefs_t *beliefs) {
+void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx, MolData *moldata, beliefs_t *beliefs,
+                                         unsigned int energy) {
 
     int depth = cfg->model_depth > moldata->getFGDepth() ? cfg->model_depth : moldata->getFGDepth();
     unsigned int num_transitions = moldata->getNumTransitions();
@@ -404,17 +404,17 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
         const Transition *t = moldata->getTransitionAtIdx(i);
 
         double belief = 0.0;
-        int energy = cfg->map_d_to_energy[0];
+        //int energy = cfg->map_d_to_energy[0];
         if (t->getFromId() == 0) // main ion is always id = 0
             belief += exp(beliefs->tn[i][0]);
 
         for (unsigned int d = 1; d < depth; d++) {
-            energy = cfg->map_d_to_energy[d];
+            /*energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
                 suft.values[molidx][i + cfg->map_d_to_energy[d - 1] * len_offset] =
                         belief;
                 belief = 0.0;
-            }
+            }*/
             belief += exp(beliefs->tn[i][d]);
         }
         suft.values[molidx][i + energy * len_offset] = belief;
@@ -425,17 +425,17 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
     for (unsigned int i = 0; i < num_fragments; i++) {
 
         double belief = 0.0;
-        int energy = cfg->map_d_to_energy[0];
+        //int energy = cfg->map_d_to_energy[0];
 
         if (i == 0) // main ion is always id = 0
             belief += exp(beliefs->ps[i][0]);
         for (unsigned int d = 1; d < depth; d++) {
-            energy = cfg->map_d_to_energy[d];
+            /*energy = cfg->map_d_to_energy[d];
             if (energy != cfg->map_d_to_energy[d - 1]) {
                 suft.values[molidx][i + offset +
                                     cfg->map_d_to_energy[d - 1] * len_offset] = belief;
                 belief = 0.0;
-            }
+            }*/
             belief += exp(beliefs->ps[i][d]);
         }
         suft.values[molidx][i + offset + energy * len_offset] = belief;
