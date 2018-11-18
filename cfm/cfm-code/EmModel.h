@@ -84,9 +84,9 @@ protected:
     // function to add Regularization term for Q
     // update grads is updated if a ptr is passed
     // nullptr means do not update grads
-    virtual double getRegularizationTerm();
+    virtual double getRegularizationTerm(unsigned int energy);
 
-    virtual void updateGradientForRegularizationTerm(double *grads);
+    virtual void updateGradientForRegularizationTerm(double *grads, unsigned int energy);
 
     void getSubSampledTransitions(MolData &moldata, int sampling_method, unsigned int energy,
                                   std::set<int> &selected_trans_id) const;
@@ -101,6 +101,10 @@ protected:
     void updateTraningParams(double loss, double prev_loss, double q_ratio, double &learning_rate, int &sampling_method,
                              int &count_no_progress) const;
 
+    bool withinGradOffset(int idx, unsigned energy) {
+        unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
+       return (grad_offset * energy) <= idx && (grad_offset * (energy+1) > idx);
+    };
 };
 
 #endif // __EM_TRAIN_H__

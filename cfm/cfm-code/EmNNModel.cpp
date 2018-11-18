@@ -194,17 +194,17 @@ double EmNNModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_co
         nu_sum += nu_terms[num_trans_from_id];
         Q -= log(denom) * nu_sum;
     }
-    //}
     return Q;
 }
 
-void EmNNModel::updateGradientForRegularizationTerm(double *grads) {
-
+void EmNNModel::updateGradientForRegularizationTerm(double *grads, unsigned int energy) {
+    
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
-        double weight = nn_param->getWeightAtIdx(*it);
-        if (grads != nullptr)
+        if(withinGradOffset(*it, energy)) {
+            double weight = nn_param->getWeightAtIdx(*it);
             *(grads + *it) -= cfg->lambda * weight;
+        }
     }
 
     //Remove part of the Bias terms (regularize the bias terms 100 times less than the other weights!)
@@ -213,21 +213,25 @@ void EmNNModel::updateGradientForRegularizationTerm(double *grads) {
     nn_param->getBiasIndexes(bias_indexes);
     for (unsigned int energy = 0; energy < nn_param->getNumEnergyLevels(); energy++) {
         auto it = bias_indexes.begin();
-        int offset = energy * weights_per_energy;
-        for (; it != bias_indexes.end(); ++it) {
-            double bias = nn_param->getWeightAtIdx(offset + *it);
-            *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
+        if(withinGradOffset(*it, energy)) {
+            int offset = energy * weights_per_energy;
+            for (; it != bias_indexes.end(); ++it) {
+                double bias = nn_param->getWeightAtIdx(offset + *it);
+                *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
+            }
         }
     }
 }
 
-double EmNNModel::getRegularizationTerm() {
+double EmNNModel::getRegularizationTerm(unsigned int energy) {
 
     double req_term = 0.0;
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
-        double weight = nn_param->getWeightAtIdx(*it);
-        req_term -= 0.5 * cfg->lambda * weight * weight;
+        if(withinGradOffset(*it, energy)) {
+            double weight = nn_param->getWeightAtIdx(*it);
+            req_term -= 0.5 * cfg->lambda * weight * weight;
+        }
     }
 
     //Remove part of the Bias terms (regularize the bias terms 100 times less than the other weights!)
@@ -238,8 +242,10 @@ double EmNNModel::getRegularizationTerm() {
         auto it = bias_indexes.begin();
         int offset = energy * weights_per_energy;
         for (; it != bias_indexes.end(); ++it) {
-            double bias = nn_param->getWeightAtIdx(offset + *it);
-            req_term += 0.99 * 0.5 * cfg->lambda * bias * bias;
+            if(withinGradOffset(*it, energy)) {
+                double bias = nn_param->getWeightAtIdx(offset + *it);
+                req_term += 0.99 * 0.5 * cfg->lambda * bias * bias;
+            }
         }
     }
     return req_term;

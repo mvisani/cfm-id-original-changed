@@ -39,9 +39,9 @@ public:
 
     double computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft, unsigned int energy) override;
 
-    double getRegularizationTerm() override;
+    double getRegularizationTerm(unsigned int energy) override;
 
-    void updateGradientForRegularizationTerm(double *grads) override;
+    void updateGradientForRegularizationTerm(double *grads, unsigned int energy) override;
 
     void writeParamsToFile(std::string &filename) override;
 

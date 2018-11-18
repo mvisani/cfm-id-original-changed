@@ -335,7 +335,7 @@ EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, unsigned i
 
     // update L2 only if lambda > 0
     if (comm->isMaster() && cfg->lambda > 0.0)
-        loss += getRegularizationTerm();
+        loss += getRegularizationTerm(energy);
     loss = comm->collectQInMaster(loss);
     loss = comm->broadcastQ(loss);
 
@@ -393,11 +393,8 @@ void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
 void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
                                          MolData *moldata, beliefs_t *beliefs) {
 
-    //const FragmentGraph *fg = moldata->getFragmentGraph();
-
     unsigned int num_transitions = moldata->getNumTransitions();
     unsigned int num_fragments = moldata->getNumFragments();
-
     int len_offset = num_transitions + num_fragments;
 
     // Accumulate the Sufficient Statistics
@@ -524,7 +521,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             if (comm->isMaster()) {
                 // update L2 only if lambda > 0
                 if (cfg->lambda > 0.0)
-                    updateGradientForRegularizationTerm(&grads[0]);
+                    updateGradientForRegularizationTerm(&grads[0], energy);
                 solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
             }
 
@@ -727,38 +724,46 @@ double EmModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_coun
 }
 
 
-double EmModel::getRegularizationTerm() {
+double EmModel::getRegularizationTerm(unsigned int energy) {
 
     double reg_term = 0.0;
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
-        double weight = param->getWeightAtIdx(*it);
-        reg_term -= 0.5 * cfg->lambda * weight * weight;
+        if(withinGradOffset(*it, energy)){
+            double weight = param->getWeightAtIdx(*it);
+            reg_term -= 0.5 * cfg->lambda * weight * weight;
+        }
     }
 
     // Remove the Bias terms (don't regularize the bias terms!)
     unsigned int weights_per_energy = param->getNumWeightsPerEnergyLevel();
     for (unsigned int energy = 0; energy < param->getNumEnergyLevels();
          energy++) {
-        double bias = param->getWeightAtIdx(energy * weights_per_energy);
-        reg_term += 0.5 * cfg->lambda * bias * bias;
+        if(withinGradOffset(*it, energy)) {
+            double bias = param->getWeightAtIdx(energy * weights_per_energy);
+            reg_term += 0.5 * cfg->lambda * bias * bias;
+        }
     }
     return reg_term;
 }
 
-void EmModel::updateGradientForRegularizationTerm(double *grads) {
+void EmModel::updateGradientForRegularizationTerm(double *grads, unsigned int energy) {
 
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
-        double weight = param->getWeightAtIdx(*it);
-        *(grads + *it) -= cfg->lambda * weight;
+        if(withinGradOffset(*it, energy)) {
+            double weight = param->getWeightAtIdx(*it);
+            *(grads + *it) -= cfg->lambda * weight;
+        }
     }
 
     // Remove the Bias terms (don't regularize the bias terms!)
     unsigned int weights_per_energy = param->getNumWeightsPerEnergyLevel();
     for (unsigned int energy = 0; energy < param->getNumEnergyLevels();
          energy++) {
-        double bias = param->getWeightAtIdx(energy * weights_per_energy);
-        *(grads + energy * weights_per_energy) += cfg->lambda * bias;
+        if(withinGradOffset(*it, energy)) {
+            double bias = param->getWeightAtIdx(energy * weights_per_energy);
+            *(grads + energy * weights_per_energy) += cfg->lambda * bias;
+        }
     }
 }
