@@ -322,7 +322,11 @@ int main(int argc, char *argv[]) {
             if (!mit->hasComputedGraph()) continue;    //If we couldn't compute it's graph for some reason..
 
             //Predicted spectrum
-            mit->computePredictedSpectra(*param, false);
+            if(cfg.use_single_energy_cfm)
+                for(auto e = start_energy; e < cfg.spectrum_depths.size(); ++e)
+                    mit->computePredictedSpectra(*param, false, false, e);
+            else
+                mit->computePredictedSpectra(*param, false, false);
 
             if (spectra_in_msp)
                 mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
@@ -434,12 +438,12 @@ trainSingleEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalculat
             }
         }
         MPI_Barrier(MPI_COMM_WORLD);
-        if (energy == 0) {
+        if (energy == start_energy) {
             if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION)
                 final_params = new NNParam(eparam_filename);
             else
                 final_params = new Param(eparam_filename);
-        } else {
+        } else if(energy > start_energy){
             Param *eparam;
             if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION)
                 eparam = new NNParam(eparam_filename);
