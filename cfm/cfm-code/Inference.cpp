@@ -108,7 +108,7 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
 
 void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &spec_msg, int current_energy) {
 
-    
+
     //Initialise the messages
     up_msgs.resize(mol_depth);
 
@@ -122,8 +122,8 @@ void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &s
     //Update Factor (Fd-1,Fd) => Create Message Fd-1  ...etc as per MODEL_DEPTH
     for (int i = mol_depth - 2; i >= 0; i--) {
         // make sure we are not go to far
-        int energy = (i+1 <= current_energy) ? config->map_d_to_energy[i + 1] : current_energy;
-
+        int energy = current_energy;
+        //(i+1 <= current_energy) ? config->map_d_to_energy[i + 1] : current_energy;
         passMessage(tmp_log_probs, UP, i, up_msgs[i + 1], energy);
         createMessage(tmp_log_probs, up_msgs[i], up_msgs[i + 1], UP, i);
     }
@@ -131,7 +131,7 @@ void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &s
 
 void Inference::createMessage(factor_probs_t &tmp_log_probs, Message &m, Message &prev_m, int direction, int depth) {
 
-        m.reset(moldata->getNumFragments());
+    m.reset(moldata->getNumFragments());
     for (unsigned int id = 0; id < moldata->getNumFragments(); id++) {
 
         //Going up or down?
@@ -180,7 +180,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
                                                 std::vector<Message> &up_msgs, int current_energy) {
 
     std::vector<double> norms(mol_depth);
-    
+
     //Compute Persistence Beliefs (and track norms)
     beliefs.ps.resize(moldata->getNumFragments());
     for (unsigned int i = 0; i < moldata->getNumFragments(); i++) {
@@ -190,7 +190,8 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
 
             double tmp;
             if ((d == 0 && i == 0) || (d > 0 && down_msgs[d - 1].getIdx(i) > -A_BIG_DBL)) {
-                int energy = config->map_d_to_energy[d] > current_energy ? current_energy : config->map_d_to_energy[d];
+                int energy = current_energy;
+                //config->map_d_to_energy[d] > current_energy ? current_energy : config->map_d_to_energy[d];
                 tmp = moldata->getLogPersistenceProbForIdx(energy, i);
                 tmp += up_msgs[d].getIdx(i);
                 if (d > 0) tmp += down_msgs[d - 1].getIdx(i);
@@ -211,7 +212,8 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
 
             double tmp;
             if ((d == 0 && t->getFromId() == 0) || (d > 0 && down_msgs[d - 1].getIdx(t->getFromId()) > -A_BIG_DBL)) {
-                int energy = config->map_d_to_energy[d] > current_energy ? current_energy : config->map_d_to_energy[d];
+                int energy = current_energy;
+                // config->map_d_to_energy[d] > current_energy ? current_energy : config->map_d_to_energy[d];
                 tmp = moldata->getLogTransitionProbForIdx(energy, i);
                 tmp += up_msgs[d].getIdx(t->getToId());
                 if (d > 0) tmp += down_msgs[d - 1].getIdx(t->getFromId());
@@ -238,7 +240,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
 void Inference::createSpectrumMessage(Message &msg, int energy, Message &down_msg) {
 
     const Spectrum *spectrum = moldata->getSpectrum(energy);
-    
+
     if (moldata->hasIsotopesIncluded())
         createSpectrumMessageWithIsotopes(msg, energy, down_msg);
     else {
@@ -280,7 +282,7 @@ void Inference::createSpectrumMessage(Message &msg, int energy, Message &down_ms
 void Inference::createSpectrumMessageWithIsotopes(Message &msg, int energy, Message &down_msg) {
 
     const Spectrum *spectrum = moldata->getSpectrum(energy);
-    
+
     //Store normpdf( pk mass, ion mass, sigma*sqrt2 )
     static const double pi = boost::math::constants::pi<double>();
     int num_fragments = moldata->getNumFragments();

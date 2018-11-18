@@ -208,14 +208,14 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
 	EmModel em(&cfg, &fc_null, null_str, param_filename );
 
     //Check Q
-    double Q = em.computeLogLikelihoodLoss(0, moldata, suft);
+    double Q = em.computeLogLikelihoodLoss(0, moldata, suft, 0);
     if( fabs(Q - -3.823 )  > tol ){
         std::cout << "Unexpected Q value resulting from Q only computation: " << Q << std::endl;
         pass = false;
     }
 
     // get used flags
-    em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0);
+	em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, 0);
     //Check the used flags
     for( int energy = 0; energy < 3; energy++ ){
         //Check the ones that should be on
@@ -233,7 +233,7 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
     }
 
     //Check the gradients
-    em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, false, used_idxs, 0);
+	em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, false, used_idxs, 0, 0);
 	double expected_vals[6] = {-0.1624,0.2499,-0.0568,0.2554,0.1649,0.4663};
 	for( int energy = 0; energy < 3; energy++ ){
 		for( unsigned int i = 0; i < 2; i++ ){

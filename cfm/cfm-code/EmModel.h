@@ -55,9 +55,9 @@ public:
     //This is public so the test can access it....there must be a better way?
     virtual void computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
                                               bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                              int sampling_method);
+                                              int sampling_method, unsigned int energy);
 
-    virtual double computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft);
+    virtual double computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft, unsigned int energy);
 
 protected:
 
@@ -75,9 +75,9 @@ protected:
 
     //Simple gradient ascent
     double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
-                                          int sampling_method);
+                                          int sampling_method, unsigned int energy);
 
-    double computeLoss(std::vector<MolData> &data, suft_counts_t &suft);
+    double computeLoss(std::vector<MolData> &data, suft_counts_t &suft, unsigned int energy);
 
     //Helper functions
 

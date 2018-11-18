@@ -126,7 +126,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 continue; // If we couldn't compute it's graph for some reason..
             if (mol_it->hasEmptySpectrum(energy_level))
                 continue; // Ignore any molecule with poor (no peaks matched a fragment)
-                // or missing spectra.
+            // or missing spectra.
 
             // do noting if disbaled
             if (mol_it->getGroup() == validation_group && cfg->disable_cross_val_computation)
@@ -186,7 +186,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         before = time(nullptr);
 
-        loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, sampling_method);
+        loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, sampling_method, energy_level);
 
         after = time(nullptr);
         std::string param_update_time_msg =
@@ -224,7 +224,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         num_training_mols = comm->collectSumInMaster(num_training_mols);
 
-        if(!cfg->disable_cross_val_computation){
+        if (!cfg->disable_cross_val_computation) {
             val_q = comm->collectQInMaster(val_q);
             num_val_mols = comm->collectSumInMaster(num_val_mols);
             jaccard = comm->collectQInMaster(jaccard);
@@ -246,11 +246,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 qdif_str += "\nBest_Loss_Ratio= " + std::to_string(best_Loss_ratio) +
                             " Best_Loss=" + std::to_string(best_loss);
 
-            if(!cfg->disable_cross_val_computation){
-                qdif_str +="\nValidation_Loss=" + std::to_string(val_q)
-                + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
-                + "\nValidation_Jaccard_Avg=" + std::to_string(jaccard / num_val_mols)
-                + " Weighted_Validation_Jaccard_Avg=" += std::to_string(w_jaccard / num_val_mols);
+            if (!cfg->disable_cross_val_computation) {
+                qdif_str += "\nValidation_Loss=" + std::to_string(val_q)
+                            + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
+                            + "\nValidation_Jaccard_Avg=" + std::to_string(jaccard / num_val_mols)
+                            + " Weighted_Validation_Jaccard_Avg=" += std::to_string(w_jaccard / num_val_mols);
             }
 
             writeStatus(qdif_str.c_str());
@@ -300,7 +300,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 }
 
 void
-EmModel::updateTraningParams(double loss, double prev_loss, double Loss_ratio, double &learning_rate, int &sampling_method,
+EmModel::updateTraningParams(double loss, double prev_loss, double Loss_ratio, double &learning_rate,
+                             int &sampling_method,
                              int &count_no_progress) const {
     if (Loss_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
 
@@ -321,13 +322,13 @@ EmModel::updateTraningParams(double loss, double prev_loss, double Loss_ratio, d
 }
 
 double
-EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft) {
+EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, unsigned int energy) {
 
     double loss = 0.0;
     auto mol_it = data.begin();
     for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
         if (mol_it->getGroup() != validation_group) {
-            double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft);
+            double mol_loss = computeLogLikelihoodLoss(molidx, *mol_it, suft, energy);
             loss += mol_loss;
         }
     }
@@ -346,25 +347,28 @@ void EmModel::computeValidationMetrics(int energy_level, int molidx,
                                        suft_counts_t &suft, double &val_loss, int &num_val_mols, double &jaccard,
                                        double &w_jaccard) {
 
-    val_loss += computeLogLikelihoodLoss(molidx, *moldata, suft);
+    val_loss += computeLogLikelihoodLoss(molidx, *moldata, suft, energy_level);
     num_val_mols++;
     Comparator *jaccard_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *weighed_jaccard_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
     if (cfg->use_single_energy_cfm) {
         moldata->computePredictedSpectra(*param, false, false, energy_level);
-        moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
-        jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level), moldata->getPredictedSpectrum(energy_level));
+        moldata->postprocessPredictedSpectra(75, 1, 30, 0.0);
+        jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
+                                             moldata->getPredictedSpectrum(energy_level));
         w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
-                                          moldata->getPredictedSpectrum(energy_level));
+                                                       moldata->getPredictedSpectrum(energy_level));
     } else {
         moldata->computePredictedSpectra(*param, false, false);
-        moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
+        moldata->postprocessPredictedSpectra(75, 1, 30, 0.0);
         std::vector<unsigned int> energies;
         getEnergiesLevels(energies);
         for (auto &energy: energies) {
-            jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy), moldata->getPredictedSpectrum(energy));
-            w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy), moldata->getPredictedSpectrum(energy));
+            jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy),
+                                                 moldata->getPredictedSpectrum(energy));
+            w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy),
+                                                           moldata->getPredictedSpectrum(energy));
         }
         jaccard /= (double) energies.size();
         w_jaccard /= (double) energies.size();
@@ -441,7 +445,7 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx,
 }
 
 double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
-                                               int sampling_method) {
+                                               int sampling_method, unsigned int energy) {
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
@@ -461,7 +465,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group)
-                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0);
+                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0, energy);
         }
 
         comm->setMasterUsedIdxs();
@@ -507,11 +511,11 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
                 if (minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group) {
                     // so now it should not crash anymore
-                    if(!mol_it->hasComputedGraph())
+                    if (!mol_it->hasComputedGraph())
                         continue;
 
                     computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs,
-                                                 sampling_method);
+                                                 sampling_method, energy);
                 }
             }
             comm->collectGradsInMaster(&grads[0]);
@@ -519,7 +523,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             // Step the parameters
             if (comm->isMaster()) {
                 // update L2 only if lambda > 0
-                if(cfg->lambda > 0.0)
+                if (cfg->lambda > 0.0)
                     updateGradientForRegularizationTerm(&grads[0]);
                 solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
             }
@@ -530,7 +534,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         // End of batch
         // compute loss
-        loss = computeLoss(data, suft);
+        loss = computeLoss(data, suft, energy);
         if (comm->isMaster()) {
             std::cout << iter << ":  Loss=" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
                       << std::endl;
@@ -573,7 +577,7 @@ double EmModel::getUpdatedLearningRate(double learning_rate, double current_loss
 
 void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
                                            bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                           int sampling_method) {
+                                           int sampling_method, unsigned int energy) {
 
     unsigned int num_transitions = mol_data.getNumTransitions();
     unsigned int num_fragments = mol_data.getNumFragments();
@@ -585,79 +589,71 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
 
     suft_t *suft_values = &(suft.values[mol_idx]);
 
-    // Collect energies to compute
-    std::vector<unsigned int> energies;
-    getEnergiesLevels(energies);
+    unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
+    unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
-    // Compute the gradients
-    for (auto energy : energies) {
-        unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
-        unsigned int suft_offset = energy * (num_transitions + num_fragments);
+    std::set<int> selected_trans_id;
+    if (!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
+        getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
 
-        std::set<int> selected_trans_id;
-        if (!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
-            getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
+    // Iterate over from_id (i)
+    auto frag_trans_map = mol_data.getFromIdTMap()->begin();
+    for (int from_idx = 0; frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
 
-        // Iterate over from_id (i)
-        auto frag_trans_map = mol_data.getFromIdTMap()->begin();
-        for (int from_idx = 0; frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
+        if (record_used_idxs_only) {
+            for (auto trans_id : *frag_trans_map) {
+                const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
+                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
+                    used_idxs.insert(*fv_it + grad_offset);
+            }
+        } else {
+            //Do some random selection
+            std::vector<int> sampled_ids;
+            if (sampling_method != USE_NO_SAMPLING) {
+                for (auto id: *frag_trans_map)
+                    if (selected_trans_id.find(id) != selected_trans_id.end())
+                        sampled_ids.push_back(id);
+            } else
+                sampled_ids = *frag_trans_map;
 
-            if (record_used_idxs_only) {
-                for (auto trans_id : *frag_trans_map) {
-                    const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
-                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
-                        used_idxs.insert(*fv_it + grad_offset);
+            // Calculate the denominator of the sum terms
+            double denom = 1.0;
+            for (auto trans_id : sampled_ids)
+                denom += exp(mol_data.getThetaForIdx(energy, trans_id));
+
+            // Complete the innermost sum terms	(sum over j')
+            std::map<unsigned int, double> sum_terms;
+
+            for (auto trans_id : sampled_ids) {
+                const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
+
+                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                    auto fv_idx = *fv_it;
+                    double val = exp(mol_data.getThetaForIdx(energy, trans_id)) / denom;
+                    if (sum_terms.find(fv_idx) != sum_terms.end())
+                        sum_terms[fv_idx] += val;
+                    else
+                        sum_terms[fv_idx] = val;
                 }
-            } else {
-                //Do some random selection
-                std::vector<int> sampled_ids;
-                if (sampling_method != USE_NO_SAMPLING){
-                    for (auto id: *frag_trans_map)
-                        if (selected_trans_id.find(id) != selected_trans_id.end())
-                            sampled_ids.push_back(id);
+            }
+
+            // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
+            double nu_sum = 0.0;
+            for (auto trans_id : sampled_ids) {
+                double nu = (*suft_values)[trans_id + suft_offset];
+                nu_sum += nu;
+                const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
+                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                    auto fv_idx = *fv_it;
+                    *(grads + fv_idx + grad_offset) += nu;
                 }
-                else
-                    sampled_ids = *frag_trans_map;
+            }
 
-                // Calculate the denominator of the sum terms
-                double denom = 1.0;
-                for (auto trans_id : sampled_ids)
-                    denom += exp(mol_data.getThetaForIdx(energy, trans_id));
-
-                // Complete the innermost sum terms	(sum over j')
-                std::map<unsigned int, double> sum_terms;
-
-                for (auto trans_id : sampled_ids) {
-                    const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
-
-                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                        auto fv_idx = *fv_it;
-                        double val = exp(mol_data.getThetaForIdx(energy, trans_id)) / denom;
-                        if (sum_terms.find(fv_idx) != sum_terms.end())
-                            sum_terms[fv_idx] += val;
-                        else
-                            sum_terms[fv_idx] = val;
-                    }
-                }
-
-                // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
-                double nu_sum = 0.0;
-                for (auto trans_id : sampled_ids) {
-                    double nu = (*suft_values)[trans_id + suft_offset];
-                    nu_sum += nu;
-                    const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
-                    for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                        auto fv_idx = *fv_it;
-                        *(grads + fv_idx + grad_offset) += nu;
-                    }
-                }
-
-                // Accumulate the last term of each transition and the
-                // persistence (i = j) terms of the gradient and Q
-                double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
-                for (auto &sit: sum_terms) {
-                    *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
-                }
+            // Accumulate the last term of each transition and the
+            // persistence (i = j) terms of the gradient and Q
+            double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
+            for (auto &sit: sum_terms) {
+                *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
             }
         }
     }
@@ -690,7 +686,7 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
     }
 }
 
-double EmModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft) {
+double EmModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft, unsigned int energy) {
 
     double q = 0.0;
     unsigned int num_transitions = moldata.getNumTransitions();
@@ -705,36 +701,28 @@ double EmModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_coun
     moldata.computeTransitionThetas(*param);
     suft_t *suft_values = &(suft.values[molidx]);
 
-    // Collect energies to compute
-    std::vector<unsigned int> energies;
-    getEnergiesLevels(energies);
-
     // Compute
-    for (auto energy : energies) {
-        unsigned int suft_offset = energy * (num_transitions + num_fragments);
+    unsigned int suft_offset = energy * (num_transitions + num_fragments);
+    // Iterate over from_id (i)
+    auto it = moldata.getFromIdTMap()->begin();
+    for (int from_idx = 0; it != moldata.getFromIdTMap()->end(); ++it, from_idx++) {
 
-        // Iterate over from_id (i)
-        auto it = moldata.getFromIdTMap()->begin();
-        for (int from_idx = 0; it != moldata.getFromIdTMap()->end(); ++it, from_idx++) {
+        // Calculate the denominator of the sum terms
+        double denom = 1.0;
+        for (auto itt : *it)
+            denom += exp(moldata.getThetaForIdx(energy, itt));
 
-            // Calculate the denominator of the sum terms
-            double denom = 1.0;
-            for (auto itt : *it)
-                denom += exp(moldata.getThetaForIdx(energy, itt));
-
-            // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
-            for (auto itt : *it) {
-                double nu = (*suft_values)[itt + suft_offset];
-                q += nu * (moldata.getThetaForIdx(energy, itt) - log(denom));
-            }
-
-            // Accumulate the last term of each transition and the
-            // persistence (i = j) terms of the gradient and Q
-            double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
-            q -= nu * log(denom);
+        // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
+        for (auto itt : *it) {
+            double nu = (*suft_values)[itt + suft_offset];
+            q += nu * (moldata.getThetaForIdx(energy, itt) - log(denom));
         }
-    }
 
+        // Accumulate the last term of each transition and the
+        // persistence (i = j) terms of the gradient and Q
+        double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
+        q -= nu * log(denom);
+    }
     return q;
 }
 

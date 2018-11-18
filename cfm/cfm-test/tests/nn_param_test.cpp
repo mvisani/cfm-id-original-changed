@@ -434,8 +434,8 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	FeatureCalculator fc_null(fnames); 
 	std::string null_str = "null";
 	EmNNModel em(&cfg, &fc_null, null_str, param_filename );
-	double Qonly  = em.computeLogLikelihoodLoss(0, moldata, suft);
-    em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0);
+	double Qonly  = em.computeLogLikelihoodLoss(0, moldata, suft, 0);
+	em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, 0);
 
 	//Check Q
 	double theta1 = 12.0, theta2 = 10.0;
