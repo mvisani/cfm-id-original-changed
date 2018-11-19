@@ -419,10 +419,10 @@ void NNParam::computeDeltas(std::vector<azd_vals_t> &deltasA, std::vector<azd_va
     }
 }
 
-void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unweighted_grads,
-                                         std::set<unsigned int> &used_idxs, std::vector<const FeatureVector *> &fvs,
-                                         std::vector<azd_vals_t> &deltasA, std::vector<azd_vals_t> &deltasB,
-                                         std::vector<azd_vals_t> &a_values) {
+void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unweighted_grads, std::set<unsigned int> &used_idxs,
+                                         std::vector<const FeatureVector *> &fvs, std::vector<azd_vals_t> &deltasA,
+                                         std::vector<azd_vals_t> &deltasB, std::vector<azd_vals_t> &a_values,
+                                         bool record_used_idx) {
 
     unsigned int num_trans_from_id = a_values.size();
     unweighted_grads.resize(num_trans_from_id + 1); //+1 for the persistence transition (stored last)
@@ -436,6 +436,7 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
         itAs[idx] = deltasA[idx].begin();
         itBs[idx] = deltasB[idx].begin();
     }
+
     //Persistence (and normalization) terms
     unweighted_grads[num_trans_from_id].clear();
     unweighted_grads[num_trans_from_id].resize(getNumWeightsPerEnergyLevel(), 0.0);
@@ -446,14 +447,15 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
     std::vector<double>::iterator normit = unweighted_grads[num_trans_from_id].begin();
     unsigned int feature_len = fvs[0]->getTotalLength();
 
-
     //Collect the used feature idxs (we'll need these for the first layer normalization)
-    std::set<unsigned int> tmp_used_idxs;
+    std::vector<int> first_layer_used_idx (feature_len, 0);
     for (int idx = 0; idx < num_trans_from_id; idx++) {
         for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
-            tmp_used_idxs.insert(*fit);
-            for (int hnode = 0; hnode < h_layer_num_nodes[0]; hnode++)
-                used_idxs.insert(hnode * feature_len + *fit);
+            first_layer_used_idx[*fit] ++;
+            if(record_used_idx){
+                for (int hnode = 0; hnode < h_layer_num_nodes[0]; hnode++)
+                    used_idxs.insert(hnode * feature_len + *fit);
+            }
         }
     }
 
@@ -474,9 +476,9 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
         //Apply the normalizers
         //(Note: we need to normalize for all transitions if any transition used that feature)
         for (int idx = 0; idx < num_trans_from_id; idx++) {
-            std::set<unsigned int>::iterator sit = tmp_used_idxs.begin();
-            for (; sit != tmp_used_idxs.end(); ++sit)
-                *(itgrads[idx] + *sit) += *(normit + *sit);
+            for(auto fv_idx = 0 ; fv_idx < first_layer_used_idx.size(); ++fv_idx)
+                if(first_layer_used_idx[fv_idx])
+                    *(itgrads[idx] + fv_idx) += *(normit + fv_idx);
             itgrads[idx] += feature_len;
         }
         normit += feature_len;

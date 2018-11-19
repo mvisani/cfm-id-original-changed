@@ -296,7 +296,8 @@ void NNParamsTestComputeUnweightedGradients::runTest(){
 		std::vector<std::vector<double> > unweighted_grads;
 		std::set<unsigned int> used_idxs;
 		std::vector<const FeatureVector *> fvs(2); fvs[0] = &fv1; fvs[1] = &fv2;
-		param->computeUnweightedGradients( unweighted_grads, used_idxs, fvs, deltasA, deltasB, a_values );
+        param->computeUnweightedGradients(unweighted_grads, used_idxs, fvs, deltasA, deltasB,
+                                          a_values, false);
 
 		//Check the values
 		if( unweighted_grads.size() != 3 || unweighted_grads[0].size() != 37 || unweighted_grads[1].size() != 37 || unweighted_grads[2].size() != 37 ){
