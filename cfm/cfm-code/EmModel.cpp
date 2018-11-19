@@ -681,7 +681,7 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
         std::set<double> all_weights;
 
         moldata.getSelectedWeights(selected_weights, all_weights, energy, true);
-        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, all_weights, all_weights);
+        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, selected_weights, all_weights);
         // std::cout << selected_trans_id.size() << "/" << moldata.getNumTransitions() << std::endl;
     }
 }
