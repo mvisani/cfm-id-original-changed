@@ -126,8 +126,7 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
         //Compute the unweighted gradients
         std::vector<std::vector<double> > unweighted_grads;
         std::set<unsigned int> from_id_used_idxs;
-        nn_param->computeUnweightedGradients(unweighted_grads, from_id_used_idxs, fvs, deltasA, deltasB,
-                                             a_values, record_used_idxs_only);
+        nn_param->computeUnweightedGradients(unweighted_grads, from_id_used_idxs, fvs, deltasA, deltasB, a_values);
 
         //Accumulate the weighted gradients
         std::set<unsigned int>::iterator sit;
