@@ -194,6 +194,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(param_update_time_msg.c_str());
+        else
+            std::cout <<  "updateParametersGradientAscent:  " << std::to_string(after - before) << std::endl;
         comm->printToMasterOnly(param_update_time_msg.c_str());
 
         // Write the params
