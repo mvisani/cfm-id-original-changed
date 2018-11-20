@@ -449,9 +449,11 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
 
     //Collect the used feature idxs (we'll need these for the first layer normalization)
     std::set<unsigned int> tmp_used_idxs;
+    std::vector<unsigned int> tmp_used_idxs_vect(feature_len);
     for (int idx = 0; idx < num_trans_from_id; idx++) {
         for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
-            tmp_used_idxs.insert(*fit);
+            //tmp_used_idxs.insert(*fit);
+            tmp_used_idxs_vect[*fit] ++;
             for (int hnode = 0; hnode < h_layer_num_nodes[0]; hnode++)
                 used_idxs.insert(hnode * feature_len + *fit);
         }
@@ -474,9 +476,12 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
         //Apply the normalizers
         //(Note: we need to normalize for all transitions if any transition used that feature)
         for (int idx = 0; idx < num_trans_from_id; idx++) {
-            std::set<unsigned int>::iterator sit = tmp_used_idxs.begin();
+            /*std::set<unsigned int>::iterator sit = tmp_used_idxs.begin();
             for (; sit != tmp_used_idxs.end(); ++sit)
-                *(itgrads[idx] + *sit) += *(normit + *sit);
+                *(itgrads[idx] + *sit) += *(normit + *sit);*/
+            for(int fv_idx = 0; fv_idx < tmp_used_idxs_vect.size(); ++fv_idx)
+                if(tmp_used_idxs_vect[fv_idx] > 0 )
+                    *(itgrads[idx] + fv_idx) += *(normit + fv_idx);
             itgrads[idx] += feature_len;
         }
         normit += feature_len;
