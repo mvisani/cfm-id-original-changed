@@ -801,8 +801,7 @@ double MolData::getWeightedJaccardScore(int engery_level){
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::getSelectedWeights(std::set<double> &selected_weights, std::set<double> &all_weights, int engery_level,
-                                 bool peaknum_only) {
+void MolData::getSelectedWeights(std::set<double> &selected_weights, std::set<double> &all_weights, int engery_level) {
 
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
@@ -812,7 +811,7 @@ void MolData::getSelectedWeights(std::set<double> &selected_weights, std::set<do
     std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(std::log(peak_pair.first.intensity) - std::log(peak_pair.second.intensity));
-        if(intensity_difference > 0.1){
+        if(intensity_difference > cfg->ga_diff_sampling_difference){
             difference.insert(std::pair<double,double>(intensity_difference, peak_pair.second.mass));
             all_weights.insert(peak_pair.second.mass);
             intensity_sum += intensity_difference;
@@ -821,22 +820,12 @@ void MolData::getSelectedWeights(std::set<double> &selected_weights, std::set<do
     delete(cmp);
 
     double select_intensity_sum = 0.0;
-    if(peaknum_only){
-        for(const auto & diff:  difference){
-            if(selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
-                break;
-            selected_weights.insert(diff.second);
-            select_intensity_sum += diff.first;
-        }
-    }
-    else {
-        for(const auto & diff:  difference){
-            if((selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
-                && (select_intensity_sum > intensity_sum * cfg->ga_select_intensity_sum_ratio))
-                break;
-            selected_weights.insert(diff.second);
-            select_intensity_sum += diff.first;
-        }
+
+    for(const auto & diff:  difference){
+        if(selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
+            break;
+        selected_weights.insert(diff.second);
+        select_intensity_sum += diff.first;
     }
 }
 

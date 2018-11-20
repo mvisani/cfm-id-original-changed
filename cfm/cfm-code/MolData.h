@@ -240,8 +240,7 @@ public:
 
     int getFGDepth() const { return fg->getDepth(); };
 
-    void getSelectedWeights(std::set<double> &selected_weights, std::set<double> &all_weights, int engery_level,
-                                bool peaknum_only = false);
+    void getSelectedWeights(std::set<double> &selected_weights, std::set<double> &all_weights, int engery_level);
 
     double getWeightedJaccardScore(int engery_level);
 

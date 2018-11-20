@@ -79,7 +79,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.reset_sampling = false;
     cfg.reset_sampling_lr_ratio = 1.0;
     cfg.ga_diff_sampling_peak_num = 10;
-    cfg.ga_select_intensity_sum_ratio = 0.25;
+    cfg.ga_diff_sampling_difference = 0.05;
     cfg.ga_dropout_delta = -0.05;
     cfg.ga_dropout_lowerbond = 0.01;
     cfg.num_rbreak_nrbonds = 100000;
@@ -162,7 +162,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double) value;
         else if (name == "ga_sampling_explore_weight") cfg.ga_sampling_explore_weight = (double) value;
         else if (name == "ga_diff_sampling_peak_num") cfg.ga_diff_sampling_peak_num = (int) value;
-        else if (name == "ga_select_intensity_sum_ratio") cfg.ga_select_intensity_sum_ratio = (double) value;
+        else if (name == "ga_diff_sampling_difference") cfg.ga_diff_sampling_difference = (double) value;
         else if (name == "ga_dropout_delta") cfg.ga_dropout_delta = (double) value;
         else if (name == "ga_dropout_lowerbond") cfg.ga_dropout_lowerbond = (double) value;
         else if (name == "num_rbreak_nrbonds") cfg.num_rbreak_nrbonds = (int) value;
