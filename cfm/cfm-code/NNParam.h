@@ -75,9 +75,10 @@ public:
                   std::vector<azd_vals_t> &a_values, double rho_denom, int energy);
 
     void
-    computeUnweightedGradients(std::vector<std::vector<double> > &unweighted_grads, std::set<unsigned int> &used_idxs,
-                               std::vector<const FeatureVector *> &fvs, std::vector<azd_vals_t> &deltasA,
-                               std::vector<azd_vals_t> &deltasB, std::vector<azd_vals_t> &a_values);
+    computeUnweightedGradients(std::vector<std::vector<double> > &unweighted_grads,
+                                   std::set<unsigned int> &used_idxs, std::vector<const FeatureVector *> &fvs,
+                                   std::vector<azd_vals_t> &deltasA, std::vector<azd_vals_t> &deltasB,
+                                   std::vector<azd_vals_t> &a_values, bool record_used_id);
 
     unsigned int getTotalNumNodes() const { return total_nodes; };    //Only hidden and output nodes (not input nodes)
     unsigned int getSecondLayerWeightOffset() const { return h_layer_num_nodes[0] * expected_num_input_features; };

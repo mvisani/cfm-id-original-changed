@@ -56,7 +56,7 @@ void EmNNModel::writeParamsToFile(std::string &filename) {
 
 //Gradient Computation using Backpropagation
 void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
-                                             bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
+                                             bool record_used_idxs, std::set<unsigned int> &used_idxs,
                                              int sampling_method, unsigned int energy) {
 
     //const FragmentGraph *fg = moldata.getFragmentGraph();
@@ -76,7 +76,7 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
     unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
     std::set<int> selected_trans_id;
-    if (!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
+    if (!record_used_idxs && sampling_method != USE_NO_SAMPLING)
         getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
 
     //Iterate over from_id (i)
@@ -86,7 +86,7 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
         const std::vector<int> *from_id_map = &(*from_map)[from_idx];
         std::vector<int> sampled_trans_id;
 
-        if (sampling_method != USE_NO_SAMPLING && !record_used_idxs_only) {
+        if (sampling_method != USE_NO_SAMPLING && !record_used_idxs) {
             for (const auto &trans_id : (*from_map)[from_idx])
                 if (selected_trans_id.find(trans_id) != selected_trans_id.end())
                     sampled_trans_id.push_back(trans_id);
@@ -126,7 +126,8 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
         //Compute the unweighted gradients
         std::vector<std::vector<double> > unweighted_grads;
         std::set<unsigned int> from_id_used_idxs;
-        nn_param->computeUnweightedGradients(unweighted_grads, from_id_used_idxs, fvs, deltasA, deltasB, a_values);
+        nn_param->computeUnweightedGradients(unweighted_grads, from_id_used_idxs, fvs, deltasA, deltasB,
+                                             a_values, record_used_idxs);
 
         //Accumulate the weighted gradients
         std::set<unsigned int>::iterator sit;
@@ -141,14 +142,14 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
                 *(grads + grad_offset + i) += nu * unweighted_grads[idx][i];
         }
 
-        if (record_used_idxs_only) {
+        if (record_used_idxs) {
             //Combine the used indexes for the first layer
             for (sit = from_id_used_idxs.begin(); sit != from_id_used_idxs.end(); ++sit)
                 used_idxs.insert(grad_offset + *sit);
         }
     }
 
-    if (record_used_idxs_only) {
+    if (record_used_idxs) {
         //Add used indexes for the subsequent layers (all of them)
         for (int i = layer2_offset; i < weights_per_energy; i++)
             used_idxs.insert(grad_offset + i);

@@ -574,7 +574,7 @@ double EmModel::getUpdatedLearningRate(double learning_rate, double current_loss
 }
 
 void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
-                                           bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
+                                           bool record_used_idxs, std::set<unsigned int> &used_idxs,
                                            int sampling_method, unsigned int energy) {
 
     unsigned int num_transitions = mol_data.getNumTransitions();
@@ -591,14 +591,14 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
     unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
     std::set<int> selected_trans_id;
-    if (!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
+    if (!record_used_idxs && sampling_method != USE_NO_SAMPLING)
         getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
 
     // Iterate over from_id (i)
     auto frag_trans_map = mol_data.getFromIdTMap()->begin();
     for (int from_idx = 0; frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
 
-        if (record_used_idxs_only) {
+        if (record_used_idxs) {
             for (auto trans_id : *frag_trans_map) {
                 const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
                 for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
@@ -657,7 +657,7 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
     }
 
     // Compute the latest transition thetas
-    if (!record_used_idxs_only)
+    if (!record_used_idxs)
         mol_data.computeTransitionThetas(*param);
 }
 

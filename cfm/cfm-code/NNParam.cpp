@@ -422,7 +422,7 @@ void NNParam::computeDeltas(std::vector<azd_vals_t> &deltasA, std::vector<azd_va
 void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unweighted_grads,
                                          std::set<unsigned int> &used_idxs, std::vector<const FeatureVector *> &fvs,
                                          std::vector<azd_vals_t> &deltasA, std::vector<azd_vals_t> &deltasB,
-                                         std::vector<azd_vals_t> &a_values) {
+                                         std::vector<azd_vals_t> &a_values, bool record_used_id) {
 
     unsigned int num_trans_from_id = a_values.size();
     unweighted_grads.resize(num_trans_from_id + 1); //+1 for the persistence transition (stored last)
@@ -452,8 +452,10 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
     for (int idx = 0; idx < num_trans_from_id; idx++) {
         for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
             tmp_used_idxs.insert(*fit);
-            for (int hnode = 0; hnode < h_layer_num_nodes[0]; hnode++)
-                used_idxs.insert(hnode * feature_len + *fit);
+            if(record_used_id){
+                for (int hnode = 0; hnode < h_layer_num_nodes[0]; hnode++)
+                    used_idxs.insert(hnode * feature_len + *fit);
+            }
         }
     }
 
