@@ -678,8 +678,11 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
         moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, 0.1);
     } else if (sampling_method == USE_DIFFERENCE_SAMPLING) {
         moldata.computePredictedSpectra(*param, false, true, energy);
-
+        std::set<double> selected_weights;
         std::set<double> all_weights;
+
+        moldata.getSelectedWeights(selected_weights, all_weights, energy, true);
+        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, selected_weights, all_weights);
         moldata.getWeightsDifference(all_weights, energy);
         moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, all_weights);
     }
