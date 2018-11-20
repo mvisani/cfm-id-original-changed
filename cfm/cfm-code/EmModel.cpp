@@ -671,13 +671,13 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
     int num_trans = moldata.getNumTransitions();
     int num_iterations = (int) ((cfg->ga_graph_sampling_k * num_trans) / (double) (cfg->fg_depth * cfg->fg_depth));
     if (sampling_method == USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING) {
-        moldata.computePredictedSpectra(*param, false, false, energy);
+        moldata.computePredictedSpectra(*param, false, true, energy);
         moldata.getSampledTransitionIdsWeightedRandomWalk(selected_trans_id, num_iterations, energy,
                                                           moldata.getWeightedJaccardScore(energy));
     } else if (sampling_method == USE_GRAPH_RANDOM_WALK_SAMPLING) {
         moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, 0.1);
     } else if (sampling_method == USE_DIFFERENCE_SAMPLING) {
-        moldata.computePredictedSpectra(*param, false, false, energy);
+        moldata.computePredictedSpectra(*param, false, true, energy);
 
         std::set<double> all_weights;
         moldata.getWeightsDifference(all_weights, energy);
