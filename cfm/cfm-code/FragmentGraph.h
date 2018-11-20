@@ -303,8 +303,8 @@ public:
     void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
 
     // Get a list of transitions ids , with random walk
-    void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                   std::set<double> &selected_weights);
+    void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids, std::set<double> &selected_weights,
+                                                   std::set<double> &all_weights);
 
     void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio);
 
@@ -321,9 +321,9 @@ protected:
     tmap_t to_id_tmap; // Mapping between to_id and transitions with that to_id
 
 
-    void getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<int> &visited,
-                                                          int frag_id, std::vector<int> &path,
-                                                          std::set<int> &selected_ids);
+    void getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<double> &all_weights,
+                                                             std::set<int> &visited, int frag_id, std::vector<int> &path,
+                                                             std::set<int> &selected_ids);
 
     void getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
                                         int frag_id, std::vector<std::pair<int, int>> &path,
