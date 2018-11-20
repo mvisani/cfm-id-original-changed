@@ -352,27 +352,13 @@ void EmModel::computeValidationMetrics(int energy_level, int molidx,
     Comparator *jaccard_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *weighed_jaccard_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
-    if (cfg->use_single_energy_cfm) {
-        moldata->computePredictedSpectra(*param, false, false, energy_level);
-        moldata->postprocessPredictedSpectra(75, 1, 30, 0.0);
-        jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
+    moldata->computePredictedSpectra(*param, false, false, energy_level);
+    moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
+    jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                              moldata->getPredictedSpectrum(energy_level));
-        w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
+    w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                                        moldata->getPredictedSpectrum(energy_level));
-    } else {
-        moldata->computePredictedSpectra(*param, false, false);
-        moldata->postprocessPredictedSpectra(75, 1, 30, 0.0);
-        std::vector<unsigned int> energies;
-        getEnergiesLevels(energies);
-        for (auto &energy: energies) {
-            jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy),
-                                                 moldata->getPredictedSpectrum(energy));
-            w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy),
-                                                           moldata->getPredictedSpectrum(energy));
-        }
-        jaccard /= (double) energies.size();
-        w_jaccard /= (double) energies.size();
-    }
+
     delete jaccard_cmp;
     delete weighed_jaccard_cmp;
 }
