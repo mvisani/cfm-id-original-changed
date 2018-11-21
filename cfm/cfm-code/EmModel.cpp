@@ -233,18 +233,16 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         // Check for convergence
-        double Loss_ratio = fabs((loss - prev_loss) / loss);
-        double best_Loss_ratio = fabs((loss - best_loss) / loss);
+        double loss_ratio = fabs((loss - prev_loss) / loss);
         if (comm->isMaster()) {
             std::string qdif_str = "[M-Step]";
             qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols);
 
             if (prev_loss != -DBL_MAX)
-                qdif_str += "\nLoss_Ratio= " + std::to_string(Loss_ratio) + " Prev_Loss=" + std::to_string(prev_loss);
+                qdif_str += "\nLoss_Ratio= " + std::to_string(loss_ratio) + " Prev_Loss=" + std::to_string(prev_loss);
 
             if (best_loss != -DBL_MAX)
-                qdif_str += "\nBest_Loss_Ratio= " + std::to_string(best_Loss_ratio) +
-                            " Best_Loss=" + std::to_string(best_loss);
+                qdif_str += "\n Best_Loss=" + std::to_string(best_loss);
 
             if (!cfg->disable_cross_val_computation) {
                 qdif_str += "\nValidation_Loss=" + std::to_string(val_q)
@@ -272,7 +270,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         // check if EM meet halt flag
-        updateTraningParams(loss, prev_loss, Loss_ratio, learning_rate, sampling_method, em_no_progress_count);
+        updateTraningParams(loss, prev_loss, loss_ratio, learning_rate, sampling_method, em_no_progress_count);
 
         if (em_no_progress_count >= 3) {
             comm->printToMasterOnly(
@@ -285,8 +283,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         prev_loss = loss;
-
-        switch_to_weighted_jaccard = comm->broadcastBooleanFlag(switch_to_weighted_jaccard);
         iter++;
     }
 
@@ -300,12 +296,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 }
 
 void
-EmModel::updateTraningParams(double loss, double prev_loss, double Loss_ratio, double &learning_rate,
+EmModel::updateTraningParams(double loss, double prev_loss, double loss_ratio, double &learning_rate,
                              int &sampling_method,
                              int &count_no_progress) const {
-    if (Loss_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
+    if (loss_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
 
-        if (learning_rate > cfg->starting_step_size) {
+        /*if (learning_rate > cfg->starting_step_size) {
             learning_rate *= 0.5;
             count_no_progress = 0;
         } else if (sampling_method != USE_NO_SAMPLING && cfg->reset_sampling) {
@@ -315,7 +311,7 @@ EmModel::updateTraningParams(double loss, double prev_loss, double Loss_ratio, d
             sampling_method = USE_NO_SAMPLING;
             learning_rate = cfg->starting_step_size * cfg->reset_sampling_lr_ratio;
             count_no_progress = 0;
-        } else
+        } else*/
             count_no_progress += 1;
     } else
         count_no_progress = 0;
