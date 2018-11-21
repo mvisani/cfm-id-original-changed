@@ -180,8 +180,9 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
     node.generateBreaks(breaks, h_loss_allowed, num_rbreak_nrbonds);
 
-    bool ring_can_break = (remaining_ring_breaks > 0) && (remaining_depth > ring_break_depth_cap);
+    bool ring_can_break = (remaining_ring_breaks > 0) && (remaining_depth < ring_break_depth_cap);
     int num_fg_break_child = 0;
+
     //Iterate over the possible breaks
     for (auto it = breaks.begin(); it != breaks.end(); ++it) {
 
