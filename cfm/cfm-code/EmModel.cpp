@@ -608,7 +608,8 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
                 denom += exp(mol_data.getThetaForIdx(energy, trans_id));
 
             // Complete the innermost sum terms	(sum over j')
-            std::map<unsigned int, double> sum_terms;
+            //std::map<unsigned int, double> sum_terms;
+            std::vector<double> sum_terms(mol_data.getFeatureVectorForIdx(0)->getTotalLength());
 
             for (auto trans_id : sampled_ids) {
                 const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
@@ -616,10 +617,7 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
                 for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                     auto fv_idx = *fv_it;
                     double val = exp(mol_data.getThetaForIdx(energy, trans_id)) / denom;
-                    if (sum_terms.find(fv_idx) != sum_terms.end())
-                        sum_terms[fv_idx] += val;
-                    else
-                        sum_terms[fv_idx] = val;
+                    sum_terms[fv_idx] += val;
                 }
             }
 
@@ -638,9 +636,9 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
             // Accumulate the last term of each transition and the
             // persistence (i = j) terms of the gradient and Q
             double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
-            for (auto &sit: sum_terms) {
-                *(grads + sit.first + grad_offset) -= (nu_sum + nu) * sit.second;
-            }
+            for(auto idx = 0 ; idx < sum_terms.size(); ++idx)
+                if(sum_terms[idx] != 0)
+                    *(grads + idx + grad_offset) -= (nu_sum + nu) * sum_terms[idx];
         }
     }
 
