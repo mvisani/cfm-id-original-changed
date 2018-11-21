@@ -604,8 +604,8 @@ void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &sel
 
 void
 FragmentGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                                                    std::set<double> &selected_weights,
-                                                                                    std::set<double> &all_weights) {
+                                                         std::set<unsigned int> &selected_weights,
+                                                         std::set<unsigned int> &all_weights) {
 
     std::set<int> visited;
     std::vector<int> path;
@@ -660,7 +660,8 @@ getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
 }
 
 void FragmentGraph::
-getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<double> &all_weights,
+getSampledTransitionIdsDifferenceWeightedBFS(std::set<unsigned int> &selected_weights,
+                                             std::set<unsigned int> &all_weights,
                                              std::set<int> &visited, int frag_id, std::vector<int> &path,
                                              std::set<int> &selected_ids) {
     // Note since we always start from root
@@ -707,19 +708,10 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights,
     }
 }
 
-bool FragmentGraph::is_match(std::set<double> &weights, double mass) const {
-    auto lower_bound = weights.lower_bound(mass);
-    auto upper_bound = weights.upper_bound(mass);
+bool FragmentGraph::is_match(std::set<unsigned int> &weights, double mass) const {
 
-    bool is_match = false;
-    if(weights.find(mass) != weights.end())
-        is_match = true;
-    else if(lower_bound != weights.end())
-        is_match = (fabs(*lower_bound - mass) <= 0.00001);
-    else if(upper_bound != weights.end())
-        is_match = (fabs(*upper_bound - mass) <= 0.00001);
-
-    return is_match;
+    unsigned int fixed_mass = (unsigned int)std::round(mass * TEN_K_DBL);
+    return (weights.find(fixed_mass) != weights.end());
 }
 
 void FragmentGraph::getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio) {

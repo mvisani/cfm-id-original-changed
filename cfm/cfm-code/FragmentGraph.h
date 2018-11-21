@@ -303,8 +303,9 @@ public:
     void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
 
     // Get a list of transitions ids , with random walk
-    void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids, std::set<double> &selected_weights,
-                                                   std::set<double> &all_weights);
+    void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
+                                                   std::set<unsigned int> &selected_weights,
+                                                   std::set<unsigned int> &all_weights);
 
     void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio);
 
@@ -321,15 +322,16 @@ protected:
     tmap_t to_id_tmap; // Mapping between to_id and transitions with that to_id
 
 
-    void getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<double> &all_weights,
-                                                             std::set<int> &visited, int frag_id, std::vector<int> &path,
-                                                             std::set<int> &selected_ids);
+    void getSampledTransitionIdsDifferenceWeightedBFS(std::set<unsigned int> &selected_weights,
+                                                      std::set<unsigned int> &all_weights,
+                                                      std::set<int> &visited, int frag_id, std::vector<int> &path,
+                                                      std::set<int> &selected_ids);
 
     void getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
                                         int frag_id, std::vector<std::pair<int, int>> &path,
                                         std::map<int, std::vector<int>> &trans_to_interest_frags_map);
 
-    bool is_match(std::set<double> &weights, double mass) const;
+    bool is_match(std::set<unsigned int> &weights, double mass) const;
 
     bool include_isotopes;
     IsotopeCalculator *isotope;
