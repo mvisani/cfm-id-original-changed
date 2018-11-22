@@ -442,7 +442,6 @@ void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
 
 void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
 
-
     std::vector<double> all_masses;
     getEnumerationSpectraMasses(all_masses);
 

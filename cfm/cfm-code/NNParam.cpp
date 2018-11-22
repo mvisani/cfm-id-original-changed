@@ -446,7 +446,6 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<double> > &unwe
     std::vector<double>::iterator normit = unweighted_grads[num_trans_from_id].begin();
     unsigned int feature_len = fvs[0]->getTotalLength();
 
-
     //Collect the used feature idxs (we'll need these for the first layer normalization)
     std::set<unsigned int> tmp_used_idxs;
     std::vector<unsigned int> tmp_used_idxs_vect(feature_len);

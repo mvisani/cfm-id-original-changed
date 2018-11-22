@@ -109,7 +109,7 @@ public:
 
     void outputToMgfStream(std::ostream &out, std::string id, int ionization_mode, int energy, double mw) const;
 
-    void removePeaksWithNoFragment(std::vector<double> &frag_masses, double abs_tol, double ppm_tol);
+    int removePeaksWithNoFragment(std::vector<double> &frag_masses, double abs_tol, double ppm_tol);
 
     void quantisePeaksByMass(int num_dec_places);
 

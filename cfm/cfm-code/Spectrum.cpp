@@ -222,8 +222,8 @@ void Spectrum::sortAndNormalizeAnnotations() {
     }
 }
 
-void Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
-                                         double abs_tol, double ppm_tol) {
+int Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
+                                        double abs_tol, double ppm_tol) {
 
     int removed_cout = 0;
     // Remove any peaks more than mass_tol away from any fragment
@@ -247,5 +247,7 @@ void Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
     // std::cout << "Number of Removed Peaks " << removed_cout <<  std::endl;
     // Renormalise
     normalizeAndSort();
+
+    return removed_cout;
 }
 

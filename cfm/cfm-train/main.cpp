@@ -291,7 +291,7 @@ int main(int argc, char *argv[]) {
 
         if (mpi_rank == MASTER) {
             after = time(nullptr);
-            std::cout << "EM: Time Elaspsed = " << (after - before) << " Seconds";
+            std::cout << "EM: Time Elaspsed = " << (after - before) << " Seconds" << std::endl;
         }
 
         //Open the output MSP files
