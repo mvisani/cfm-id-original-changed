@@ -78,7 +78,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_graph_sampling_k = DEFAULT_GRAPH_SAMPLING_K;
     cfg.reset_sampling = false;
     cfg.reset_sampling_lr_ratio = 1.0;
-    cfg.ga_diff_sampling_peak_num = 10;
+    cfg.ga_diff_sampling_peak_num = 100;
     cfg.ga_diff_sampling_difference = 0.05;
     cfg.ga_dropout_delta = -0.05;
     cfg.ga_dropout_lowerbond = 0.01;

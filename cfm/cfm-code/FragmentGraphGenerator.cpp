@@ -180,8 +180,8 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
     node.generateBreaks(breaks, h_loss_allowed, num_rbreak_nrbonds);
 
-    bool ring_can_break = (remaining_ring_breaks > 0) && (remaining_depth > ring_break_depth_cap);
-    int num_fg_break_child = 0;
+    bool ring_can_break = (remaining_ring_breaks > 0);
+    int num_child_created = 0;
     //Iterate over the possible breaks
     for (auto it = breaks.begin(); it != breaks.end(); ++it) {
 
@@ -193,22 +193,24 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 
         CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
                          id, &(*it), num_rbreak_nrbonds, use_fg_graph, ring_break_depth_cap);
-        num_fg_break_child += node.children.size();
+        num_child_created += node.children.size();
         node.children = std::vector<FragmentTreeNode>();
     }
 
-    //Iterate over the possible breaks
-    if(num_fg_break_child == 0 || !use_fg_graph){
+    //Iterate over the possible none fg breaks
+    if(num_child_created == 0 || !use_fg_graph){
         for (auto it =  breaks.begin(); it != breaks.end(); ++it) {
-
-            if(!ring_can_break && it->isRingBreak())
-                continue;
 
             if (it->isFgBreak())
                 continue;
 
+            if(it->isRingBreak() && !ring_can_break)
+                continue;
+
             CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
                              id, &(*it), num_rbreak_nrbonds, use_fg_graph, ring_break_depth_cap);
+
+            num_child_created += node.children.size();
             node.children = std::vector<FragmentTreeNode>();
         }
     }

@@ -781,8 +781,8 @@ void MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, dou
         fg->getSampledTransitionIdsRandomWalk(selected_ids, ratio);
 }
 
-void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<double> &selected_weights,
-                                                 std::set<double> &all_weights) {
+void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights,
+                                                 std::set<unsigned int> &all_weights) {
     if (!hasEmptySpectrum(0) && hasComputedGraph())
         fg->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights, all_weights);
 }
@@ -800,7 +800,8 @@ double MolData::getWeightedJaccardScore(int engery_level){
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::getSelectedWeights(std::set<double> &selected_weights, std::set<double> &all_weights, int engery_level) {
+void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, std::set<unsigned int> &all_weights,
+                                 int engery_level) {
 
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
@@ -811,20 +812,19 @@ void MolData::getSelectedWeights(std::set<double> &selected_weights, std::set<do
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(std::log(peak_pair.first.intensity) - std::log(peak_pair.second.intensity));
         if(intensity_difference > cfg->ga_diff_sampling_difference){
-            difference.insert(std::pair<double,double>(intensity_difference, peak_pair.second.mass));
-            all_weights.insert(peak_pair.second.mass);
+            double weight_diff = peak_pair.second.mass;
+            unsigned int fixed_weight_diff = (unsigned int)std::round(weight_diff * TEN_K_DBL);
+            difference.insert(std::pair<double,double>(intensity_difference, fixed_weight_diff));
+            all_weights.insert(fixed_weight_diff);
             intensity_sum += intensity_difference;
         }
     }
     delete(cmp);
 
-    double select_intensity_sum = 0.0;
-
     for(const auto & diff:  difference){
         if(selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
             break;
         selected_weights.insert(diff.second);
-        select_intensity_sum += diff.first;
     }
 }
 
