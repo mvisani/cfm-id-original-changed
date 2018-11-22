@@ -498,7 +498,7 @@ void FragmentGraph::removeDetours() {
 void
 FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio) {
 
-    int limited = (int)std::ceil((double)transitions.size() * ratio);
+    int limited = (int)std::ceil((double)transitions.size() * ratio + 10);
     std::vector<std::uniform_int_distribution<int>> uniform_int_distributions;
 
     // add to discrete_distributions
@@ -509,23 +509,29 @@ FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, do
     while (selected_ids.size() < limited) {
         // init queue and add root
         std::queue<int> fgs;
-
+        std::set<int> visited_fgs;
         fgs.push(0);
+
         while (!fgs.empty()) {
             // get current id
             int frag_id = fgs.front();
+            visited_fgs.insert(frag_id);
             fgs.pop();
 
             // if there is somewhere to go
             if (!from_id_tmap[frag_id].empty()) {
                 // add a uct style random select
-                ;
                 int selected_idx = uniform_int_distributions[frag_id](util_rng);
                 if (selected_idx < from_id_tmap[frag_id].size()) {
                     // go to child
                     int selected_trans_id = from_id_tmap[frag_id][selected_idx];
-                    fgs.push(transitions[selected_trans_id]->getToId());
-                    selected_ids.insert(selected_trans_id);
+                    int next_fg_id = transitions[selected_trans_id]->getToId();
+                    //make sure we are not visit the same place twice
+                    //without this check this may ends in endless loop
+                    if(visited_fgs.count(next_fg_id) == 0){
+                        fgs.push(next_fg_id);
+                        selected_ids.insert(selected_trans_id);
+                    }
                 }
             }
         }
@@ -571,9 +577,8 @@ void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &sel
     while (num_iter <= max_num_iter) {
         // init queue and add root
         std::queue<int> fgs;
-        // a coin , one out 3 chance we just go explore
-
         fgs.push(0);
+
         while (!fgs.empty()) {
 
             // get current id
