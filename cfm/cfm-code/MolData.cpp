@@ -810,7 +810,9 @@ void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, std::
     double intensity_sum = 0.0;
     std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
-        double intensity_difference = std::fabs(std::log(peak_pair.first.intensity) - std::log(peak_pair.second.intensity));
+        double intensity_difference = std::log(peak_pair.second.intensity) - std::log(peak_pair.first.intensity) ;
+        if(intensity_difference < 0)
+            intensity_difference = intensity_difference * -2.0;
         if(intensity_difference > cfg->ga_diff_sampling_difference){
             double weight_diff = peak_pair.second.mass;
             unsigned int fixed_weight_diff = (unsigned int)std::round(weight_diff * TEN_K_DBL);
