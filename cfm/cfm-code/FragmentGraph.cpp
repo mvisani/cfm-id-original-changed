@@ -49,11 +49,15 @@ Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, cons
     to_id = a_to_id;
     from_id = a_from_id;
     nl_smiles = RDKit::MolToSmiles(*(nl.mol.get()));
+    ion_smiles = RDKit::MolToSmiles(*(ion.mol.get()));
+
 }
 
 Transition::Transition(int a_from_id, int a_to_id, const RootedROMolPtr &a_nl, const RootedROMolPtr &an_ion) :
         to_id(a_to_id), from_id(a_from_id), nl(a_nl), ion(an_ion) {
     nl_smiles = RDKit::MolToSmiles(*(nl.mol.get()));
+    ion_smiles = RDKit::MolToSmiles(*(ion.mol.get()));
+
 }
 
 //Add a fragment node to the graph (should be the only way to modify the graph)
@@ -125,6 +129,9 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         try {
             fv = fc->computeFeatureVector(t->getIon(), t->getNeutralLoss(), node.depth, frag_ptr);
             t->setFeatureVector(fv);
+            /*std::cout << *(t->getIonSmiles()) << " " << *(t->getNLSmiles()) << " ";
+            t->getFeatureVector()->writeDebugInfo(std::cout);
+            std::cout << std::endl;*/
         }
         catch (FeatureCalculationException & e) {
             //If we couldn't compute the feature vector, set a dummy feature vector with bias only.
@@ -318,7 +325,9 @@ void FragmentGraph::writeFullGraph(std::ostream &out) const {
     for(const auto & transition : transitions){
         out << transition->getFromId() << " ";
         out << transition->getToId() << " ";
-        out << *(transition->getNLSmiles()) << std::endl;
+        out << *(transition->getNLSmiles()) << " ";
+        out << *(transition->getIonSmiles()) << " ";
+        out << std::endl;
     }
 }
 
@@ -707,9 +716,6 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<unsigned int> &selected_we
 
         for (const auto &trans_id : matched_ids)
             selected_ids.insert(trans_id);
-
-        //for (const auto &trans_id : matched_selected_ids)
-        //    selected_ids.insert(trans_id);
     }
 }
 

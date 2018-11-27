@@ -45,11 +45,9 @@ void FeatureVector::addFeatures(const std::vector<int> &values) {
 }
 
 // print debug info
-void FeatureVector::printDebugInfo() const {
-    std::cout << "fv_idx : " << fv_idx << std::endl;
-    std::cout << "fv_vector_size: " << fv.size() << std::endl;
-    for (int i = 0; i < fv.size(); i++) {
-        std::cout << fv[i] << " ";
-    }
-    std::cout << std::endl;
+void FeatureVector::writeDebugInfo(std::ostream &out) const {
+    //out<< "fv_vector_size: " << fv.size() << std::endl;
+    out << "fv_idx : " << fv_idx << " fv none zero idx: ";
+    for (int i = 0; i < fv.size(); i++)
+        out << fv[i] << " ";
 }

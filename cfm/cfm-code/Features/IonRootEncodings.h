@@ -34,7 +34,7 @@ public:
 class IonRootEncodingN10 : public FingerPrintFeature {
 public:
     IonRootEncodingN10() {
-        size = 512;
+        size = 1024;
         name = "IonRootEncodingN10";
     };
 

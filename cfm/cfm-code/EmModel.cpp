@@ -86,8 +86,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     double learning_rate = cfg->starting_step_size;
     int sampling_method = cfg->ga_sampling_method;
     int em_no_progress_count = 0;
-    bool switch_to_weighted_jaccard = false;
-
 
     auto mol_it = molDataSet.begin();
     for (int molidx = 0; mol_it != molDataSet.end(); ++mol_it, molidx++) {

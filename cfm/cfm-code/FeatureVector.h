@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 
 // Structure to hold a sparse computed feature vector
 typedef unsigned int feature_t;
@@ -47,7 +48,7 @@ public:
 
     unsigned int getNumSetFeatures() const { return fv.size(); };
 
-    void printDebugInfo() const;
+    void writeDebugInfo(std::ostream &out) const;
 
 private:
     std::vector<feature_t> fv;

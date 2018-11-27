@@ -35,7 +35,7 @@ public:
 class NLRootEncodingN10 : public FingerPrintFeature {
 public:
     NLRootEncodingN10() {
-        size = 512;
+        size = 1024;
         name = "NLRootEncodingN10";
     };
 

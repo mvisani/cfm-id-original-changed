@@ -114,6 +114,9 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new GraphDepthFeature());
         cogs.push_back(new NLFingerPrintFeature());
         cogs.push_back(new IonFingerPrintFeature());
+        cogs.push_back(new NLRootEncodingMorganD3());
+        cogs.push_back(new IonRootEncodingMorganD3());
+
         initialised = true;
     }
     return cogs;

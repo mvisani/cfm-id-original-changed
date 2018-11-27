@@ -38,7 +38,7 @@ void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
     unsigned int min_path = 1;
     unsigned int max_path = 3;
     unsigned int atom_count = 10;
-    unsigned finger_print_size = 512;
+    unsigned finger_print_size = 1024;
 
     addRDKitFingerPrintFeatures(fv, nl, finger_print_size, atom_count, false, min_path, max_path);
 }

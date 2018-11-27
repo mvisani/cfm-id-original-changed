@@ -56,8 +56,7 @@ protected:
 private:
 
     void getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit::Atom *root,
-                              std::vector<unsigned int> &visit_order, int num_atoms,
-                              std::map<int, int> &path_record) const;
+                                  std::vector<unsigned int> &visit_order, int num_atoms) const;
 
     std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
                                 const RDKit::Atom *parent_atom, int depth) const;
@@ -78,7 +77,4 @@ private:
                                          const RDKit::Atom *root, unsigned int num_atom,
                                          bool include_con_matrix) const;
 
-    void addFingerPrintsToFeatureVector(FeatureVector &fv,
-                                        std::vector<int> &root_tmp_fv,
-                                        std::vector<int> &other_root_tmp_fv) const;
 };

@@ -143,6 +143,7 @@ public:
     void setToId(const int id) { to_id = id; };
 
     const std::string *getNLSmiles() const { return &nl_smiles; };
+    const std::string *getIonSmiles() const { return  &ion_smiles; };
 
     const RootedROMolPtr *getNeutralLoss() const { return &nl; };
 
@@ -172,6 +173,8 @@ private:
     int from_id;
     int to_id;
     std::string nl_smiles;
+    std::string ion_smiles;
+
     RootedROMolPtr nl;
     RootedROMolPtr ion; // We store the ion on the transition to
     // allow for different roots - the fragment stores

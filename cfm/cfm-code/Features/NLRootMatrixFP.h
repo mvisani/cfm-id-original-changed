@@ -18,13 +18,13 @@ param.cpp.
 #pragma once
 #include "FingerPrintFeature.h"
 
-//feature_size = num_atom * 11 + 5 * (num_atom) +   num_atom * (num_atom - 1) / 2 * 5;
+// feature_size = num_atom * 11  +   num_atom * (num_atom - 1) / 2 * 6;
 // Features use fingerprint encode NL fragmentation
 
 class NLRootMatrixFPN6 : public FingerPrintFeature {
 public:
     NLRootMatrixFPN6() {
-        size = 141;
+        size = 156;
         name = "NLRootMatrixFPN6";
     };
 
@@ -34,7 +34,7 @@ public:
 class NLRootMatrixFPN8 : public FingerPrintFeature {
 public:
     NLRootMatrixFPN8() {
-        size = 228;
+        size = 256;
         name = "NLRootMatrixFPN8";
     };
 
@@ -45,7 +45,7 @@ public:
 class NLRootMatrixFPN10 : public FingerPrintFeature {
 public:
     NLRootMatrixFPN10() {
-        size = 335;
+        size = 380;
         name = "NLRootMatrixFPN10";
     };
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
@@ -54,7 +54,7 @@ public:
 class NLRootMatrixFPN16 : public FingerPrintFeature {
 public:
     NLRootMatrixFPN16() {
-        size = 776;
+        size = 896;
         name = "NLRootMatrixFPN16";
     };
 

@@ -276,24 +276,18 @@ std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol,
 
 // Method to get atom visited order via BFS
 void FingerPrintFeature::getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit::Atom *root,
-                                              std::vector<unsigned int> &visit_order, int num_atoms,
-                                              std::map<int, int> &path_record) const {
+                                              std::vector<unsigned int> &visit_order, int num_atoms) const {
 
     // maybe a struct is a better idea
     // but this is a one off
     std::queue<const RDKit::Atom *> atom_queue;
-    std::queue<int> distance_queue;
     atom_queue.push(root);
-    distance_queue.push(0);
-    path_record[0] = 1;
 
     std::unordered_set<unsigned int> visited;
 
-    while (!atom_queue.empty() && !distance_queue.empty()) {
+    while (!atom_queue.empty()) {
         const RDKit::Atom *curr = atom_queue.front();
-        int curr_distance = distance_queue.front();
         atom_queue.pop();
-        distance_queue.pop();
 
         // if I have see this before
         if (std::find(visit_order.begin(), visit_order.end(), curr->getIdx()) !=
@@ -303,20 +297,14 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit
 
         if (visit_order.size() < num_atoms) {
             visit_order.push_back(curr->getIdx());
+        } else{
+            break;
         }
 
-        // check if we need add more atom into queue
-        if ((visit_order.size() + atom_queue.size()) < num_atoms) {
-            // update path distance
-            // if we are moving forward
-            // reduce count for current length
-            path_record[curr_distance] -= 1;
+        // use multimap since we can have duplicated labels
+        std::multimap<std::string, const RDKit::Atom *> child_visit_order;
 
-            // use multimap since we can have duplicated labels
-            std::multimap<std::string, const RDKit::Atom *> child_visit_order;
-
-            for (auto itp = mol->getAtomNeighbors(curr); itp.first != itp.second;
-                 ++itp.first) {
+        for (auto itp = mol->getAtomNeighbors(curr); itp.first != itp.second; ++itp.first) {
                 RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
                 // if we have not visit this node before
                 // and this node is in the visit list
@@ -326,16 +314,10 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit
                     child_visit_order.insert(
                             std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
                 }
-            }
-
-            for (auto child : child_visit_order) {
-                atom_queue.push(child.second);
-                distance_queue.push(curr_distance + 1);
-                path_record[curr_distance + 1] += 1;
-                if ((visit_order.size() + atom_queue.size()) >= num_atoms)
-                    break;
-            }
         }
+
+        for (auto child : child_visit_order)
+            atom_queue.push(child.second);
     }
 }
 
@@ -348,11 +330,16 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
     std::map<int, int> path_record;
     for (int i = 1; i <= num_atom; ++i)
         path_record[i] = 0;
-    getAtomVisitOrderBFS(mol->mol, root, visit_order, num_atom, path_record);
+    getAtomVisitOrderBFS(mol->mol, root, visit_order, num_atom);
 
+    /*for(int i =0 ; i < visit_order.size() ; ++ i)
+        std::cout << visit_order[i] << " ";
+    std::cout << std::endl;*/
+
+    // make sure we only get num_atom amount of atoms, this is extra check,
+    // first check is done in the getAtomVisitOrderBFS
     std::map<unsigned int, int> visit_order_map;
 
-    // make sure we only get num_atom amount of atoms, this is extra check, first check is done in the getAtomVisitOrderBFS
     for (int i = 0; i < visit_order.size() && i < num_atom; ++i) {
         visit_order_map[visit_order[i]] = i;
     }
@@ -378,35 +365,46 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
         }
     }
 
-    unsigned int fv_idx = 0;
     if (include_adjacency_matrix) {
         // first bit indicate if there is a bond
-        // rest 5 for each bond_type, one hot encoding
-        const unsigned int num_bits_per_bond = 5;
+        // rest 7 for each bond_type, one hot encoding
+        // 0, 1, ,2, 3, aromtaic as 4, Conjugated as 5
+        const unsigned int num_bits_per_bond = 6;
+        const unsigned int bond_type_max = num_bits_per_bond - 1;
+
         // we only need half of matrix exclude diagonal
         // so i start from 1 not 0
         for (int i = 0; i < num_atom; ++i) {
             for (int j = i + 1; j < num_atom; ++j) {
                 std::vector<int> temp_feature(num_bits_per_bond, 0);
                 // check if bond exits/defined
-                //std::cout << adjacency_matrix[i][j];
                 if (adjacency_matrix[i][j] > 0) {
                     // one hot encoding bond type
-                    int bond_type = adjacency_matrix[i][j] > 5 ? 5 : adjacency_matrix[i][j];
+                    int bond_type = adjacency_matrix[i][j] > bond_type_max ? bond_type_max : adjacency_matrix[i][j];
                     temp_feature[bond_type] = 1;
                 }
                 tmp_fv.insert(tmp_fv.end(),temp_feature.begin(),temp_feature.end());
             }
-            //std::cout << std::endl;
         }
+
+        /*for (int i = 0; i < num_atom; ++i) {
+
+            for(int j = 0; j < i + 1 ; ++j)
+                std::cout << 0;
+
+            for (int j = i + 1; j < num_atom; ++j) {
+                std::cout << adjacency_matrix[i][j];
+            }
+            std::cout << std::endl;
+        }*/
     }
 
-    // fv.printDebugInfo();
+    // fv.writeDebugInfo();
     // add atoms information into FP
     // TODO FIX THOSE MAGIC NUMBERS
     const unsigned int num_max_degree = 4;
     const unsigned int num_atom_types = 6;
-    const unsigned int num_degree_feature_size = 5;
+    const unsigned int num_degree_feature_size = num_max_degree + 1;
     for (int i = 0; i < num_atom; ++i) {
         std::vector<int> atom_type_feature(num_atom_types, 0);
         std::vector<int> atom_degree_feature(num_degree_feature_size, 0);
@@ -428,17 +426,6 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
         tmp_fv.insert(tmp_fv.end(),atom_type_feature.begin(),atom_type_feature.end());
         tmp_fv.insert(tmp_fv.end(),atom_degree_feature.begin(),atom_degree_feature.end());
     }
-
-    /*const unsigned int size_path_fv = 5;
-    for (int i = 0; i < num_atom; ++i) {
-        std::vector<int> tmp_path_fv(size_path_fv, 0);
-        // on hot encoding
-        if(visit_order_map.size() > i) {
-            int idx = path_record[i] > (size_path_fv - 1) ? (size_path_fv - 1) : path_record[i];
-            tmp_path_fv[idx] = 1;
-        }
-        tmp_fv.insert(tmp_fv.end(),tmp_path_fv.begin(),tmp_path_fv.end());
-    }*/
 }
 
 // for all the samples we have max atoms with a 3 atom group is 10
@@ -450,32 +437,4 @@ void FingerPrintFeature::addAdjacentMatrixRepresentationFeature(FeatureVector &f
     std::vector<int> local_tmp_fv;
     addAdjacentMatrixRepresentation(local_tmp_fv, mol, mol->root, num_atom, include_adjacency_matrix);
     fv.addFeatures(local_tmp_fv);
-}
-
-void FingerPrintFeature::addFingerPrintsToFeatureVector(FeatureVector &fv,
-                                                        std::vector<int> &local_tmp_fv,
-                                                        std::vector<int> &other_local_tmp_fv) const{
-    // figure out which one we should put in front
-    bool need_rearrange = false;
-    int feature_size = local_tmp_fv.size();
-    if(other_local_tmp_fv.empty())
-        other_local_tmp_fv.resize(feature_size);
-
-    for(int idx = 0;  idx < feature_size ; ++idx){
-        if (local_tmp_fv[idx] < other_local_tmp_fv[idx]) {
-            need_rearrange = true;
-            break;
-        }
-        else if(local_tmp_fv[idx] > other_local_tmp_fv[idx])
-            break;
-    }
-
-    if(need_rearrange){
-        fv.addFeatures(other_local_tmp_fv);
-        fv.addFeatures(local_tmp_fv);
-    }
-    else{
-        fv.addFeatures(local_tmp_fv);
-        fv.addFeatures(other_local_tmp_fv);
-    }
 }
