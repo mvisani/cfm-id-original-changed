@@ -84,7 +84,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_dropout_lowerbond = 0.01;
     cfg.num_rbreak_nrbonds = 100000;
     cfg.disable_cross_val_computation = false;
-    cfg.use_fg_graph = true;
+    cfg.use_fg_graph = false;
     cfg.ring_break_depth_cap = 1;
 }
 
