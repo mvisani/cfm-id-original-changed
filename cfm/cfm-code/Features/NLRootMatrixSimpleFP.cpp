@@ -17,11 +17,26 @@ param.cpp.
 #########################################################################*/
 #include "NLRootMatrixSimpleFP.h"
 
-void NLRootMatrixSimpleFP::compute(FeatureVector &fv, const RootedROMolPtr *ion,
+void NLRootMatrixSimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                    const RootedROMolPtr *nl, const int depth) const {
-
     unsigned int num_atoms = 10;
     bool include_adjacency_matrix = false;
 
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, include_adjacency_matrix);
+}
+
+void NLRootMatrixSimpleFPN16::compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                                      const RootedROMolPtr *nl, const int depth) const {
+
+    bool include_adjacency_matrix = false;
+    unsigned int num_atoms = 16;
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, include_adjacency_matrix);
+}
+
+void NLRootMatrixSimpleFPN32::compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                                      const RootedROMolPtr *nl, const int depth) const {
+
+    bool include_adjacency_matrix = false;
+    unsigned int num_atoms = 32;
     addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, include_adjacency_matrix);
 }

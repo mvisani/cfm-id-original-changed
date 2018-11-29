@@ -109,8 +109,12 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new NLRootMatrixFPN10());
         cogs.push_back(new IonRootMatrixFPN16());
         cogs.push_back(new NLRootMatrixFPN16());
-        cogs.push_back(new IonRootMatrixSimpleFP());
-        cogs.push_back(new NLRootMatrixSimpleFP());
+        cogs.push_back(new IonRootMatrixSimpleFPN10());
+        cogs.push_back(new NLRootMatrixSimpleFPN10());
+        cogs.push_back(new IonRootMatrixSimpleFPN16());
+        cogs.push_back(new NLRootMatrixSimpleFPN16());
+        cogs.push_back(new IonRootMatrixSimpleFPN32());
+        cogs.push_back(new NLRootMatrixSimpleFPN32());
         cogs.push_back(new GraphDepthFeature());
         cogs.push_back(new NLFingerPrintFeature());
         cogs.push_back(new IonFingerPrintFeature());

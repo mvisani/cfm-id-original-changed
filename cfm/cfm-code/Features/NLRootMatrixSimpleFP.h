@@ -16,13 +16,34 @@ param.cpp.
 # of the cfm source tree.
 #########################################################################*/
 #include "FingerPrintFeature.h"
+#pragma once
 
 // Features use fingerprint encode NL fragmentation
-class NLRootMatrixSimpleFP : public FingerPrintFeature {
+class NLRootMatrixSimpleFPN10 : public FingerPrintFeature {
 public:
-    NLRootMatrixSimpleFP() {
+    NLRootMatrixSimpleFPN10() {
         size = 110;
-        name = "NLRootMatrixSimpleFP";
+        name = "NLRootMatrixSimpleFPN10";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, const int depth) const override;
+};
+
+class NLRootMatrixSimpleFPN16 : public FingerPrintFeature {
+public:
+    NLRootMatrixSimpleFPN16() {
+        size = 176;
+        name = "NLRootMatrixSimpleFPN16";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, const int depth) const override;
+};
+
+class NLRootMatrixSimpleFPN32 : public FingerPrintFeature {
+public:
+    NLRootMatrixSimpleFPN32() {
+        size = 352;
+        name = "NLRootMatrixSimpleFPN16";
     };
 
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, const int depth) const override;
