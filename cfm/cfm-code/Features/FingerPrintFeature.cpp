@@ -167,9 +167,11 @@ void FingerPrintFeature::addRDKitFingerPrint(std::vector<int> &tmp_fv, const Roo
     delete finger_print;
 }
 
-void FingerPrintFeature::addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol, unsigned int finger_print_size,
+void FingerPrintFeature::addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                     unsigned int finger_print_size,
                                                      unsigned int limitation_param, bool limited_by_distance,
-                                                     unsigned int finger_print_min_path, unsigned int finger_print_max_path) const {
+                                                     unsigned int finger_print_min_path,
+                                                     unsigned int finger_print_max_path) const {
 
     std::vector<int> local_tmp_fv;
     addRDKitFingerPrint(local_tmp_fv, mol, mol->root, finger_print_size, limitation_param, finger_print_min_path,
@@ -205,7 +207,8 @@ void FingerPrintFeature::addMorganFingerPrint(
     delete finger_print;
 }
 
-void FingerPrintFeature::addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol, unsigned int finger_print_size,
+void FingerPrintFeature::addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                      unsigned int finger_print_size,
                                                       unsigned int path_range, int radius) const {
 
     std::vector<int> local_tmp_fv;
@@ -217,7 +220,8 @@ void FingerPrintFeature::addMorganFingerPrintFeatures(FeatureVector &fv, const R
 
 
 void FingerPrintFeature::addMorganFingerPrintFeatures(FeatureVector &fv,
-        const RootedROMolPtr *mol, unsigned int finger_print_size, int radius) const {
+                                                      const RootedROMolPtr *mol, unsigned int finger_print_size,
+                                                      int radius) const {
 
     std::vector<int> local_tmp_fv;
 
@@ -297,7 +301,7 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit
 
         if (visit_order.size() < num_atoms) {
             visit_order.push_back(curr->getIdx());
-        } else{
+        } else {
             break;
         }
 
@@ -305,15 +309,15 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit
         std::multimap<std::string, const RDKit::Atom *> child_visit_order;
 
         for (auto itp = mol->getAtomNeighbors(curr); itp.first != itp.second; ++itp.first) {
-                RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
-                // if we have not visit this node before
-                // and this node is in the visit list
-                if (nbr_atom != curr) {
-                    std::string sorting_key = getSortingLabel(mol, nbr_atom, curr);
-                    // std::string sorting_key = sortig_labels.at(nbr_atom->getIdx());
-                    child_visit_order.insert(
-                            std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
-                }
+            RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
+            // if we have not visit this node before
+            // and this node is in the visit list
+            if (nbr_atom != curr) {
+                std::string sorting_key = getSortingLabel(mol, nbr_atom, curr);
+                // std::string sorting_key = sortig_labels.at(nbr_atom->getIdx());
+                child_visit_order.insert(
+                        std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
+            }
         }
 
         for (auto child : child_visit_order)
@@ -327,26 +331,42 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
 
     // Get visit order
     std::vector<unsigned int> visit_order;
-    std::map<int, int> path_record;
-    for (int i = 1; i <= num_atom; ++i)
-        path_record[i] = 0;
     getAtomVisitOrderBFS(mol->mol, root, visit_order, num_atom);
 
-    /*for(int i =0 ; i < visit_order.size() ; ++ i)
-        std::cout << visit_order[i] << " ";
-    std::cout << std::endl;*/
+    if (include_adjacency_matrix)
+        addAdjMatrixFeatures(tmp_fv, mol, num_atom, visit_order);
+
+    // fv.writeDebugInfo();
+    // add atoms information into FP
+    addAtomTypeSeqFeatures(tmp_fv, mol, num_atom, visit_order);
+    addDegreeFeatures(tmp_fv, mol, num_atom, visit_order);
+}
+
+void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
+                                                         const RDKit::Atom *root, unsigned int num_atom) const {
+    // Get visit order
+    std::vector<unsigned int> visit_order;
+    getAtomVisitOrderBFS(mol->mol, root, visit_order, num_atom);
+
+    // fv.writeDebugInfo();
+    // add atoms information into FP
+    addAtomTypeFeatures(tmp_fv, mol, num_atom, visit_order);
+    addDegreeFeatures(tmp_fv, mol, num_atom, visit_order);
+}
+
+void
+FingerPrintFeature::addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
+                                         std::vector<unsigned int> &visit_order) const {// init a 2D vector to store matrix
+    std::vector<std::vector<int>> adjacency_matrix(num_atom,
+                                                   std::vector<int>(num_atom, 0));
 
     // make sure we only get num_atom amount of atoms, this is extra check,
     // first check is done in the getAtomVisitOrderBFS
     std::map<unsigned int, int> visit_order_map;
 
-    for (int i = 0; i < visit_order.size() && i < num_atom; ++i) {
+    for (int i = 0; i < visit_order.size() && i < num_atom; ++i)
         visit_order_map[visit_order[i]] = i;
-    }
 
-    // init a 2D vector to store matrix
-    std::vector<std::vector<int>> adjacency_matrix(num_atom,
-                                                   std::vector<int>(num_atom, 0));
 
     // add bound type
     for (auto bi = mol->mol->beginBonds(); bi != mol->mol->endBonds(); ++bi) {
@@ -365,76 +385,106 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
         }
     }
 
-    if (include_adjacency_matrix) {
-        // first bit indicate if there is a bond
-        // rest 7 for each bond_type, one hot encoding
-        // 0, 1, ,2, 3, aromtaic as 4, Conjugated as 5
-        const unsigned int num_bits_per_bond = 6;
-        const unsigned int bond_type_max = num_bits_per_bond - 1;
+    // first bit indicate if there is a bond
+    // rest 7 for each bond_type, one hot encoding
+    // 0, 1, ,2, 3, aromtaic as 4, Conjugated as 5
+    const unsigned int num_bits_per_bond = 6;
+    const unsigned int bond_type_max = num_bits_per_bond - 1;
 
-        // we only need half of matrix exclude diagonal
-        // so i start from 1 not 0
-        for (int i = 0; i < num_atom; ++i) {
-            for (int j = i + 1; j < num_atom; ++j) {
-                std::vector<int> temp_feature(num_bits_per_bond, 0);
-                // check if bond exits/defined
-                if (adjacency_matrix[i][j] > 0) {
-                    // one hot encoding bond type
-                    int bond_type = adjacency_matrix[i][j] > bond_type_max ? bond_type_max : adjacency_matrix[i][j];
-                    temp_feature[bond_type] = 1;
-                }
-                tmp_fv.insert(tmp_fv.end(),temp_feature.begin(),temp_feature.end());
+    // we only need half of matrix exclude diagonal
+    // so i start from 1 not 0
+    for (int i = 0; i < num_atom; ++i) {
+        for (int j = i + 1; j < num_atom; ++j) {
+            std::vector<int> temp_feature(num_bits_per_bond, 0);
+            // check if bond exits/defined
+            if (adjacency_matrix[i][j] > 0) {
+                // one hot encoding bond type
+                int bond_type = adjacency_matrix[i][j] > bond_type_max ? bond_type_max : adjacency_matrix[i][j];
+                temp_feature[bond_type] = 1;
             }
+            tmp_fv.insert(tmp_fv.end(), temp_feature.begin(), temp_feature.end());
         }
-
-        /*for (int i = 0; i < num_atom; ++i) {
-
-            for(int j = 0; j < i + 1 ; ++j)
-                std::cout << 0;
-
-            for (int j = i + 1; j < num_atom; ++j) {
-                std::cout << adjacency_matrix[i][j];
-            }
-            std::cout << std::endl;
-        }*/
     }
 
-    // fv.writeDebugInfo();
-    // add atoms information into FP
-    // TODO FIX THOSE MAGIC NUMBERS
-    const unsigned int num_max_degree = 4;
+    /*for (int i = 0; i < num_atom; ++i) {
+        for(int j = 0; j < i + 1 ; ++j)
+            std::cout << 0;
+        for (int j = i + 1; j < num_atom; ++j)
+            std::cout << adjacency_matrix[i][j];
+        std::cout << std::endl;
+    }*/
+}
+
+void FingerPrintFeature::addAtomTypeSeqFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
+                                                unsigned int num_atom,
+                                                const std::vector<unsigned int> &visit_order) const {
     const unsigned int num_atom_types = 6;
-    const unsigned int num_degree_feature_size = num_max_degree + 1;
     for (int i = 0; i < num_atom; ++i) {
         std::vector<int> atom_type_feature(num_atom_types, 0);
-        std::vector<int> atom_degree_feature(num_degree_feature_size, 0);
-
         if (i < visit_order.size()) {
             int atom_idx = visit_order[i];
-
             // add atom types
             std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
             replaceUncommonWithX(symbol);
             int atom_feature = getSymbolsLessIndex(symbol);
             atom_type_feature[atom_feature] = 1;
+        }
+        tmp_fv.insert(tmp_fv.end(), atom_type_feature.begin(), atom_type_feature.end());
+    }
+}
 
+void FingerPrintFeature::addAtomTypeFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
+                                                unsigned int num_atom,
+                                                const std::vector<unsigned int> &visit_order) const {
+    const unsigned int num_atom_types = 6;
+    std::vector<int> atom_type_feature(num_atom_types, 0);
+    for (int i = 0; i < num_atom; ++i) {
+        if (i < visit_order.size()) {
+            int atom_idx = visit_order[i];
+            // add atom types
+            std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
+            replaceUncommonWithX(symbol);
+            int atom_feature = getSymbolsLessIndex(symbol);
+            atom_type_feature[atom_feature] = 1;
+        }
+    }
+    tmp_fv.insert(tmp_fv.end(), atom_type_feature.begin(), atom_type_feature.end());
+}
+
+void FingerPrintFeature::addDegreeFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
+                                           const std::vector<unsigned int> &visit_order) const {
+    const unsigned int num_max_degree = 4;
+    const unsigned int num_degree_feature_size = num_max_degree + 1;
+    for (int i = 0; i < num_atom; ++i) {
+        std::vector<int> atom_degree_feature(num_degree_feature_size, 0);
+
+        if (i < visit_order.size()) {
+            int atom_idx = visit_order[i];
             // add first order degree info
             int degree = mol->mol->getAtomWithIdx(atom_idx)->getDegree();
             degree = degree > num_max_degree ? num_max_degree : degree;
             atom_degree_feature[degree] = 1;
         }
-        tmp_fv.insert(tmp_fv.end(),atom_type_feature.begin(),atom_type_feature.end());
-        tmp_fv.insert(tmp_fv.end(),atom_degree_feature.begin(),atom_degree_feature.end());
+        tmp_fv.insert(tmp_fv.end(), atom_degree_feature.begin(), atom_degree_feature.end());
     }
 }
 
 // for all the samples we have max atoms with a 3 atom group is 10
 // for all the samples we have max atoms with a 5 atom group is 16
 // therefore  we need 50 features for arcs
-void FingerPrintFeature::addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol, unsigned int num_atom,
+void FingerPrintFeature::addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                                unsigned int num_atom,
                                                                 bool include_adjacency_matrix) const {
 
     std::vector<int> local_tmp_fv;
     addAdjacentMatrixRepresentation(local_tmp_fv, mol, mol->root, num_atom, include_adjacency_matrix);
+    fv.addFeatures(local_tmp_fv);
+}
+
+void FingerPrintFeature::addGenernalizedRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                                unsigned int num_atom) const {
+
+    std::vector<int> local_tmp_fv;
+    addGenernalizedRepresentation(local_tmp_fv, mol, mol->root, num_atom);
     fv.addFeatures(local_tmp_fv);
 }

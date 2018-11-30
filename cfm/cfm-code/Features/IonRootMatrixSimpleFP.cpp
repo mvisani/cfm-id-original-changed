@@ -17,6 +17,15 @@ param.cpp.
 #########################################################################*/
 #include "IonRootMatrixSimpleFP.h"
 
+
+void IonRootMatrixVerySimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                                       const RootedROMolPtr *nl, int depth) const {
+
+    unsigned int num_atoms = 10;
+    addGenernalizedRepresentationFeature(fv, ion, num_atoms);
+}
+
+
 void IonRootMatrixSimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                     const RootedROMolPtr *nl, int depth) const {
 

@@ -14,8 +14,14 @@ param.cpp.
 # The contents are covered by the terms of the GNU Lesser General Public
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
-#########################################################################*/
+#################################################################y########*/
 #include "NLRootMatrixSimpleFP.h"
+
+void NLRootMatrixVerySimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
+                                      const RootedROMolPtr *nl, const int depth) const {
+    unsigned int num_atoms = 10;
+    addGenernalizedRepresentationFeature(fv, nl, num_atoms);
+}
 
 void NLRootMatrixSimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                    const RootedROMolPtr *nl, const int depth) const {

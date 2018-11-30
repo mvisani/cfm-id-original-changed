@@ -53,6 +53,8 @@ protected:
     void addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
                                       unsigned int finger_print_size, int radius) const;
 
+    void addGenernalizedRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol, unsigned int num_atom) const;
+
 private:
 
     void getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit::Atom *root,
@@ -76,5 +78,21 @@ private:
     void addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
                                          const RDKit::Atom *root, unsigned int num_atom,
                                          bool include_con_matrix) const;
+
+    void addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
+                                        const RDKit::Atom *root, unsigned int num_atom) const;
+
+    void addDegreeFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
+                           const std::vector<unsigned int> &visit_order) const;
+
+    void addAtomTypeSeqFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
+                                const std::vector<unsigned int> &visit_order) const;
+
+    void addAtomTypeFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
+                                                 const std::vector<unsigned int> &visit_order) const;
+
+    void addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
+                              std::vector<unsigned int> &visit_order) const;
+
 
 };

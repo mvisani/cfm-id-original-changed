@@ -19,6 +19,16 @@ param.cpp.
 #pragma once
 
 // Features use fingerprint encode NL fragmentation
+class NLRootMatrixVerySimpleFPN10 : public FingerPrintFeature {
+public:
+    NLRootMatrixVerySimpleFPN10() {
+        size = 56;
+        name = "NLRootMatrixVerySimpleFPN10";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+};
+
 class NLRootMatrixSimpleFPN10 : public FingerPrintFeature {
 public:
     NLRootMatrixSimpleFPN10() {
