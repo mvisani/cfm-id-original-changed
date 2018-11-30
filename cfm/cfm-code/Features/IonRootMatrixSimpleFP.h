@@ -44,7 +44,7 @@ class IonRootMatrixSimpleFPN32 : public FingerPrintFeature {
 public:
     IonRootMatrixSimpleFPN32() {
         size = 352;
-        name = "IonRootMatrixSimpleFPN16";
+        name = "IonRootMatrixSimpleFPN32";
     };
 
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;

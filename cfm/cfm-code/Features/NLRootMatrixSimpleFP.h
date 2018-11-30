@@ -43,7 +43,7 @@ class NLRootMatrixSimpleFPN32 : public FingerPrintFeature {
 public:
     NLRootMatrixSimpleFPN32() {
         size = 352;
-        name = "NLRootMatrixSimpleFPN16";
+        name = "NLRootMatrixSimpleFPN32";
     };
 
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, const int depth) const override;
