@@ -240,7 +240,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 qdif_str += "\nLoss_Ratio= " + std::to_string(loss_ratio) + " Prev_Loss=" + std::to_string(prev_loss);
 
             if (best_loss != -DBL_MAX)
-                qdif_str += "\n Best_Loss=" + std::to_string(best_loss);
+                qdif_str += " Best_Loss=" + std::to_string(best_loss);
 
             if (!cfg->disable_cross_val_computation) {
                 qdif_str += "\nValidation_Loss=" + std::to_string(val_q)
@@ -298,19 +298,9 @@ EmModel::updateTraningParams(double loss, double prev_loss, double loss_ratio, d
                              int &sampling_method,
                              int &count_no_progress) const {
     if (loss_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
-
-        /*if (learning_rate > cfg->starting_step_size) {
+        if (learning_rate > cfg->starting_step_size * 0.2)
             learning_rate *= 0.5;
-            count_no_progress = 0;
-        } else if (sampling_method != USE_NO_SAMPLING && cfg->reset_sampling) {
-            if (comm->isMaster())
-                std::cout << "[Reset] Turn off sampling" << std::endl;
-
-            sampling_method = USE_NO_SAMPLING;
-            learning_rate = cfg->starting_step_size * cfg->reset_sampling_lr_ratio;
-            count_no_progress = 0;
-        } else*/
-            count_no_progress += 1;
+        count_no_progress += 1;
     } else
         count_no_progress = 0;
 }
@@ -466,9 +456,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
     int max_iteration = cfg->ga_max_iterations;
     int ga_no_progress_count = 0;
-    while (iter++ < max_iteration
-           && fabs((loss - prev_loss) / loss) >= cfg->ga_converge_thresh
-           && ga_no_progress_count <= 3) {
+    while (iter++ < max_iteration && ga_no_progress_count <= 3) {
 
         if (iter > 1)
             prev_loss = loss;
@@ -524,7 +512,10 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         }
         comm->broadcastDropouts(param.get());
 
-        ga_no_progress_count = prev_loss >= loss ? ga_no_progress_count + 1 : 0;
+        if((fabs((loss - prev_loss) / loss) < cfg->ga_converge_thresh) || (prev_loss >= loss))
+            ga_no_progress_count++;
+        else
+            ga_no_progress_count = 0;
     }
 
     if (comm->isMaster()) {
@@ -550,9 +541,9 @@ double EmModel::getUpdatedLearningRate(double learning_rate, double current_loss
     else if (USE_STEP_DECAY == cfg->ga_decay_method)
         learning_rate *= pow(cfg->step_decay_drop, floor(iter / cfg->step_decay_epochs_drop));
 
-    if (current_loss < prev_loss && iter > 1 && learning_rate > cfg->starting_step_size * 0.02) {
+    /*if (current_loss < prev_loss && iter > 1 && learning_rate > cfg->starting_step_size * 0.02) {
         learning_rate = learning_rate * 0.5;
-    }
+    }*/
     return learning_rate;
 }
 
