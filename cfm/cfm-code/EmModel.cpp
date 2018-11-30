@@ -258,7 +258,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
             if (!cfg->disable_training_metrics) {
                 qdif_str += "\nJaccard_Avg=" + std::to_string(train_jaccard / num_training_mols)
-                            + " Weighted_Jaccard_Avg=" += std::to_string(num_training_mols / num_training_mols);
+                            + " Weighted_Jaccard_Avg=" += std::to_string(train_w_jaccard / num_training_mols);
             }
 
             if (!cfg->disable_cross_val_metrics) {
