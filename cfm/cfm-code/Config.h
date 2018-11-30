@@ -271,7 +271,8 @@ struct config_t {
 
     int fragraph_compute_timeout_in_secs;
 
-    bool disable_cross_val_computation;
+    bool disable_cross_val_metrics;
+    bool disable_training_metrics;
     bool use_fg_graph;
     int ring_break_depth_cap;
 };
