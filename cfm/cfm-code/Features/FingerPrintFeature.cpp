@@ -272,6 +272,8 @@ std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol,
 
     // get child atom keys str
     std::string children_atom_key;
+
+
     for (const auto child_key : children_keys) {
         children_atom_key += child_key;
     }
@@ -313,8 +315,7 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit
             // if we have not visit this node before
             // and this node is in the visit list
             if (nbr_atom != curr) {
-                std::string sorting_key = getSortingLabel(mol, nbr_atom, curr);
-                // std::string sorting_key = sortig_labels.at(nbr_atom->getIdx());
+                std::string sorting_key = getSortingLabel(mol, nbr_atom, curr, num_atoms);
                 child_visit_order.insert(
                         std::pair<std::string, RDKit::Atom *>(sorting_key, nbr_atom));
             }
