@@ -233,8 +233,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         num_training_mols = comm->collectSumInMaster(num_training_mols);
 
         if (!cfg->disable_training_metrics) {
-            train_jaccard = comm->collectQInMaster(val_jaccard);
-            train_w_jaccard = comm->collectQInMaster(val_w_jaccard);
+            train_jaccard = comm->collectQInMaster(train_jaccard);
+            train_w_jaccard = comm->collectQInMaster(train_w_jaccard);
         }
 
         if (!cfg->disable_cross_val_metrics) {
