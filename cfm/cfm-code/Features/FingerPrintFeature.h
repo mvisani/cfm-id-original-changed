@@ -57,12 +57,13 @@ protected:
 
 private:
 
-    void getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit::Atom *root,
-                                  std::vector<unsigned int> &visit_order, int num_atoms) const;
+    void getAtomVisitOrderBFS(const RootedROMolPtr *roMolPtr, std::vector<unsigned int> &visit_order, int num_atoms) const;
 
-    std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
-                                const RDKit::Atom *parent_atom, int depth) const;
+    std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom, const RDKit::Atom *parent_atom,
+                                    std::map<unsigned int, unsigned int> &distances,
+                                    std::map<unsigned int, std::string> &labels) const;
 
+    void getAtomDistanceToRoot(const RootedROMolPtr *roMolPtr, std::map<unsigned int, unsigned int> &distances) const;
 
     void addMorganFingerPrint(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
                               const RDKit::Atom *root,
@@ -75,12 +76,11 @@ private:
                              unsigned int finger_print_min_path, unsigned int finger_print_max_path,
                              bool limited_by_distance) const;
 
-    void addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
-                                         const RDKit::Atom *root, unsigned int num_atom,
-                                         bool include_con_matrix) const;
+    void addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *roMolPtr,
+                                             unsigned int num_atom, bool include_con_matrix) const;
 
-    void addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
-                                        const RDKit::Atom *root, unsigned int num_atom) const;
+    void addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *roMolPtr,
+                                           unsigned int num_atom) const;
 
     void addDegreeFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
                            const std::vector<unsigned int> &visit_order) const;
@@ -93,6 +93,4 @@ private:
 
     void addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
                               std::vector<unsigned int> &visit_order) const;
-
-
 };
