@@ -324,19 +324,18 @@ void FingerPrintFeature::getAtomDistanceToRoot(const RootedROMolPtr *roMolPtr,
 }
 
 // Method to get atom visited order via BFS
-void FingerPrintFeature::getAtomVisitOrderBFS(const RootedROMolPtr *roMolPtr,
-                                              std::vector<unsigned int> &visit_order,
-                                              int num_atoms) const {
+void FingerPrintFeature::getAtomVisitOrderBFS(const RootedROMolPtr *roMolPtr, std::vector<unsigned int> &visit_order,
+                                              std::vector<unsigned int> &visit_atom_distance, int num_atoms) const {
 
     auto mol = roMolPtr->mol;
     auto root = roMolPtr->root;
     // get distance to root
-    std::map<unsigned int, unsigned int> distances;
-    getAtomDistanceToRoot(roMolPtr, distances);
+    std::map<unsigned int, unsigned int> distances_map;
+    getAtomDistanceToRoot(roMolPtr, distances_map);
 
     // get labels for each atoms
     std::map<unsigned int, std::string> sorting_labels;
-    getSortingLabel(mol, root, nullptr, distances, sorting_labels);
+    getSortingLabel(mol, root, nullptr, distances_map, sorting_labels);
 
     // maybe a struct is a better idea
     // but this is a one off
@@ -356,13 +355,13 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const RootedROMolPtr *roMolPtr,
 
         if (visit_order.size() < num_atoms) {
             visit_order.push_back(curr->getIdx());
+            visit_atom_distance.push_back(distances_map[curr->getIdx()]);
         } else {
             break;
         }
 
         // use multimap since we can have duplicated labels
         std::multimap<std::string, const RDKit::Atom *> child_visit_order;
-
         for (auto itp = mol->getAtomNeighbors(curr); itp.first != itp.second; ++itp.first) {
             RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
             // if we have not visit this node before
@@ -383,7 +382,8 @@ void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_f
                                                          unsigned int num_atom, bool include_adjacency_matrix) const {
     // Get visit order
     std::vector<unsigned int> visit_order;
-    getAtomVisitOrderBFS(roMolPtr, visit_order, num_atom);
+    std::vector<unsigned int> distance;
+    getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom);
 
     if (include_adjacency_matrix)
         addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
@@ -398,12 +398,14 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
                                                        unsigned int num_atom) const {
     // Get visit order
     std::vector<unsigned int> visit_order;
-    getAtomVisitOrderBFS(roMolPtr, visit_order, num_atom);
+    std::vector<unsigned int> distance;
+    getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom);
 
     // fv.writeDebugInfo();
     // add atoms information into FP
     addAtomTypeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
     addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
+    addDistanceFeature(tmp_fv, num_atom, distance);
 }
 
 void
@@ -520,7 +522,20 @@ void FingerPrintFeature::addDegreeFeatures(std::vector<int> &tmp_fv, const Roote
         tmp_fv.insert(tmp_fv.end(), atom_degree_feature.begin(), atom_degree_feature.end());
     }
 }
+void FingerPrintFeature::addDistanceFeature(std::vector<int> &tmp_fv, unsigned int num_atom,
+                                           const std::vector<unsigned int> &distance) const {
+    const unsigned int max_distance = 10;
+    const unsigned int max_features = max_distance + 1;
+    for (int i = 0; i < num_atom; ++i) {
+        std::vector<int> features(max_features, 0);
 
+        if (i < distance.size()) {
+            int dis = distance[i] > max_distance ? max_distance : distance[i];
+            features[dis] = 1;
+        }
+        tmp_fv.insert(tmp_fv.end(), features.begin(), features.end());
+    }
+}
 // for all the samples we have max atoms with a 3 atom group is 10
 // for all the samples we have max atoms with a 5 atom group is 16
 // therefore  we need 50 features for arcs

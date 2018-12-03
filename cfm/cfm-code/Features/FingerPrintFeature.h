@@ -57,7 +57,8 @@ protected:
 
 private:
 
-    void getAtomVisitOrderBFS(const RootedROMolPtr *roMolPtr, std::vector<unsigned int> &visit_order, int num_atoms) const;
+    void getAtomVisitOrderBFS(const RootedROMolPtr *roMolPtr, std::vector<unsigned int> &visit_order,
+                                  std::vector<unsigned int> &visit_atom_distance, int num_atoms) const;
 
     std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom, const RDKit::Atom *parent_atom,
                                     std::map<unsigned int, unsigned int> &distances,
@@ -93,4 +94,6 @@ private:
 
     void addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
                               std::vector<unsigned int> &visit_order) const;
+
+    void addDistanceFeature(std::vector<int> &tmp_fv, unsigned int num_atom, const std::vector<unsigned int> &distance) const;
 };
