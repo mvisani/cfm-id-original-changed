@@ -22,7 +22,8 @@ void IonRootMatrixVerySimpleFPN10::compute(FeatureVector &fv, const RootedROMolP
                                        const RootedROMolPtr *nl, int depth) const {
 
     unsigned int num_atoms = 10;
-    addGenernalizedRepresentationFeature(fv, ion, num_atoms);
+    unsigned int max_distance = 3;
+    addGenernalizedRepresentationFeature(fv, ion, num_atoms, max_distance);
 }
 
 void IonRootMatrixSimpleFPN8D3::compute(FeatureVector &fv, const RootedROMolPtr *ion,

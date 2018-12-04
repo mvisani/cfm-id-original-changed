@@ -20,7 +20,8 @@ param.cpp.
 void NLRootMatrixVerySimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
                                       const RootedROMolPtr *nl, const int depth) const {
     unsigned int num_atoms = 10;
-    addGenernalizedRepresentationFeature(fv, nl, num_atoms);
+    unsigned int max_distance = 3;
+    addGenernalizedRepresentationFeature(fv, nl, num_atoms, max_distance);
 }
 
 void NLRootMatrixSimpleFPN8D3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
