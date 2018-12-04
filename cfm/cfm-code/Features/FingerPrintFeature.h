@@ -97,7 +97,7 @@ private:
                                 unsigned int max_distance) const;
 
     void addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
-                              std::vector<unsigned int> &visit_order) const;
+                                  std::vector<unsigned int> &visit_order, bool no_bond_type) const;
 
     void addDistanceFeature(std::vector<int> &tmp_fv, unsigned int num_atom, const std::vector<unsigned int> &distance) const;
 };

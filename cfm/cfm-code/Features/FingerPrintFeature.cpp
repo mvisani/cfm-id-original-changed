@@ -389,7 +389,7 @@ FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, co
     getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom, depth);
 
     if (include_adjacency_matrix)
-        addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
+        addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, false);
 
     // fv.writeDebugInfo();
     // add atoms information into FP
@@ -407,13 +407,14 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
     // fv.writeDebugInfo();
     // add atoms information into FP
     addAtomTypeFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, max_distance);
+    addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, true);
     addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
     //addDistanceFeature(tmp_fv, num_atom, distance);
 }
 
 void
 FingerPrintFeature::addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
-                                         std::vector<unsigned int> &visit_order) const {// init a 2D vector to store matrix
+                                         std::vector<unsigned int> &visit_order, bool no_bond_type) const {// init a 2D vector to store matrix
     std::vector<std::vector<int>> adjacency_matrix(num_atom,
                                                    std::vector<int>(num_atom, 0));
 
@@ -442,24 +443,37 @@ FingerPrintFeature::addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedR
         }
     }
 
-    // first bit indicate if there is a bond
-    // rest 7 for each bond_type, one hot encoding
-    // 0, 1, ,2, 3, aromtaic as 4, Conjugated as 5
-    const unsigned int num_bits_per_bond = 6;
-    const unsigned int bond_type_max = num_bits_per_bond - 1;
+    if(!no_bond_type){
+        // first bit indicate if there is a bond
+        // rest 7 for each bond_type, one hot encoding
+        // 0, 1, ,2, 3, aromtaic as 4, Conjugated as 5
+        const unsigned int num_bits_per_bond = 6;
+        const unsigned int bond_type_max = num_bits_per_bond - 1;
 
-    // we only need half of matrix exclude diagonal
-    // so i start from 1 not 0
-    for (int i = 0; i < num_atom; ++i) {
-        for (int j = i + 1; j < num_atom; ++j) {
-            std::vector<int> temp_feature(num_bits_per_bond, 0);
-            // check if bond exits/defined
-            if (adjacency_matrix[i][j] > 0) {
-                // one hot encoding bond type
-                int bond_type = adjacency_matrix[i][j] > bond_type_max ? bond_type_max : adjacency_matrix[i][j];
-                temp_feature[bond_type] = 1;
+        // we only need half of matrix exclude diagonal
+        // so i start from 1 not 0
+        for (int i = 0; i < num_atom; ++i) {
+            for (int j = i + 1; j < num_atom; ++j) {
+                std::vector<int> temp_feature(num_bits_per_bond, 0);
+                // check if bond exits/defined
+                if (adjacency_matrix[i][j] > 0) {
+                    // one hot encoding bond type
+                    int bond_type = adjacency_matrix[i][j] > bond_type_max ? bond_type_max : adjacency_matrix[i][j];
+                    temp_feature[bond_type] = 1;
+                }
+                tmp_fv.insert(tmp_fv.end(), temp_feature.begin(), temp_feature.end());
             }
-            tmp_fv.insert(tmp_fv.end(), temp_feature.begin(), temp_feature.end());
+        }
+    }
+    else{
+        for (int i = 0; i < num_atom; ++i) {
+            for (int j = i + 1; j < num_atom; ++j) {
+                // check if bond exits/defined
+                if (adjacency_matrix[i][j] > 0)
+                    tmp_fv.push_back(1);
+                else
+                    tmp_fv.push_back(0);
+            }
         }
     }
 
