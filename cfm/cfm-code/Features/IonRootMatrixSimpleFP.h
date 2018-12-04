@@ -31,6 +31,16 @@ public:
 };
 
 
+class IonRootMatrixSimpleFPN8D3 : public FingerPrintFeature {
+public:
+    IonRootMatrixSimpleFPN8D3() {
+        size = 88;
+        name = "IonRootMatrixSimpleFPN8D3";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+};
+
 class IonRootMatrixSimpleFPN10 : public FingerPrintFeature {
 public:
     IonRootMatrixSimpleFPN10() {

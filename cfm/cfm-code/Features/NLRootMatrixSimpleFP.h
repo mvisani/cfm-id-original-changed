@@ -29,6 +29,16 @@ public:
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
 };
 
+class NLRootMatrixSimpleFPN8D3 : public FingerPrintFeature {
+public:
+    NLRootMatrixSimpleFPN8D3() {
+        size = 88;
+        name = "NLRootMatrixSimpleFPN8D3";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, const int depth) const override;
+};
+
 class NLRootMatrixSimpleFPN10 : public FingerPrintFeature {
 public:
     NLRootMatrixSimpleFPN10() {
