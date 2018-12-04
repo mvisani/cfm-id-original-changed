@@ -47,8 +47,9 @@ protected:
     void addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol, unsigned int finger_print_size,
                                           unsigned int path_range, int radius) const;
 
-    void addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol, unsigned int num_atom,
-                                                    bool include_adjacency_matrix) const;
+    void addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                unsigned int num_atom, unsigned int max_distance,
+                                                bool include_adjacency_matrix) const;
 
     void addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
                                       unsigned int finger_print_size, int radius) const;
@@ -58,7 +59,7 @@ protected:
 private:
 
     void getAtomVisitOrderBFS(const RootedROMolPtr *roMolPtr, std::vector<unsigned int> &visit_order,
-                                  std::vector<unsigned int> &visit_atom_distance, int num_atoms) const;
+                                  std::vector<unsigned int> &visit_atom_distance, int num_atoms, int depth) const;
 
     std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom, const RDKit::Atom *parent_atom,
                                     std::map<unsigned int, unsigned int> &distances,
@@ -78,7 +79,8 @@ private:
                              bool limited_by_distance) const;
 
     void addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *roMolPtr,
-                                             unsigned int num_atom, bool include_con_matrix) const;
+                                         unsigned int num_atom,
+                                         unsigned int depth, bool include_con_matrix) const;
 
     void addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *roMolPtr,
                                            unsigned int num_atom) const;

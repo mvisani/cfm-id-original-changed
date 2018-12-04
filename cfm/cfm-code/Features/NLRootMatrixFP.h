@@ -41,6 +41,16 @@ public:
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
 };
 
+class NLRootMatrixFPN8D3 : public FingerPrintFeature {
+public:
+    NLRootMatrixFPN8D3(){
+        size = 256;
+        name = "NLRootMatrixFPN8D3";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+};
+
 // Features use fingerprint encode NL fragmentation
 class NLRootMatrixFPN10 : public FingerPrintFeature {
 public:

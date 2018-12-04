@@ -325,7 +325,7 @@ void FingerPrintFeature::getAtomDistanceToRoot(const RootedROMolPtr *roMolPtr,
 
 // Method to get atom visited order via BFS
 void FingerPrintFeature::getAtomVisitOrderBFS(const RootedROMolPtr *roMolPtr, std::vector<unsigned int> &visit_order,
-                                              std::vector<unsigned int> &visit_atom_distance, int num_atoms) const {
+                                              std::vector<unsigned int> &visit_atom_distance, int num_atoms, int depth) const {
 
     auto mol = roMolPtr->mol;
     auto root = roMolPtr->root;
@@ -353,9 +353,10 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const RootedROMolPtr *roMolPtr, st
             continue;
         }
 
-        if (visit_order.size() < num_atoms) {
+        auto distance_to_root = distances_map[curr->getIdx()];
+        if (visit_order.size() < num_atoms && depth > distance_to_root) {
             visit_order.push_back(curr->getIdx());
-            visit_atom_distance.push_back(distances_map[curr->getIdx()]);
+            visit_atom_distance.push_back(distance_to_root);
         } else {
             break;
         }
@@ -378,12 +379,14 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const RootedROMolPtr *roMolPtr, st
     }
 }
 
-void FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *roMolPtr,
-                                                         unsigned int num_atom, bool include_adjacency_matrix) const {
+void
+FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *roMolPtr,
+                                                    unsigned int num_atom,
+                                                    unsigned int depth, bool include_adjacency_matrix) const {
     // Get visit order
     std::vector<unsigned int> visit_order;
     std::vector<unsigned int> distance;
-    getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom);
+    getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom, depth);
 
     if (include_adjacency_matrix)
         addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
@@ -399,7 +402,7 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
     // Get visit order
     std::vector<unsigned int> visit_order;
     std::vector<unsigned int> distance;
-    getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom);
+    getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom, 0);
 
     // fv.writeDebugInfo();
     // add atoms information into FP
@@ -540,11 +543,11 @@ void FingerPrintFeature::addDistanceFeature(std::vector<int> &tmp_fv, unsigned i
 // for all the samples we have max atoms with a 5 atom group is 16
 // therefore  we need 50 features for arcs
 void FingerPrintFeature::addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol,
-                                                                unsigned int num_atom,
+                                                                unsigned int num_atom, unsigned int max_distance,
                                                                 bool include_adjacency_matrix) const {
 
     std::vector<int> local_tmp_fv;
-    addAdjacentMatrixRepresentation(local_tmp_fv, mol, num_atom, include_adjacency_matrix);
+    addAdjacentMatrixRepresentation(local_tmp_fv, mol, num_atom, max_distance, include_adjacency_matrix);
     fv.addFeatures(local_tmp_fv);
 }
 
