@@ -28,7 +28,6 @@
 #include "tests/nn_param_test.h"
 #include "tests/inference_test.h"
 #include "tests/libdai_inference_test.h"
-#include "tests/ipfp_test.h"
 #include "tests/comms_test.h"
 #include "tests/em_test.h"
 #include "tests/comparator_test.h"
@@ -189,9 +188,6 @@ int main(int argc, char *argv[])
         tests.push_back( new FragGenTestPositiveEIOxygenAromatic() );
         tests.push_back( new FragGenTestPositiveEITriple() );
         tests.push_back( new FragGenTestPositiveEISplitCharge() );
-        tests.push_back( new IPFPTestComputeBeliefsConverge() );
-        tests.push_back( new IPFPTestComputeBeliefsNonConverge() );
-        tests.push_back( new IPFPTestComputeBeliefsSharedMass() );
         tests.push_back( new EMTestSingleEnergySelfProduction() );
         tests.push_back( new EMTestNNSingleEnergySelfProduction() );
         //tests.push_back( new EMTestSelfProduction() );

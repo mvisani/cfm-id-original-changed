@@ -465,48 +465,8 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
 
 void MolData::computePredictedSpectra(Param &param, bool postprocess, bool use_existing_thetas, int energy_level) {
 
-    // Divert to other function if doing single energy CFM
-    if (cfg->use_single_energy_cfm) {
-        computePredictedSingleEnergySpectra(param, postprocess,
+    computePredictedSingleEnergySpectra(param, postprocess,
                                             use_existing_thetas, energy_level);
-        return;
-    }
-
-    // Compute the transition probabilities using this parameter set
-    if (!use_existing_thetas)
-        computeTransitionThetas(param);
-    computeLogTransitionProbabilities();
-
-    // Run forward inference
-    std::vector<Message> msgs;
-    Inference infer(this, cfg);
-    infer.runInferenceDownwardPass(msgs, cfg->model_depth);
-
-    // Generate and collect the peak results
-    predicted_spectra.resize(cfg->spectrum_depths.size());
-    for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
-         energy++) {
-        predicted_spectra[energy].clear();
-
-        // Extract the peaks from the relevant message
-        int msg_depth = cfg->spectrum_depths[energy] - 1;
-        Message *msg = &(msgs[msg_depth]);
-        if (cfg->include_isotopes)
-            translatePeaksFromMsgToSpectraWithIsotopes(predicted_spectra[energy],
-                                                       msg);
-        else
-            translatePeaksFromMsgToSpectra(predicted_spectra[energy], msg);
-    }
-
-    if (postprocess)
-        postprocessPredictedSpectra();
-    else {
-        for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
-             energy++) {
-            predicted_spectra[energy].normalizeAndSort();
-            predicted_spectra[energy].quantisePeaksByMass(10);
-        }
-    }
 }
 
 void MolData::computePredictedSingleEnergySpectra(Param &param,
@@ -532,10 +492,15 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
     if (postprocess)
         postprocessPredictedSpectra();
     else {
-        for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
-             energy++) {
-            predicted_spectra[energy].normalizeAndSort();
-            predicted_spectra[energy].quantisePeaksByMass(10);
+        if(energy_level != -1){
+            predicted_spectra[energy_level].normalizeAndSort();
+            predicted_spectra[energy_level].quantisePeaksByMass(10);
+        }else {
+            for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
+                 energy++) {
+                predicted_spectra[energy].normalizeAndSort();
+                predicted_spectra[energy].quantisePeaksByMass(10);
+            }
         }
     }
 }
@@ -549,10 +514,10 @@ void MolData::createSpeactraSingleEnergry(unsigned int energy_level) {
     // Run forward inference
     std::vector<Message> msgs;
     Inference infer(this, &se_cfg);
-    infer.runInferenceDownwardPass(msgs, se_cfg.model_depth);
+    infer.runInferenceDownwardPass(msgs, se_cfg.model_depth, energy_level);
 
     // Extract the peaks from the relevant message
-    int msg_depth = se_cfg.spectrum_depths[0] - 1;
+    int msg_depth = getFGDepth() - 1;//se_cfg.spectrum_depths[0] - 1;
     Message *msg = &(msgs[msg_depth]);
     if (cfg->include_isotopes)
             translatePeaksFromMsgToSpectraWithIsotopes(predicted_spectra[energy_level], msg);

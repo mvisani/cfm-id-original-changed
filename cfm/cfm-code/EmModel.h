@@ -26,7 +26,6 @@ static const int MAX_EM_ITERATIONS = 100;
 #include "MolData.h"
 #include "Param.h"
 #include "NNParam.h"
-#include "IPFP.h"
 #include "Solver.h"
 #include "ModelBase.h"
 

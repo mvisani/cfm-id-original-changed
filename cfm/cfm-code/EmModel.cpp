@@ -138,21 +138,10 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             // Apply the peak evidence, compute the beliefs and record the sufficient
             // statistics
 
-            if (cfg->use_single_energy_cfm) {
-                beliefs_t beliefs;
-                Inference infer(moldata, cfg);
-                infer.calculateBeliefs(beliefs, energy_level);
-                recordSufficientStatistics(suft, molidx, moldata, &beliefs, energy_level);
-            } else {
-                /*IPFP ipfp(moldata, cfg);
-                beliefs_t *beliefs = ipfp.calculateBeliefs();
-                int status = ipfp.status;
-                if (status == NON_CONVERGE || status == OSC_CONVERGE)
-                    num_nonconverged++;
-                else if (status == COMPLETE_CONVERGE || status == CONVERGE_AFTER_MOD)
-                    num_converged++;
-                recordSufficientStatistics(suft, molidx, moldata, beliefs, 0);*/
-            }
+            beliefs_t beliefs;
+            Inference infer(moldata, cfg);
+            infer.calculateBeliefs(beliefs, energy_level);
+            recordSufficientStatistics(suft, molidx, moldata, &beliefs, energy_level);
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait

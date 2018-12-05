@@ -48,7 +48,7 @@ public:
     };
 
     void calculateBeliefs(beliefs_t &beliefs, int current_energy);    //Note: Only supports single energy mode
-    void runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth);
+    void runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth, int energy);
 
     void createSpectrumMessage(Message &msg, int energy, Message &down_msg);
 

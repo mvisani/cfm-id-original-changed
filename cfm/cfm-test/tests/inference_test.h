@@ -15,18 +15,6 @@
 #include "../test.h"
 #include "Inference.h"
 
-class InferenceTestCompareVsIPFPSingleEnergyCase : public Test {
-public:
-	InferenceTestCompareVsIPFPSingleEnergyCase();
-	void runTest();
-};
-
-class InferenceTestCompareVsIPFPSharedMassCase : public Test {
-public:
-	InferenceTestCompareVsIPFPSharedMassCase();
-	void runTest();
-};
-
 class InferenceTestSpectrumMessage : public Test {
 public:
 	InferenceTestSpectrumMessage();

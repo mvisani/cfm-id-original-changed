@@ -9,7 +9,7 @@
 ##########################################################################
 
 set(BASE_HEADERS FragmentGraph.h Feature.h FeatureVector.h FeatureCalculator.h Config.h Spectrum.h
-        FragmentGraphGenerator.h FragmentTreeNode.h Inference.h IPFP.h MILP.h Isotope.h
+        FragmentGraphGenerator.h FragmentTreeNode.h Inference.h MILP.h Isotope.h
         MolData.h MspReader.h Param.h NNParam.h Util.h Message.h Identifier.h Comparators.h
         FunctionalGroups.h)
 
@@ -28,7 +28,6 @@ set(BASE_SRC_FILES FragmentGraph.cpp
         FunctionalGroups.cpp
         Identifier.cpp
         Inference.cpp
-        IPFP.cpp
         Isotope.cpp
         Message.cpp
         MILP.cpp

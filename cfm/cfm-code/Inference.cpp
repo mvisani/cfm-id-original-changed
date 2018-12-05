@@ -37,7 +37,7 @@ void Inference::calculateBeliefs(beliefs_t &beliefs, int current_energy) {
 
     //Pass the messages down
     std::vector<Message> down_msgs, up_msgs;
-    runInferenceDownwardPass(down_msgs, mol_depth);
+    runInferenceDownwardPass(down_msgs, mol_depth, current_energy);
 
     //Create Spectrum Message
     Message spec_msg;
@@ -75,7 +75,7 @@ void Inference::initTmpFactorProbSizes(factor_probs_t &tmp_log_probs, unsigned i
 }
 
 
-void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth) {
+void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth, int energy) {
 
     //Initialise the messages
     down_msgs.resize(mol_depth);
@@ -86,7 +86,7 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
 
     //Factor (F0,F1) => Create F1 Message
     // start energy level
-    int energy = config->map_d_to_energy[0];
+    // int energy = config->map_d_to_energy[0];
 
     const std::vector<int> *tmap = &((*moldata->getFromIdTMap())[0]);
     std::vector<int>::const_iterator it = tmap->begin();
@@ -103,7 +103,6 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
         passMessage(tmp_log_probs, DOWN, i, down_msgs[i], energy);
         createMessage(tmp_log_probs, down_msgs[i + 1], down_msgs[i], DOWN, i);
     }
-
 }
 
 void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &spec_msg, int current_energy) {
@@ -122,9 +121,8 @@ void Inference::runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &s
     //Update Factor (Fd-1,Fd) => Create Message Fd-1  ...etc as per MODEL_DEPTH
     for (int i = mol_depth - 2; i >= 0; i--) {
         // make sure we are not go to far
-        int energy = current_energy;
         //(i+1 <= current_energy) ? config->map_d_to_energy[i + 1] : current_energy;
-        passMessage(tmp_log_probs, UP, i, up_msgs[i + 1], energy);
+        passMessage(tmp_log_probs, UP, i, up_msgs[i + 1], current_energy);
         createMessage(tmp_log_probs, up_msgs[i], up_msgs[i + 1], UP, i);
     }
 }
@@ -133,13 +131,15 @@ void Inference::createMessage(factor_probs_t &tmp_log_probs, Message &m, Message
 
     m.reset(moldata->getNumFragments());
     for (unsigned int id = 0; id < moldata->getNumFragments(); id++) {
-
         //Going up or down?
         const std::vector<int> *tmap;
-        if (direction == DOWN) tmap = &((*moldata->getToIdTMap())[id]);
-        else tmap = &((*moldata->getFromIdTMap())[id]);
+        if (direction == DOWN)
+            tmap = &((*moldata->getToIdTMap())[id]);
+        else
+            tmap = &((*moldata->getFromIdTMap())[id]);
 
         //Marginalize out the upper/lower variable
+        //the log_sum of ps term means the chance to remain as this fragment at this step?
         double log_sum = -A_BIG_DBL;
         if (prev_m.getIdx(id) > -A_BIG_DBL)
             log_sum = tmp_log_probs.ps[id][depth];
@@ -152,7 +152,8 @@ void Inference::createMessage(factor_probs_t &tmp_log_probs, Message &m, Message
                 log_sum = logAdd(log_sum, tmp_log_probs.tn[*itt][depth]);
             }
         }
-        if (log_sum > -A_BIG_DBL) m.addToIdx(id, log_sum);
+        if (log_sum > -A_BIG_DBL)
+            m.addToIdx(id, log_sum);
     }
 }
 
@@ -168,8 +169,10 @@ void Inference::passMessage(factor_probs_t &tmp_log_probs, int direction, int de
 
         //Apply to all the other transitions applicable for this message element
         const std::vector<int> *tmap;
-        if (direction == DOWN) tmap = &((*moldata->getFromIdTMap())[idx]);
-        else tmap = &((*moldata->getToIdTMap())[idx]);
+        if (direction == DOWN)
+            tmap = &((*moldata->getFromIdTMap())[idx]);
+        else
+            tmap = &((*moldata->getToIdTMap())[idx]);
         std::vector<int>::const_iterator itt = tmap->begin();
         for (; itt != tmap->end(); ++itt)
             tmp_log_probs.tn[*itt][depth] = moldata->getLogTransitionProbForIdx(energy, *itt) + m.getIdx(idx);
@@ -190,9 +193,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
 
             double tmp;
             if ((d == 0 && i == 0) || (d > 0 && down_msgs[d - 1].getIdx(i) > -A_BIG_DBL)) {
-                int energy = current_energy;
-                //config->map_d_to_energy[d] > current_energy ? current_energy : config->map_d_to_energy[d];
-                tmp = moldata->getLogPersistenceProbForIdx(energy, i);
+                tmp = moldata->getLogPersistenceProbForIdx(current_energy, i);
                 tmp += up_msgs[d].getIdx(i);
                 if (d > 0) tmp += down_msgs[d - 1].getIdx(i);
                 if (i == 0) norms[d] = tmp;
@@ -212,9 +213,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
 
             double tmp;
             if ((d == 0 && t->getFromId() == 0) || (d > 0 && down_msgs[d - 1].getIdx(t->getFromId()) > -A_BIG_DBL)) {
-                int energy = current_energy;
-                // config->map_d_to_energy[d] > current_energy ? current_energy : config->map_d_to_energy[d];
-                tmp = moldata->getLogTransitionProbForIdx(energy, i);
+                tmp = moldata->getLogTransitionProbForIdx(current_energy, i);
                 tmp += up_msgs[d].getIdx(t->getToId());
                 if (d > 0) tmp += down_msgs[d - 1].getIdx(t->getFromId());
                 norms[d] = logAdd(norms[d], tmp);
@@ -323,4 +322,3 @@ void Inference::createSpectrumMessageWithIsotopes(Message &msg, int energy, Mess
     }
 
 }
-

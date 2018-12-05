@@ -22,7 +22,7 @@ int main(int argc, char *argv[]);
 #include "MolData.h"
 #include "Identifier.h"
 #include "Comparators.h"
-#include "IPFP.h"
+#include "Inference.h"
 
 #include <iostream>
 #include <fstream>
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
 	//Apply the peak evidence and compute the beliefs
 	beliefs_t beliefs;
-	if( cfg.use_single_energy_cfm ){
+
 		
 		//Concat single energy beliefs into one since subsequent
 		//functions just check for any beliefs above threshold
@@ -140,12 +140,7 @@ int main(int argc, char *argv[])
             infer.calculateBeliefs(sbeliefs, 0);
 			concatBeliefs(&beliefs, &sbeliefs);
 		}
-	}
-	else{
-		IPFP ipfp( &moldata, &cfg); 
-		beliefs_t *sbeliefs = ipfp.calculateBeliefs();
-		concatBeliefs(&beliefs, sbeliefs);
-	}
+
 
 	//Process the beliefs to extract the fragmentation tree that occurred
 	double log_belief_thresh = std::log(0.00001);
