@@ -85,9 +85,6 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
     initTmpFactorProbSizes(tmp_log_probs, moldata->getNumFragments(), moldata->getNumTransitions(), mol_depth);
 
     //Factor (F0,F1) => Create F1 Message
-    // start energy level
-    // int energy = config->map_d_to_energy[0];
-
     const std::vector<int> *tmap = &((*moldata->getFromIdTMap())[0]);
     std::vector<int>::const_iterator it = tmap->begin();
     down_msgs[0].reset(moldata->getNumFragments());
