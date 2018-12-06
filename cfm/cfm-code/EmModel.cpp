@@ -367,7 +367,7 @@ void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
 void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx, MolData *moldata, beliefs_t *beliefs,
                                          unsigned int energy) {
 
-    int depth = cfg->model_depth > moldata->getFGDepth() ? cfg->model_depth : moldata->getFGDepth();
+    int depth = cfg->model_depth > moldata->getFGHeight() ? cfg->model_depth : moldata->getFGHeight();
     unsigned int num_transitions = moldata->getNumTransitions();
     unsigned int num_fragments = moldata->getNumFragments();
     int len_offset = num_transitions + num_fragments;

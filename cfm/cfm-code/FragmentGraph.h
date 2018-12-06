@@ -312,9 +312,9 @@ public:
 
     void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio);
 
-    int getDepth() { return depth; };
+    int getHeight() { return depth; };
 
-    int setDepth(int d) { return depth = d; };
+    int setHeight(int d) { return depth = d; };
 
 protected:
     std::vector<Fragment*> fragments;

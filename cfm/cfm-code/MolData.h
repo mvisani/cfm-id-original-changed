@@ -237,7 +237,7 @@ public:
         return fg->hasIsotopesIncluded();
     }
 
-    int getFGDepth() const { return fg->getDepth(); };
+    int getFGHeight() const { return fg->getHeight(); };
 
     void getSelectedWeights(std::set<unsigned int> &selected_weights, std::set<unsigned int> &all_weights,
                             int engery_level);

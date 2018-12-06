@@ -168,8 +168,8 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
         return;
     }
 
-    if ( current_graph->getDepth() < node.depth)
-        current_graph->setDepth(node.depth);
+    if (current_graph->getHeight() < (node.depth+1))
+        current_graph->setHeight(node.depth + 1);
 
     //Generate Breaks
     std::vector<Break> breaks;

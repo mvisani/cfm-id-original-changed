@@ -514,10 +514,10 @@ void MolData::createSpeactraSingleEnergry(unsigned int energy_level) {
     // Run forward inference
     std::vector<Message> msgs;
     Inference infer(this, &se_cfg);
-    infer.runInferenceDownwardPass(msgs, getFGDepth(), energy_level);
+    infer.runInferenceDownwardPass(msgs, getFGHeight(), energy_level);
 
     // Extract the peaks from the relevant message
-    int msg_depth = getFGDepth() - 1;//se_cfg.spectrum_depths[0] - 1;
+    int msg_depth = getFGHeight() - 1;//se_cfg.spectrum_depths[0] - 1;
     Message *msg = &(msgs[msg_depth]);
     if (cfg->include_isotopes)
             translatePeaksFromMsgToSpectraWithIsotopes(predicted_spectra[energy_level], msg);

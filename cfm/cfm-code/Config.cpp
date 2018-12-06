@@ -433,5 +433,4 @@ void initSingleEnergyConfig(config_t &se_cfg, config_t &cfg, int energy) {
 
     //Re-derive the derived parameters
     initDerivedConfig(se_cfg, energy);
-
 }

@@ -41,10 +41,10 @@ class Inference {
 
 public:
     Inference(const MolData *data, config_t *cfg) : moldata(data), config(cfg) {
-        if(data->getFGDepth() <= config->model_depth)
+        if(data->getFGHeight() <= config->model_depth)
             mol_depth = config->model_depth;
         else
-            mol_depth = data->getFGDepth();
+            mol_depth = data->getFGHeight();
     };
 
     void calculateBeliefs(beliefs_t &beliefs, int current_energy);    //Note: Only supports single energy mode
