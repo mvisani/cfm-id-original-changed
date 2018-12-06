@@ -56,7 +56,6 @@ public:
     // Access functions
     const FragmentGraph *getFragmentGraph() const { return fg; };
 
-
     bool hasComputedGraph() const { return graph_computed; };
 
     const EvidenceFragmentGraph *getEvidenceFragmentGraph() const {
