@@ -17,8 +17,7 @@ param.cpp.
 #########################################################################*/
 #include "NLRootMMFFAtomType.h"
 
-void NLRootMMFFAtomType::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,
-                                 int depth) const {
+void NLRootMMFFAtomType::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
     int offset = fv.getTotalLength() - 1;
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);

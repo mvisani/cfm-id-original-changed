@@ -764,9 +764,11 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
             continue;
 
         //find all functional group break
-        int between_fg;
-        bond->getProp("BetweenFG", between_fg);
+        //int between_fg;
+        //bond->getProp("BetweenFG", between_fg);
+        //NOTE this is disabled
 
+        int between_fg = 0;
         if (rinfo->numBondRings(bidx) == 0)
             breaks.push_back(Break(bidx, false, computeNumIonicAlloc(num_ionic), between_fg));
         else

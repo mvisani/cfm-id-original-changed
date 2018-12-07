@@ -17,8 +17,7 @@ param.cpp.
 #########################################################################*/
 #include "GraphDepthFeature.h"
 
-void GraphDepthFeature::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                const RootedROMolPtr *nl, int depth) const{
+void GraphDepthFeature::compute(FeatureVector &fv, romol_ptr_t precursor_ion, int depth) const {
     std::vector<int> features(this->size,0);
     if(depth < features.size())
         features[depth] = 1;

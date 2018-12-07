@@ -21,13 +21,13 @@ param.cpp.
 
 #include "../Feature.h"
 
-class GraphDepthFeature: public BreakFeature{
+class GraphDepthFeature: public FragmentFeature{
     public:
         GraphDepthFeature() {
             size = 5;
             name = "GraphDepth";
         };
         void
-        compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+        compute(FeatureVector &fv, romol_ptr_t precursor_ion, int depth) const override;
 };
 #endif //CFM_GRAPHDEPTHFEATURE_H

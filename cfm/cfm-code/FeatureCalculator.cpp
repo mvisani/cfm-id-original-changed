@@ -121,7 +121,6 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new NLRootMatrixSimpleFPN8D3());
         cogs.push_back(new IonRootMatrixVerySimpleFPN10());
         cogs.push_back(new NLRootMatrixVerySimpleFPN10());
-        cogs.push_back(new GraphDepthFeature());
         cogs.push_back(new NLFingerPrintFeature());
         cogs.push_back(new IonFingerPrintFeature());
         cogs.push_back(new NLRootEncodingMorganD3());
@@ -137,6 +136,7 @@ const boost::ptr_vector<FragmentFeature> &FeatureCalculator::fragmentFeatureCogs
     static bool initialised = false;
 
     if (!initialised) {
+        cogs.push_back(new GraphDepthFeature());
         cogs.push_back(new FragmentFingerPrintFeature());
         cogs.push_back(new FragmentFunctionalGroupFeature());
         initialised = true;
@@ -272,7 +272,7 @@ FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedR
     for (const auto &feature_idx : used_break_feature_idxs) {
         auto feature = &breakFeatureCogs()[feature_idx];
         try {
-            feature->compute(*fv, ion, nl, tree_depth);
+            feature->compute(*fv, ion, nl);
         } catch (std::exception &e) {
             std::cout << "Could not compute " << feature->getName()
                       << std::endl;
@@ -285,7 +285,7 @@ FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedR
         for (const auto &feature_idx : used_fragement_feature_idxs) {
             auto feature = &fragmentFeatureCogs()[feature_idx];
             try {
-                feature->compute(*fv, precursor_ion);
+                feature->compute(*fv, precursor_ion, tree_depth);
             } catch (std::exception &e) {
                 std::cout << "Could not compute " << feature->getName()
                           << std::endl;

@@ -16,8 +16,7 @@ param.cpp.
 #########################################################################*/
 #include "NLRootEncodings.h"
 
-void NLRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                               const RootedROMolPtr *nl, const int depth) const {
+void NLRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
@@ -30,8 +29,7 @@ void NLRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
 
 }
 
-void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                const RootedROMolPtr *nl, const int depth) const {
+void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
@@ -43,8 +41,7 @@ void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
     addRDKitFingerPrintFeatures(fv, nl, finger_print_size, atom_count, false, min_path, max_path);
 }
 
-void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                     const RootedROMolPtr *nl, const int depth) const {
+void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
@@ -55,8 +52,7 @@ void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *io
     addMorganFingerPrintFeatures(fv, nl, finger_print_size, distance_to_root, morgan_radius);
 }
 
-void NLRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                               const RootedROMolPtr *nl, const int depth) const {
+void NLRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 

@@ -31,10 +31,8 @@ param.cpp.
 
 void FeatureHelper::initialiseRoots(RDKit::RWMol *rwmol) {
     RDKit::ROMol::AtomIterator ai;
-    for (ai = rwmol->beginAtoms(); ai != rwmol->endAtoms(); ++ai) {
+    for (ai = rwmol->beginAtoms(); ai != rwmol->endAtoms(); ++ai)
         (*ai)->setProp("Root", 0);
-        (*ai)->setProp("OtherRoot", 0);
-    }
 }
 
 void FeatureHelper::labelGasteigers(RDKit::RWMol *rwmol) {
@@ -97,12 +95,12 @@ void FeatureHelper::labelFunctionalGroups(RDKit::RWMol *rwmol, bool extra) {
         if (atom_fg_idxs[(*ai)->getIdx()].empty())
             atom_fg_idxs[(*ai)->getIdx()].push_back(num_grps);
         (*ai)->setProp(prop_name, atom_fg_idxs[(*ai)->getIdx()]);
-        (*ai)->setProp("Fg_Idx_Strs", atom_fg_strs[(*ai)->getIdx()]);
+        //(*ai)->setProp("Fg_Idx_Strs", atom_fg_strs[(*ai)->getIdx()]);
     }
 
     // For each bond figure out if it is between two function groups
     // "FunctionalGroups"
-    for (auto bi = rwmol->beginBonds(); bi != rwmol->endBonds(); ++bi) {
+    /*for (auto bi = rwmol->beginBonds(); bi != rwmol->endBonds(); ++bi) {
         std::string f0_fg_idx_str;
         std::string f1_fg_idx_str;
         (*bi)->getBeginAtom()->getProp("Fg_Idx_Strs", f0_fg_idx_str);
@@ -112,7 +110,7 @@ void FeatureHelper::labelFunctionalGroups(RDKit::RWMol *rwmol, bool extra) {
             (*bi)->setProp("BetweenFG", 1);
         else
             (*bi)->setProp("BetweenFG", 0);
-    }
+    }*/
 }
 
 void FeatureHelper::labelMMFFAtomTypes(RDKit::RWMol *rwmol) {

@@ -17,7 +17,7 @@
 #include "IonRootPairs.h"
 
 void
-IonRootPairs::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const {
+IonRootPairs::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
     std::vector<path_t> paths;

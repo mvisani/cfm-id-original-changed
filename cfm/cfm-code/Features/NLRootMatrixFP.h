@@ -28,7 +28,7 @@ public:
         name = "NLRootMatrixFPN6";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
 };
 
 class NLRootMatrixFPN8 : public FingerPrintFeature {
@@ -38,7 +38,7 @@ public:
         name = "NLRootMatrixFPN8";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
 };
 
 class NLRootMatrixFPN8D3 : public FingerPrintFeature {
@@ -48,7 +48,7 @@ public:
         name = "NLRootMatrixFPN8D3";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
 };
 
 // Features use fingerprint encode NL fragmentation
@@ -58,7 +58,7 @@ public:
         size = 380;
         name = "NLRootMatrixFPN10";
     };
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
 };
 
 class NLRootMatrixFPN16 : public FingerPrintFeature {
@@ -68,5 +68,5 @@ public:
         name = "NLRootMatrixFPN16";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
 };

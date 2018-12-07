@@ -18,16 +18,14 @@ param.cpp.
 #include "IonRootMatrixSimpleFP.h"
 
 
-void IonRootMatrixVerySimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                       const RootedROMolPtr *nl, int depth) const {
+void IonRootMatrixVerySimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 10;
     unsigned int max_distance = 3;
     addGenernalizedRepresentationFeature(fv, ion, num_atoms, max_distance);
 }
 
-void IonRootMatrixSimpleFPN8D3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                       const RootedROMolPtr *nl, int depth) const {
+void IonRootMatrixSimpleFPN8D3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 8;
     unsigned int max_distance = 3;
@@ -36,8 +34,7 @@ void IonRootMatrixSimpleFPN8D3::compute(FeatureVector &fv, const RootedROMolPtr 
     addAdjacentMatrixRepresentationFeature(fv, ion, num_atoms, max_distance, include_adjacency_matrix);
 }
 
-void IonRootMatrixSimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                    const RootedROMolPtr *nl, int depth) const {
+void IonRootMatrixSimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 10;
     bool include_adjacency_matrix = false;
@@ -45,8 +42,7 @@ void IonRootMatrixSimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *
     addAdjacentMatrixRepresentationFeature(fv, ion, num_atoms, num_atoms, include_adjacency_matrix);
 }
 
-void IonRootMatrixSimpleFPN16::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                    const RootedROMolPtr *nl, int depth) const {
+void IonRootMatrixSimpleFPN16::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 16;
     bool include_adjacency_matrix = false;
@@ -54,8 +50,7 @@ void IonRootMatrixSimpleFPN16::compute(FeatureVector &fv, const RootedROMolPtr *
     addAdjacentMatrixRepresentationFeature(fv, ion, num_atoms, num_atoms, include_adjacency_matrix);
 }
 
-void IonRootMatrixSimpleFPN32::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                                       const RootedROMolPtr *nl, int depth) const {
+void IonRootMatrixSimpleFPN32::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 32;
     bool include_adjacency_matrix = false;

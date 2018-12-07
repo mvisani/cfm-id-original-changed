@@ -17,8 +17,7 @@ param.cpp.
 #########################################################################*/
 #include "IonRootTriples.h"
 
-void IonRootTriples::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                             const RootedROMolPtr *nl, int depth) const {
+void IonRootTriples::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);

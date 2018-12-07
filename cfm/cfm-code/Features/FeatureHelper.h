@@ -64,21 +64,36 @@ public:
         exec_flags[3] = fc->includesFeature("BrokenOrigBondType") ||
                         fc->includesFeature("NeighbourOrigBondTypes");
 
-        fparams = new RDKit::FragCatParams(FGRPS_PICKLE);
-        if (fparams->getNumFuncGroups() != NUM_FGRPS)
-            throw FeatureHelperException(
-                        "Mismatch in expected and found number of functional groups");
+        exec_flags[4] = fc->includesFeature("IonFunctionalGroupFeatures") ||
+                        fc->includesFeature("NLFunctionalGroupFeatures") ||
+                        fc->includesFeature("IonFunctionalGroupFeaturesD2") ||
+                        fc->includesFeature("NLFunctionalGroupFeaturesD2") ||
+                        fc->includesFeature("IonFunctionalGroupRootOnlyFeatures") ||
+                        fc->includesFeature("NLFunctionalGroupRootOnlyFeatures");
 
-        xfparams = new RDKit::FragCatParams(EXTRA_FGRPS_PICKLE);
-        if (xfparams->getNumFuncGroups() != NUM_EXTRA_FGRPS)
+        exec_flags[5] = fc->includesFeature("IonExtraFunctionalGroupFeatures") ||
+                        fc->includesFeature("NLExtraFunctionalGroupFeatures");
+
+        if (exec_flags[4]) {
+            fparams = new RDKit::FragCatParams(FGRPS_PICKLE);
+            if (fparams->getNumFuncGroups() != NUM_FGRPS)
+                throw FeatureHelperException(
+                        "Mismatch in expected and found number of functional groups");
+        }
+
+        if (exec_flags[5]) {
+            xfparams = new RDKit::FragCatParams(EXTRA_FGRPS_PICKLE);
+            if (xfparams->getNumFuncGroups() != NUM_EXTRA_FGRPS)
                 throw FeatureHelperException(
                         "Mismatch in expected and found number of extra functional groups");
-
+        }
     };
 
     ~FeatureHelper() {
-        delete fparams;
-        delete xfparams;
+        if(fparams != nullptr)
+            delete fparams;
+        if(xfparams != nullptr)
+            delete xfparams;
     }
 
     void addLabels(RDKit::RWMol *rwmol) {
@@ -92,9 +107,11 @@ public:
             labelMMFFAtomTypes(rwmol);
         if (exec_flags[3])
             labelOriginalBondTypes(rwmol);
+        if (exec_flags[4])
+            labelFunctionalGroups(rwmol, false);
+        if (exec_flags[5])
+            labelFunctionalGroups(rwmol, true);
 
-        labelFunctionalGroups(rwmol, false);
-        labelFunctionalGroups(rwmol, true);
         labelAtomsWithLonePairs(rwmol);
     };
 

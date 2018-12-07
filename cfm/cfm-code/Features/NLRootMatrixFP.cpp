@@ -17,8 +17,7 @@ param.cpp.
 #########################################################################*/
 #include "NLRootMatrixFP.h"
 
-void NLRootMatrixFPN6::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                               const RootedROMolPtr *nl, const int depth) const {
+void NLRootMatrixFPN6::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 6;
     bool include_adjacency_matrix = true;
@@ -26,8 +25,7 @@ void NLRootMatrixFPN6::compute(FeatureVector &fv, const RootedROMolPtr *ion,
     addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, num_atoms, include_adjacency_matrix);
 }
 
-void NLRootMatrixFPN8::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                               const RootedROMolPtr *nl, const int depth) const {
+void NLRootMatrixFPN8::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 8;
     bool include_adjacency_matrix = true;
@@ -35,8 +33,7 @@ void NLRootMatrixFPN8::compute(FeatureVector &fv, const RootedROMolPtr *ion,
     addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, num_atoms, include_adjacency_matrix);
 }
 
-void NLRootMatrixFPN8D3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                               const RootedROMolPtr *nl, const int depth) const {
+void NLRootMatrixFPN8D3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 8;
     bool include_adjacency_matrix = true;
@@ -45,8 +42,7 @@ void NLRootMatrixFPN8D3::compute(FeatureVector &fv, const RootedROMolPtr *ion,
     addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, max_distance, include_adjacency_matrix);
 }
 
-void NLRootMatrixFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                             const RootedROMolPtr *nl, const int depth) const {
+void NLRootMatrixFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 10;
     bool include_adjacency_matrix = true;
@@ -55,8 +51,7 @@ void NLRootMatrixFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion,
 }
 
 
-void NLRootMatrixFPN16::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                             const RootedROMolPtr *nl, const int depth) const {
+void NLRootMatrixFPN16::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 16;
     bool include_adjacency_matrix = true;

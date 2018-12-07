@@ -19,7 +19,7 @@ param.cpp.
 #include <queue>
 
 void
-RingFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const {
+RingFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     // Non-Ring break
     int ring_break;
