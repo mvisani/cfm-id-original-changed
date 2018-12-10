@@ -53,7 +53,8 @@ Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, cons
 
 }
 
-Transition::Transition(int a_from_id, int a_to_id, const RootedROMolPtr &a_nl, const RootedROMolPtr &an_ion) :
+Transition::Transition(int a_from_id, int a_to_id, const RootedROMolPtr &a_nl, const RootedROMolPtr &an_ion)
+        :
         to_id(a_to_id), from_id(a_from_id), nl(a_nl), ion(an_ion) {
     nl_smiles = RDKit::MolToSmiles(*(nl.mol.get()));
     ion_smiles = RDKit::MolToSmiles(*(ion.mol.get()));
@@ -106,8 +107,14 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
     if (parentid < 0 || fragments[id]->getDepth() == -1)
         fragments[id]->setDepth(node.depth);    //Set start fragment depth
 
+
+    // find if this trans does exist
+    int existing_trans_id = -1;
+    if(parentid >= 0)
+        existing_trans_id = findMatchingTransition(parentid, id);
+
     //Add a transition, if one does not exist
-    if (parentid >= 0 && findMatchingTransition(parentid, id) < 0 &&
+    if (parentid >= 0 && existing_trans_id < 0 &&
         (allow_frag_detours || node.depth <= fragments[id]->getDepth())) {
 
         if (node.depth < fragments[id]->getDepth())
@@ -143,6 +150,10 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         //Delete the mols
         t->deleteIon();
         t->deleteNeutralLoss();
+    }else if(parentid >= 0 && existing_trans_id >= 0 &&
+        (allow_frag_detours || node.depth <= fragments[id]->getDepth())){
+        // if those transitions does exists, increase count
+        transitions[existing_trans_id]->increaseCount();
     }
 
     return id;
@@ -295,7 +306,8 @@ int FragmentGraph::findMatchingTransition(int from_id, int to_id) {
     std::vector<int>::iterator it;
     it = from_id_tmap[from_id].begin();
     for (; it != from_id_tmap[from_id].end(); ++it)
-        if (transitions[*it]->getToId() == to_id) return *it;
+        if (transitions[*it]->getToId() == to_id)
+            return *it;
     return -1;
 }
 

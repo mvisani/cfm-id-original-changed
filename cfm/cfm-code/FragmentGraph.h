@@ -115,13 +115,11 @@ public:
     Transition() {};
 
     // Basic constructor
-    Transition(int a_from_id, int a_to_id, const RootedROMolPtr &a_nl,
-               const RootedROMolPtr &an_ion);
+    Transition(int a_from_id, int a_to_id, const RootedROMolPtr &a_nl, const RootedROMolPtr &an_ion);
 
     // Alternative constructor that finds the root atoms and sets the
     // root pointers appropriately
-    Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl,
-               const romol_ptr_t &an_ion);
+    Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, const romol_ptr_t &an_ion);
 
     // Direct constructor that bipasses the mols altogether and directly sets the
     // nl_smiles
@@ -169,6 +167,9 @@ public:
         tmp_thetas = *a_thetas;
     };
 
+    int getCount() const { return count; };
+
+    void increaseCount() { count++; };
 private:
     int from_id;
     int to_id;
@@ -186,6 +187,9 @@ private:
     // Temporary storage for the theta values
     // while we compute the likely fragment graph
     //(as above, don't use directly, will be moved)
+
+    // count of this trans
+    int count = 1;
 };
 
 class FragmentGraph {
