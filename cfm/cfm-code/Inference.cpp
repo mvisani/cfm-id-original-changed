@@ -318,7 +318,8 @@ void Inference::createSpectrumMessageWithIsotopes(Message &msg, int energy, Mess
                 //estimates.
             }
         }
-        msg.addWeightedMessage(peak_msg, 0.5* std::log(1.0 + pk->intensity));
+        msg.addWeightedMessage(peak_msg, 0.01 * pk->intensity);
+        //msg.addWeightedMessage(peak_msg, 0.5* std::log(1.0 + pk->intensity));
     }
 
 }
