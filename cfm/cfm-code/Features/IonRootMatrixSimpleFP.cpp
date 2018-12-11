@@ -18,7 +18,7 @@ param.cpp.
 #include "IonRootMatrixSimpleFP.h"
 
 
-void IonRootMatrixVerySimpleFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void IonRootGeneralizedMatrixFPN10D3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 10;
     unsigned int max_distance = 3;

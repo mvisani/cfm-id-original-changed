@@ -20,16 +20,15 @@ param.cpp.
 
 // Features use fingerprint encode NL
 
-class IonRootMatrixVerySimpleFPN10 : public FingerPrintFeature {
+class IonRootGeneralizedMatrixFPN10D3 : public FingerPrintFeature {
 public:
-    IonRootMatrixVerySimpleFPN10() {
+    IonRootGeneralizedMatrixFPN10D3() {
         size = 155; //60 + 50 + 45;
-        name = "IonRootMatrixVerySimpleFPN10";
+        name = "IonRootGeneralizedMatrixFPN10D3";
     };
 
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
 };
-
 
 class IonRootMatrixSimpleFPN8D3 : public FingerPrintFeature {
 public:
