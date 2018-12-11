@@ -104,9 +104,8 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
     double mass = getMonoIsotopicMass(node.ion);
     int id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
 
-    if (parentid < 0 || fragments[id]->getDepth() == -1)
+    if (fragments[id]->getDepth() == -1 || node.depth < fragments[id]->getDepth())
         fragments[id]->setDepth(node.depth);    //Set start fragment depth
-
 
     // find if this trans does exist
     int existing_trans_id = -1;
@@ -116,9 +115,6 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
     //Add a transition, if one does not exist
     if (parentid >= 0 && existing_trans_id < 0 &&
         (allow_frag_detours || node.depth <= fragments[id]->getDepth())) {
-
-        if (node.depth < fragments[id]->getDepth())
-            fragments[id]->setDepth(node.depth);    //Update the depth of the fragment
 
         int idx = transitions.size();
         transitions.push_back(new Transition(parentid, id, node.nl, node.ion));
@@ -303,11 +299,13 @@ void FragmentGraph::reduceMol(RDKit::RWMol &rwmol) {
 //Find the id for an existing transition that matches the input ids
 //or -1 in the case where no such transition is found
 int FragmentGraph::findMatchingTransition(int from_id, int to_id) {
-    std::vector<int>::iterator it;
-    it = from_id_tmap[from_id].begin();
-    for (; it != from_id_tmap[from_id].end(); ++it)
+    std::vector<int>::iterator it = from_id_tmap[from_id].begin();
+    for (; it != from_id_tmap[from_id].end(); ++it){
+        if (*it >= transitions.size())
+            continue;
         if (transitions[*it]->getToId() == to_id)
             return *it;
+    }
     return -1;
 }
 
