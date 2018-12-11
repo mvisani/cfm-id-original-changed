@@ -406,7 +406,8 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
 
     // fv.writeDebugInfo();
     // add atoms information into FP
-    addAtomTypeFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, max_distance);
+    //addAtomTypeFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, max_distance);
+    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
     addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, true);
     addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
     //addDistanceFeature(tmp_fv, num_atom, distance);
@@ -424,7 +425,6 @@ FingerPrintFeature::addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedR
 
     for (int i = 0; i < visit_order.size() && i < num_atom; ++i)
         visit_order_map[visit_order[i]] = i;
-
 
     // add bound type
     for (auto bi = mol->mol->beginBonds(); bi != mol->mol->endBonds(); ++bi) {

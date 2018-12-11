@@ -144,6 +144,9 @@ void Inference::createMessage(factor_probs_t &tmp_log_probs, Message &m, Message
         std::vector<int>::const_iterator itt = tmap->begin();
         for (; itt != tmap->end(); ++itt) {
             const Transition *t = moldata->getTransitionAtIdx(*itt);
+            // if perm[fragment_id] is not super small
+            // nothing should happen
+            // else, prob to next depth - ps term at this depth  * trans term at this depth
             if ((direction == DOWN && prev_m.getIdx(t->getFromId()) > -A_BIG_DBL) ||
                 (direction == UP && prev_m.getIdx(t->getToId()) > -A_BIG_DBL)) {
                 log_sum = logAdd(log_sum, tmp_log_probs.tn[*itt][depth]);
@@ -315,7 +318,7 @@ void Inference::createSpectrumMessageWithIsotopes(Message &msg, int energy, Mess
                 //estimates.
             }
         }
-        msg.addWeightedMessage(peak_msg, 0.01 * pk->intensity);
+        msg.addWeightedMessage(peak_msg, 0.5* std::log(1.0 + pk->intensity));
     }
 
 }
