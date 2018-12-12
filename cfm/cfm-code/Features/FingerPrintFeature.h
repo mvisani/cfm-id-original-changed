@@ -54,7 +54,8 @@ protected:
     void addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
                                       unsigned int finger_print_size, int radius) const;
 
-    void addGenernalizedRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol) const;
+    void addGenernalizedRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol,
+                                                  unsigned int num_atom, unsigned int max_distance) const;
 
 private:
 
@@ -82,7 +83,8 @@ private:
                                          unsigned int num_atom,
                                          unsigned int depth, bool include_con_matrix) const;
 
-    void addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *roMolPtr) const;
+    void addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *roMolPtr,
+                                           unsigned int num_atom, unsigned int max_distance) const;
 
     void addDegreeFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
                            const std::vector<unsigned int> &visit_order) const;
