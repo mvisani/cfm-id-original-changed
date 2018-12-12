@@ -17,6 +17,15 @@ param.cpp.
 #########################################################################*/
 #include "NLRootMatrixFP.h"
 
+void NLRootMatrixFPN6D2::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+
+    unsigned int num_atoms = 6;
+    bool include_adjacency_matrix = true;
+    unsigned int max_distance = 2;
+
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, max_distance, include_adjacency_matrix);
+}
+
 void NLRootMatrixFPN6::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 6;

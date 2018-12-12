@@ -25,6 +25,15 @@ void IonRootMatrixFPN6::compute(FeatureVector &fv, const RootedROMolPtr *ion, co
     addAdjacentMatrixRepresentationFeature(fv, ion, num_atoms, num_atoms, include_adjacency_matrix);
 }
 
+void IonRootMatrixFPN6D2::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+
+    unsigned int num_atoms = 6;
+    unsigned int max_distance = 2;
+    bool include_adjacency_matrix = true;
+
+    addAdjacentMatrixRepresentationFeature(fv, ion, num_atoms, max_distance, include_adjacency_matrix);
+}
+
 void IonRootMatrixFPN8::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
     unsigned int num_atoms = 8;
