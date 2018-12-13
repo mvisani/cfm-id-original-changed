@@ -98,11 +98,4 @@ private:
                                   std::vector<unsigned int> &visit_order, bool no_bond_type) const;
 
     void addDistanceFeature(std::vector<int> &tmp_fv, unsigned int num_atom, const std::vector<unsigned int> &distance) const;
-
-    void addBondAtomPairToFeatures(std::vector<int> &tmp_fv, std::map<std::string, int>&dict) const;
-
-    void updateBondAtomPairDict(const RootedROMolPtr *rootedMol,
-                                const RDKit::Atom *root,
-                                std::map<std::string, int>&dict) const;
-
 };
