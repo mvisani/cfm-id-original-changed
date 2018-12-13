@@ -23,7 +23,6 @@ param.cpp.
 #include <GraphMol/Fingerprints/Fingerprints.h>
 #include <GraphMol/Fingerprints/MorganFingerprints.h>
 #include <GraphMol/MolOps.h>
-#include <GraphMol/AtomIterators.h>
 
 #include <queue>
 #include <bitset>
@@ -457,18 +456,6 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
         updateBondAtomPairDict(roMolPtr, nbr_atom, dict);
     }
     addBondAtomPairToFeatures(tmp_fv, dict);
-
-    const unsigned int num_atom_types = 6;
-    std::vector<int> atom_type_feature(num_atom_types, 0);
-
-    for (auto ai = mol->beginAtoms(); ai != mol->endAtoms(); ++ai){
-        std::string symbol = (*ai)->getSymbol();
-        replaceUncommonWithX(symbol);
-        int atom_feature = getSymbolsLessIndex(symbol);
-        atom_type_feature[atom_feature] = 1;
-    }
-
-    tmp_fv.insert(tmp_fv.end(), atom_type_feature.begin(), atom_type_feature.end());
 }
 
 void
