@@ -396,26 +396,13 @@ FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, co
     addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
     addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
 
-
 }
 
-void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *roMolPtr) const {
+void FingerPrintFeature::updateBondAtomPairDict(const RootedROMolPtr *rootedMol,
+                            const RDKit::Atom *root,
+                            std::map<std::string, int>&dict) const {
 
-    auto mol = roMolPtr->mol;
-    auto root = roMolPtr->root;
-
-    auto symbols = OKSymbolsLess();
-    auto num_symbols = symbols.size();
-    const int num_bond_type = 7;
-    std::map<std::string, int> dict;
-    //init dict
-    for(auto & symbol : symbols){
-        for(int bond_type = 1; bond_type <= num_bond_type; ++ bond_type){
-            std::string key = std::to_string(bond_type) + symbol;
-            dict[key] = 0;
-        }
-    }
-
+    auto mol = rootedMol->mol;
     for (auto itp = mol->getAtomNeighbors(root); itp.first != itp.second; ++itp.first) {
         RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
         auto bi = mol.get()->getBondBetweenAtoms(root->getIdx(), nbr_atom->getIdx());
@@ -427,7 +414,9 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
         std::string key = std::to_string(bond_type) + nbr_atom_symbol;
         dict[key] += 1;
     }
+}
 
+void FingerPrintFeature::addBondAtomPairToFeatures(std::vector<int> &tmp_fv, std::map<std::string, int>&dict) const{
     const int num_bits = 4;
     for (auto const& record : dict){
         auto count =  record.second;
@@ -438,6 +427,35 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
         }
         tmp_fv.insert(tmp_fv.end(), features.begin(), features.end());
     }
+}
+
+void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *roMolPtr) const {
+
+    auto mol = roMolPtr->mol;
+    auto root = roMolPtr->root;
+
+    auto symbols = OKSymbolsLess();
+    const int num_bond_type = 7;
+    std::map<std::string, int> dict;
+    //init dict
+    for(auto & symbol : symbols){
+        for(int bond_type = 1; bond_type <= num_bond_type; ++ bond_type){
+            std::string key = std::to_string(bond_type) + symbol;
+            dict[key] = 0;
+        }
+    }
+
+    updateBondAtomPairDict(roMolPtr, root, dict);
+    addBondAtomPairToFeatures(tmp_fv, dict);
+
+    for ( auto & rec : dict)
+        rec.second = 0;
+
+    for (auto itp = mol->getAtomNeighbors(root); itp.first != itp.second; ++itp.first) {
+        RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
+        updateBondAtomPairDict(roMolPtr, nbr_atom, dict);
+    }
+    addBondAtomPairToFeatures(tmp_fv, dict);
 }
 
 void
