@@ -21,11 +21,6 @@ void NLRootGeneralizedMatrixFPN10::compute(FeatureVector &fv, const RootedROMolP
     addGenernalizedRepresentationFeature(fv, nl);
 }
 
-void NLRootGeneralizedMatrixFPN10D3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
-
-    addGenernalizedRepresentationFeature(fv, nl);
-}
-
 void NLRootMatrixSimpleFPN8D3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
     unsigned int num_atoms = 8;
     unsigned int max_distance = 3;
