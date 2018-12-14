@@ -17,8 +17,17 @@ param.cpp.
 #################################################################y########*/
 #include "NLRootMatrixSimpleFP.h"
 
+void NLRootGeneralizedMatrixFPN8::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+    unsigned int num_atoms = 8;
+    unsigned int max_distance = 8;
+    addGenernalizedRepresentationFeature(fv, nl, num_atoms, max_distance);
+}
+
+
 void NLRootGeneralizedMatrixFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
-    addGenernalizedRepresentationFeature(fv, nl);
+    unsigned int num_atoms = 10;
+    unsigned int max_distance = 10;
+    addGenernalizedRepresentationFeature(fv, nl, num_atoms, max_distance);
 }
 
 void NLRootMatrixSimpleFPN8D3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {

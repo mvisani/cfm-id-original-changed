@@ -17,9 +17,18 @@ param.cpp.
 #########################################################################*/
 #include "IonRootMatrixSimpleFP.h"
 
+void IonRootGeneralizedMatrixFPN8::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+
+    unsigned int num_atoms = 8;
+    unsigned int max_distance = 8;
+    addGenernalizedRepresentationFeature(fv, ion, num_atoms, max_distance);
+}
+
 void IonRootGeneralizedMatrixFPN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
 
-    addGenernalizedRepresentationFeature(fv, ion);
+    unsigned int num_atoms = 10;
+    unsigned int max_distance = 10;
+    addGenernalizedRepresentationFeature(fv, ion, num_atoms, max_distance);
 }
 
 void IonRootMatrixSimpleFPN8D3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
