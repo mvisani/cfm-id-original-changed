@@ -437,26 +437,35 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
 
     auto symbols = OKSymbolsLess();
     const int num_bond_type = 7;
-    std::map<std::string, int> dict;
+    std::map<std::string, int> dict, dict_d2, dict_d3;
     //init dict
     for(auto & symbol : symbols){
         for(int bond_type = 1; bond_type <= num_bond_type; ++ bond_type){
             std::string key = std::to_string(bond_type) + symbol;
             dict[key] = 0;
+            dict_d2[key] = 0;
+            dict_d3[key] = 0;
         }
     }
 
     updateBondAtomPairDict(roMolPtr, root, dict);
     addBondAtomPairToFeatures(tmp_fv, dict);
 
-    for ( auto & rec : dict)
-        rec.second = 0;
 
-    for (auto itp = mol->getAtomNeighbors(root); itp.first != itp.second; ++itp.first) {
-        RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
-        updateBondAtomPairDict(roMolPtr, nbr_atom, dict);
+    for (auto itp_d1 = mol->getAtomNeighbors(root); itp_d1.first != itp_d1.second; ++itp_d1.first) {
+
+        RDKit::Atom *nbr_atom_d1 = mol->getAtomWithIdx(*itp_d1.first);
+        if(nbr_atom_d1 != root)
+            updateBondAtomPairDict(roMolPtr, nbr_atom_d1, dict_d2);
+
+        for (auto itp_d2 = mol->getAtomNeighbors(root); itp_d2.first != itp_d2.second; ++itp_d2.first) {
+            RDKit::Atom *nbr_atom_d2 = mol->getAtomWithIdx(*itp_d2.first);
+            if(nbr_atom_d1 != nbr_atom_d2)
+                updateBondAtomPairDict(roMolPtr, nbr_atom_d1, dict_d3);
+        }
     }
-    addBondAtomPairToFeatures(tmp_fv, dict);
+    addBondAtomPairToFeatures(tmp_fv, dict_d2);
+    addBondAtomPairToFeatures(tmp_fv, dict_d3);
 
     const unsigned int num_atom_types = 6;
     std::vector<int> atom_type_feature(num_atom_types, 0);
