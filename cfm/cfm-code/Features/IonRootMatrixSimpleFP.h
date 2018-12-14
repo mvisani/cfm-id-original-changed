@@ -22,18 +22,8 @@ param.cpp.
 class IonRootGeneralizedMatrixFPN10 : public FingerPrintFeature {
 public:
     IonRootGeneralizedMatrixFPN10() {
-        size = 168 * 2; //60 + 50 + 45;
+        size = 168 * 2 + 6; //60 + 50 + 45;
         name = "IonRootGeneralizedMatrixFPN10";
-    };
-
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
-};
-
-class IonRootGeneralizedMatrixFPN10D3 : public FingerPrintFeature {
-public:
-    IonRootGeneralizedMatrixFPN10D3() {
-        size = 105; //60 + 45;
-        name = "IonRootGeneralizedMatrixFPN10D3";
     };
 
     void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
