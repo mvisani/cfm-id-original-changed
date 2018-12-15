@@ -315,11 +315,8 @@ void FingerPrintFeature::getAtomDistanceToRoot(const RootedROMolPtr *roMolPtr,
 
         for (auto itp = mol->getAtomNeighbors(curr); itp.first != itp.second; ++itp.first) {
             RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
-            // if this node is not where we come from
-            if (nbr_atom != curr) {
-                atom_queue.push(nbr_atom);
-                distance_queue.push(curr_distance + 1);
-            }
+            atom_queue.push(nbr_atom);
+            distance_queue.push(curr_distance + 1);
         }
     }
 }
@@ -413,16 +410,18 @@ void FingerPrintFeature::updateBondAtomPairDict(const RootedROMolPtr *rootedMol,
         replaceUncommonWithX(nbr_atom_symbol);
 
         std::string key = std::to_string(bond_type) + nbr_atom_symbol;
-        dict[key] = 1;
+        dict[key] += 1;
     }
 }
 
 void FingerPrintFeature::addBondAtomPairToFeatures(std::vector<int> &tmp_fv, std::map<std::string, int>&dict) const{
     for (auto const& record : dict){
-        if(record.second)
-            tmp_fv.push_back(1);
-        else
-            tmp_fv.push_back(0);
+        for(int i = 0 ; i < 3; ++i){
+            if(record.second > i)
+                tmp_fv.push_back(1);
+            else
+                tmp_fv.push_back(0);
+        }
     }
 }
 
@@ -430,7 +429,7 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
                                                        unsigned int num_atom, unsigned int max_distance) const {
 
     // Get visit order
-    std::vector<unsigned int> visit_order;
+    /*std::vector<unsigned int> visit_order;
     std::vector<unsigned int> distance;
     getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom, max_distance);
 
@@ -444,7 +443,46 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
     addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, interval, 2*interval, true);
 
     addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 2*interval+1, max_distance);
-    addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 2*interval, max_distance, true);
+    addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 2*interval, max_distance, true);*/
+
+    auto mol = roMolPtr->mol;
+    auto root = roMolPtr->root;
+
+    auto symbols = OKSymbolsLess();
+    const int num_bond_type = 7;
+    std::map<std::string, int> dict;
+    //init dict
+    for(auto & symbol : symbols){
+        for(int bond_type = 1; bond_type <= num_bond_type; ++ bond_type){
+            std::string key = std::to_string(bond_type) + symbol;
+            dict[key] = 0;
+        }
+    }
+
+    // 142 bits for atoms next to root
+    updateBondAtomPairDict(roMolPtr, root, dict);
+    addBondAtomPairToFeatures(tmp_fv, dict);
+
+    // now lets add what atom we have on outer rings
+    std::map<unsigned int, unsigned int> distances_map;
+    getAtomDistanceToRoot(roMolPtr, distances_map);
+
+    // let us do distance 1 - 9 for now
+    std::vector<std::vector<int> > atom_type_count_per_distance ((max_distance-1), std::vector<int>(symbols.size(),0));
+
+    for(const auto & record : distances_map){
+        auto distance = record.second;
+        if((distance > 1) && (distance < max_distance)){
+            std::string atom_symbol = mol->getAtomWithIdx(record.first)->getSymbol();
+            replaceUncommonWithX(atom_symbol);
+            int atom_feature_idx = getSymbolsLessIndex(atom_symbol);
+            atom_type_count_per_distance[distance-1][atom_feature_idx] = 1;
+        }
+    }
+
+    for(int i = 0 ; i < 9; ++i){
+        tmp_fv.insert(tmp_fv.end(), atom_type_count_per_distance[i].begin(), atom_type_count_per_distance[i].end());
+    }
 }
 
 void
