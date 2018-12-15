@@ -440,10 +440,10 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
     addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, interval);
     addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, interval, false);
 
-    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, interval, 2*interval);
+    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, interval+1, 2*interval);
     addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, interval, 2*interval, true);
 
-    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 2*interval, max_distance);
+    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 2*interval+1, max_distance);
     addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 2*interval, max_distance, true);
 }
 
