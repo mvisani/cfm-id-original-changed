@@ -90,14 +90,16 @@ private:
                            const std::vector<unsigned int> &visit_order) const;
 
     void addAtomTypeSeqFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
-                                const std::vector<unsigned int> &visit_order) const;
+                                const std::vector<unsigned int> &visit_order, std::vector<unsigned int> &distance,
+                                int min_distance, int max_distance) const;
 
     void addAtomTypeFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
                                  const std::vector<unsigned int> &visit_order,
                                  const std::vector<unsigned int> &distance) const;
 
     void addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
-                                  std::vector<unsigned int> &visit_order, bool no_bond_type) const;
+                              std::vector<unsigned int> &visit_order, std::vector<unsigned int> &distance,
+                              int min_distance, int max_distance, bool no_bond_type) const;
 
     void addDistanceFeature(std::vector<int> &tmp_fv, unsigned int num_atom, const std::vector<unsigned int> &distance) const;
 
@@ -108,6 +110,8 @@ private:
                                 std::map<std::string, int>&dict) const;
 
     void
-    getAdjMatrix(const RootedROMolPtr *mol, unsigned int num_atom, const std::vector<unsigned int> &visit_order,
-                 std::vector<std::vector<int>> &adjacency_matrix) const;
+    getAdjMatrix(const RootedROMolPtr *mol, unsigned int num_atom,
+                 const std::vector<unsigned int> &visit_order,
+                 std::vector<std::vector<int>> &adjacency_matrix, std::vector<unsigned int> &distance,
+                 int min_distance, int max_distance) const;
 };

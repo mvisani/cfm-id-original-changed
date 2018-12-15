@@ -390,11 +390,11 @@ FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, co
     getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom, depth);
 
     if (include_adjacency_matrix)
-        addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, false);
+        addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, depth, false);
 
     // fv.writeDebugInfo();
     // add atoms information into FP
-    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
+    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, depth);
     addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
 
 }
@@ -434,61 +434,27 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
     std::vector<unsigned int> distance;
     getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom, max_distance);
 
+    int interval = max_distance/3;
+
     // fv.writeDebugInfo();
-    // add atoms information into FP
-    //addAtomTypeFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, max_distance);
-    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
-    addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, true);
-    //addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
-    //addDistanceFeature(tmp_fv, num_atom, distance);
+    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, interval);
+    addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, interval, true);
 
-    /*auto mol = roMolPtr->mol;
+    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, interval, 2*interval);
+    addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, interval, 2*interval, true);
 
-    int num_atom = 10;
-    int depth = num_atom;
-    // Get visit order
-    std::vector<unsigned int> visit_order;
-    std::vector<unsigned int> distance;
-    getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom, num_atom);
-
-
-    auto symbols = OKSymbolsLess();
-    const int num_bond_type = 7;
-    std::vector<std::map<std::string, int>> dicts(depth);
-
-    //init dict
-    for(auto & symbol : symbols){
-        for(int bond_type = 1; bond_type <= num_bond_type; ++ bond_type){
-            std::string key = std::to_string(bond_type) + symbol;
-            for(int idx = 0; idx < depth; ++idx)
-                dicts[idx][key] = 0;
-        }
-    }
-    for(int idx = 0; idx < visit_order.size(); ++idx){
-        int dict_idx = distance[idx];
-
-    }
-
-    const unsigned int num_atom_types = 6;
-    std::vector<int> atom_type_feature(num_atom_types, 0);
-
-    for (auto ai = mol->beginAtoms(); ai != mol->endAtoms(); ++ai){
-        std::string symbol = (*ai)->getSymbol();
-        replaceUncommonWithX(symbol);
-        int atom_feature = getSymbolsLessIndex(symbol);
-        atom_type_feature[atom_feature] = 1;
-    }
-
-    tmp_fv.insert(tmp_fv.end(), atom_type_feature.begin(), atom_type_feature.end());*/
+    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 2*interval, max_distance);
+    addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 2*interval, max_distance, true);
 }
 
 void
 FingerPrintFeature::addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, unsigned int num_atom,
-                                         std::vector<unsigned int> &visit_order, bool no_bond_type) const {// init a 2D vector to store matrix
+                                         std::vector<unsigned int> &visit_order, std::vector<unsigned int> &distance,
+                                         int min_distance, int max_distance, bool no_bond_type) const {// init a 2D vector to store matrix
 
     std::vector<std::vector<int>> adjacency_matrix(num_atom,
                                                    std::vector<int>(num_atom, 0));
-    getAdjMatrix(mol, num_atom, visit_order, adjacency_matrix);
+    getAdjMatrix(mol, num_atom, visit_order, adjacency_matrix, distance, min_distance, max_distance);
 
     if(!no_bond_type){
         // first bit indicate if there is a bond
@@ -527,12 +493,17 @@ FingerPrintFeature::addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedR
 
 void FingerPrintFeature::getAdjMatrix(const RootedROMolPtr *mol, unsigned int num_atom,
                                       const std::vector<unsigned int> &visit_order,
-                                      std::vector<std::vector<int>> &adjacency_matrix) const {// make sure we only get num_atom amount of atoms, this is extra check,
-// first check is done in the getAtomVisitOrderBFS
+                                      std::vector<std::vector<int>> &adjacency_matrix,
+                                      std::vector<unsigned int> &distance,
+                                      int min_distance, int max_distance) const {// make sure we only get num_atom amount of atoms, this is extra check,
+
+    // first check is done in the getAtomVisitOrderBFS
     std::map<unsigned int, int> visit_order_map;
 
-    for (int i = 0; i < visit_order.size() && i < num_atom; ++i)
-        visit_order_map[visit_order[i]] = i;
+    for (int i = 0; i < visit_order.size() && i < num_atom; ++i){
+        if((distance[i] >= min_distance)&&(distance[i] <= max_distance))
+            visit_order_map[visit_order[i]] = i;
+    }
 
     // add bound type
     for (auto bi = mol->mol->beginBonds(); bi != mol->mol->endBonds(); ++bi) {
@@ -554,17 +525,21 @@ void FingerPrintFeature::getAdjMatrix(const RootedROMolPtr *mol, unsigned int nu
 
 void FingerPrintFeature::addAtomTypeSeqFeatures(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
                                                 unsigned int num_atom,
-                                                const std::vector<unsigned int> &visit_order) const {
+                                                const std::vector<unsigned int> &visit_order,
+                                                std::vector<unsigned int> &distance,
+                                                int min_distance, int max_distance) const {
     const unsigned int num_atom_types = 6;
     for (int i = 0; i < num_atom; ++i) {
         std::vector<int> atom_type_feature(num_atom_types, 0);
         if (i < visit_order.size()) {
-            int atom_idx = visit_order[i];
-            // add atom types
-            std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
-            replaceUncommonWithX(symbol);
-            int atom_feature = getSymbolsLessIndex(symbol);
-            atom_type_feature[atom_feature] = 1;
+            if((distance[i] >= min_distance)&&(distance[i] <= max_distance)){
+                int atom_idx = visit_order[i];
+                // add atom types
+                std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
+                replaceUncommonWithX(symbol);
+                int atom_feature = getSymbolsLessIndex(symbol);
+                atom_type_feature[atom_feature] = 1;
+            }
         }
         tmp_fv.insert(tmp_fv.end(), atom_type_feature.begin(), atom_type_feature.end());
     }
