@@ -450,37 +450,45 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
 
     auto symbols = OKSymbolsLess();
     const int num_bond_type = 7;
-    std::map<std::string, int> dict;
+    std::map<std::string, int> dict_l1, dict_l2;
     //init dict
     for(auto & symbol : symbols){
         for(int bond_type = 1; bond_type <= num_bond_type; ++ bond_type){
             std::string key = std::to_string(bond_type) + symbol;
-            dict[key] = 0;
+            dict_l1[key] = 0;
+            dict_l2[key] = 0;
         }
     }
 
     // 142 bits for atoms next to root
-    updateBondAtomPairDict(roMolPtr, root, dict);
-    addBondAtomPairToFeatures(tmp_fv, dict);
+    updateBondAtomPairDict(roMolPtr, root, dict_l1);
+    addBondAtomPairToFeatures(tmp_fv, dict_l1);
+
+    for (auto itp_d1 = mol->getAtomNeighbors(root); itp_d1.first != itp_d1.second; ++itp_d1.first) {
+        RDKit::Atom *nbr_atom_d1 = mol->getAtomWithIdx(*itp_d1.first);
+        updateBondAtomPairDict(roMolPtr, nbr_atom_d1, dict_l2);
+    }
+    addBondAtomPairToFeatures(tmp_fv, dict_l2);
 
     // now lets add what atom we have on outer rings
     std::map<unsigned int, unsigned int> distances_map;
     getAtomDistanceToRoot(roMolPtr, distances_map);
 
+    int offset = 2;
     // let us do distance 1 - 9 for now
-    std::vector<std::vector<int> > atom_type_count_per_distance ((max_distance-1), std::vector<int>(symbols.size(),0));
+    std::vector<std::vector<int> > atom_type_count_per_distance ((max_distance-offset), std::vector<int>(symbols.size(),0));
 
     for(const auto & record : distances_map){
         auto distance = record.second;
-        if((distance > 1) && (distance < max_distance)){
+        if((distance > offset) && (distance < max_distance)){
             std::string atom_symbol = mol->getAtomWithIdx(record.first)->getSymbol();
             replaceUncommonWithX(atom_symbol);
             int atom_feature_idx = getSymbolsLessIndex(atom_symbol);
-            atom_type_count_per_distance[distance-1][atom_feature_idx] = 1;
+            atom_type_count_per_distance[distance-offset][atom_feature_idx] = 1;
         }
     }
 
-    for(int i = 0 ; i < max_distance-1; ++i){
+    for(int i = 0 ; i < max_distance-offset; ++i){
         tmp_fv.insert(tmp_fv.end(), atom_type_count_per_distance[i].begin(), atom_type_count_per_distance[i].end());
     }
 }
