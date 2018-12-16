@@ -103,7 +103,8 @@ private:
 
     void addDistanceFeature(std::vector<int> &tmp_fv, unsigned int num_atom, const std::vector<unsigned int> &distance) const;
 
-    void addBondAtomPairToFeatures(std::vector<int> &tmp_fv, std::map<std::string, int>&dict) const;
+    void addBondAtomPairToFeatures(std::vector<int> &tmp_fv, std::map<std::string, int> &dict,
+                                       bool no_count) const;
 
     void updateBondAtomPairDict(const RootedROMolPtr *rootedMol,
                                 const RDKit::Atom *root,
@@ -114,4 +115,7 @@ private:
                  const std::vector<unsigned int> &visit_order,
                  std::vector<std::vector<int>> &adjacency_matrix, std::vector<unsigned int> &distance,
                  int min_distance, int max_distance) const;
+
+    void getBondAtomPairAtEachDistance(const RootedROMolPtr *roMolPtr,
+                                       std::vector<std::map<std::string, int>> &dict) const;
 };

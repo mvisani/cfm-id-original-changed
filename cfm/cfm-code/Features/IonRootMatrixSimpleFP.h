@@ -22,7 +22,7 @@ param.cpp.
 class IonRootGeneralizedMatrixFPN8 : public FingerPrintFeature {
 public:
     IonRootGeneralizedMatrixFPN8() {
-        size = 126 * 2 + 6 * 6;//216 + 76 * 2; //48 + 28 ;
+        size =  126 * 2 + 42 *6;//216 + 76 * 2; //48 + 28 ;
         name = "IonRootGeneralizedMatrixFPN8";
     };
 
@@ -32,7 +32,7 @@ public:
 class IonRootGeneralizedMatrixFPN10 : public FingerPrintFeature {
 public:
     IonRootGeneralizedMatrixFPN10() {
-        size = 126 * 2 + 6 * 8; //60 + 50 + 45;
+        size = 126 * 2 + 42 *8; //60 + 50 + 45;
         name = "IonRootGeneralizedMatrixFPN10";
     };
 

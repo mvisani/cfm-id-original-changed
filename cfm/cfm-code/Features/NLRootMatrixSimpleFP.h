@@ -22,7 +22,7 @@ param.cpp.
 class NLRootGeneralizedMatrixFPN8 : public FingerPrintFeature {
 public:
     NLRootGeneralizedMatrixFPN8() {
-        size = 126 * 2 + 6 * 6; // 60 + 45 + 50
+        size = 126 * 2 + 42 *6; // 60 + 45 + 50
         name = "NLRootGeneralizedMatrixFPN8";
     };
 
@@ -32,7 +32,7 @@ public:
 class NLRootGeneralizedMatrixFPN10 : public FingerPrintFeature {
 public:
     NLRootGeneralizedMatrixFPN10() {
-        size = 126 * 2 + 6 * 8; // 60 + 45 + 50
+        size =  126 * 2 + 42 *8; // 60 + 45 + 50
         name = "NLRootGeneralizedMatrixFPN10";
     };
 
