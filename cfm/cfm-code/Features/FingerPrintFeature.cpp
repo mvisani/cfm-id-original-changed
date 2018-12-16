@@ -480,7 +480,7 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
         }
     }
 
-    for(int i = 0 ; i < 9; ++i){
+    for(int i = 0 ; i < max_distance-1; ++i){
         tmp_fv.insert(tmp_fv.end(), atom_type_count_per_distance[i].begin(), atom_type_count_per_distance[i].end());
     }
 }
