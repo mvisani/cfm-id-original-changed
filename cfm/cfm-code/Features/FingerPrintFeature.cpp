@@ -433,7 +433,7 @@ FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, co
     // fv.writeDebugInfo();
     // add atoms information into FP
     addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, depth);
-    //addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
+    addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
 
 }
 
@@ -510,12 +510,10 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
     }
 
     getBondAtomPairAtEachDistance(roMolPtr, dicts);
-
-    int offset = 1;
     // 142 bits for atoms next to root
-    for(int i = 0 ; i < offset ; ++i)
-        addBondAtomPairToFeatures(tmp_fv, dicts[i], false);
-    //addBondAtomPairToFeatures(tmp_fv, dicts[1], false);
+    addBondAtomPairToFeatures(tmp_fv, dicts[0], false);
+    addBondAtomPairToFeatures(tmp_fv, dicts[1], false);
+    int offset = 2;
     for(int i = offset; i < max_distance; ++i)
         addBondAtomPairToFeatures(tmp_fv, dicts[i], true);
 
