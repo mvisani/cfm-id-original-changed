@@ -502,7 +502,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             }
 
             // this should be a better way in large number of cores
-            comm->broadcastParamsWeights(param.get());
+            comm->broadcastParamsWeightsOrigMpi(param.get());
         }
 
         // End of batch

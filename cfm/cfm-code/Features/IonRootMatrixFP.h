@@ -20,12 +20,12 @@ param.cpp.
 
 // Features use fingerprint encode NL fragmentatNL
 
-//feature_size = num_atom * 11 + 6 * (num_atom) +   num_atom * (num_atom - 1) / 2 * 6;
+//feature_size = 6 * (num_atom) +   num_atom * (num_atom - 1) / 2 * 6;
 // Features use fingerprint encode NL fragmentation
 class IonRootMatrixFPN6 : public FingerPrintFeature {
 public:
     IonRootMatrixFPN6() {
-        size = 156;
+        size = 126;
         name = "IonRootMatrixFPN6";
     };
 
@@ -35,7 +35,7 @@ public:
 class IonRootMatrixFPN6D2 : public FingerPrintFeature {
 public:
     IonRootMatrixFPN6D2() {
-        size = 156;
+        size = 126;
         name = "IonRootMatrixFPN6D2";
     };
 
@@ -45,7 +45,7 @@ public:
 class IonRootMatrixFPN8 : public FingerPrintFeature {
 public:
     IonRootMatrixFPN8() {
-        size = 256;
+        size = 216;
         name = "IonRootMatrixFPN8";
     };
 
@@ -55,7 +55,7 @@ public:
 class IonRootMatrixFPN8D3 : public FingerPrintFeature {
 public:
     IonRootMatrixFPN8D3() {
-        size = 256;
+        size = 330;
         name = "IonRootMatrixFPN8D3";
     };
 
@@ -65,7 +65,7 @@ public:
 class IonRootMatrixFPN10 : public FingerPrintFeature {
 public:
     IonRootMatrixFPN10() {
-        size = 380;
+        size = 330;
         name = "IonRootMatrixFPN10";
     };
 
@@ -75,7 +75,7 @@ public:
 class IonRootMatrixFPN16 : public FingerPrintFeature {
 public:
     IonRootMatrixFPN16() {
-        size = 896;
+        size = 816;
         name = "IonRootMatrixFPN16";
     };
 
