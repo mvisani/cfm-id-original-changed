@@ -433,7 +433,7 @@ FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, co
     // fv.writeDebugInfo();
     // add atoms information into FP
     addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, depth);
-    //addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
+    addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
 
 }
 
