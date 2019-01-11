@@ -199,10 +199,6 @@ void MasterComms::broadcastParamsWeights(Param *param) {
 
         MPI_Send(&(used_params[0]), worker_num_used[i], MPI::DOUBLE, i, 0, MPI_COMM_WORLD);
     }
-
-    //auto dropouts = param->getDropoutsPtr();
-    //if(nullptr != dropouts)
-    //    MPI_Bcast(&((*dropouts)[0]), dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
 }
 
 int Comms::broadcastConverged(int converged) {
@@ -219,12 +215,6 @@ int Comms::broadcastNumUsed(int num_used) {
     MPI_Bcast(&num_used, 1, MPI_INT, MASTER, MPI_COMM_WORLD);
     return num_used;
 
-}
-
-bool Comms::broadcastBooleanFlag(bool flag) {
-    MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
-    MPI_Bcast(&flag, 1, MPI_CXX_BOOL, MASTER, MPI_COMM_WORLD);
-    return flag;
 }
 
 double Comms::broadcastQ(double Q) {
