@@ -25,15 +25,14 @@ set(INCLUDE_TESTS OFF CACHE BOOL "Do you want to build the tests?")
 set(INCLUDE_TRAIN OFF CACHE BOOL "Do you want to build the training code?")
 
 # BOOST
-set(Boost_ADDITIONAL_VERSIONS "1.51" "1.51.0" "1.47" "1.47.0")
 set(Boost_USE_STATIC_LIBS ON)
 include(FindBoost)
 
 # For some reason msvc with give LNK2019 if not include thread
 if (MSVC)
-    find_package(Boost 1.47 COMPONENTS filesystem system serialization thread REQUIRED)
+    find_package(Boost 1.55 COMPONENTS filesystem system serialization thread REQUIRED)
 else ()
-    find_package(Boost 1.47 COMPONENTS filesystem system serialization REQUIRED)
+    find_package(Boost 1.55 COMPONENTS filesystem system serialization REQUIRED)
 endif ()
 
 include_directories(${Boost_INCLUDE_DIRS})
@@ -82,6 +81,9 @@ add_subdirectory(fraggraph-gen)
 #Executable for running tests
 if (INCLUDE_TESTS)
     add_subdirectory(cfm-test)
+    enable_testing()
+    find_package(Boost 1.55 COMPONENTS unit_test_framework REQUIRED)
+    add_subdirectory(cfm-boost-test)
 endif ()
 
 if (INCLUDE_TRAIN)
