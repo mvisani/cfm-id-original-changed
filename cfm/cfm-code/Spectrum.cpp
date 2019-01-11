@@ -169,9 +169,17 @@ void Spectrum::clean(double abs_mass_tol, double ppm_mass_tol) {
             peak_flags[idx] = false;
 
         double mass_tol = getMassTol(abs_mass_tol, ppm_mass_tol, itp->mass);
-        if (fabs(itp->mass - prev_mass) < mass_tol &&
-            itp->intensity < prev_intensity)
+        while (fabs(itp->mass - prev_mass) < mass_tol &&
+            itp->intensity < prev_intensity){
             peak_flags[idx] = false;
+            if( idx < peaks.size() -1){
+                idx += 1;
+                itp += 1;
+            }
+        }
+        idx -= 1;
+        itp -= 1;
+
         prev_mass = itp->mass;
         prev_intensity = itp->intensity;
     }
@@ -182,9 +190,17 @@ void Spectrum::clean(double abs_mass_tol, double ppm_mass_tol) {
     auto ritp = peaks.rbegin();
     for (int idx = peaks.size() - 1; ritp != peaks.rend(); ++ritp, idx--) {
         double mass_tol = getMassTol(abs_mass_tol, ppm_mass_tol, ritp->mass);
-        if (fabs(ritp->mass - prev_mass) < mass_tol &&
-            ritp->intensity < prev_intensity)
+        while (fabs(ritp->mass - prev_mass) < mass_tol &&
+            ritp->intensity < prev_intensity){
             peak_flags[idx] = false;
+            if( idx > 0){
+                idx -= 1;
+                ritp += 1;
+            }
+        }
+        idx += 1;
+        ritp-= 1;
+
         prev_mass = ritp->mass;
         prev_intensity = ritp->intensity;
     }

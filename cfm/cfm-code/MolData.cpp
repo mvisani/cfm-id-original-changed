@@ -768,24 +768,20 @@ double MolData::getWeightedJaccardScore(int engery_level){
 
 // It is caller's response to compute predicted spectra
 void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, std::set<unsigned int> &all_weights,
-                                 int engery_level) {
+                                 int energry_level) {
 
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
-    cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[engery_level], &predicted_spectra[engery_level]);
+    cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[energry_level], &predicted_spectra[energry_level]);
 
-    double intensity_sum = 0.0;
     std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
-        double intensity_difference = std::log(peak_pair.second.intensity) - std::log(peak_pair.first.intensity) ;
-        if(intensity_difference < 0)
-            intensity_difference = intensity_difference * -2.0;
+        double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
+
         if(intensity_difference > cfg->ga_diff_sampling_difference){
-            double weight_diff = peak_pair.second.mass;
-            unsigned int fixed_weight_diff = (unsigned int)std::round(weight_diff * TEN_K_DBL);
-            difference.insert(std::pair<double,double>(intensity_difference, fixed_weight_diff));
-            all_weights.insert(fixed_weight_diff);
-            intensity_sum += intensity_difference;
+            double peak_mass = peak_pair.second.mass;
+            difference.insert(std::pair<double,double>(intensity_difference, peak_mass));
+            all_weights.insert(peak_mass);
         }
     }
     delete(cmp);

@@ -242,7 +242,7 @@ public:
     int getFGHeight() const { return fg->getHeight(); };
 
     void getSelectedWeights(std::set<unsigned int> &selected_weights, std::set<unsigned int> &all_weights,
-                            int engery_level);
+                            int energry_level);
 
     double getWeightedJaccardScore(int engery_level);
 

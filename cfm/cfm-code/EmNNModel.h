@@ -45,8 +45,6 @@ public:
 
     void writeParamsToFile(std::string &filename) override;
 
-    void rollDropOuts();
-
 private:
     //The current parameters
     boost::shared_ptr<NNParam> nn_param;
