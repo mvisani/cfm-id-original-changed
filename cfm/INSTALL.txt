@@ -75,7 +75,6 @@ tar -zxvf lp_solve_5.5.2.0_source.tar.gz
 cd lp_solve_5.5/lpsolve55
 ./ccc
 (should create libs in e.g. lp_solve_5.5/lpsolve55/bin/ux64)
-If ccc does not work on newer linux use ccc file in lp_solve_patch to replace exsiting ccc file
 
 5. (optional - if compiling the cfm-train and cfm-test executables)
   Install a version of MPI.
