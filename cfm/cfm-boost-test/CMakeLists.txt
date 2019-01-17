@@ -8,8 +8,6 @@
 ##########################################################################
 set(SRC_FILES main.cpp)
 
-include_directories (${Boost_INCLUDE_DIRS})
-add_definitions (-DBOOST_TEST_DYN_LINK)
 add_executable ( cfm-boost-test ${SRC_FILES} )
 target_link_libraries ( cfm-boost-test cfm-code ${REQUIRED_LIBS})
 

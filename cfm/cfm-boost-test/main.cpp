@@ -10,7 +10,7 @@
 #define BOOST_TEST_MODULE cfm-code-test
 #include <boost/test/unit_test.hpp>
 
-/*int add(int i, int j)
+int add(int i, int j)
 {
     return i + j;
 }
@@ -94,4 +94,4 @@ BOOST_AUTO_TEST_SUITE(PassingSuite)
     {
     }
 
-BOOST_AUTO_TEST_SUITE_END()*/
+BOOST_AUTO_TEST_SUITE_END()
