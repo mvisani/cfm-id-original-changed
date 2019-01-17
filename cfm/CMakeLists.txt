@@ -11,7 +11,7 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.0)
 set(CMAKE_CXX_STANDARD 11)
 
 project(cfm)
@@ -28,14 +28,24 @@ set(INCLUDE_TRAIN OFF CACHE BOOL "Do you want to build the training code?")
 set(Boost_USE_STATIC_LIBS ON)
 include(FindBoost)
 
+set(Boost_componets filesystem system serialization)
 # For some reason msvc with give LNK2019 if not include thread
 if (MSVC)
-    find_package(Boost 1.55 COMPONENTS filesystem system serialization thread REQUIRED)
-else ()
-    find_package(Boost 1.55 COMPONENTS filesystem system serialization REQUIRED)
-endif ()
+    list(APPEND Boost_componets thread)
+endif()
+
+if (INCLUDE_TESTS)
+    list(APPEND Boost_componets unit_test_framework)
+endif()
+find_package(Boost 1.55 REQUIRED COMPONENTS ${Boost_componets})
 
 include_directories(${Boost_INCLUDE_DIRS})
+
+# Find Eigen 3
+# find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+#if (TARGET Eigen3::Eigen)
+    # Use the imported target
+#endif (TARGET Eigen3::Eigen)
 
 # RDKit
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -82,7 +92,6 @@ add_subdirectory(fraggraph-gen)
 if (INCLUDE_TESTS)
     add_subdirectory(cfm-test)
     enable_testing()
-    find_package(Boost 1.55 COMPONENTS unit_test_framework REQUIRED)
     add_subdirectory(cfm-boost-test)
 endif ()
 

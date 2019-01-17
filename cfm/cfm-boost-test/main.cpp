@@ -4,16 +4,13 @@
 # cfm-code/CMakeLists.txt
 #
 # Author: Fei Wang
+#
 # Created: Jan 2019
 ##########################################################################*/
-
-#define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE cfm-code-test
 #include <boost/test/unit_test.hpp>
-#include <exception>
-#include <unistd.h>
 
-int add(int i, int j)
+/*int add(int i, int j)
 {
     return i + j;
 }
@@ -97,4 +94,4 @@ BOOST_AUTO_TEST_SUITE(PassingSuite)
     {
     }
 
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()*/
