@@ -309,37 +309,6 @@ void FeaturesTestGasteigerCharges::runTest(){
 		}
 	}
 	delete fv;
-
-	//Ring Retain Order (-0.01,0.9), (0.05,-0.4)
-	ion = createMolPtr("CC");
-	initMolProps(ion);
-	ion.get()->getAtomWithIdx(0)->setProp<double>("OrigGasteigerCharge", -0.01 );
-	ion.get()->getAtomWithIdx(1)->setProp<double>("OrigGasteigerCharge", 0.05 );
-	rtd_ion = RootedROMolPtr(ion, ion.get()->getAtomWithIdx(0));
-	nl = createMolPtr("CC");
-	initMolProps(nl);
-	nl.get()->getAtomWithIdx(0)->setProp<double>("OrigGasteigerCharge", 0.9 );
-	nl.get()->getAtomWithIdx(1)->setProp<double>("OrigGasteigerCharge", -0.4 );
-	nl.get()->setProp("IsRingBreak",1);
-	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0));
-
-
-	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
-	if( fv->getNumSetFeatures() != 3 ){
-		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;
-	}
-	else{
-		if(fv->getFeature(1) != 54){
-			std::cout << "Unexpected value for ion gasteiger charge ring " << fv->getFeature(1) << std::endl;
-			pass = false;
-		}
-		if(fv->getFeature(2) != 56 ){
-			std::cout << "Unexpected value for nl gasteiger charge ring " << fv->getFeature(2) << std::endl;
-			pass = false;
-		}
-	}
-	delete fv;
 	delete fc;
 	passed = pass;
 

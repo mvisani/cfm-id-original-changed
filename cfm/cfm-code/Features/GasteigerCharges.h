@@ -22,7 +22,7 @@ param.cpp.
 class GasteigerCharges : public RootPathFeature {
 public:
     GasteigerCharges() {
-        size = 72;
+        size = 36;
         name = "GasteigerCharges";
     };
 
