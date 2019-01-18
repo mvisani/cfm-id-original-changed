@@ -28,11 +28,13 @@ ExtraRingFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion, const R
     fv.addFeature(!ring_break);
 
     // Ion root is in ring
+    // use findSSSR to init rinfo
     RDKit::MolOps::findSSSR(*ion->mol);
     RDKit::RingInfo *rinfo = ion->mol->getRingInfo();
     fv.addFeature(rinfo->minBondRingSize(ion->root->getIdx()) > 0);
 
     // NL root is in ring
+    // use findSSSR to init rinfo
     RDKit::MolOps::findSSSR(*nl->mol);
     rinfo = nl->mol->getRingInfo();
     fv.addFeature(rinfo->minBondRingSize(nl->root->getIdx()) > 0);

@@ -639,20 +639,20 @@ void FeaturesTestExtraRingFeatures::runTest(){
 	std::vector<Break> breaks;
 	node->generateBreaks(breaks, false);
 
-	//Break single bond between two rings
+	// between two rings
 	node->applyBreak(breaks[0], 0);
 	node->generateChildrenOfBreak(breaks[0]);
 	FragmentTreeNode *child = &(node->children[0]);
 	Transition tmp_t( -1, -1, child->nl, child->ion );
 	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 4 ){
-		std::cout << "Unexpected number of non-zero features" << std::endl;
+		std::cout << "Unexpected number of non-zero features - Break single bond" << std::endl;
 		pass = false;
 	}
 	else{
 		if(fv->getFeature(1) != 1 || fv->getFeature(2) != 2 ||
                 fv->getFeature(3) != 3 ){
-			std::cout << "Unexpected extra ring features " << std::endl;
+			std::cout << "Unexpected extra ring features - Break single bond " << std::endl;
 			pass = false;
 		}
 	}
@@ -667,12 +667,12 @@ void FeaturesTestExtraRingFeatures::runTest(){
 	Transition tmp_t2( -1, -1, child->nl, child->ion );
 	fv = fc->computeFeatureVector(tmp_t2.getIon(), tmp_t2.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 3 ){
-		std::cout << "Unexpected number of non-zero features" << std::endl;
+		std::cout << "Unexpected number of non-zero features - Break single bond between ring and non-ring" << std::endl;
 		pass = false;
 	}
 	else{
 		if(fv->getFeature(1) != 1 || fv->getFeature(2) != 3 ){
-			std::cout << "Unexpected extra ring features " << std::endl;
+			std::cout << "Unexpected extra ring features - Break single bond between ring and non-ring" << std::endl;
 			pass = false;
 		}
 	}
@@ -681,16 +681,17 @@ void FeaturesTestExtraRingFeatures::runTest(){
 	node->children = std::vector<FragmentTreeNode>();
 
 	//Break Ring (no features set)
-	node->applyBreak(breaks[5], 0);
+	// TODO: COME UP A NEW TEST CASE
+	/*node->applyBreak(breaks[5], 0);
 	node->generateChildrenOfBreak(breaks[5]);
 	child = &(node->children[0]);
 	Transition tmp_t3( -1, -1, child->nl, child->ion );
 	fv = fc->computeFeatureVector(tmp_t3.getIon(), tmp_t3.getNeutralLoss(), 0, nullptr);
 	if( fv->getNumSetFeatures() != 1 ){
-		std::cout << "Unexpected number of non-zero features" << std::endl;
+		std::cout << "Unexpected number of non-zero features - Break Ring" << std::endl;
 		pass = false;
 	}
-	delete fv;
+	delete fv;*/
 
 	passed = pass;
 }
@@ -1068,10 +1069,10 @@ void FeaturesTestQuadraticFeatures::runTest(){
 	fnames.push_back("QuadraticFeatures");
 	FeatureCalculator *fc = new FeatureCalculator( fnames );
 
-	//Simple initial vector with 3 bits set (indexes: 0,3,80 )
+	//Simple initial vector with 3 bits set (indexes: 0,2,45)
 	romol_ptr_t ion= createMolPtr("C");
 	initMolProps(ion);
-	RDKit::Atom *null_atom = nullptr;
+
 	RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
 	double h_movement = 3.00452;
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OriginalMass", 16.0 - h_movement);
@@ -1086,23 +1087,23 @@ void FeaturesTestQuadraticFeatures::runTest(){
 		pass = false;
 	}
 	else{
-		if(fv->getFeature(0) != 0 || fv->getFeature(1) != 3 ||
-                fv->getFeature(2) != 80 ){
+		if(fv->getFeature(0) != 0 || fv->getFeature(1) != 2 ||
+                fv->getFeature(2) != 45 ){
 			std::cout << "Unexpected singular features" << std::endl;
 			pass = false;
 		}
-		if(fv->getFeature(3) != 3166 ){
+		if(fv->getFeature(3) != 995 ){
 			std::cout << "Unexpected quadratic feature:" << fv->getFeature(3) << std::endl;
 			pass = false;
 		}
 	}
 	int total = fv->getTotalLength();
-	if( total != 3404 ){
+	if( total != 1129 ){
 		std::cout << "Unexpected total feature count: " << total << std::endl;
 		pass = false;
 	}
 	int numfeatures = fc->getNumFeatures();
-	if( numfeatures != 3404 ){
+	if( numfeatures != 1129 ){
 		std::cout << "Unexpected total feature calculation: " << numfeatures << std::endl;
 		pass = false;
 	}

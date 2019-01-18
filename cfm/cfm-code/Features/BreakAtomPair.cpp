@@ -49,6 +49,7 @@ BreakAtomPair::compute(FeatureVector &fv, const RootedROMolPtr *ion, const Roote
             fv.addFeature(feature);
         }
     }
+
     if(ring_break)
         fv.addFeature(1);
     else
