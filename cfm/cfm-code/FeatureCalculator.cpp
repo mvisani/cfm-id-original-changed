@@ -44,7 +44,6 @@
 #include "Features/NLRootTriples.h"
 #include "Features/QuadraticFeatures.h"
 #include "Features/RadicalFeatures.h"
-#include "Features/RingFeatures.h"
 #include "Features/IonRootEncodings.h"
 #include "Features/NLRootEncodings.h"
 #include "Features/IonRootMatrixFP.h"
@@ -88,7 +87,6 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new NLRootPairs());
         cogs.push_back(new NLRootTriples());
         cogs.push_back(new RadicalFeatures());
-        cogs.push_back(new RingFeatures());
         cogs.push_back(new ExtraRingFeatures());
         cogs.push_back(new IonRootMMFFAtomType());
         cogs.push_back(new NLRootMMFFAtomType());

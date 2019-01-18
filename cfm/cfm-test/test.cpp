@@ -128,14 +128,14 @@ int main(int argc, char *argv[])
 		tests.push_back( new NNParamsTestComputeTransitionThetas() );
 		tests.push_back( new NNParamsTestSaveAndLoadFromFile() );
 		//tests.push_back( new FragGenTestMaxRingBreaks() );
-		/*tests.push_back( new FVFragGraphSaveAndLoadState() );
+		tests.push_back( new FVFragGraphSaveAndLoadState() );
 		tests.push_back( new FragGenTestDisallowDetourTransitions() );
 		tests.push_back( new InferenceTestSpectrumMessageWithIsotopesAndNoisePeak() );
 		tests.push_back( new InferenceTestSpectrumMessageNoisePeak() );
 		tests.push_back( new InferenceTestSpectrumMessage() );
 		tests.push_back( new InferenceTestSpectrumMessageWithIsotopes() );
-		tests.push_back( new InferenceTestCompareVsIPFPSingleEnergyCase() );
-		tests.push_back( new InferenceTestCompareVsIPFPSharedMassCase() );
+		//tests.push_back( new InferenceTestCompareVsIPFPSingleEnergyCase());
+		//tests.push_back( new InferenceTestCompareVsIPFPSharedMassCase() );
         tests.push_back( new FragGenTestPositiveESISplitCharge() );
 		tests.push_back( new MspReaderTest() );
 		tests.push_back( new FragGenTestPositiveESI() );
@@ -153,7 +153,6 @@ int main(int argc, char *argv[])
 		tests.push_back( new MessageTestBasics() );
 		tests.push_back( new MessageTestIteration() );
 		tests.push_back( new MessageTestCopyAssignment() );
-		tests.push_back( new IPFPTestComputeBeliefsSingleEnergy() );*/
 		// tests.push_back( new FeaturesTestInit() );
 		tests.push_back( new FeaturesTestBreakAtomPair() );
 		// tests.push_back( new FeaturesTestBrokenOrigBondType() );
@@ -169,7 +168,6 @@ int main(int argc, char *argv[])
 		tests.push_back( new FeaturesTestRadicalFeatures() );
 		tests.push_back( new FeaturesTestIonicFeatures() );
 		tests.push_back( new FeaturesTestRootMMFFAtomType() );
-		tests.push_back( new FeaturesTestRingFeatures() );
 		tests.push_back( new FeaturesTestExtraRingFeatures() );
 		tests.push_back( new FeaturesTestQuadraticFeatures() );
 		tests.push_back( new FeaturesTestMetlinExample() );

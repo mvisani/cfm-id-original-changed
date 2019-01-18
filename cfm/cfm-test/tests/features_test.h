@@ -63,12 +63,6 @@ public:
   void runTest();
 };
 
-class FeaturesTestRingFeatures : public Test {
-public:
-  FeaturesTestRingFeatures();
-  void runTest();
-};
-
 class FeaturesTestExtraRingFeatures : public Test {
 public:
   FeaturesTestExtraRingFeatures();

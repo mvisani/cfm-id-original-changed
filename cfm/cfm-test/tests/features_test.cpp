@@ -621,69 +621,6 @@ void FeaturesTestRadicalFeatures::runTest(){
 
 }
 
-FeaturesTestRingFeatures::FeaturesTestRingFeatures(){
-	name = "FeaturesTestRingFeatures";
-	description = "Test Ring features";
-}
-
-void FeaturesTestRingFeatures::runTest(){
-
-	bool pass = true;
-	std::vector<std::string> fnames;
-	fnames.push_back("RingFeatures");
-	FeatureCalculator *fc = new FeatureCalculator( fnames );
-
-	//1,1,3,6
-	FragmentGraphGenerator fgen(fc);
-	std::string smiles_or_inchi("c1ccc2ccc(CCC)cc2c1");
-	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
-	std::vector<Break> breaks;
-	node->generateBreaks(breaks, false);
-	node->applyBreak(breaks[4], 0);	//Break Ring with two bonds at distance 3
-	node->generateChildrenOfBreak(breaks[4]);
-
-	FragmentTreeNode *child = &(node->children[0]);
-	Transition tmp_t( -1, -1, child->nl, child->ion );
-	FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
-	if( fv->getNumSetFeatures() != 5 ){
-		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;
-	}
-	else{
-        if( fv->getFeature(1) != 2 || fv->getFeature(2) != 3 || fv->getFeature(3) != 6 || fv->getFeature(4) != 11 ){
-            std::cout << "Unexpected features for ring break 1,1,3,6 " << std::endl;
-			pass = false;
-		}
-	}
-	delete fv;
-
-	//0,0,3,7
-	std::string smiles_or_inchi2("C1CCCCCC1");
-	FragmentTreeNode *node2 = fgen.createStartNode( smiles_or_inchi2, POSITIVE_ESI_IONIZATION_MODE );
-	std::vector<Break> breaks2;
-	node2->generateBreaks(breaks2, false);
-	node2->applyBreak(breaks2[3], 0);	//Break Ring with two bonds at distance 3
-	node2->generateChildrenOfBreak(breaks2[3]);
-
-	child = &(node2->children[0]);
-	Transition tmp_t2( -1, -1, child->nl, child->ion );
-	fv = fc->computeFeatureVector(tmp_t2.getIon(), tmp_t2.getNeutralLoss(), 0, nullptr);
-	if( fv->getNumSetFeatures() != 4 ){
-		std::cout << "Unexpected number of non-zero features" << std::endl;
-		pass = false;
-	}
-	else{
-        if( fv->getFeature(1) != 1 || fv->getFeature(2) != 6 || fv->getFeature(3) != 12 ){
-            std::cout << "Unexpected features for ring break 0,0,3,7 " << std::endl;
-			pass = false;
-		}
-	}
-	delete fv;
-	delete fc;
-	passed = pass;
-
-}
-
 FeaturesTestExtraRingFeatures::FeaturesTestExtraRingFeatures(){
 	name = "FeaturesTestExtraRingFeatures";
 	description = "Test Extra Ring features";
