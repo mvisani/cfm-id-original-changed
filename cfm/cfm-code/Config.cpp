@@ -45,7 +45,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ipfp_algorithm = DEFAULT_IPFP_ALGORITHM;
     cfg.ipfp_converge_thresh = DEFAULT_IPFP_CONVERGE_THRESH;
     cfg.osc_ipfp_converge_thresh = DEFAULT_IPFP_OSC_CONVERGE_THRESH;
-    cfg.use_single_energy_cfm = 0;
+    cfg.use_single_energy_cfm = 1;
     cfg.ionization_mode = DEFAULT_IONIZATION_MODE;
     cfg.update_bias_first = 0;
     cfg.param_init_type = PARAM_DEFAULT_INIT;

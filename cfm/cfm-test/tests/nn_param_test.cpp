@@ -395,11 +395,16 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	//Set some parameter weights
 	std::vector<std::string> fnames;
 	fnames.push_back("IonicFeatures");	//5 features + bias =  6 features
+	// let us set a 6->4->2->1 NN
+	// so there is 6 *4 + 5* 2 + 3 * 1= 24 + 10 + 3 = 37 weights
 	std::vector<int> hlayer_numnodes(3), act_ids(3);
-	hlayer_numnodes[0] = 4; hlayer_numnodes[1] = 2; hlayer_numnodes[2] = 1;
+	hlayer_numnodes[0] = 4;
+	hlayer_numnodes[1] = 2;
+	hlayer_numnodes[2] = 1;
 	act_ids[0] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[1] = RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION;
 	act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;	//Final theta should be linear
+	// And we have no dropouts
     std::vector<double> dropout_probs(2, 0.0);
 
 	cfg.theta_nn_hlayer_num_nodes = hlayer_numnodes;
@@ -427,21 +432,24 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 
 	//Initialise all gradients to 0
 	grads.resize(param.getNumWeights());
-	for( unsigned int i = 0; i < grads.size(); i++ )grads[i] = 0.0;
+	for( unsigned int i = 0; i < grads.size(); i++ )
+		grads[i] = 0.0;
 
 	std::set<unsigned int> used_idxs;
 	FeatureCalculator fc_null(fnames); 
 	std::string null_str = "null";
 	EmNNModel em(&cfg, &fc_null, null_str, param_filename );
-	double Qonly  = em.computeLogLikelihoodLoss(0, moldata, suft, 0);
-	em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, 0);
+	int energy_level = 0;
+	int mol_idx = 0;
+	double Qonly  = em.computeLogLikelihoodLoss(mol_idx, moldata, suft, energy_level);
+	em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, energy_level);
 
 	//Check Q
 	double theta1 = 12.0, theta2 = 10.0;
 	double rho_denom = 1.0 + exp(theta1) + exp(theta2);
 	double x1 = exp(theta1)/rho_denom, x2 = exp(theta2)/rho_denom;	
 	
-	double expected_Q = (0.2+0.9+0.08)*(theta1-log(rho_denom)) + (0.3+0.05+0.9)*(theta2-log(rho_denom)) + (0.5+0.05+0.02)*(-log(rho_denom));
+	double expected_Q = (0.2)*(theta1-log(rho_denom)) + (0.3)*(theta2-log(rho_denom)) + (0.5)*(-log(rho_denom));
 	if( fabs(Qonly - expected_Q )  > tol ){
 		std::cout << "Unexpected Q value resulting from Q only computation: "
 		          << Qonly << " (Expecting: " <<  expected_Q << ")" << std::endl;
@@ -460,38 +468,18 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 			pass = false;
 		}
 	}
-	//Energy 1
-	int offset = param.getNumWeightsPerEnergyLevel();
-	for( unsigned int i = 0; i < param.getNumWeightsPerEnergyLevel(); i++ ){
-		if( fabs(grads[i+offset] - (0.9*exp_unweighted_1[i] + 0.05*exp_unweighted_2[i] + 0.05*exp_unweighted_persist[i]))  > tol ){
-			std::cout << "Unexpected gradient value at idx " << i+offset << std::endl;
-			pass = false;
-		}
-	}
-	//Energy 2
-	offset = 2*param.getNumWeightsPerEnergyLevel();
-	for( unsigned int i = 0; i < param.getNumWeightsPerEnergyLevel(); i++ ){
-		if( fabs(grads[i+offset] - (0.08*exp_unweighted_1[i] + 0.9*exp_unweighted_2[i] + 0.02*exp_unweighted_persist[i]))  > tol ){
-			std::cout << "Unexpected gradient value at idx " << i+offset << std::endl;
-			pass = false;
-		}
-	}
-
 
 	//Check the used flags
-	int expected_idxs[29] = {0,2,3,5,6,8,9,11,12,14,15,17,18,20,21,23,24,25,26,27,28,29,30,31,32,33,34,35,36};	
-	if( used_idxs.size() != 29*3 ){
+	int expected_idxs[29] = {0,2,3,5,6,8,9,11,12,14,15,17,18,20,21,23,24,25,26,27,28,29,30,31,32,33,34,35,36};
+	if( used_idxs.size() != 29 ){
 			std::cout << "Unexpected used index length " << used_idxs.size() << std::endl;
-			pass = false;	
+			pass = false;
 	}
 	else{
-		for( int energy = 0; energy <= 2; energy++ ){
-			offset = energy*param.getNumWeightsPerEnergyLevel();
-			for( unsigned int i = 0; i < 29; i++ ){
-				if( used_idxs.find(expected_idxs[i]+offset) == used_idxs.end() ){
-					std::cout << "Could not find expected used index " << expected_idxs[i]+offset << std::endl;
+		for( unsigned int i = 0; i < 29; i++ ){
+			if( used_idxs.find(expected_idxs[i]) == used_idxs.end() ){
+					std::cout << "Could not find expected used index " << expected_idxs[i] << std::endl;
 					pass = false;
-				}
 			}
 		}
 	}
