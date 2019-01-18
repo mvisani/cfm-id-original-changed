@@ -457,7 +457,7 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	//Energy 0
 	for( unsigned int i = 0; i < param.getNumWeightsPerEnergyLevel(); i++ ){
 		if( fabs(grads[i] - (0.2*exp_unweighted_1[i] + 0.3*exp_unweighted_2[i] + 0.5*exp_unweighted_persist[i]))  > tol ){
-			std::cout << "Unexpected gradient value at idx " << i;
+			std::cout << "Unexpected gradient value at idx " << i << std::endl;
 			pass = false;
 		}
 	}
@@ -465,7 +465,7 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	int offset = param.getNumWeightsPerEnergyLevel();
 	for( unsigned int i = 0; i < param.getNumWeightsPerEnergyLevel(); i++ ){
 		if( fabs(grads[i+offset] - (0.9*exp_unweighted_1[i] + 0.05*exp_unweighted_2[i] + 0.05*exp_unweighted_persist[i]))  > tol ){
-			std::cout << "Unexpected gradient value at idx " << i+offset;
+			std::cout << "Unexpected gradient value at idx " << i+offset << std::endl;
 			pass = false;
 		}
 	}
@@ -473,7 +473,7 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	offset = 2*param.getNumWeightsPerEnergyLevel();
 	for( unsigned int i = 0; i < param.getNumWeightsPerEnergyLevel(); i++ ){
 		if( fabs(grads[i+offset] - (0.08*exp_unweighted_1[i] + 0.9*exp_unweighted_2[i] + 0.02*exp_unweighted_persist[i]))  > tol ){
-			std::cout << "Unexpected gradient value at idx " << i+offset;
+			std::cout << "Unexpected gradient value at idx " << i+offset << std::endl;
 			pass = false;
 		}
 	}
