@@ -166,16 +166,13 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
 	//Set some arbitrary parameter weights (only used in the regularizer term and for sizing)
 	std::vector<std::string> fnames;
 	fnames.push_back("HydrogenMovement");	//Size = 10
-	Param param(fnames, 3);
-	for( unsigned int i = 0; i < param.getNumWeights(); i++ ) param.setWeightAtIdx(0.0, i);
-	int med_offset = param.getNumWeightsPerEnergyLevel();
-	int high_offset = 2*med_offset;
+	Param param(fnames, 1);
+	for( unsigned int i = 0; i < param.getNumWeights(); i++ )
+	    param.setWeightAtIdx(0.0, i);
+
 	param.setWeightAtIdx(0.2, 0);
 	param.setWeightAtIdx(-0.5, 1);
-	param.setWeightAtIdx(0.25, med_offset);
-	param.setWeightAtIdx(0.1, high_offset);
-	param.setWeightAtIdx(-0.1, 1+high_offset);
-	
+
 	std::string param_filename = "tmp_param_file.log";
 	if( boost::filesystem::exists( param_filename ) )
 		boost::filesystem::remove( param_filename );
@@ -185,22 +182,13 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
 	suft.values.resize(1);
 
 	unsigned int N = moldata.getNumTransitions() + moldata.getNumFragments();
-	suft.values[0].assign(3*N, 0.0);
+	suft.values[0].assign(N, 0.0);
 	suft.values[0][1] = 0.5;
 	suft.values[0][7] = 0.5;
-	suft.values[0][1 + N] = 0.4;
-	suft.values[0][7 + N] = 0.1;
-	suft.values[0][3 + N] = 0.3;
-	suft.values[0][9 + N] = 0.2;
-	suft.values[0][1 + 2*N] = 0.2;
-	suft.values[0][7 + 2*N] = 0.05;
-	suft.values[0][3 + 2*N] = 0.7;
-	suft.values[0][9 + 2*N] = 0.025;
-	suft.values[0][10 + 2*N] = 0.025;
 
 	//Initialise all gradients to 0
-	grads.resize(33);
-	for( unsigned int i = 0; i < grads.size(); i++ ) grads[i] = 0.0;
+	grads.resize(11);
+	std::fill(grads.begin(),grads.end(), 0);
 
 	std::set<unsigned int> used_idxs;
 	FeatureCalculator fc_null(fnames); 
@@ -209,7 +197,8 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
 
     //Check Q
     double Q = em.computeLogLikelihoodLoss(0, moldata, suft, 0);
-    if( fabs(Q - -3.823 )  > tol ){
+    double expected_Q = -1.236;
+    if( fabs(Q - expected_Q )  > tol ){
         std::cout << "Unexpected Q value resulting from Q only computation: " << Q << std::endl;
         pass = false;
     }
@@ -217,33 +206,31 @@ void ParamsTestComputeAndAccumulateGradient::runTest(){
     // get used flags
 	em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, 0);
     //Check the used flags
-    for( int energy = 0; energy < 3; energy++ ){
-        //Check the ones that should be on
-        for( unsigned int i = 0; i < 2; i++ ){
-            if( used_idxs.find(energy*11 + i) == used_idxs.end()){
-                std::cout << "Expected used_flag to be set but found not set" << std::endl;
-                pass = false;
-            }
-        }
-        //Check one that shouldn't be on
-        if( used_idxs.find(energy*11 + 5) != used_idxs.end()){
-            std::cout << "Expected used_flag to be not set but found set" << std::endl;
-            pass = false;
-        }
+
+    //Check the ones that should be on
+    for( unsigned int i = 0; i < 2; i++ ){
+    	if( used_idxs.find(i) == used_idxs.end()){
+    		std::cout << "Expected used_flag to be set but found not set" << std::endl;
+    		pass = false;
+    	}
+    }
+
+    //Check one that shouldn't be on
+    if( used_idxs.find(5) != used_idxs.end()){
+    	std::cout << "Expected used_flag to be not set but found set" << std::endl;
+    	pass = false;
     }
 
     //Check the gradients
 	em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, false, used_idxs, 0, 0);
 	double expected_vals[6] = {-0.1624,0.2499,-0.0568,0.2554,0.1649,0.4663};
-	for( int energy = 0; energy < 3; energy++ ){
-		for( unsigned int i = 0; i < 2; i++ ){
-			if( fabs(grads[energy*11 + i] - expected_vals[energy*2+i])  > tol ){
-				std::cout << "Unexpected grad[" << energy*11 + i << "] value resulting from gradient computation: " << grads[energy*11 + i] << std::endl;
-				pass = false;
-			}
+	for( unsigned int i = 0; i < 2; i++ ){
+		if( fabs(grads[+ i] - expected_vals[i])  > tol ){
+			std::cout << "Unexpected grad[" << i << "] value resulting from gradient computation: " <<
+			grads[i] << std::endl;
+			pass = false;
 		}
 	}
 
 	passed = pass;
-
 }

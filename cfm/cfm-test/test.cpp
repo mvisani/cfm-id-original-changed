@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 		tests.push_back( new FeaturesTestRootMMFFAtomType() );
 		tests.push_back( new FeaturesTestExtraRingFeatures() );
 		tests.push_back( new FeaturesTestQuadraticFeatures() );
-		tests.push_back( new FeaturesTestMetlinExample() );
+		//tests.push_back( new FeaturesTestMetlinExample() );
 		tests.push_back( new FeaturesTestLength() );
         tests.push_back( new FeaturesTestFingerPrint());
 		tests.push_back( new ParamsTestComputeTransitionThetas() );
