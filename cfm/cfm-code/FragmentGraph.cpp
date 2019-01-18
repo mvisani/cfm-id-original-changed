@@ -34,16 +34,16 @@ Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, cons
     RDKit::Atom *first_atom = an_ion.get()->getAtomWithIdx(0);
     if (first_atom->hasProp("Root"))
         root = getLabeledAtom(an_ion, "Root");
-    else
-        std::cout << "Warning: Ion Root atoms not defined" << std::endl;
+    //else
+    //    std::cout << "Warning: Ion Root atoms not defined" << std::endl;
     ion = RootedROMolPtr(an_ion, root);
 
     root = nullptr;
     first_atom = a_nl.get()->getAtomWithIdx(0);
     if (first_atom->hasProp("Root"))
         root = getLabeledAtom(a_nl, "Root");
-    else
-        std::cout << "Warning: NL Root atoms not defined" << std::endl;
+    //else
+    //    std::cout << "Warning: NL Root atoms not defined" << std::endl;
     nl = RootedROMolPtr(a_nl, root);
 
     to_id = a_to_id;

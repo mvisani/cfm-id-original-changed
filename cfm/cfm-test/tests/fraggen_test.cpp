@@ -143,7 +143,8 @@ void FragGenTestPositiveEI::runTest(){
 	//Run the fragmentation procedure
 	FragmentGraphGenerator gg;
 	FragmentTreeNode *startNode = gg.createStartNode(smiles_or_inchi, POSITIVE_EI_IONIZATION_MODE);
-	config_t cfg; initDefaultConfig(cfg);  cfg.ionization_mode = POSITIVE_EI_IONIZATION_MODE;
+	config_t cfg; initDefaultConfig(cfg);
+	cfg.ionization_mode = POSITIVE_EI_IONIZATION_MODE;
 	cfg.include_h_losses = true; 
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
     gg.compute(*startNode, 2, -1, 2, 0);

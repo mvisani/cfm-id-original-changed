@@ -10,12 +10,7 @@
 #define BOOST_TEST_MODULE cfm-code-test
 #include <boost/test/unit_test.hpp>
 
-int add(int i, int j)
-{
-    return i + j;
-}
-
-BOOST_AUTO_TEST_SUITE(VariantsSuite)
+/*BOOST_AUTO_TEST_SUITE(CfmCodeSuite)
 
     BOOST_AUTO_TEST_CASE(simplePass)
     {
@@ -94,4 +89,4 @@ BOOST_AUTO_TEST_SUITE(PassingSuite)
     {
     }
 
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()*/

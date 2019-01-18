@@ -384,8 +384,8 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 
 	//Model Config
 	config_t cfg; initDefaultConfig(cfg);
-	cfg.model_depth = 6;
-	cfg.spectrum_depths.push_back(2); cfg.spectrum_depths.push_back(4); cfg.spectrum_depths.push_back(6);
+	cfg.model_depth = 2;
+	cfg.spectrum_depths.push_back(2); cfg.spectrum_depths.push_back(2); cfg.spectrum_depths.push_back(2);
 	cfg.spectrum_weights.push_back(1); cfg.spectrum_weights.push_back(1); cfg.spectrum_weights.push_back(1);
 	cfg.lambda = 0.01;
 	initDerivedConfig(cfg);

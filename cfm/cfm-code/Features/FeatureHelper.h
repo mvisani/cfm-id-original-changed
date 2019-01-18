@@ -44,10 +44,8 @@ public:
 class FeatureHelper {
 public:
     FeatureHelper() {
-        // TODO fix this: magic number is evil
-        exec_flags.resize(4);
-        for (int i = 0; i < 4; i++)
-            exec_flags[i] = 0;
+        exec_flags.resize(6);
+        std::fill(exec_flags.begin(),exec_flags.end(),0);
     };
 
     explicit FeatureHelper(FeatureCalculator *fc) {

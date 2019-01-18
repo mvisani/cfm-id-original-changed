@@ -127,8 +127,8 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new NLRootGeneralizedMatrixFPN10());
         cogs.push_back(new NLFingerPrintFeature());
         cogs.push_back(new IonFingerPrintFeature());
-        cogs.push_back(new NLRootEncodingMorganD3());
-        cogs.push_back(new IonRootEncodingMorganD3());
+        //cogs.push_back(new NLRootEncodingMorganD3());
+        //cogs.push_back(new IonRootEncodingMorganD3());
 
         initialised = true;
     }
@@ -299,7 +299,7 @@ FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedR
         }
     }
     else {
-        std::cout << "Warning, None precursor ion" << std::endl;
+        //std::cout << "Warning, None precursor ion" << std::endl;
         for (const auto &feature_idx : used_fragement_feature_idxs) {
             auto feature = &fragmentFeatureCogs()[feature_idx];
             fv->addFeatures(std::vector<int>(feature->getSize(),0));

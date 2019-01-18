@@ -84,7 +84,6 @@ void FeatureHelper::labelFunctionalGroups(RDKit::RWMol *rwmol, bool extra) {
                 atom_fg_strs[it->second] += std::to_string(idx) + "|";
             }
         }
-
     }
 
     // For each atom, store the list of functional group indexes in property

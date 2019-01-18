@@ -21,7 +21,7 @@
 class IonFunctionalGroupFeatures : public FunctionalGroupFeature {
 public:
     IonFunctionalGroupFeatures() {
-        size = (NUM_FGRPS + 1);
+        size = (NUM_FGRPS + 1) * 2;
         name = "IonFunctionalGroupFeatures";
     };
 

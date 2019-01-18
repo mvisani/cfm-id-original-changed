@@ -39,7 +39,8 @@ void FunctionalGroupFeature::addFunctionalGroupFeaturesFromAtom(std::vector<int>
                                                                 int max_depth, int depth, bool extra) const {
 
     int num_grps = NUM_FGRPS;
-    if (extra) num_grps = NUM_EXTRA_FGRPS;
+    if (extra)
+        num_grps = NUM_EXTRA_FGRPS;
 
     //Check for functional groups at the current atom, and add them to the feature vector
     //iff they were not already found at a lesser depth.

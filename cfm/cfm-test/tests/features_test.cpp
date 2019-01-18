@@ -23,7 +23,6 @@ void initMolProps( romol_ptr_t &mol ){
 	RDKit::ROMol::AtomIterator ai;
 	for( ai = mol.get()->beginAtoms(); ai != mol.get()->endAtoms(); ++ai ){
 		(*ai)->setProp("Root",0);
-		(*ai)->setProp("OtherRoot",0);
 	}
 	mol.get()->setProp("IsRingBreak", 0);
 }
@@ -72,7 +71,6 @@ void FeaturesTestInit::runTest(){
 		pass = false;
 	}
 	passed = pass;
-
 }
 
 FeaturesTestBreakAtomPair::FeaturesTestBreakAtomPair(){
