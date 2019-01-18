@@ -93,8 +93,7 @@ void NNParamsTestSaveAndLoadFromFile::runTest(){
 
 	//Create some parameters
 	std::vector<std::string> fnames;
-	fnames.push_back("IonicFeatures");
-	fnames.push_back("RingFeatures");	//18 features in total
+	fnames.push_back("IonicFeatures"); // 6 features in total
 
 	std::vector<int> hlayer_numnodes(3), act_ids(3);
 	hlayer_numnodes[0] = 12; hlayer_numnodes[1] = 4; hlayer_numnodes[2] = 1;
@@ -155,8 +154,8 @@ void NNParamsTestSaveAndLoadFromFile::runTest(){
 	//Check that a computed theta value is the same
 	FeatureVector fv;
 	fv.addFeatureAtIdx(1.0, 0); fv.addFeatureAtIdx(1.0, 2); fv.addFeatureAtIdx(1.0, 5);
-	fv.addFeatureAtIdx(1.0, 8); fv.addFeatureAtIdx(1.0, 11); fv.addFeatureAtIdx(1.0, 13);
-	fv.addFeatureAtIdx(1.0, 14); fv.addFeatureAtIdx(1.0, 16); fv.addFeatureAtIdx(1.0, 17);
+	//fv.addFeatureAtIdx(1.0, 8); fv.addFeatureAtIdx(1.0, 11); fv.addFeatureAtIdx(1.0, 13);
+	//fv.addFeatureAtIdx(1.0, 14); fv.addFeatureAtIdx(1.0, 16); fv.addFeatureAtIdx(1.0, 17);
 
 	double theta1 = param.computeTheta( fv, 0 );
 	double theta2 = param_load.computeTheta( fv, 0 );

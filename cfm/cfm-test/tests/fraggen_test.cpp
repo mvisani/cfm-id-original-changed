@@ -1313,7 +1313,8 @@ void FVFragGraphSaveAndLoadState::runTest(){
 		cfg.include_isotopes = include_isotopes;
 		MolData morig("Test ID", smiles_or_inchi.c_str(), &cfg );
 		std::vector<std::string> fnames;
-		fnames.push_back( "BreakAtomPair" ); fnames.push_back( "RingFeatures" );  fnames.push_back( "HydrogenRemoval" );
+		fnames.push_back( "BreakAtomPair" );
+		fnames.push_back( "HydrogenRemoval" );
 		FeatureCalculator fc( fnames );
 		morig.computeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
 
