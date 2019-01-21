@@ -17,6 +17,7 @@ set(CMAKE_CXX_STANDARD 11)
 project(cfm)
 
 set(CFM_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin CACHE STRING "Where do you want the output binaries to install to?")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #It is recommended, but not strictly necessary, to build and run the tests
 set(INCLUDE_TESTS OFF CACHE BOOL "Do you want to build the tests?")

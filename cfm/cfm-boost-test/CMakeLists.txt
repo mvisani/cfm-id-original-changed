@@ -16,8 +16,10 @@ target_link_libraries ( cfm-boost-test cfm-code ${REQUIRED_LIBS})
 
 # declares a test with our executable
 #enable_testing()
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test_data DESTINATION ${CMAKE_BINARY_DIR}/bin)
+
 install ( TARGETS cfm-boost-test
         DESTINATION ${CFM_OUTPUT_DIR} )
 
-install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_data
-        DESTINATION ${CFM_OUTPUT_DIR}/tests )
+install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data
+        DESTINATION ${CFM_OUTPUT_DIR}/test_data)

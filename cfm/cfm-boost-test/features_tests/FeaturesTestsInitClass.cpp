@@ -14,7 +14,7 @@
 BOOST_AUTO_TEST_SUITE(InitialisationOfFeatureClass)
     // Test load from config file
     BOOST_AUTO_TEST_CASE(LoadFromConfigFile) {
-        std::string config_filename = "./test_data/valid_feature_config.txt";
+        std::string config_filename = "test_data/valid_feature_config.txt";
         FeatureCalculator *fc = new FeatureCalculator(config_filename);
         std::vector<std::string> fnames = fc->getFeatureNames();
 
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_SUITE(InitialisationOfFeatureClass)
 
     // Test load from a not existing config file
     BOOST_AUTO_TEST_CASE(LoadFromValidConfigFile) {
-        std::string config_filename = "tests/test_data/invalid_feature_config.txt";
+        std::string config_filename = "test_data/invalid_feature_config.txt";
         FeatureCalculator *fc = nullptr;
         BOOST_CHECK_THROW(fc = new FeatureCalculator(config_filename), InvalidConfigException);
         if (fc)
