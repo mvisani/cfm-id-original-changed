@@ -38,8 +38,8 @@ BOOST_AUTO_TEST_SUITE(InferenceTestSpectrumMessageWithIsotopes)
             down_msg.addToIdx(i, 0.0);
         infer.createSpectrumMessage(msg, 0, down_msg);
 
-        BOOST_CHECK_CLOSE(std::exp(msg.getIdx(0)), 0.567333, tolerance);
-        BOOST_CHECK_CLOSE(std::exp(msg.getIdx(1)), 0.432667, tolerance);
+        BOOST_CHECK_CLOSE_FRACTION(std::exp(msg.getIdx(0)), 0.567333, tolerance);
+        BOOST_CHECK_CLOSE_FRACTION(std::exp(msg.getIdx(1)), 0.432667, tolerance);
     }
 
 BOOST_AUTO_TEST_SUITE_END()

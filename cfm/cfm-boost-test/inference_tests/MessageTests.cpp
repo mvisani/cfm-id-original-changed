@@ -28,25 +28,25 @@ BOOST_FIXTURE_TEST_SUITE(MessageTests, MessageFixture)
     BOOST_AUTO_TEST_CASE(Basics) {
         double tol = 1e-8;
         // TO DO FIX
-        //BOOST_CHECK_CLOSE(std::exp(msg.getIdx(5)), -A_BIG_DBL , tol);
-        BOOST_CHECK_CLOSE((double)msg.getIdx(12), -2.8000684380957894, tol);
-        BOOST_CHECK_CLOSE((double)msg.getIdx(100), -1.4500684380957891, tol);
-        BOOST_CHECK_CLOSE((double)msg.getIdx(123), -0.35006843809578925 , tol);
+        //BOOST_TEST((double)msg.getIdx(5) > -A_BIG_DBL);
+        BOOST_CHECK_CLOSE_FRACTION((double)msg.getIdx(12), -2.8000684380957894, tol);
+        BOOST_CHECK_CLOSE_FRACTION((double)msg.getIdx(100), -1.4500684380957891, tol);
+        BOOST_CHECK_CLOSE_FRACTION((double)msg.getIdx(123), -0.35006843809578925 , tol);
     }
     BOOST_AUTO_TEST_CASE(Iteration) {
 
         double tol = 1e-8;
         Message::const_iterator it = msg.begin();
 
-        BOOST_CHECK_CLOSE((double)*it , -2.8000684380957894, tol);
+        BOOST_CHECK_CLOSE_FRACTION((double)*it , -2.8000684380957894, tol);
         BOOST_CHECK_EQUAL(it.index(), 12);
         it ++;
 
-        BOOST_CHECK_CLOSE((double)*it, -1.4500684380957891, tol);
+        BOOST_CHECK_CLOSE_FRACTION((double)*it, -1.4500684380957891, tol);
         BOOST_CHECK_EQUAL(it.index(), 100);
         it ++;
 
-        BOOST_CHECK_CLOSE((double)*it, -0.35006843809578925 , tol);
+        BOOST_CHECK_CLOSE_FRACTION((double)*it, -0.35006843809578925 , tol);
         BOOST_CHECK_EQUAL(it.index(), 123);
         it ++;
 
@@ -61,22 +61,15 @@ BOOST_FIXTURE_TEST_SUITE(MessageTests, MessageFixture)
         //Change the old message
         msg.addToIdx(5, 0.25);
 
+        double tol = 1e-8;
+
         //Check index 5
-        /*double tmp = m.getIdx(5);
-        double tmp2 = m2.getIdgiux(5);
-        if( fabs( tmp - tmp2 ) < tol || tmp2 > -A_BIG_DBL || fabs( tmp - -1.910282456760932) > tol){
-            std::cout << "Unexpected values at index 5 after copy: " << tmp << " vs " << tmp2 << std::endl;
-            pass = false;
-        }
+        BOOST_CHECK_CLOSE_FRACTION((double)msg.getIdx(123),  -1.910282456760932, tol);
+        //BOOST_TEST((double)msg2.getIdx(123) >  -A_BIG_DBL);
 
         //Check index 123
-        tmp = m.getIdx(123);
-        tmp2 = m2.getIdx(123);
-        if( fabs( tmp - -0.510282456760932) > tol || fabs( tmp2 - -0.350068438095789) > tol ){
-            std::cout << "Unexpected values at index 123 after copy: " << tmp << " vs " << tmp2 << std::endl;
-            pass = false;
-        }
-        */
+        BOOST_CHECK_CLOSE_FRACTION((double)msg.getIdx(123), -0.510282456760932, tol);
+        BOOST_CHECK_CLOSE_FRACTION((double)msg2.getIdx(123), -0.350068438095789, tol);
     }
 
 BOOST_AUTO_TEST_SUITE_END()
