@@ -9,6 +9,7 @@
 # Created: November 2012, 2019
 #########################################################################*/
 #include "FeaturesTestsUtil.h"
+
 // Testing Root Triples Feature
 BOOST_AUTO_TEST_SUITE(FeaturesTestRootTriples)
 

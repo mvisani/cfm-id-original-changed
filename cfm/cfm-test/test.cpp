@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 		tests.push_back( new ComparatorsTestWeightedRecall() );
 		tests.push_back( new ComparatorsTestWeightedPrecision() );
 		tests.push_back( new ComparatorsTestJaccard() );
-		tests.push_back( new MessageTestBasics() );
+		tests.push_back( new MessageTests() );
 		tests.push_back( new MessageTestIteration() );
 		tests.push_back( new MessageTestCopyAssignment() );
 		// tests.push_back( new FeaturesTestInit() );

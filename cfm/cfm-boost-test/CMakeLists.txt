@@ -6,9 +6,12 @@
 # Author: Fei Wang
 # Created: Jan 2019
 ##########################################################################
-set(SRC_FILES main.cpp features_tests/FeaturesTestsUtil.cpp features_tests/FeaturesTestRootAtom.cpp features_tests/FeaturesTestsUtil.h features_tests/FeaturesTestsInitClass.cpp features_tests/FeaturesTestBreakAtomPair.cpp features_tests/FeaturesTestRootPairs.cpp features_tests/FeaturesTestRootTriples.cpp features_tests/FeaturesTestGasteigerCharges.cpp features_tests/FeaturesTestHydrogenMovement.cpp features_tests/FeaturesTestFunctionalGroups.cpp features_tests/FeaturesTestExtraFunctionalGroups.cpp features_tests/FeaturesTestFunctionalGroupsRootOnly.cpp features_tests/FeaturesTestRadicalFeatures.cpp features_tests/FeaturesTestExtraRingFeatures.cpp features_tests/FeaturesTestRootMMFFAtomType.cpp features_tests/FeaturesTestNeighbourMMFFAtomType.cpp features_tests/FeaturesTestBrokenOrigBondType.cpp features_tests/FeaturesTestQuadraticFeatures.cpp features_tests/FeaturesTestLength.cpp features_tests/FeaturesTestMatrixFP.cpp features_tests/FeaturesTestIonicFeatures.cpp)
+set(SRC_FILES main.cpp)
 
-add_executable ( cfm-boost-test ${SRC_FILES} )
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/features_tests FEATURES_TESTS_SRC)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/inference_tests INFERENCE_TESTS_SRC)
+
+add_executable ( cfm-boost-test ${SRC_FILES} ${FEATURES_TESTS_SRC} ${INFERENCE_TESTS_SRC})
 target_link_libraries ( cfm-boost-test cfm-code ${REQUIRED_LIBS})
 
 # declares a test with our executable
