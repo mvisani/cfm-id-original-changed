@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
 		tests.push_back( new MessageTestCopyAssignment() );
 		// tests.push_back( new FeaturesTestInit() );
 		tests.push_back( new FeaturesTestBreakAtomPair() );
-		// tests.push_back( new FeaturesTestBrokenOrigBondType() );
+		tests.push_back( new FeaturesTestBrokenOrigBondType() );
 		tests.push_back( new FeaturesTestNeighbourOrigBondType() );
 		tests.push_back( new FeaturesTestRootPairs() );
 		tests.push_back( new FeaturesTestRootTriples() );

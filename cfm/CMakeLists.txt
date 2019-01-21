@@ -37,7 +37,7 @@ endif()
 if (INCLUDE_TESTS)
     list(APPEND Boost_componets unit_test_framework)
 endif()
-find_package(Boost 1.55 REQUIRED COMPONENTS ${Boost_componets})
+find_package(Boost 1.59 REQUIRED COMPONENTS ${Boost_componets})
 
 include_directories(${Boost_INCLUDE_DIRS})
 
