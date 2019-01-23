@@ -77,8 +77,7 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
 
     const int root_id  = -1;
-    fgen.compute(*startnode, cfg->fg_depth, root_id, cfg->max_ring_breaks,
-                 cfg->num_rbreak_nrbonds, cfg->use_fg_graph, cfg->ring_break_depth_cap);
+    fgen.compute(*startnode, cfg->fg_depth, root_id, cfg->max_ring_breaks, cfg->use_fg_graph);
 
     if (!cfg->allow_frag_detours)
         fg->removeDetours();

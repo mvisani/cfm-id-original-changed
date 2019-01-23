@@ -696,7 +696,7 @@ void FragmentTreeNode::labelBreakPropertiesInNL(romol_ptr_t &current_nl, romol_p
 
 }
 
-void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H_only_loss, int num_rbreak_nrbonds) {
+void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H_only_loss) {
 
     int num_ionic = countNumIonicFragments(ion.get());
     RDKit::PeriodicTable *pt = RDKit::PeriodicTable::getTable();
@@ -777,15 +777,12 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
     // Ring Breaks
     // Find Ring Groups
-    // idea is that, a group of rings has AROMATIC bonds are not likely to brea
+    // idea is that, a group of rings has AROMATIC bonds are not likely to break
     auto bond_rings = rinfo->bondRings();
     auto bond_ring_it = bond_rings.begin();
 
-    // assume ring break are less likely to occur
-    // only create ring break if there is less than 5 none ring bond and  this is not a half ring break
-    // NOTE we may want to add FG break check here
-    // but for now , we are not going to worry about it
-    if ((ion.get()->getNumBonds() < ring_bonds_count + num_rbreak_nrbonds) && (had_ring_break == 0)) {
+    // Complete ring breakss
+    if (had_ring_break == 0) {
         auto brings = rinfo->bondRings();
 
         auto bit = brings.begin();

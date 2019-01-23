@@ -435,7 +435,7 @@ void FeaturesTestFunctionalGroups::runTest(){
 	std::string smiles_or_inchi("CCCCC(O)=O");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, false);
+    node->generateBreaks(breaks, false);
 	node->applyBreak(breaks[2], 0);	//Break Bond 2
 	node->generateChildrenOfBreak(breaks[2]);
 
@@ -480,7 +480,7 @@ void FeaturesTestExtraFunctionalGroups::runTest(){
 	std::string smiles_or_inchi("C1CC1CC(C)(C)C");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, false);
+    node->generateBreaks(breaks, false);
 	node->applyBreak(breaks[0], 0);	//Break Bond 2
 	node->generateChildrenOfBreak(breaks[0]);
 
@@ -523,7 +523,7 @@ void FeaturesTestFunctionalGroupsRootOnly::runTest(){
 	std::string smiles_or_inchi("CCCCC(O)=O");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, false);
+    node->generateBreaks(breaks, false);
 	node->applyBreak(breaks[2], 0);	//Break Bond 2
 	node->generateChildrenOfBreak(breaks[2]);
 
@@ -637,7 +637,7 @@ void FeaturesTestExtraRingFeatures::runTest(){
 	std::string smiles_or_inchi("c1ccccc1-C2CCCCC2-CCC");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, false);
+    node->generateBreaks(breaks, false);
 
 	// between two rings
 	node->applyBreak(breaks[0], 0);
@@ -714,7 +714,7 @@ void FeaturesTestRootMMFFAtomType::runTest(){
 	std::string smiles_or_inchi("CCCCC(O)=O");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, false);
+    node->generateBreaks(breaks, false);
 	node->applyBreak(breaks[4], 0);	//Break Bond 4
 	node->generateChildrenOfBreak(breaks[4]);
 
@@ -752,7 +752,7 @@ void FeaturesTestNeighbourMMFFAtomType::runTest(){
 	std::string smiles_or_inchi("CCCCC(O)=O");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, false);
+    node->generateBreaks(breaks, false);
 	node->applyBreak(breaks[4], 0);	//Break Bond 4
 	node->generateChildrenOfBreak(breaks[4]);
 
@@ -790,7 +790,7 @@ void FeaturesTestBrokenOrigBondType::runTest(){
 	std::string smiles_or_inchi("[Na+].C#CCCC(=O)CC=CC=CC=CCCc1ccccc1");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, true);
+    node->generateBreaks(breaks, true);
 
 	typedef std::pair<int, int> bond_test_spec_t;	//Break_idx, Expected Bond Type
 	std::vector<bond_test_spec_t> test_cases;
@@ -845,7 +845,7 @@ void FeaturesTestNeighbourOrigBondType::runTest(){
 	std::string smiles_or_inchi("CC(c1ccccc1)=CC(C)C#C");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, true);
+    node->generateBreaks(breaks, true);
 
 	typedef std::pair<int, std::vector<int> > bond_test_spec_t;	//Break_idx, Expected FV
 	std::vector<bond_test_spec_t> test_cases;
@@ -904,7 +904,7 @@ void FeaturesTestRootAtom::runTest(){
 	std::string smiles_or_inchi("[Br]C([Cl])(F)N(I)OPS[Se][Si]([Na])CCCCCc1ccccc1");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, true);
+    node->generateBreaks(breaks, true);
 
 	typedef std::pair<int, int> atom_pair_t;
 	typedef std::pair<int, atom_pair_t> atom_test_spec_t;	//Break_idx, Expected Atom feature idxs
@@ -989,7 +989,7 @@ void FeaturesTestIonicFeatures::runTest(){
 	std::string smiles_or_inchi("[Na+].[Cl-].CC=CC");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, true);
+    node->generateBreaks(breaks, true);
 
 	std::vector<IonicFeatureTestCase> test_cases;
 
@@ -1024,7 +1024,7 @@ void FeaturesTestIonicFeatures::runTest(){
 
 		if( testit->rebreak_child ){
 			std::vector<Break> child_breaks;
-			child->generateBreaks(child_breaks, true);
+            child->generateBreaks(child_breaks, true);
 			child->applyBreak(child_breaks[0], 0 );
 			child->generateChildrenOfBreak(child_breaks[0]);
 			child = &(child->children[0]);
@@ -1131,7 +1131,7 @@ void FeaturesTestLength::runTest(){
 	std::string smiles_or_inchi("CCCCC(O)=O");
 	FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, false);
+    node->generateBreaks(breaks, false);
 	node->applyBreak(breaks[2], 0);	//Break Bond 2
 	node->generateChildrenOfBreak(breaks[2]);
 	FragmentTreeNode *child = &(node->children[0]);

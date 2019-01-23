@@ -113,8 +113,7 @@ public:
     // num_rbreak_nrbonds is used to reduce mount of ring breaks
     // if a ion has less than give none ring break bonds, a ring break can happen
     // not the best idea ever
-    void generateBreaks(std::vector<Break> &output, bool include_H_only_loss,
-                        int num_rbreak_nrbonds = 10000);
+    void generateBreaks(std::vector<Break> &breaks, bool include_H_only_loss);
 
     // Record a break in the properties of the ion
     void applyBreak(Break &brk, int ionic_allocation_idx);

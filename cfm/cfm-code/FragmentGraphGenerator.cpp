@@ -140,7 +140,7 @@ bool FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 //The output will be appended to the current_graph
 void
 FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parent_id, int remaining_ring_breaks,
-                                int num_rbreak_nrbonds, bool use_fg_graph, int ring_break_depth_cap) {
+                                bool use_fg_graph) {
 
     if (current_graph->getOriginalNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
         || current_graph->getOriginalNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
@@ -178,7 +178,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
         h_loss_allowed = current_graph->includesHLossesPrecursorOnly() || current_graph->includesHLosses();
     else                //Break from Non-Precursor
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
-    node.generateBreaks(breaks, h_loss_allowed, num_rbreak_nrbonds);
+    node.generateBreaks(breaks, h_loss_allowed);
 
     bool ring_can_break = (remaining_ring_breaks > 0);
     int num_child_created = 0;
@@ -192,7 +192,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
             continue;
 
         CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
-                         id, &(*it), num_rbreak_nrbonds, use_fg_graph, ring_break_depth_cap);
+                         id, &(*it), use_fg_graph);
         num_child_created += node.children.size();
         node.children = std::vector<FragmentTreeNode>();
     }
@@ -208,7 +208,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
                 continue;
 
             CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
-                             id, &(*it), num_rbreak_nrbonds, use_fg_graph, ring_break_depth_cap);
+                             id, &(*it), use_fg_graph);
 
             num_child_created += node.children.size();
             node.children = std::vector<FragmentTreeNode>();
@@ -217,8 +217,8 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 }
 
 void
-FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id, Break *brk,
-                                         int num_rbreak_nrbonds, bool use_fg_graph, int ring_break_depth_cap) {
+FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id,
+                                         Break *brk, bool use_fg_graph) {
     for (int ifrag_idx = 0; ifrag_idx < brk->getNumIonicFragAllocations(); ifrag_idx++) {
 
         node.applyBreak(*brk, ifrag_idx);
@@ -236,8 +236,7 @@ FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_d
             //Recur over children
             auto itt = node.children.begin();
             for (; itt != node.children.end(); ++itt)
-                compute(*itt, child_remaining_depth, id, child_remaining_ring_breaks, num_rbreak_nrbonds, use_fg_graph,
-                        ring_break_depth_cap);
+                compute(*itt, child_remaining_depth, id, child_remaining_ring_breaks, false);
 
             //Undo and remove children
             node.undoBreak(*brk, ifrag_idx);
@@ -278,7 +277,7 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
     else                //Break from Non-Precursor
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
 
-    node.generateBreaks(breaks, h_loss_allowed, cfg->num_rbreak_nrbonds);
+    node.generateBreaks(breaks, h_loss_allowed);
     std::vector<Break>::iterator it = breaks.begin();
     std::vector<int> children_isring;
     for (; it != breaks.end(); ++it) {

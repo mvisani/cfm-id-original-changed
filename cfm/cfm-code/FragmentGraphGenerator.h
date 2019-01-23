@@ -83,9 +83,8 @@ public:
     //Compute a FragmentGraph starting at the given node and computing to the depth given.
     //The output will be appended to the current_graph
     // num_rbreak_nrbonds defualt to a huge number
-    void compute(FragmentTreeNode &startnode, int remaining_depth, int parent_id, int remaining_ring_breaks,
-                 int num_rbreak_nrbonds = 100000, bool use_fg_graph = false,
-                 int ring_break_depth_cap = -1);
+    void compute(FragmentTreeNode &node, int remaining_depth, int parent_id, int remaining_ring_breaks,
+                     bool use_fg_graph);
 
 protected:
     FeatureCalculator *fc;
@@ -107,8 +106,8 @@ private:
 
     static void applyIonization(RDKit::RWMol *rwmol, int ionization_mode);
 
-    void CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id, Break *brk,
-                              int num_rbreak_nrbonds, bool use_fg_graph, int ring_break_depth_cap);
+    void CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id,
+                              Break *brk, bool use_fg_graph);
 };
 
 //Class to be used if a graph is to be pruned as it's created 
