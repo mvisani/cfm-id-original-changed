@@ -249,12 +249,7 @@ public:
     // vectors for the transitions.
     void writeFeatureVectorGraph(std::ostream &out, bool include_isotopes) const;
 
-    void readFeatureVectorGraph(std::istream &out);
-
-    // Access functions
-    unsigned int getOriginalNumTransitions() const { return transitions.size(); };
-
-    unsigned int getOriginalNumFragments() const { return fragments.size(); };
+    void readFeatureVectorGraph(std::istream &out);;;
 
     void addFeatureVectorAtIdx(int index, FeatureVector * feature_vector) const {
         transitions[index]->setFeatureVector(feature_vector);

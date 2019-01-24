@@ -63,28 +63,32 @@ BOOST_FIXTURE_TEST_SUITE(FragGenTestPositiveESIRing, PositiveESIRingFixture)
 
     std::vector<std::tuple<int, double, std::string>> expected_value {
             {0,81.04472458,"c1cnc[nH+]c1"},
-            {1,65.01342445,"[C+]#CN=C=N"},
-            {2,15.02292652,"[CH3+]"},
-            {3,54.03382555,"C#C[NH+]=C"},
-            {4,28.01817548,"C#[NH+]"},
-            {5,26.00252542,"[C+]#N"},
+            {2,55.02907452,"C=[NH+]C#N"},
+            {3,28.01817548,"C#[NH+]"},
+            {4,26.00252542,"[C+]#N"},
+            {5,53.01342445,"C#[N+]C#N"},
             {6,25.00727645,"[C+]#C"},
             {7,27.02292652,"C#[CH2+]"},
-            {8,52.01817548,"C#C[N+]#C"},
-            {9,30.03382555,"C=[NH2+]"},
-            {10,40.01817548,"[C+]#CN"},
-            {11,29.03857658,"C=[CH3+]"},
-            {12,53.01342445,"C#[N+]C#N"},
-            {13,55.02907452,"C=NC#[NH+]"},
-            {14,54.03382555,"C=CC#[NH+]"},
-            {15,52.01817548,"[CH+]=C=C=N"},
-            {16,50.00252542,"[C+]#CC#N"},
-            {17,39.02292652,"[C+]#CC"},
-            {18,65.01342445,"N#C[C+]=C=N"}
+            {8,29.03857658,"C=[CH3+]"},
+            {9,39.02292652,"[C+]#CC"},
+            {10,30.03382555,"C=[NH2+]"},
+            {11,50.00252542,"[C+]#CC#N"},
+            {12,52.01817548,"C#CC#[NH+]"},
+            {13,54.03382555,"C=CC#[NH+]"},
+            {14,65.01342445,"[C+]#CN=C=N"},
+            {15,15.02292652,"[CH3+]"},
+            {16,79.02907452,"[CH2+]C#CN=C=N"},
+            {17,77.01342445,"[CH+]=C=C=NC#N"},
+            {19,40.01817548,"[CH2+]C#N"},
+            {20,65.01342445,"N#C[C+]=C=N"},
+            {21,54.03382555,"C#C[NH+]=C"},
+            {22,52.01817548,"C#C[N+]#C"},
+            {23,79.02907452,"C=[NH+]C#CC#N"},
+            {24,77.01342445,"C#[N+]C#CC#N"}
     };
 
     BOOST_AUTO_TEST_CASE(NumOfFragmentTest){
-        BOOST_CHECK_EQUAL(graph->getNumFragments(), 19);
+        BOOST_CHECK_EQUAL(graph->getNumFragments(), 25);
     }
 
     BOOST_DATA_TEST_CASE(FragmentTests, bdata::make(expected_value),
@@ -94,6 +98,50 @@ BOOST_FIXTURE_TEST_SUITE(FragGenTestPositiveESIRing, PositiveESIRingFixture)
 
         BOOST_CHECK_CLOSE_FRACTION(graph->getFragmentAtIdx(idx)->getMass(), expected_mass, tolerance);
         BOOST_CHECK_EQUAL(*(graph->getFragmentAtIdx(idx)->getIonSmiles()), expected_ion_smiles);
+    }
+
+    std::vector<std::tuple<int, double, std::string>> expected_ring_breaks {
+            {0,81.04472458,"c1cnc[nH+]c1"},
+            {20,65.01342445,"N#C[C+]=C=N"},
+            {15,15.02292652,"[CH3+]"},
+            {21,54.03382555,"C#C[NH+]=C"},
+            {3,28.01817548,"C#[NH+]"},
+            {4,26.00252542,"[C+]#N"},
+            {6,25.00727645,"[C+]#C"},
+            {7,27.02292652,"C#[CH2+]"},
+            {12,52.01817548,"C#CC#[NH+]"},
+            {10,30.03382555,"C=[NH2+]"},
+            {19,40.01817548,"[CH2+]C#N"},
+            {8,29.03857658,"C=[CH3+]"},
+            {5,53.01342445,"C#[N+]C#N"},
+            {2,55.02907452,"C=[NH+]C#N"},
+            {13,54.03382555,"C=CC#[NH+]"},
+            {12,52.01817548,"C#CC#[NH+]"},
+            {11,50.00252542,"[C+]#CC#N"},
+            {9,39.02292652,"[C+]#CC"},
+            {14,65.01342445,"[C+]#CN=C=N"},
+    };
+
+    BOOST_DATA_TEST_CASE(RingBreakFragmentTests, bdata::make(expected_ring_breaks),
+                         idx, expected_mass, expected_ion_smiles)
+    {
+        double tolerance =  1e-6;
+
+        BOOST_CHECK_CLOSE_FRACTION(graph->getFragmentAtIdx(idx)->getMass(), expected_mass, tolerance);
+    }
+
+    std::vector<std::tuple<int, double, std::string>> expected_intermediate_fragments {
+            {1,81.04472458,"C=C=C=[NH+]C=N"},
+            {18,81.04472458,"C[NH+]=C=C=C=N"},
+    };
+    BOOST_DATA_TEST_CASE(IntermediateFragmentTests, bdata::make(expected_intermediate_fragments),
+                         idx, expected_mass, expected_ion_smiles)
+    {
+        double tolerance =  1e-6;
+
+        BOOST_CHECK_CLOSE_FRACTION(graph->getFragmentAtIdx(idx)->getMass(), expected_mass, tolerance);
+        BOOST_CHECK_EQUAL(*(graph->getFragmentAtIdx(idx)->getIonSmiles()), expected_ion_smiles);
+        BOOST_CHECK(graph->getFragmentAtIdx(idx)->isIntermediate());
     }
 
 BOOST_AUTO_TEST_SUITE_END()
