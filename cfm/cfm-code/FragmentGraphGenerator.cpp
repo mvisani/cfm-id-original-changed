@@ -90,8 +90,8 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
     // init to avoid crash
     // value does matter at this stage
     for (unsigned int bidx = 0; bidx < rwmol->getNumBonds(); bidx++) {
-        RDKit::Bond *bond =   rwmol->getBondWithIdx(bidx);
-        if(rinfo->numBondRings(bidx) == 0)
+        RDKit::Bond *bond = rwmol->getBondWithIdx(bidx);
+        if (rinfo->numBondRings(bidx) == 0)
             bond->setProp("OnTheRing", 0);
         else
             bond->setProp("OnTheRing", 1);
@@ -149,7 +149,8 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
     }
 
     if (verbose)
-        std::cout << current_graph->getOriginalNumFragments() << ":" << RDKit::MolToSmiles(*node.ion.get()) << std::endl;
+        std::cout << current_graph->getOriginalNumFragments() << ":" << RDKit::MolToSmiles(*node.ion.get())
+                  << std::endl;
 
     //Add the node to the graph, and return a fragment id
     int id = -1;
@@ -164,11 +165,12 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 
     //If the node was already in the graph at sufficient depth, skip any further computation
     if (alreadyComputed(id, remaining_depth)) {
-        if (verbose) std::cout << "Node already computed: Skipping" << std::endl;
+        if (verbose)
+            std::cout << "Node already computed: Skipping" << std::endl;
         return;
     }
 
-    if (current_graph->getHeight() < (node.depth+1))
+    if (current_graph->getHeight() < (node.depth + 1))
         current_graph->setHeight(node.depth + 1);
 
     //Generate Breaks
@@ -182,10 +184,12 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 
     bool ring_can_break = (remaining_ring_breaks > 0);
     int num_child_created = 0;
-    //Iterate over the possible breaks
-    for (auto it = breaks.begin(); it != breaks.end(); ++it) {
 
-        if(!ring_can_break && it->isRingBreak())
+    // Disabled FG logic
+    // Iterate over the possible breaks
+    /*for (auto it = breaks.begin(); it != breaks.end(); ++it) {
+
+        if (!ring_can_break && it->isRingBreak())
             continue;
 
         if (!it->isFgBreak())
@@ -198,22 +202,23 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
     }
 
     //Iterate over the possible none fg breaks
-    if(num_child_created == 0 || !use_fg_graph){
-        for (auto it =  breaks.begin(); it != breaks.end(); ++it) {
+    if (num_child_created == 0 || !use_fg_graph) {
+        for (auto it = breaks.begin(); it != breaks.end(); ++it) {
 
             if (it->isFgBreak())
-                continue;
+                continue;*/
 
-            if(it->isRingBreak() && !ring_can_break)
-                continue;
+    for (auto it = breaks.begin(); it != breaks.end(); ++it) {
+        if (it->isRingBreak() && !ring_can_break)
+            continue;
 
-            CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
+        CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
                              id, &(*it), use_fg_graph);
 
-            num_child_created += node.children.size();
-            node.children = std::vector<FragmentTreeNode>();
-        }
+        num_child_created += node.children.size();
+        node.children = std::vector<FragmentTreeNode>();
     }
+    //}
 }
 
 void
@@ -225,21 +230,21 @@ FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_d
         node.generateChildrenOfBreak(*brk);
 
         // if this is ring break
-            // update control vars
-            int child_remaining_ring_breaks = remaining_ring_breaks;
-            int child_remaining_depth = remaining_depth - 1;
-            if (brk->isRingBreak() && remaining_ring_breaks > 0) {
-                child_remaining_depth ++;
-                child_remaining_ring_breaks--;
-            }
+        // update control vars
+        int child_remaining_ring_breaks = remaining_ring_breaks;
+        int child_remaining_depth = remaining_depth - 1;
+        if (brk->isRingBreak() && remaining_ring_breaks > 0) {
+            child_remaining_depth++;
+            child_remaining_ring_breaks--;
+        }
 
-            //Recur over children
-            auto itt = node.children.begin();
-            for (; itt != node.children.end(); ++itt)
-                compute(*itt, child_remaining_depth, id, child_remaining_ring_breaks, false);
+        //Recur over children
+        auto itt = node.children.begin();
+        for (; itt != node.children.end(); ++itt)
+            compute(*itt, child_remaining_depth, id, child_remaining_ring_breaks, use_fg_graph);
 
-            //Undo and remove children
-            node.undoBreak(*brk, ifrag_idx);
+        //Undo and remove children
+        node.undoBreak(*brk, ifrag_idx);
     }
 }
 
@@ -348,7 +353,7 @@ void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization
 
     int rad_side = -1;
     if (ionization_mode == POSITIVE_EI_IONIZATION_MODE)
-       rad_side = 0;
+        rad_side = 0;
     bool is_neg = (ionization_mode == NEGATIVE_ESI_IONIZATION_MODE);
 
     boost::tuple<int, int, int> pindx_nidx_ridx(-1, -1, -1);
@@ -370,7 +375,8 @@ void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization
         }
         try {
             FragmentTreeNode::assignChargeAndRadical(*rwmol, qidx_ridx.first, qidx_ridx.second, is_neg);
-            RDKit::MolOps::sanitizeMol(*rwmol);    //Re-sanitize...sometimes RDKit only throws the exception the second time...
+            RDKit::MolOps::sanitizeMol(
+                    *rwmol);    //Re-sanitize...sometimes RDKit only throws the exception the second time...
         }
         catch (RDKit::MolSanitizeException e) {
             std::cout << "Could not ionize - sanitization failure" << std::endl;
