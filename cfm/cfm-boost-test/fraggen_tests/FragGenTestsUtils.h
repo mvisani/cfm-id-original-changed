@@ -21,7 +21,7 @@
 
 FragmentGraph *getTestGraph(std::string smiles_or_inchi,
                             int ionization_mode,
-                            bool include_h_loss,
+                            bool include_h_loss = true,
                             bool allow_frag_detours = false,
                             int graph_depth = 2);
 
