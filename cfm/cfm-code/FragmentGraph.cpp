@@ -132,9 +132,6 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         try {
             fv = fc->computeFeatureVector(t->getIon(), t->getNeutralLoss(), node.depth, frag_ptr);
             t->setFeatureVector(fv);
-            /*std::cout << *(t->getIonSmiles()) << " " << *(t->getNLSmiles()) << " ";
-            t->getFeatureVector()->writeDebugInfo(std::cout);
-            std::cout << std::endl;*/
         }
         catch (FeatureCalculationException & e) {
             //If we couldn't compute the feature vector, set a dummy feature vector with bias only.
@@ -147,9 +144,8 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         t->deleteIon();
         t->deleteNeutralLoss();
     }else if(parentid >= 0 && existing_trans_id >= 0 &&
-        (allow_frag_detours || node.depth <= fragments[id]->getDepth())){
+        (node.depth == fragments[id]->getDepth())){
         // if those transitions does exists, increase count
-        transitions[existing_trans_id]->increaseCount();
     }
 
     return id;

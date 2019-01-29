@@ -167,9 +167,8 @@ public:
         tmp_thetas = *a_thetas;
     };
 
-    int getCount() const { return count; };
-
-    void increaseCount() { count++; };
+    void setDuplicate() {is_duplicate = true; };
+    bool isDuplicate() { return is_duplicate; }
 private:
     int from_id;
     int to_id;
@@ -188,8 +187,8 @@ private:
     // while we compute the likely fragment graph
     //(as above, don't use directly, will be moved)
 
-    // count of this trans
-    int count = 1;
+    //
+    bool is_duplicate = false;
 };
 
 class FragmentGraph {
