@@ -88,13 +88,11 @@ public:
     };
 
     double getLogTransitionProbForIdx(int energy, int index) const {
-        double weight = (double)fg->getTransitionAtIdx(index)->getCount();
-        return weight * log_probs[energy][index];
+        return log_probs[energy][index];
     };
 
     double getLogPersistenceProbForIdx(int energy, int index) const {
-        double weight = (double)fg->getTransitionAtIdx(index)->getCount();
-        return weight * log_probs[energy][fg->getNumTransitions() + index];
+        return log_probs[energy][fg->getNumTransitions() + index];
     };
 
     int getGroup() const { return group; };

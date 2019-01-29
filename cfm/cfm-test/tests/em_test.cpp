@@ -273,7 +273,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
 
         //Run EM (multiple times, and take best Q)
         double best_Q = -1000000.0;
-        const int trials_max = 3;
+        const int trials_max = 1;
         std::vector<double> Qs;
         for (int trial = 0; trial < trials_max; trial++) {
             std::string status_file = "tmp_status_file.log";
@@ -291,7 +291,8 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
         for (; it != Qs.end(); ++it) std::cout << *it << " ";
         std::cout << " Best=" << best_Q << std::endl;
 
-        if (energy == 0) final_params = new NNParam(param_filename);
+        if (energy == 0)
+            final_params = new NNParam(param_filename);
         else {
             NNParam eparam(param_filename);
             final_params->appendNextEnergyParams(eparam, energy);
@@ -307,8 +308,8 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     for (unsigned int energy = 0; energy < data[0].getNumSpectra(); energy++) {
         const Spectrum *orig_spec = data[0].getSpectrum(energy);
         const Spectrum *predicted_spec = data[0].getPredictedSpectrum(energy);
+        std::cout << energy << " ";
         pass &= compareSpectra(orig_spec, predicted_spec, orig_cfg.abs_mass_tol, orig_cfg.ppm_mass_tol, intensity_tol);
-
     }
     passed = pass;
 }
