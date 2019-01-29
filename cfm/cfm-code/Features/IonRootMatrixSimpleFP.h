@@ -26,7 +26,7 @@ public:
         name = "IonRootGeneralizedMatrixFPN8";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class IonRootGeneralizedMatrixFPN10 : public FingerPrintFeature {
@@ -36,7 +36,7 @@ public:
         name = "IonRootGeneralizedMatrixFPN10";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class IonRootMatrixSimpleFPN8D3 : public FingerPrintFeature {
@@ -46,7 +46,7 @@ public:
         name = "IonRootMatrixSimpleFPN8D3";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class IonRootMatrixSimpleFPN10 : public FingerPrintFeature {
@@ -56,7 +56,7 @@ public:
         name = "IonRootMatrixSimpleFPN10";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class IonRootMatrixSimpleFPN16 : public FingerPrintFeature {
@@ -66,7 +66,7 @@ public:
         name = "IonRootMatrixSimpleFPN16";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 
@@ -77,5 +77,5 @@ public:
         name = "IonRootMatrixSimpleFPN32";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };

@@ -1,7 +1,6 @@
 BreakAtomPair
+IonRootMatrixFPN10
+NLRootMatrixFPN10
 GasteigerCharges
 HydrogenMovement
-IonRootPairs
-IonRootTriples
-NLRootPairs
-NLRootTriples
+RingFeatures

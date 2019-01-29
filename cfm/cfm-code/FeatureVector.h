@@ -26,6 +26,12 @@ class FeatureVector {
 public:
     FeatureVector() { fv_idx = 0; };
 
+    FeatureVector(const FeatureVector & old) {
+        fv_idx = old.fv_idx;
+        fv = old.fv;
+        //std::copy(old.fv.begin(), old.fv.end(), fv.begin());
+    };
+
     void addFeature(double value);
 
     void addFeatureAtIdx(double value, unsigned int idx);

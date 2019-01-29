@@ -21,10 +21,10 @@ FeatureVector *getFeatureTestHydrgeMovementFV(std::string ion_str, std::string n
     initMolProps(ion);
 
     ion.get()->getAtomWithIdx(0)->setProp<double>("OriginalMass", 16.0 - h_movement);
-    RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+    RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
     romol_ptr_t nl = createMolPtr(nl_str.c_str());
     initMolProps(nl);
-    RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+    RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 
     FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 

@@ -28,7 +28,7 @@ public:
     };
 
     void
-    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 // Features use fingerprint encode ion fragmentation
@@ -40,7 +40,7 @@ public:
     };
 
     void
-    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 // Features use fingerprint encode NL fragmentatNL
@@ -51,7 +51,7 @@ public:
         name = "NLRootEncodingMorganD3";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 // Features use fingerprint encode ion fragmentation
@@ -63,5 +63,5 @@ public:
     };
 
     void
-    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };

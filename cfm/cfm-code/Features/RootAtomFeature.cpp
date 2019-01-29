@@ -18,7 +18,7 @@ param.cpp.
 #include "RootAtomFeature.h"
 
 void RootAtomFeature::computeRootAtomFeature(FeatureVector &fv,
-                                             const RootedROMolPtr *mol,
+                                             const RootedROMol *mol,
                                              bool ring_break) const {
 
     int offset = fv.getTotalLength();

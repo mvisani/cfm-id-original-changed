@@ -262,7 +262,7 @@ unsigned int FeatureCalculator::getNumFeatures() {
 }
 
 FeatureVector *
-FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedROMolPtr *nl, int tree_depth,
+FeatureCalculator::computeFeatureVector(const RootedROMol *ion, const RootedROMol *nl, int tree_depth,
                                         const romol_ptr_t precursor_ion) {
 
     FeatureVector *fv = new FeatureVector();

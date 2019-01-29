@@ -16,7 +16,7 @@ param.cpp.
 #########################################################################*/
 #include "NLRootEncodings.h"
 
-void NLRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void NLRootEncodingD3::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
@@ -29,7 +29,7 @@ void NLRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *ion, con
 
 }
 
-void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
@@ -41,7 +41,7 @@ void NLRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, co
     addRDKitFingerPrintFeatures(fv, nl, finger_print_size, atom_count, false, min_path, max_path);
 }
 
-void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 
@@ -52,7 +52,7 @@ void NLRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *io
     addMorganFingerPrintFeatures(fv, nl, finger_print_size, distance_to_root, morgan_radius);
 }
 
-void NLRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void NLRootEncodingD4::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
 

@@ -37,10 +37,10 @@ double getMassTol(double abs_tol, double ppm_tol, double mass);
 
 //Structure for storing a shared pointer to a molecule, as well as atom pointers
 //to the root atoms (i.e. the atoms that were at either end of a broken bond)
-class RootedROMolPtr {
+class RootedROMol {
 public:
-    RootedROMolPtr() = default;;    //Default Constructor
-    RootedROMolPtr(romol_ptr_t a_mol, RDKit::Atom *a_root) :
+    RootedROMol() = default;;    //Default Constructor
+    RootedROMol(romol_ptr_t a_mol, RDKit::Atom *a_root) :
             mol(a_mol), root(a_root) {};
     romol_ptr_t mol;
     RDKit::Atom *root = nullptr;

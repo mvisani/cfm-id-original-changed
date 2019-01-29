@@ -20,7 +20,7 @@ param.cpp.
 
 
 void
-IonicFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+IonicFeatures::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     int nl_pos = 0, nl_neg = 0, ion_pos = 0, ion_neg = 0;
 

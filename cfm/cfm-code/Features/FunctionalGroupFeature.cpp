@@ -16,7 +16,7 @@
 #########################################################################*/
 #include "FunctionalGroupFeature.h"
 
-void FunctionalGroupFeature::addFunctionalGroupFeatures(FeatureVector &fv, const RootedROMolPtr *mol, int max_depth,
+void FunctionalGroupFeature::addFunctionalGroupFeatures(FeatureVector &fv, const RootedROMol *mol, int max_depth,
                                                         bool extra) const {
 
     int offset = fv.getTotalLength();

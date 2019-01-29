@@ -18,10 +18,10 @@ void initMolProps(romol_ptr_t &mol) {
     mol.get()->setProp("IsRingBreak", 0);
 }
 
-RootedROMolPtr getRootedMolPtr(std::string smiles) {
+RootedROMol getRootedMolPtr(std::string smiles) {
     romol_ptr_t mol = createMolPtr(smiles.c_str());
     initMolProps(mol);
-    RootedROMolPtr rtd_mol(mol, mol.get()->getAtomWithIdx(0));
+    RootedROMol rtd_mol(mol, mol.get()->getAtomWithIdx(0));
     return rtd_mol;
 }
 
@@ -33,12 +33,12 @@ FeatureVector *getFeatureVector(std::string ion_str, std::string nl_str, std::ve
     // init ion
     romol_ptr_t ion = createMolPtr(ion_str.c_str());
     initMolProps(ion);
-    RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+    RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
 
     // init nl
     romol_ptr_t nl = createMolPtr(nl_str.c_str());
     initMolProps(nl);
-    RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+    RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 
     FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 

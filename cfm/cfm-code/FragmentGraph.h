@@ -115,7 +115,7 @@ public:
     Transition() {};
 
     // Basic constructor
-    Transition(int a_from_id, int a_to_id, const RootedROMolPtr &a_nl, const RootedROMolPtr &an_ion);
+    Transition(int a_from_id, int a_to_id, const RootedROMol &a_nl, const RootedROMol &an_ion);
 
     // Alternative constructor that finds the root atoms and sets the
     // root pointers appropriately
@@ -143,18 +143,18 @@ public:
     const std::string *getNLSmiles() const { return &nl_smiles; };
     const std::string *getIonSmiles() const { return  &ion_smiles; };
 
-    const RootedROMolPtr *getNeutralLoss() const { return &nl; };
+    const RootedROMol *getNeutralLoss() const { return &nl; };
 
     void deleteNeutralLoss() {
         nl.mol.reset();
-        nl = RootedROMolPtr();
+        nl = RootedROMol();
     };
 
-    const RootedROMolPtr *getIon() const { return &ion; };
+    const RootedROMol *getIon() const { return &ion; };
 
     void deleteIon() {
         ion.mol.reset();
-        ion = RootedROMolPtr();
+        ion = RootedROMol();
     };
 
     FeatureVector *getFeatureVector() const { return feature_vector; };
@@ -167,16 +167,27 @@ public:
         tmp_thetas = *a_thetas;
     };
 
-    void setDuplicate() {is_duplicate = true; };
     bool isDuplicate() { return is_duplicate; }
+
+    void createdDuplication( const Transition & old){
+        from_id = old.from_id;
+        to_id = old.to_id;
+        nl_smiles = old.nl_smiles;
+        ion_smiles = old.ion_smiles;
+
+        feature_vector = new FeatureVector(*old.feature_vector);
+        is_duplicate = true;
+    };
+
 private:
     int from_id;
     int to_id;
     std::string nl_smiles;
     std::string ion_smiles;
 
-    RootedROMolPtr nl;
-    RootedROMolPtr ion; // We store the ion on the transition to
+    RootedROMol nl;
+    RootedROMol ion;
+    // We store the ion on the transition to
     // allow for different roots - the fragment stores
     // only an unrooted shared pointer.
     FeatureVector *feature_vector = nullptr; //storage for the feature vector pointer
@@ -187,7 +198,6 @@ private:
     // while we compute the likely fragment graph
     //(as above, don't use directly, will be moved)
 
-    //
     bool is_duplicate = false;
 };
 

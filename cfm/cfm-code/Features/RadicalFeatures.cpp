@@ -18,7 +18,7 @@ param.cpp.
 #include "RadicalFeatures.h"
 
 void
-RadicalFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+RadicalFeatures::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     int ion_radical = moleculeHasSingleRadical(ion->mol.get());
     int nl_radical = moleculeHasSingleRadical(nl->mol.get());

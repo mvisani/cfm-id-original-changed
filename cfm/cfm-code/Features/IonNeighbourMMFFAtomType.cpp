@@ -17,7 +17,7 @@ param.cpp.
 #########################################################################*/
 #include "IonNeighbourMMFFAtomType.h"
 
-void IonNeighbourMMFFAtomType::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void IonNeighbourMMFFAtomType::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
     int offset = fv.getTotalLength() - 1;
 
     fv.addFeatureAtIdx(0.0,

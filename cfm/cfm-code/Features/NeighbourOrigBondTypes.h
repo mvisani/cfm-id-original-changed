@@ -27,13 +27,13 @@ public:
     };
 
     void
-    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 
     // void addNeighbourOrigBondFeatures(FeatureVector &fv,
-    //                                  const RootedROMolPtr *mol, int
+    //                                  const RootedROMol *mol, int
     //                                  ring_break);
 };
 
 // TODO FIX THIS, this should be a member function
-void addNeighbourOrigBondFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+void addNeighbourOrigBondFeatures(FeatureVector &fv, const RootedROMol *mol,
                                   int ring_break);

@@ -24,12 +24,12 @@ BOOST_AUTO_TEST_SUITE(FeaturesTestQuadraticFeatures)
         romol_ptr_t ion = createMolPtr("C");
         initMolProps(ion);
 
-        RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+        RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
         double h_movement = 3.00452;
         ion.get()->getAtomWithIdx(0)->setProp<double>("OriginalMass", 16.0 - h_movement);
         romol_ptr_t nl = createMolPtr("N");
         initMolProps(nl);
-        RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+        RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
         nl.get()->setProp("IsRingBreak", 0);
 
         FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);

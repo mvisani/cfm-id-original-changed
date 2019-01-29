@@ -20,7 +20,7 @@ param.cpp.
 #include <GraphMol/AtomIterators.h>
 
 void
-HydrogenMovement::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+HydrogenMovement::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     double h_movement = 0.0;
 

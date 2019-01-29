@@ -36,7 +36,7 @@ Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, cons
         root = getLabeledAtom(an_ion, "Root");
     //else
     //    std::cout << "Warning: Ion Root atoms not defined" << std::endl;
-    ion = RootedROMolPtr(an_ion, root);
+    ion = RootedROMol(an_ion, root);
 
     root = nullptr;
     first_atom = a_nl.get()->getAtomWithIdx(0);
@@ -44,7 +44,7 @@ Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, cons
         root = getLabeledAtom(a_nl, "Root");
     //else
     //    std::cout << "Warning: NL Root atoms not defined" << std::endl;
-    nl = RootedROMolPtr(a_nl, root);
+    nl = RootedROMol(a_nl, root);
 
     to_id = a_to_id;
     from_id = a_from_id;
@@ -53,7 +53,7 @@ Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, cons
 
 }
 
-Transition::Transition(int a_from_id, int a_to_id, const RootedROMolPtr &a_nl, const RootedROMolPtr &an_ion)
+Transition::Transition(int a_from_id, int a_to_id, const RootedROMol &a_nl, const RootedROMol &an_ion)
         :
         to_id(a_to_id), from_id(a_from_id), nl(a_nl), ion(an_ion) {
     nl_smiles = RDKit::MolToSmiles(*(nl.mol.get()));
@@ -145,7 +145,14 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         t->deleteNeutralLoss();
     }else if(parentid >= 0 && existing_trans_id >= 0 &&
         (node.depth == fragments[id]->getDepth())){
-        // if those transitions does exists, increase count
+        // if those transitions does exists, create a duplication
+        int idx = transitions.size();
+        auto trans = new Transition();
+        trans->createdDuplication(*transitions[existing_trans_id]);
+        transitions.push_back(trans);
+        //Update the tmaps
+        from_id_tmap[parentid].push_back(idx);
+        to_id_tmap[id].push_back(idx);
     }
 
     return id;

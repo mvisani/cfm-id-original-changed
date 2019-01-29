@@ -20,7 +20,7 @@ param.cpp.
 #include <GraphMol/MolOps.h>
 
 
-void RootPathFeature::computeRootPaths(std::vector<path_t> &paths, const RootedROMolPtr *mol, int len,
+void RootPathFeature::computeRootPaths(std::vector<path_t> &paths, const RootedROMol *mol, int len,
                                        bool with_bond = false) const {
     path_t path_so_far;
     addPathsFromAtom(paths, mol->root, mol->mol, mol->root, path_so_far, len,

@@ -22,12 +22,12 @@ BOOST_AUTO_TEST_SUITE(FeaturesTestGasteigerCharges)
         romol_ptr_t ion = createMolPtr("C");
         initMolProps(ion);
         ion.get()->getAtomWithIdx(0)->setProp<double>("OrigGasteigerCharge", -0.33042488);
-        RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+        RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
 
         romol_ptr_t nl = createMolPtr("C");
         initMolProps(nl);
         nl.get()->getAtomWithIdx(0)->setProp<double>("OrigGasteigerCharge", -0.00652530);
-        RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+        RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 
         FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 

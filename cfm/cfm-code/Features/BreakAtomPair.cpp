@@ -19,7 +19,7 @@
 void
 
 
-BreakAtomPair::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+BreakAtomPair::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);

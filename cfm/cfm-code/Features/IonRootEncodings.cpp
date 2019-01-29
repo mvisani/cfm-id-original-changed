@@ -17,7 +17,7 @@ param.cpp.
 #########################################################################*/
 #include "IonRootEncodings.h"
 
-void IonRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void IonRootEncodingD3::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     unsigned int min_path = 1;
     unsigned int max_path = 2;
@@ -27,7 +27,7 @@ void IonRootEncodingD3::compute(FeatureVector &fv, const RootedROMolPtr *ion, co
     addRDKitFingerPrintFeatures(fv, ion, finger_print_size, distance_to_root, true, min_path, max_path);
 }
 
-void IonRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void IonRootEncodingN10::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     unsigned int min_path = 1;
     unsigned int max_path = 3;
@@ -37,7 +37,7 @@ void IonRootEncodingN10::compute(FeatureVector &fv, const RootedROMolPtr *ion, c
     addRDKitFingerPrintFeatures(fv, ion, finger_print_size, atom_count, true, min_path, max_path);
 }
 
-void IonRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void IonRootEncodingD4::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     unsigned int min_path = 1;
     unsigned int max_path = 3;
@@ -47,7 +47,7 @@ void IonRootEncodingD4::compute(FeatureVector &fv, const RootedROMolPtr *ion, co
     addRDKitFingerPrintFeatures(fv, ion, finger_print_size, distance_to_root, true, min_path, max_path);
 }
 
-void IonRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void IonRootEncodingMorganD3::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     unsigned int distance_to_root = 2;
     unsigned int finger_print_size = 512;

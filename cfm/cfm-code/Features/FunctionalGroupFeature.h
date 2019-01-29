@@ -29,6 +29,6 @@ protected:
                                             int max_depth, int depth,
                                             bool extra) const;
 
-    void addFunctionalGroupFeatures(FeatureVector &fv, const RootedROMolPtr *mol, int max_dist,
+    void addFunctionalGroupFeatures(FeatureVector &fv, const RootedROMol *mol, int max_dist,
                                         bool extra) const;
 };

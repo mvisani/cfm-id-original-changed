@@ -21,6 +21,6 @@ param.cpp.
 
 class NeighbourMMFFFeature : public BreakFeature {
 protected:
-    void addNeighbourAtomTypes(FeatureVector &fv, const RootedROMolPtr *mol,
+    void addNeighbourAtomTypes(FeatureVector &fv, const RootedROMol *mol,
                                const RDKit::Atom *root, int offset) const;
 };

@@ -17,7 +17,7 @@ param.cpp.
 #########################################################################*/
 #include "NeighbourOrigBondTypes.h"
 
-void NeighbourOrigBondTypes::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+void NeighbourOrigBondTypes::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
@@ -25,7 +25,7 @@ void NeighbourOrigBondTypes::compute(FeatureVector &fv, const RootedROMolPtr *io
     addNeighbourOrigBondFeatures(fv, nl, ring_break);
 }
 
-void addNeighbourOrigBondFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+void addNeighbourOrigBondFeatures(FeatureVector &fv, const RootedROMol *mol,
                                   int ring_break) {
 
     std::vector<int> seen_types(6, 0);

@@ -20,7 +20,7 @@ param.cpp.
 #include <GraphMol/RingInfo.h>
 
 void
-ExtraRingFeatures::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+ExtraRingFeatures::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     // Not a ring break
     int ring_break;

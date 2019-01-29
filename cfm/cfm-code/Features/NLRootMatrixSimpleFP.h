@@ -26,7 +26,7 @@ public:
         name = "NLRootGeneralizedMatrixFPN8";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class NLRootGeneralizedMatrixFPN10 : public FingerPrintFeature {
@@ -36,7 +36,7 @@ public:
         name = "NLRootGeneralizedMatrixFPN10";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class NLRootMatrixSimpleFPN8D3 : public FingerPrintFeature {
@@ -46,7 +46,7 @@ public:
         name = "NLRootMatrixSimpleFPN8D3";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class NLRootMatrixSimpleFPN10 : public FingerPrintFeature {
@@ -56,7 +56,7 @@ public:
         name = "NLRootMatrixSimpleFPN10";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class NLRootMatrixSimpleFPN16 : public FingerPrintFeature {
@@ -66,7 +66,7 @@ public:
         name = "NLRootMatrixSimpleFPN16";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class NLRootMatrixSimpleFPN32 : public FingerPrintFeature {
@@ -76,5 +76,5 @@ public:
         name = "NLRootMatrixSimpleFPN32";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };

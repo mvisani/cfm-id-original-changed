@@ -17,7 +17,7 @@
 #include "IonFingerPrintFeature.h"
 
 void
-IonFingerPrintFeature::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+IonFingerPrintFeature::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     unsigned int morgan_radius = 2;
     addMorganFingerPrintFeatures(fv,ion,size, morgan_radius);

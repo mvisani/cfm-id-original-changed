@@ -88,10 +88,10 @@ void FeaturesTestBreakAtomPair::runTest(){
 	RDKit::Atom *null_atom = nullptr;
 	romol_ptr_t ion = createMolPtr("C");
 	initMolProps(ion);
-	RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+	RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
 	romol_ptr_t nl =  createMolPtr("N");
 	initMolProps(nl);
-	RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+	RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
@@ -109,10 +109,10 @@ void FeaturesTestBreakAtomPair::runTest(){
 	//Non-Ring Break X-C
 	ion = createMolPtr("B");
 	initMolProps(ion);
-	rtd_ion = RootedROMolPtr(ion, ion.get()->getAtomWithIdx(0));
+	rtd_ion = RootedROMol(ion, ion.get()->getAtomWithIdx(0));
 	nl = createMolPtr("C");
 	initMolProps(nl);
-	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0));
+	rtd_nl = RootedROMol(nl, nl.get()->getAtomWithIdx(0));
 
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
@@ -148,8 +148,8 @@ void FeaturesTestRootPairs::runTest(){
 	romol_ptr_t nl = createMolPtr("C");
 	initMolProps(ion);
 	initMolProps(nl);
-	RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
-	RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+	RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+	RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 4 ){
@@ -171,7 +171,7 @@ void FeaturesTestRootPairs::runTest(){
 	//Non-ring "X-X,X-N"
 	ion = createMolPtr("B(B)N");
 	initMolProps(ion);
-	rtd_ion = RootedROMolPtr(ion, ion.get()->getAtomWithIdx(0));
+	rtd_ion = RootedROMol(ion, ion.get()->getAtomWithIdx(0));
 
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 3 ){
@@ -192,7 +192,7 @@ void FeaturesTestRootPairs::runTest(){
 	//Empty pairs (set feature indicating no pairs)
 	ion = createMolPtr("C");
 	initMolProps(ion);
-	rtd_ion = RootedROMolPtr(ion, ion.get()->getAtomWithIdx(0));
+	rtd_ion = RootedROMol(ion, ion.get()->getAtomWithIdx(0));
 	nl.get()->setProp("IsRingBreak", 0);
 
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
@@ -231,8 +231,8 @@ void FeaturesTestRootTriples::runTest(){
 	initMolProps(ion);
 	initMolProps(nl);
 	RDKit::Atom *null_atom = nullptr;
-	RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
-	RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+	RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+	RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 4 ){
@@ -254,7 +254,7 @@ void FeaturesTestRootTriples::runTest(){
 	//Non-ring "N-X-X"
 	nl = createMolPtr("NBB");
 	initMolProps(nl);
-	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0));
+	rtd_nl = RootedROMol(nl, nl.get()->getAtomWithIdx(0));
 
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
@@ -290,11 +290,11 @@ void FeaturesTestGasteigerCharges::runTest(){
 	romol_ptr_t ion = createMolPtr("C");
 	initMolProps(ion);
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OrigGasteigerCharge", -0.33042488 );
-	RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+	RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
 	romol_ptr_t nl = createMolPtr("C");
 	initMolProps(nl);
 	nl.get()->getAtomWithIdx(0)->setProp<double>("OrigGasteigerCharge", -0.00652530 );
-	RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+	RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 	nl.get()->setProp("IsRingBreak",0);
 
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
@@ -332,10 +332,10 @@ void FeaturesTestHydrogenMovement::runTest(){
 	initMolProps(ion);
 	double h_movement = 3.00452;
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OriginalMass", 16.0 - h_movement);
-	RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+	RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
 	romol_ptr_t nl = createMolPtr("C");
 	initMolProps(nl);
-	RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+	RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
@@ -563,8 +563,8 @@ void FeaturesTestRadicalFeatures::runTest(){
 	//Ion Radical, NL Non-radical (1)
 	romol_ptr_t ion = createMolPtr("CC[CH3+]");
 	romol_ptr_t nl = createMolPtr("CC(=O)O");
-	RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
-	RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+	RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+	RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
@@ -582,8 +582,8 @@ void FeaturesTestRadicalFeatures::runTest(){
 	//Ion Non-Radical, NL Radical (2)
 	ion = createMolPtr("CCC[CH4+]");
 	nl = createMolPtr("[CH]=C");
-	rtd_ion = RootedROMolPtr(ion, ion.get()->getAtomWithIdx(0));
-	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0));
+	rtd_ion = RootedROMol(ion, ion.get()->getAtomWithIdx(0));
+	rtd_nl = RootedROMol(nl, nl.get()->getAtomWithIdx(0));
 
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
@@ -601,8 +601,8 @@ void FeaturesTestRadicalFeatures::runTest(){
 	//Neither radical (3)
 	ion = createMolPtr("CCC[CH4+]");
 	nl = createMolPtr("CCC");
-	rtd_ion = RootedROMolPtr(ion, ion.get()->getAtomWithIdx(0));
-	rtd_nl = RootedROMolPtr(nl, nl.get()->getAtomWithIdx(0));
+	rtd_ion = RootedROMol(ion, ion.get()->getAtomWithIdx(0));
+	rtd_nl = RootedROMol(nl, nl.get()->getAtomWithIdx(0));
 
 	fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
 	if( fv->getNumSetFeatures() != 2 ){
@@ -1073,12 +1073,12 @@ void FeaturesTestQuadraticFeatures::runTest(){
 	romol_ptr_t ion= createMolPtr("C");
 	initMolProps(ion);
 
-	RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+	RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
 	double h_movement = 3.00452;
 	ion.get()->getAtomWithIdx(0)->setProp<double>("OriginalMass", 16.0 - h_movement);
 	romol_ptr_t nl = createMolPtr("N");
 	initMolProps(nl);
-	RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+	RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 	nl.get()->setProp("IsRingBreak",0);
 
 	FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
@@ -1260,11 +1260,11 @@ void FeaturesTestFingerPrint::runTest(){
     // test case 1
 	romol_ptr_t ion = createMolPtr("C=CCCCCCC");
 	initMolProps(ion);
-	RootedROMolPtr rtd_ion(ion, ion.get()->getAtomWithIdx(0));
+	RootedROMol rtd_ion(ion, ion.get()->getAtomWithIdx(0));
 
 	romol_ptr_t nl = createMolPtr("N");
 	initMolProps(nl);
-	RootedROMolPtr rtd_nl(nl, nl.get()->getAtomWithIdx(0));
+	RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 	nl.get()->setProp("IsRingBreak",0);
 
 	std::vector<int> expected_fv{0,77,82,285, 309, 329, 344, 358, 365, 369, 377, 380, 388, 391, 399, 402, 410};

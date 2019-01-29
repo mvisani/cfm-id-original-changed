@@ -35,7 +35,7 @@ int GasteigerCharges::discretizeGasteigerCharge(double gc) const {
 }
 
 void
-GasteigerCharges::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {
+GasteigerCharges::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     //Collect the charges from the root atoms
     //Ion

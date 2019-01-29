@@ -17,4 +17,4 @@ param.cpp.
 #########################################################################*/
 #include "BreakFuncitonalGroupFeature.h"
 
-void BreakFuncitonalGroupFeature::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl) const {}
+void BreakFuncitonalGroupFeature::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {}

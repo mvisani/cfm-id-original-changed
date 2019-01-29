@@ -25,7 +25,7 @@
 void initMolProps(romol_ptr_t &mol);
 
 // Return feature RootedROMol
-RootedROMolPtr getRootedMolPtr(std::string smiles);
+RootedROMol getRootedMolPtr(std::string smiles);
 
 // Retrun feature vector by apply break to input ion and nl str
 FeatureVector *getFeatureVector(std::string ion_str, std::string nl_str, std::vector<std::string> & fnames);
