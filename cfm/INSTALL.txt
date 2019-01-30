@@ -63,7 +63,7 @@ bash download-inchi.sh
 cd ../..
 mkdir build
 cd build
-cmake .. -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DBOOST_ROOT=~/boost_1_55_0
+cmake .. -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DCXX_STANDARD=11
 make install
 export RDBASE=~/RDKit_2013_09_1
 
