@@ -19,7 +19,7 @@
 #include <GraphMol/RDKitBase.h>
 #include <RDGeneral/types.h>
 
-#pragma onceonce
+#pragma once
 
 // Fixture requires more code to do the same thing
 // since we only have one test case, let us just use this
