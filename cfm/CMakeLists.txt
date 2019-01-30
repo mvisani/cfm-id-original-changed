@@ -11,6 +11,7 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
+# We may need higher verison cmake
 cmake_minimum_required(VERSION 3.0)
 set(CMAKE_CXX_STANDARD 11)
 
@@ -38,7 +39,10 @@ endif()
 if (INCLUDE_TESTS)
     list(APPEND Boost_componets unit_test_framework)
 endif()
-find_package(Boost 1.59 REQUIRED COMPONENTS ${Boost_componets})
+
+# we need 1.62 or higher for unit testing
+# on paper 1.59 + should work, seems 1.60 has building problem
+find_package(Boost 1.62 REQUIRED COMPONENTS ${Boost_componets})
 
 include_directories(${Boost_INCLUDE_DIRS})
 
