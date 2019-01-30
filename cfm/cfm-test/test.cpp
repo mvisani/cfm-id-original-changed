@@ -130,55 +130,10 @@ int main(int argc, char *argv[])
 //		//tests.push_back( new FragGenTestMaxRingBreaks() );
 //		tests.push_back( new FVFragGraphSaveAndLoadState() );
 //		tests.push_back( new FragGenTestDisallowDetourTransitions() );
-//		/*tests.push_back( new InferenceTestSpectrumMessageWithIsotopesAndNoisePeak() );
-//		tests.push_back( new InferenceTestSpectrumMessageNoisePeak() );
-//		tests.push_back( new InferenceTestSpectrumMessage() );
-//		tests.push_back( new InferenceTestSpectrumMessageWithIsotopes() );*/
-//		//tests.push_back( new InferenceTestCompareVsIPFPSingleEnergyCase());
-//		//tests.push_back( new InferenceTestCompareVsIPFPSharedMassCase() );
-//        //tests.push_back( new FragGenTestPositiveESISplitCharge() );
 //		tests.push_back( new MspReaderTest() );
-//		//tests.push_back( new FragGenTestPositiveESI() );
-//		//tests.push_back( new FragGenTestNegativeESI() );
-//		//tests.push_back( new FragGenTestRingPositiveESI() );
-//		//tests.push_back( new FragGenTestRingNegativeESI() );
-//		tests.push_back( new FragGenTestMaxElectronMovement() );
-//		//tests.push_back( new FeaturesTestNeighbourMMFFAtomType() );
-//		tests.push_back( new SpectrumQuantiseTest() );
-//		tests.push_back( new ComparatorsTestRecall() );
-//		tests.push_back( new ComparatorsTestPrecision() );
-//		tests.push_back( new ComparatorsTestWeightedRecall() );
-//		tests.push_back( new ComparatorsTestWeightedPrecision() );
-//		tests.push_back( new ComparatorsTestJaccard() );
-//		//tests.push_back( new MessageTests());
-//		//tests.push_back( new MessageTestIteration() );
-//		//tests.push_back( new MessageTestCopyAssignment() );
-//		// tests.push_back( new FeaturesTestInit() );
-//		/*tests.push_back( new FeaturesTestBreakAtomPair() );
-//		tests.push_back( new FeaturesTestBrokenOrigBondType() );
-//		tests.push_back( new FeaturesTestNeighbourOrigBondType() );
-//		tests.push_back( new FeaturesTestRootPairs() );
-//		tests.push_back( new FeaturesTestRootTriples() );
-//		tests.push_back( new FeaturesTestRootAtom() );
-//		tests.push_back( new FeaturesTestFunctionalGroups() );
-//		tests.push_back( new FeaturesTestFunctionalGroupsRootOnly() );
-//		tests.push_back( new FeaturesTestExtraFunctionalGroups() );
-//		tests.push_back( new FeaturesTestGasteigerCharges() );
-//		tests.push_back( new FeaturesTestHydrogenMovement() );
-//		tests.push_back( new FeaturesTestRadicalFeatures() );
-//		tests.push_back( new FeaturesTestIonicFeatures() );
-//		tests.push_back( new FeaturesTestRootMMFFAtomType() );
-//		tests.push_back( new FeaturesTestExtraRingFeatures() );
-//		tests.push_back( new FeaturesTestQuadraticFeatures() );
-//		//tests.push_back( new FeaturesTestMetlinExample() );
-//		tests.push_back( new FeaturesTestLength() );
-//        tests.push_back( new FeaturesTestFingerPrint());*/
 //		tests.push_back( new ParamsTestComputeTransitionThetas() );
 //		tests.push_back( new ParamsTestComputeAndAccumulateGradient());
-//        //tests.push_back( new SpectrumCleanTest() ); NOTE: Missing File
 //        tests.push_back( new MspReaderMultipleEnergiesTest() );
-//        //tests.push_back( new FragGenTestPositiveEI() );
-//        //tests.push_back( new FragGenTestPositiveEIMultibreak() );
 //        tests.push_back( new FragGenTestPositiveEIAlkane() );
 //        //tests.push_back( new FragGenTestPositiveEINistExceptions() );
 //        tests.push_back( new FragGenTestCasesFromGross() ); // NOTE THIS IS NOT WORKING
