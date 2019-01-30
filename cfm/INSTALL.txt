@@ -93,7 +93,7 @@ e.g. if you are in cfm/build, you can use cmake .. , setting the LPSOLVE_INCLUDE
 cmake .. -DLPSOLVE_INCLUDE_DIR=~/lp_solve_5.5 -DLPSOLVE_LIBRARY_DIR=~/lp_solve_5.5/lpsolve55/bin/ux64
 
 9. (optional - if compiling the cfm-train and cfm-test executables), Use e.g.
-> cmake .. -DINCLUDE_TESTS=ON -DINCLUDE_TRAIN=ON -DLPSOLVE_INCLUDE_DIR=~/lp_solve_5.5 -DLPSOLVE_LIBRARY_DIR=~/lp_solve_5.5/lpsolve55/bin/ux64 -DLBFGS_INCLUDE_DIR=~/liblbfgs-1.10/bin/include -DLBFGS_LIBRARY_DIR=~/liblbfgs-1.10/bin/lib
+> cmake .. -DINCLUDE_TESTS=ON -DINCLUDE_TRAIN=ON -DLPSOLVE_INCLUDE_DIR=~/lp_solve_5.5 -DLPSOLVE_LIBRARY_DIR=~/lp_solve_5.5/lpsolve55/bin/ux64
 
 10. make install
 
