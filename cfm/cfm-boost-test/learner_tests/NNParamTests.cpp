@@ -351,5 +351,53 @@ BOOST_AUTO_TEST_SUITE(NNParamsIndexAndDropOutTests)
             }
         }
     }
+    BOOST_AUTO_TEST_CASE(SaveAndLoadParamFileTest){
 
+        double tol = 1e-6;
+
+        //Create some parameters
+        std::vector<std::string> fnames;
+        fnames.push_back("IonicFeatures"); // 6 features in total
+
+        std::vector<int> hlayer_numnodes = {12,4,1};
+        std::vector<int> act_ids{RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION,
+                                 RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION,
+                                 LINEAR_NN_ACTIVATION_FUNCTION};
+
+        std::vector<double> dropout_probs(2,0.0);
+        NNParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
+        param.initWeights(PARAM_RANDOM_INIT);
+
+        //Save to file
+        std::string filename = "tmp_param_file.log";
+        if( boost::filesystem::exists( filename ) )
+            boost::filesystem::remove( filename );
+        param.saveToFile( filename );
+
+        //Load from file
+        NNParam param_load( filename );
+
+        //Check the configuration
+        BOOST_CHECK_EQUAL(param.getNumEnergyLevels(), param_load.getNumEnergyLevels());
+
+        //Check the feature names
+        std::vector<std::string> *fnames1 = param.getFeatureNames();
+        std::vector<std::string> *fnames2 = param_load.getFeatureNames();
+        BOOST_TEST((*fnames1) == (*fnames2 ), boost::test_tools::per_element());
+
+        //Check the weights
+        BOOST_CHECK_EQUAL(param.getNumWeights(), param_load.getNumWeights());
+
+        for( int i = 0; i < param.getNumWeights(); i++ )
+            BOOST_CHECK_CLOSE_FRACTION(param.getWeightAtIdx(i),param_load.getWeightAtIdx(i),tol);
+
+        //Check that a computed theta value is the same
+        FeatureVector fv;
+        fv.addFeatureAtIdx(1.0, 0); fv.addFeatureAtIdx(1.0, 2); fv.addFeatureAtIdx(1.0, 5);
+
+        double theta1 = param.computeTheta( fv, 0 );
+        double theta2 = param_load.computeTheta( fv, 0 );
+        BOOST_CHECK_CLOSE_FRACTION(theta1,theta2,tol);
+
+    }
 BOOST_AUTO_TEST_SUITE_END()
