@@ -96,6 +96,13 @@ public:
 
     void readFromFile(const std::string &filename);
 
+    // Function To set weights from a vector
+    // Used for Unit tests
+    virtual void setWeights(std::vector<double> & values) {
+        weights.clear();
+        weights = values;
+    }
+
 protected:
     std::vector<double> weights;
 
@@ -108,8 +115,6 @@ protected:
     virtual void randomNormalInit();
     void zeroInit();
     void fullZeroInit();
-
-
 };
 
 #endif // __PARAM_H__

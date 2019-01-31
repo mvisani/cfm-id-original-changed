@@ -164,7 +164,7 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
         std::cout << " but found " << fv_length << std::endl;
         throw( ParamFeatureMismatchException() );
     }
-    int energy_offset = getNumWeightsPerEnergyLevel()*energy;
+    int energy_offset = getNumWeightsPerEnergyLevel() * energy;
     auto weights_it = weights.begin() + energy_offset;
     //Resize the z and a vectors to the required sizes
     if( !already_sized) {

@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 //		tests.push_back( new EMTestMiniBatchSelection() );
 //		tests.push_back( new NNParamsTestBiasIndexes() );
 //		tests.push_back( new NNParamsTestDropout());
-//		tests.push_back( new NNParamsTestComputeAndAccumulateGradient() );
+		tests.push_back( new NNParamsTestComputeAndAccumulateGradient() );
 //		tests.push_back( new NNParamsTestComputeUnweightedGradients() );
 //		tests.push_back( new NNParamsTestComputeDeltas() );
 //		tests.push_back( new NNParamsTestComputeTransitionThetas() );
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
         //tests.push_back( new FragGenTestPositiveEITriple() );
         //tests.push_back( new FragGenTestPositiveEISplitCharge() );
         //tests.push_back( new EMTestSingleEnergySelfProduction() );
-        tests.push_back( new EMTestNNSingleEnergySelfProduction() );
+//        tests.push_back( new EMTestNNSingleEnergySelfProduction() );
         //tests.push_back( new EMTestSelfProduction() );
         //tests.push_back( new EMTestSingleEnergyIsotopeSelfProduction() );
 	}
