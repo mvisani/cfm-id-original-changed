@@ -123,8 +123,6 @@ int main(int argc, char *argv[])
 	    tests.push_back( new EMTestMiniBatchSelection() );
 //		tests.push_back( new FVFragGraphSaveAndLoadState() );
 //		tests.push_back( new FragGenTestDisallowDetourTransitions() );
-//		tests.push_back( new MspReaderTest() );
-//        tests.push_back( new MspReaderMultipleEnergiesTest() );
 //        tests.push_back( new FragGenTestPositiveEIAlkane() );
 //        //tests.push_back( new FragGenTestPositiveEINistExceptions() );
 //        tests.push_back( new FragGenTestCasesFromGross() ); // NOTE THIS IS NOT WORKING
