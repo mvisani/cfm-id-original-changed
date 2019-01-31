@@ -68,11 +68,12 @@ public:
         fg = new FragmentGraph();
         FeatureHelper fh;
         romol_ptr_t basic_nl = createMolPtr("C");
-        fg->addToGraph(FragmentTreeNode(createMolPtr("NCCCN"), basic_nl, -1, -1, &fh, nn_param_null_eloc), -1); //id = 0
-        fg->addToGraph(FragmentTreeNode(createMolPtr("[NH4+]"), basic_nl, -1, -1, &fh, nn_param_null_eloc),
-                       0); // id = 1, 0 -> 1
-        fg->addToGraph(FragmentTreeNode(createMolPtr("C=CC[NH3+]"), basic_nl, -1, -1, &fh, nn_param_null_eloc),
-                       0); //id = 2, 0 -> 2
+        //id = 0
+        fg->addToGraph(FragmentTreeNode(createMolPtr("NCCCN"), basic_nl, -1, -1, &fh, nn_param_null_eloc), -1);
+        // id = 1, 0 -> 1
+        fg->addToGraph(FragmentTreeNode(createMolPtr("[NH4+]"), basic_nl, -1, -1, &fh, nn_param_null_eloc),0);
+        //id = 2, 0 -> 2
+        fg->addToGraph(FragmentTreeNode(createMolPtr("C=CC[NH3+]"), basic_nl, -1, -1, &fh, nn_param_null_eloc),0);
         graph_computed = true;
 
         auto fv0 = new FeatureVector();
@@ -82,7 +83,6 @@ public:
         fg->addFeatureVectorAtIdx(0, fv0);
 
         auto fv1 = new FeatureVector();
-        fv1 = new FeatureVector();
         fv1->addFeatureAtIdx(1.0, 0);
         fv1->addFeatureAtIdx(1.0, 3);
         fv1->addFeatureAtIdx(1.0, 5);

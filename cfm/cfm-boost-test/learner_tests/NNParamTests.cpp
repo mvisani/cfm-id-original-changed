@@ -30,16 +30,17 @@ struct NNParamTestFixture {
         // let us set a 6->4->2->1 NN
         // so there is 6 *4 + 5* 2 + 3 * 1= 24 + 10 + 3 = 37 weights
         std::vector<int> hlayer_numnodes = {4, 2, 1};
-        std::vector<int> act_ids{RELU_NN_ACTIVATION_FUNCTION,
-                                 RELU_NN_ACTIVATION_FUNCTION,
+        std::vector<int> act_ids{RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION,
+                                 RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION,
                                  LINEAR_NN_ACTIVATION_FUNCTION};
 
         std::vector<double> dropout_probs(2, 0.0);
         param = new NNParam(fnames, 3, hlayer_numnodes, act_ids, dropout_probs);
 
-        param->initWeights(0);
+        param->initWeights(PARAM_RANDOM_INIT);
 
         std::vector<double> weights(37, 0.0);
+
         // Input Layer 6 Nodes
         weights[0] = 1.0;
         weights[2] = -2.0;
@@ -205,6 +206,82 @@ BOOST_FIXTURE_TEST_SUITE(NNParamsComputeTests, NNParamTestFixture)
         BOOST_TEST(expected_used_idxs == used_idxs, boost::test_tools::per_element());
     }
 
+    BOOST_AUTO_TEST_CASE(GradientTest) {
+        MPI::Init();
+        double tol = 1e-3;
+
+        std::vector<double> grads;
+
+        suft_counts_t suft;
+
+        //Model Config
+        config_t cfg; initDefaultConfig(cfg);
+        cfg.model_depth = 2;
+        cfg.spectrum_depths.push_back(2);
+        cfg.spectrum_weights.push_back(1);
+        cfg.lambda = 0.01;
+        initDerivedConfig(cfg);
+
+        //Create the molecule data
+        NNParamTestMol moldata(&cfg);
+
+        //Set some parameter weights
+        std::vector<std::string> fnames;
+        fnames.push_back("IonicFeatures");
+
+        std::string param_filename = "tmp_param_file.log";
+        if( boost::filesystem::exists( param_filename ) )
+            boost::filesystem::remove( param_filename );
+        param->saveToFile( param_filename );
+
+        //Set some arbitrary suft values
+        suft.values.resize(1);
+
+        unsigned int N = moldata.getNumTransitions() + moldata.getNumFragments();
+        suft.values[0].assign(3*N, 0.0);
+        suft.values[0][0] = 0.2; suft.values[0][1] = 0.3; suft.values[0][2] = 0.5; suft.values[0][3] = 0.0; suft.values[0][4] = 0.0;
+        //suft.values[0][N] = 0.9; suft.values[0][N+1] = 0.05; suft.values[0][N+2] = 0.05; suft.values[0][N+3] = 0.0; suft.values[0][N+4] = 0.0;
+        //suft.values[0][2*N] = 0.08; suft.values[0][2*N+1] = 0.9; suft.values[0][2*N+2] = 0.02; suft.values[0][2*N+3] = 0.0; suft.values[0][2*N+4] = 0.0;
+
+        //Initialise all gradients to 0
+        grads.resize(param->getNumWeights());
+        for( unsigned int i = 0; i < grads.size(); i++ )
+            grads[i] = 0.0;
+
+        std::set<unsigned int> used_idxs;
+        FeatureCalculator fc_null(fnames);
+        std::string null_str = "null";
+        EmNNModel em(&cfg, &fc_null, null_str, param_filename );
+        int energy_level = 0;
+        int mol_idx = 0;
+        double Q_only  = em.computeLogLikelihoodLoss(mol_idx, moldata, suft, energy_level);
+        em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, energy_level);
+
+        //Check Q
+        double theta1 = 12.0, theta2 = 10.0;
+        double rho_denom = 1.0 + exp(theta1) + exp(theta2);
+        double x1 = exp(theta1)/rho_denom, x2 = exp(theta2)/rho_denom;
+
+        double expected_Q = (0.2)*(theta1-log(rho_denom)) + (0.3)*(theta2-log(rho_denom)) + (0.5)*(-log(rho_denom));
+
+        //Check the gradients
+        double exp_unweighted_1[] = {-5+5*x1,0,-5+5*x1,0,0,-5+5*x1,-4+4*x1,0,-4+4*x1,0,0,-4+4*x1,-8*x2, 0, 0, -8*x2,0,-8*x2,0,0,0,0,0,0,-2+2*x1+2*x2,-2*2+2*2*x1, 5*2-5*2*x1,2*x2,0,-1+x1+x2,-2+2*x1,5-5*x1,x2,0,1-x1-x2,3-3*x1-x2, -13+13*x1+7*x2 };
+        double exp_unweighted_2[] = {5*x1,0,5*x1,0,0,5*x1, 4*x1,0,4*x1,0,0,4*x1, 8-8*x2, 0,0,8-8*x2,0,8-8*x2, 0,0,0,0,0,0, -2+2*x1+2*x2,4*x1,-5*2*x1,-2+2*x2,0,-1+x1+x2, 2*x1,-5*x1, -1+x2, 0, 1-x1-x2,+1-3*x1-x2,-7+13*x1+7*x2 };
+        double exp_unweighted_persist[] = {5*x1,0,5*x1,0,0,5*x1, 4*x1,0,4*x1,0,0,4*x1,-8*x2, 0,0,-8*x2,0,-8*x2,0,0,0,0,0,0,2*x1+2*x2,4*x1,-5*2*x1,2*x2,0,x1+x2, 2*x1,-5*x1, x2, 0, -x1-x2,-3*x1-x2,13*x1+7*x2 };
+
+
+        BOOST_CHECK_CLOSE_FRACTION(expected_Q, Q_only, tol);
+
+        //Energy 0
+        for( unsigned int i = 0; i < param->getNumWeightsPerEnergyLevel(); i++ )
+            BOOST_CHECK_CLOSE_FRACTION(grads[i], (0.2*exp_unweighted_1[i] + 0.3*exp_unweighted_2[i] + 0.5*exp_unweighted_persist[i]), tol);
+
+        //Check used Index
+        std::vector<unsigned int> expected_idxs = {0,2,3,5,6,8,9,11,12,14,15,17,18,20,21,23,24,25,26,27,28,29,30,31,32,33,34,35,36};
+        BOOST_CHECK_EQUAL_COLLECTIONS(expected_idxs.begin(), expected_idxs.end(),
+                                      used_idxs.begin(), used_idxs.end());
+
+    }
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -275,71 +352,4 @@ BOOST_AUTO_TEST_SUITE(NNParamsIndexAndDropOutTests)
         }
     }
 
-    /*
-    BOOST_AUTO_TEST_CASE(GradientTest) {
-
-        MPI::Init();
-        double tol = 1e-3;
-        suft_counts_t suft;
-
-        //Model Config
-        config_t cfg; initDefaultConfig(cfg);
-        cfg.model_depth = 2;
-        cfg.spectrum_depths.push_back(2); cfg.spectrum_depths.push_back(2); cfg.spectrum_depths.push_back(2);
-        cfg.spectrum_weights.push_back(1); cfg.spectrum_weights.push_back(1); cfg.spectrum_weights.push_back(1);
-        cfg.lambda = 0.01;
-        initDerivedConfig(cfg);
-
-        //Create the molecule data
-        NNParamTestMol moldata(&cfg);
-        std::string param_filename = "tmp_param_file.log";
-        if( boost::filesystem::exists( param_filename ) )
-            boost::filesystem::remove( param_filename );
-        param->saveToFile( param_filename );
-
-        //Set some arbitrary suft values
-        suft.values.resize(1);
-        unsigned int N = moldata.getNumTransitions() + moldata.getNumFragments();
-        suft.values[0].assign(3*N, 0.0);
-        suft.values[0][0] = 0.2; suft.values[0][1] = 0.3; suft.values[0][2] = 0.5; suft.values[0][3] = 0.0; suft.values[0][4] = 0.0;
-        //suft.values[0][N] = 0.9; suft.values[0][N+1] = 0.05; suft.values[0][N+2] = 0.05; suft.values[0][N+3] = 0.0; suft.values[0][N+4] = 0.0;
-        //suft.values[0][2*N] = 0.08; suft.values[0][2*N+1] = 0.9; suft.values[0][2*N+2] = 0.02; suft.values[0][2*N+3] = 0.0; suft.values[0][2*N+4] = 0.0;
-
-        //Initialise all gradients to 0
-        std::vector<double> grads(param->getNumWeights(),0.0);
-
-        std::set<unsigned int> used_idxs;
-        std::vector<std::string> fnames;
-        fnames.push_back("IonicFeatures");
-        FeatureCalculator fc_null(fnames);
-        std::string null_str = "null";
-        EmNNModel em(&cfg, &fc_null, null_str, param_filename );
-        unsigned int energy_level = 0;
-        int mol_idx = 0;
-        double Q_only  = em.computeLogLikelihoodLoss(mol_idx, moldata, suft, energy_level);
-        em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, energy_level);
-
-        //Check Loss
-        double theta1 = 12.0, theta2 = 10.0;
-        double rho_denom = 1.0 + exp(theta1) + exp(theta2);
-        double x1 = exp(theta1)/rho_denom, x2 = exp(theta2)/rho_denom;
-        double expected_Q = (0.2)*(theta1-log(rho_denom)) + (0.3)*(theta2-log(rho_denom)) + (0.5)*(-log(rho_denom));
-        BOOST_CHECK_CLOSE_FRACTION(expected_Q, Q_only, tol);
-
-        //Check the gradients
-        double exp_unweighted_1[] = {-5+5*x1,0,-5+5*x1,0,0,-5+5*x1,-4+4*x1,0,-4+4*x1,0,0,-4+4*x1,-8*x2, 0, 0, -8*x2,0,-8*x2,0,0,0,0,0,0,-2+2*x1+2*x2,-2*2+2*2*x1, 5*2-5*2*x1,2*x2,0,-1+x1+x2,-2+2*x1,5-5*x1,x2,0,1-x1-x2,3-3*x1-x2, -13+13*x1+7*x2 };
-        double exp_unweighted_2[] = {5*x1,0,5*x1,0,0,5*x1, 4*x1,0,4*x1,0,0,4*x1, 8-8*x2, 0,0,8-8*x2,0,8-8*x2, 0,0,0,0,0,0, -2+2*x1+2*x2,4*x1,-5*2*x1,-2+2*x2,0,-1+x1+x2, 2*x1,-5*x1, -1+x2, 0, 1-x1-x2,+1-3*x1-x2,-7+13*x1+7*x2 };
-        double exp_unweighted_persist[] = {5*x1,0,5*x1,0,0,5*x1, 4*x1,0,4*x1,0,0,4*x1,-8*x2, 0,0,-8*x2,0,-8*x2,0,0,0,0,0,0,2*x1+2*x2,4*x1,-5*2*x1,2*x2,0,x1+x2, 2*x1,-5*x1, x2, 0, -x1-x2,-3*x1-x2,13*x1+7*x2 };
-
-        //Energy 0
-        for( unsigned int i = 0; i < param->getNumWeightsPerEnergyLevel(); i++ )
-            BOOST_CHECK_CLOSE_FRACTION(grads[i], (0.2*exp_unweighted_1[i] + 0.3*exp_unweighted_2[i] + 0.5*exp_unweighted_persist[i]), tol);
-
-        //Check used Index
-        std::vector<unsigned int> expected_idxs = {0,2,3,5,6,8,9,11,12,14,15,17,18,20,21,23,24,25,26,27,28,29,30,31,32,33,34,35,36};
-        BOOST_CHECK_EQUAL_COLLECTIONS(expected_idxs.begin(), expected_idxs.end(),
-                                      used_idxs.begin(), used_idxs.end());
-
-    }
-     */
 BOOST_AUTO_TEST_SUITE_END()

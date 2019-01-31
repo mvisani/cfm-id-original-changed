@@ -384,8 +384,8 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	//Model Config
 	config_t cfg; initDefaultConfig(cfg);
 	cfg.model_depth = 2;
-	cfg.spectrum_depths.push_back(2); cfg.spectrum_depths.push_back(2); cfg.spectrum_depths.push_back(2);
-	cfg.spectrum_weights.push_back(1); cfg.spectrum_weights.push_back(1); cfg.spectrum_weights.push_back(1);
+	cfg.spectrum_depths.push_back(2);// cfg.spectrum_depths.push_back(2); cfg.spectrum_depths.push_back(2);
+	cfg.spectrum_weights.push_back(1);// cfg.spectrum_weights.push_back(1); cfg.spectrum_weights.push_back(1);
 	cfg.lambda = 0.01;
 	initDerivedConfig(cfg);
 
@@ -412,14 +412,14 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	cfg.nn_layer_dropout_probs = dropout_probs;
 
 	NNTestParam testparam(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
-	NNTestParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
-	param.appendNextEnergyParams(testparam);
-	param.appendNextEnergyParams(testparam);
+	//NNTestParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
+	//param.appendNextEnergyParams(testparam);
+	//param.appendNextEnergyParams(testparam);
 
 	std::string param_filename = "tmp_param_file.log";
 	if( boost::filesystem::exists( param_filename ) )
 		boost::filesystem::remove( param_filename );
-	param.saveToFile( param_filename );
+	testparam.saveToFile( param_filename );
 
 	//Set some arbitrary suft values
 	suft.values.resize(1);
@@ -427,11 +427,11 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	unsigned int N = moldata.getNumTransitions() + moldata.getNumFragments();
 	suft.values[0].assign(3*N, 0.0);
 	suft.values[0][0] = 0.2; suft.values[0][1] = 0.3; suft.values[0][2] = 0.5; suft.values[0][3] = 0.0; suft.values[0][4] = 0.0;
-	suft.values[0][N] = 0.9; suft.values[0][N+1] = 0.05; suft.values[0][N+2] = 0.05; suft.values[0][N+3] = 0.0; suft.values[0][N+4] = 0.0;
-	suft.values[0][2*N] = 0.08; suft.values[0][2*N+1] = 0.9; suft.values[0][2*N+2] = 0.02; suft.values[0][2*N+3] = 0.0; suft.values[0][2*N+4] = 0.0;
+	//suft.values[0][N] = 0.9; suft.values[0][N+1] = 0.05; suft.values[0][N+2] = 0.05; suft.values[0][N+3] = 0.0; suft.values[0][N+4] = 0.0;
+	//suft.values[0][2*N] = 0.08; suft.values[0][2*N+1] = 0.9; suft.values[0][2*N+2] = 0.02; suft.values[0][2*N+3] = 0.0; suft.values[0][2*N+4] = 0.0;
 
 	//Initialise all gradients to 0
-	grads.resize(param.getNumWeights());
+	grads.resize(testparam.getNumWeights());
 	for( unsigned int i = 0; i < grads.size(); i++ )
 		grads[i] = 0.0;
 
@@ -462,7 +462,7 @@ void NNParamsTestComputeAndAccumulateGradient::runTest(){
 	double exp_unweighted_persist[] = {5*x1,0,5*x1,0,0,5*x1, 4*x1,0,4*x1,0,0,4*x1,-8*x2, 0,0,-8*x2,0,-8*x2,0,0,0,0,0,0,2*x1+2*x2,4*x1,-5*2*x1,2*x2,0,x1+x2, 2*x1,-5*x1, x2, 0, -x1-x2,-3*x1-x2,13*x1+7*x2 };
 
 	//Energy 0
-	for( unsigned int i = 0; i < param.getNumWeightsPerEnergyLevel(); i++ ){
+	for( unsigned int i = 0; i < testparam.getNumWeightsPerEnergyLevel(); i++ ){
 		if( fabs(grads[i] - (0.2*exp_unweighted_1[i] + 0.3*exp_unweighted_2[i] + 0.5*exp_unweighted_persist[i]))  > tol ){
 			std::cout << "Unexpected gradient value at idx " << i << std::endl;
 			pass = false;
