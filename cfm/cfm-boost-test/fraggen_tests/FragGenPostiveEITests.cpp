@@ -113,17 +113,6 @@ BOOST_FIXTURE_TEST_SUITE(FragGenTestPositiveEIMultibreak, PositiveEIMultibreakFi
 
 BOOST_AUTO_TEST_SUITE_END()
 
-struct PositiveEIOxygenAromaticFixture{
-    PositiveEIOxygenAromaticFixture() {
-        bool include_h_losses = true;
-        bool allow_detour = false;
-        int graph_depth = 3;
-        graph = getTestGraph("C1=CC2OC=CC12", POSITIVE_EI_IONIZATION_MODE,
-                include_h_losses, allow_detour, graph_depth);
-    }
-    ~PositiveEIOxygenAromaticFixture() { delete graph; };
-    FragmentGraph *graph;
-};
 
 struct PositiveEITripleFixture{
     PositiveEITripleFixture() {
@@ -165,6 +154,18 @@ BOOST_FIXTURE_TEST_SUITE(FragGenTestPositiveEITriple, PositiveEITripleFixture)
     }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+/*struct PositiveEIOxygenAromaticFixture{
+    PositiveEIOxygenAromaticFixture() {
+        bool include_h_losses = true;
+        bool allow_detour = false;
+        int graph_depth = 3;
+        graph = getTestGraph("C1=CC2OC=CC12", POSITIVE_EI_IONIZATION_MODE,
+                             include_h_losses, allow_detour, graph_depth);
+    }
+    ~PositiveEIOxygenAromaticFixture() { delete graph; };
+    FragmentGraph *graph;
+};
 
 BOOST_FIXTURE_TEST_SUITE(FragGenTestPositiveEIOxygenAromatic, PositiveEIOxygenAromaticFixture)
 
@@ -226,7 +227,7 @@ BOOST_FIXTURE_TEST_SUITE(FragGenTestPositiveEIOxygenAromatic, PositiveEIOxygenAr
         BOOST_CHECK_EQUAL(*(graph->getFragmentAtIdx(idx)->getIonSmiles()), expected_ion_smiles);
     }
 
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()*/
 
 struct PositiveEIRingFixture{
     PositiveEIRingFixture() {

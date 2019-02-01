@@ -11,6 +11,7 @@
 #include "FeaturesTestsUtil.h"
 
 // Testing Root Pairs Feature
+// NLRootPairs should work the same
 BOOST_AUTO_TEST_SUITE(FeaturesTestRootPairs)
 
 // "C-N,C-N,C-X"

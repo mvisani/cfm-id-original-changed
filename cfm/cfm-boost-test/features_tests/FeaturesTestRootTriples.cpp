@@ -11,11 +11,12 @@
 #include "FeaturesTestsUtil.h"
 
 // Testing Root Triples Feature
+// IonRootTriples should work the same
 BOOST_AUTO_TEST_SUITE(FeaturesTestRootTriples)
 
 // "C-C-N,C-C-N,C-X-C"
     BOOST_AUTO_TEST_CASE(CCNCCNCXCTriples) {
-        FeatureVector *fv = getFeatureVector("C", "C(BC)C(N)N", "RootTriples");
+        FeatureVector *fv = getFeatureVector("C", "C(BC)C(N)N", "NLRootTriples");
 
         // Test feature name list sizes
         std::vector<unsigned> expected_feature_vector = {0, 6, 7, 122};
@@ -26,7 +27,7 @@ BOOST_AUTO_TEST_SUITE(FeaturesTestRootTriples)
 
 // "N-X-X"
     BOOST_AUTO_TEST_CASE(NXXTriples) {
-        FeatureVector *fv = getFeatureVector("C", "NBB", "RootTriples");
+        FeatureVector *fv = getFeatureVector("C", "NBB", "NLRootTriples");
 
         // Test feature name list sizes
         std::vector<unsigned> expected_feature_vector = {0, 286};
