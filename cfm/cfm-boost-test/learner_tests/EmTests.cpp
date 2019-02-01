@@ -12,12 +12,12 @@
 #include <boost/test/data/test_case.hpp>
 
 namespace bdata = boost::unit_test::data;
-
+#include "LearnerTestMols.h"
 #include "mpi.h"
 
 #include "MolData.h"
 #include "EmNNModel.h"
-#include "ParamTestMols.h"
+#include "LearnerTestMols.h"
 
 #include <boost/filesystem.hpp>
 #include <GraphMol/RDKitBase.h>
@@ -206,6 +206,62 @@ BOOST_AUTO_TEST_SUITE(EMTests)
             std::cout << energy << " ";
             compareSpectra(orig_spec, predicted_spec, orig_cfg.abs_mass_tol, orig_cfg.ppm_mass_tol, intensity_tol);
         }
+    }
+
+    BOOST_AUTO_TEST_CASE(EMSelfProdctuctionWithIsotopeTest) {
+        MPI::Init();
+
+        double intensity_tol = 2.0; //For intensity in range 0-100
+
+        int mpi_rank, mpi_nump;
+        MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+        MPI_Comm_size(MPI_COMM_WORLD, &mpi_nump);
+
+        BOOST_CHECK_EQUAL(mpi_nump, 1);
+
+        //Config
+        config_t orig_cfg;
+        std::string param_cfg_file = "test_data/example_param_config.txt";
+        initConfig(orig_cfg, param_cfg_file);
+        orig_cfg.lambda = 0.0000001;
+        orig_cfg.use_single_energy_cfm = 1;
+        orig_cfg.spectrum_depths.resize(1);
+        orig_cfg.spectrum_weights.resize(1);
+        orig_cfg.include_isotopes = 1;
+        orig_cfg.ga_converge_thresh = 0.0001;
+        orig_cfg.disable_training_metrics = true;
+
+        //Feature Calculator
+        std::string feature_cfg_file = "test_data/example_feature_config_withquadratic.txt";
+        FeatureCalculator fc(feature_cfg_file);
+
+        ///Prepare some simple data
+        std::vector<MolData> data;
+        data.push_back(IsotopeTestMol(&orig_cfg));
+        data[0].computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
+
+        Param *final_params;
+
+        config_t cfg;
+        initSingleEnergyConfig(cfg, orig_cfg, 0);
+
+        //Run EM
+        std::string status_file = "tmp_status_file.log";
+        std::string tmp_file = "tmp.log";
+        EmModel em(&cfg, &fc, status_file);
+        em.trainModel(data, 1, tmp_file, 0);
+        std::string param_filename = "tmp_param_output.log";
+        em.writeParamsToFile(param_filename);
+        final_params = new Param(param_filename);
+
+        //Predict the output spectra
+        data[0].computePredictedSpectra(*final_params);
+        data[0].postprocessPredictedSpectra(100.0, 0, 1000);
+
+        const Spectrum *orig_spec = data[0].getSpectrum(0);
+        const Spectrum *predicted_spec = data[0].getPredictedSpectrum(0);
+        compareSpectra(orig_spec, predicted_spec, orig_cfg.abs_mass_tol, orig_cfg.ppm_mass_tol, intensity_tol);
+
     }
 
     BOOST_AUTO_TEST_CASE(EMTestMiniBatchSelection) {

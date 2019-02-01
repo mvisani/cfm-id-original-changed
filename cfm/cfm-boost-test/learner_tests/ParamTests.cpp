@@ -15,7 +15,7 @@
 
 #include "MolData.h"
 #include "EmModel.h"
-#include "ParamTestMols.h"
+#include "LearnerTestMols.h"
 
 #include <boost/filesystem.hpp>
 #include <GraphMol/RDKitBase.h>

@@ -129,7 +129,6 @@ int main(int argc, char *argv[])
 //        tests.push_back( new FragGenTestPositiveEIOxygenAromatic() );
         //tests.push_back( new FragGenTestPositiveEITriple() );
         //tests.push_back( new FragGenTestPositiveEISplitCharge() );
-        //tests.push_back( new EMTestSingleEnergyIsotopeSelfProduction() );
 	}
 	if( mpi_nump > 2 ){
 		tests.push_back( new CommsTestSetMasterUsedIdxs() );

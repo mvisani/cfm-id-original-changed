@@ -10,7 +10,7 @@
 #########################################################################*/
 #include <boost/test/unit_test.hpp>
 
-#include "InferenceTestsCaseClasses.h"
+#include "InferenceTestMols.h"
 
 #include "Config.h"
 #include "FragmentTreeNode.h"

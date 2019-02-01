@@ -17,7 +17,7 @@ namespace bdata = boost::unit_test::data;
 
 #include "MolData.h"
 #include "EmNNModel.h"
-#include "ParamTestMols.h"
+#include "LearnerTestMols.h"
 
 #include <boost/filesystem.hpp>
 #include <GraphMol/RDKitBase.h>

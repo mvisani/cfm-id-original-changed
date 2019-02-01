@@ -89,3 +89,19 @@ public:
         fg->addFeatureVectorAtIdx(1, fv1);
     }
 };
+
+class IsotopeTestMol : public MolData {
+public:
+    IsotopeTestMol(config_t *a_cfg) : MolData("Isotope Test Mol", "CCNCl", a_cfg) {
+
+            //Set the spectra
+            spectra.resize(1);
+            spectra[0].push_back(Peak(80.0261499201, 100.0000000000));
+            spectra[0].push_back(Peak(81.0287615888, 2.7114457737));
+            spectra[0].push_back(Peak(82.0232058112, 32.4230213142));
+            spectra[0].push_back(Peak(63.9948515201, 100.0000000000));
+            spectra[0].push_back(Peak(64.9967761924, 1.5320451066));
+            spectra[0].push_back(Peak(65.9919024752, 32.4042671242));
+            spectra[0].normalizeAndSort();
+    }
+};
