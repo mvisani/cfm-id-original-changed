@@ -207,9 +207,13 @@ BOOST_FIXTURE_TEST_SUITE(NNParamsComputeTests, NNParamTestFixture)
     }
 
     BOOST_AUTO_TEST_CASE(GradientTest) {
-        MPI::Init();
-        double tol = 1e-3;
+        // set up mpi
+        int mp_init_flag;
+        MPI_Initialized(&mp_init_flag);
+        if(mp_init_flag == 0)
+            MPI::Init();
 
+        double tol = 1e-3;
         std::vector<double> grads;
 
         suft_counts_t suft;

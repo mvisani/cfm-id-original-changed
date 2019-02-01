@@ -97,7 +97,11 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE(ParamsTestComputeAndAccumulateGradient)
 
     BOOST_AUTO_TEST_CASE(GradientTest) {
-        MPI::Init();
+        // set up mpi
+        int mp_init_flag;
+        MPI_Initialized(&mp_init_flag);
+        if(mp_init_flag == 0)
+            MPI::Init();
 
         double tol = 1e-3;
 

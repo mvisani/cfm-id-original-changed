@@ -67,6 +67,8 @@ getFeatureVector(std::string smiles_or_inchi, std::vector<std::string> &fnames, 
     std::vector<Break> breaks;
     node->generateBreaks(breaks, include_h_loss);
 
+    //std::cout << breaks.size() << std::endl;
+
     node->applyBreak(breaks[break_id], ion_idx);
     node->generateChildrenOfBreak(breaks[break_id]);
     FragmentTreeNode *child = &(node->children[0]);

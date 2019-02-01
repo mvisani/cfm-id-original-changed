@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
 //        //tests.push_back( new FragGenTestPositiveEINistExceptions() );
 //        tests.push_back( new FragGenTestCasesFromGross() ); // NOTE THIS IS NOT WORKING
 //        tests.push_back( new FragGenTestPositiveEIAndESIDegreeLpBonding() );
-//        tests.push_back( new FragGenTestPositiveEIOxygenAromatic() );
+        // tests.push_back( new FragGenTestPositiveEIOxygenAromatic() );
         //tests.push_back( new FragGenTestPositiveEITriple() );
         //tests.push_back( new FragGenTestPositiveEISplitCharge() );
 	}

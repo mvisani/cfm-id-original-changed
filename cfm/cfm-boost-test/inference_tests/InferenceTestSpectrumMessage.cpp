@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_SUITE(InferenceTests)
             BOOST_CHECK_CLOSE_FRACTION(std::exp(msg.getIdx(3)), 0.2, tolerance);
             BOOST_CHECK_CLOSE_FRACTION(std::exp(msg.getIdx(4)), 0.2, tolerance);
             BOOST_CHECK_CLOSE_FRACTION(std::exp(msg.getIdx(5)), 0.2, tolerance);
-            BOOST_CHECK_CLOSE_FRACTION(std::exp(msg.getIdx(5)), 0.0, tolerance);
+            BOOST_CHECK_CLOSE_FRACTION(std::exp(msg.getIdx(6)), 0.0, tolerance);
 
     }
     BOOST_AUTO_TEST_CASE(InferenceTestSpectrumMessageWithIsotopes) {
@@ -77,6 +77,10 @@ BOOST_AUTO_TEST_SUITE(InferenceTests)
 
             config_t cfg;
             initDefaultConfig(cfg);
+            cfg.abs_mass_tol = 0.1;
+            cfg.ionization_mode = NEGATIVE_ESI_IONIZATION_MODE;
+            cfg.include_isotopes = true;
+            cfg.isotope_thresh = 0.01;
 
             IsotopeSpectrumTestMol moldata(&cfg);
 

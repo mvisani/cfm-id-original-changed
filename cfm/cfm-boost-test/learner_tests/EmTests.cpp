@@ -47,7 +47,11 @@ void compareSpectra(const Spectrum *orig_spec, const Spectrum *predicted_spec, d
 BOOST_AUTO_TEST_SUITE(EMTests)
 
     BOOST_AUTO_TEST_CASE(EMSelfProdctuctionTest) {
-        MPI::Init();
+        //set up mpi
+        int mp_init_flag;
+        MPI_Initialized(&mp_init_flag);
+        if(mp_init_flag == 0)
+            MPI::Init();
 
         double intensity_tol = 2.0; //For intensity in range 0-100
 
@@ -114,7 +118,11 @@ BOOST_AUTO_TEST_SUITE(EMTests)
     }
 
     BOOST_AUTO_TEST_CASE(EmNNSelfProdctuctionTest) {
-        MPI::Init();
+        //set up mpi
+        int mp_init_flag;
+        MPI_Initialized(&mp_init_flag);
+        if(mp_init_flag == 0)
+            MPI::Init();
 
         double intensity_tol = 2.0; //For intensity in range 0-100
 
@@ -209,7 +217,11 @@ BOOST_AUTO_TEST_SUITE(EMTests)
     }
 
     BOOST_AUTO_TEST_CASE(EMSelfProdctuctionWithIsotopeTest) {
-        MPI::Init();
+        //set up mpi
+        int mp_init_flag;
+        MPI_Initialized(&mp_init_flag);
+        if(mp_init_flag == 0)
+            MPI::Init();
 
         double intensity_tol = 2.0; //For intensity in range 0-100
 
@@ -266,7 +278,11 @@ BOOST_AUTO_TEST_SUITE(EMTests)
 
     BOOST_AUTO_TEST_CASE(EMTestMiniBatchSelection) {
 
-        MPI::Init();
+        //set up mpi
+        int mp_init_flag;
+        MPI_Initialized(&mp_init_flag);
+        if(mp_init_flag == 0)
+            MPI::Init();
 
         config_t cfg;
         initDefaultConfig(cfg);

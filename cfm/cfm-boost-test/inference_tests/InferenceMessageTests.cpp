@@ -64,8 +64,7 @@ BOOST_FIXTURE_TEST_SUITE(MessageTests, MessageFixture)
         double tol = 1e-8;
 
         //Check index 5
-        BOOST_CHECK_CLOSE_FRACTION((double)msg.getIdx(123),  -1.910282456760932, tol);
-        //BOOST_TEST((double)msg2.getIdx(123) >  -A_BIG_DBL);
+        BOOST_CHECK_CLOSE_FRACTION((double)msg.getIdx(5),  -1.910282456760932, tol);
 
         //Check index 123
         BOOST_CHECK_CLOSE_FRACTION((double)msg.getIdx(123), -0.510282456760932, tol);

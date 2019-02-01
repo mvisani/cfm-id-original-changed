@@ -27,8 +27,8 @@ BOOST_AUTO_TEST_SUITE(FeaturesTestBrokenOrigBondType)
 
     BOOST_AUTO_TEST_CASE(HOnly) {
         std::string smiles_or_inchi("[Na+].C#CCCC(=O)CC=CC=CC=CCCc1ccccc1");
-        int break_id = 31;
-        FeatureVector *fv = getFeatureVector(smiles_or_inchi, "BrokenOrigBondType", break_id, false);
+        int break_id = 22;
+        FeatureVector *fv = getFeatureVector(smiles_or_inchi, "BrokenOrigBondType", break_id, true);
 
         // Check Results
         std::vector<unsigned> expected_feature_vector = {0, 7};
@@ -75,11 +75,11 @@ BOOST_AUTO_TEST_SUITE(FeaturesTestBrokenOrigBondType)
 
     BOOST_AUTO_TEST_CASE(CONJUGATED) {
         std::string smiles_or_inchi("[Na+].C#CCCC(=O)CC=CC=CC=CCCc1ccccc1");
-        int break_id = 5;
+        int break_id = 8;
         FeatureVector *fv = getFeatureVector(smiles_or_inchi, "BrokenOrigBondType", break_id, false);
 
         // Check Results
-        std::vector<unsigned> expected_feature_vector = {8, 5};
+        std::vector<unsigned> expected_feature_vector = {0, 5};
         BOOST_CHECK_EQUAL_COLLECTIONS(fv->getFeatureBegin(), fv->getFeatureEnd(),
                                       expected_feature_vector.begin(), expected_feature_vector.end());
         delete fv;
