@@ -19,7 +19,6 @@ add_executable ( cfm-boost-test ${SRC_FILES} ${FEATURES_TESTS_SRC} ${INFERENCE_T
 target_link_libraries ( cfm-boost-test cfm-code ${REQUIRED_LIBS})
 
 # declares a test with our executable
-#enable_testing()
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test_data DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
 install ( TARGETS cfm-boost-test
