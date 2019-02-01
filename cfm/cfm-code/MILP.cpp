@@ -308,10 +308,8 @@ RDKit::Bond *MILP::getNextBondInRing(RDKit::Bond *bond, RDKit::Atom *atom, std::
 
     //RDKit::ROMol::OBOND_ITER_PAIR ip;
     auto ip = atom->getOwningMol().getAtomBonds(atom);
-    RDKit::ROMol::OEDGE_ITER it = ip.first;
-    for (; it != ip.second; ++it) {
-        auto bond = (*mol)[*it];
-        int idx = bond->getIdx();    //There must be a better way...
+    for (auto it = ip.first; it != ip.second; ++it) {
+        int idx = (*mol)[*it]->getIdx();    //There must be a better way...
         if (ring_bond_flags[idx] && idx != bond->getIdx())
             return atom->getOwningMol().getBondWithIdx(idx);
     }

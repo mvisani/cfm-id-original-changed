@@ -139,8 +139,7 @@ bool FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 //Compute a FragmentGraph starting at the given node and computing to the depth given.
 //The output will be appended to the current_graph
 void
-FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parent_id, int remaining_ring_breaks,
-                                bool use_fg_graph) {
+FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parent_id, int remaining_ring_breaks) {
 
     if (current_graph->getNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
         || current_graph->getNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
@@ -185,35 +184,12 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
     bool ring_can_break = (remaining_ring_breaks > 0);
     int num_child_created = 0;
 
-    // Disabled FG logic
-    // Iterate over the possible breaks
-    /*for (auto it = breaks.begin(); it != breaks.end(); ++it) {
-
-        if (!ring_can_break && it->isRingBreak())
-            continue;
-
-        if (!it->isFgBreak())
-            continue;
-
-        CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
-                         id, &(*it), use_fg_graph);
-        num_child_created += node.children.size();
-        node.children = std::vector<FragmentTreeNode>();
-    }
-
-    //Iterate over the possible none fg breaks
-    if (num_child_created == 0 || !use_fg_graph) {
-        for (auto it = breaks.begin(); it != breaks.end(); ++it) {
-
-            if (it->isFgBreak())
-                continue;*/
-
     for (auto it = breaks.begin(); it != breaks.end(); ++it) {
         if (it->isRingBreak() && !ring_can_break)
             continue;
 
         CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
-                             id, &(*it), use_fg_graph);
+                         id, &(*it));
 
         num_child_created += node.children.size();
         node.children = std::vector<FragmentTreeNode>();
@@ -222,8 +198,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 }
 
 void
-FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id,
-                                         Break *brk, bool use_fg_graph) {
+FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id, Break *brk) {
     for (int ifrag_idx = 0; ifrag_idx < brk->getNumIonicFragAllocations(); ifrag_idx++) {
 
         node.applyBreak(*brk, ifrag_idx);
@@ -241,7 +216,7 @@ FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_d
         //Recur over children
         auto itt = node.children.begin();
         for (; itt != node.children.end(); ++itt)
-            compute(*itt, child_remaining_depth, id, child_remaining_ring_breaks, use_fg_graph);
+            compute(*itt, child_remaining_depth, id, child_remaining_ring_breaks);
 
         //Undo and remove children
         node.undoBreak(*brk, ifrag_idx);
