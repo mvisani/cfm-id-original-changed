@@ -13,7 +13,7 @@
 
 #include "mpi.h"
 
-#include "solver.h"
+#include "Solver.h"
 #include "Param.h"
 
 #include <boost/filesystem.hpp>
