@@ -336,11 +336,13 @@ void FragmentGraph::writeFullGraph(std::ostream &out) const {
 
     //Transitions
     for(const auto & transition : transitions){
-        out << transition->getFromId() << " ";
-        out << transition->getToId() << " ";
-        out << *(transition->getNLSmiles()) << " ";
-        out << *(transition->getIonSmiles()) << " ";
-        out << std::endl;
+        if(!transition->isDuplicate()){
+            out << transition->getFromId() << " ";
+            out << transition->getToId() << " ";
+            out << *(transition->getNLSmiles()) << " ";
+            out << *(transition->getIonSmiles()) << " ";
+            out << std::endl;
+        }
     }
 }
 
