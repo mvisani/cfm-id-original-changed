@@ -88,7 +88,8 @@ public:
     };
 
     double getLogTransitionProbForIdx(int energy, int index) const {
-        return log_probs[energy][index];
+        double weight = (double)fg->getTransitionAtIdx(index)->getCount();
+        return std::log(weight) + log_probs[energy][index];//logAdd(weight,log_probs[energy][index]);
     };
 
     double getLogPersistenceProbForIdx(int energy, int index) const {

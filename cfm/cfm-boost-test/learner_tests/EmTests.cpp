@@ -35,7 +35,7 @@ void compareSpectra(const Spectrum *orig_spec, const Spectrum *predicted_spec, d
         for (; itp != predicted_spec->end(); ++itp) {
             double mass_tol = getMassTol(abs_mass_tol, ppm_mass_tol, itp->mass);
             if (fabs(itp->mass - ito->mass) < mass_tol) {
-                BOOST_CHECK_CLOSE_FRACTION(itp->intensity,ito->intensity,intensity_tol);
+                BOOST_CHECK_SMALL(itp->intensity - ito->intensity,intensity_tol);
                 found = true;
                 break;
             }
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_SUITE(EMTests)
         if(mp_init_flag == 0)
             MPI::Init();
 
-        double intensity_tol = 2.0; //For intensity in range 0-100
+        double intensity_tol = 3.0; //For intensity in range 0-100
 
         int mpi_rank, mpi_nump;
         MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_SUITE(EMTests)
         if(mp_init_flag == 0)
             MPI::Init();
 
-        double intensity_tol = 2.0; //For intensity in range 0-100
+        double intensity_tol = 3.0; //For intensity in range 0-100
 
         int mpi_rank, mpi_nump;
         MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -134,29 +134,12 @@ BOOST_AUTO_TEST_SUITE(EMTests)
 
         //Config
         config_t orig_cfg;
-        std::string param_cfg_file = "test_data/example_param_config.txt";
+        std::string param_cfg_file = "test_data/example_nnparam_config.txt";
         initConfig(orig_cfg, param_cfg_file);
         orig_cfg.lambda = 0.0000001;
         orig_cfg.use_single_energy_cfm = 1;
-        orig_cfg.spectrum_depths[1] = 2;
-        orig_cfg.spectrum_depths[2] = 2;
-        orig_cfg.include_h_losses = true;
-
-        std::vector<int> hlayer_numnodes = {16,16,1};
-        std::vector<int> act_ids = {RELU_NN_ACTIVATION_FUNCTION,
-                                    RELU_NN_ACTIVATION_FUNCTION,
-                                    LINEAR_NN_ACTIVATION_FUNCTION};
-
-        std::vector<double> dropout_probs(2,0);
-        orig_cfg.theta_nn_hlayer_num_nodes = hlayer_numnodes;
-        orig_cfg.theta_nn_layer_act_func_ids = act_ids;
-        orig_cfg.nn_layer_dropout_probs = dropout_probs;
-
-        //orig_cfg.ga_converge_thresh = 0.0001;
-        //orig_cfg.em_converge_thresh = 0.0001;
-
         //Feature Calculator
-        std::string feature_cfg_file = "test_data/example_feature_config.txt";
+        std::string feature_cfg_file = "test_data/example_feature_config_withquadratic.txt";
         FeatureCalculator fc(feature_cfg_file);
 
         //Prepare some simple data
