@@ -749,10 +749,9 @@ void MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, dou
         fg->getSampledTransitionIdsRandomWalk(selected_ids, ratio);
 }
 
-void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights,
-                                                 std::set<unsigned int> &all_weights) {
+void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::vector<double> &selected_weights) {
     if (!hasEmptySpectrum(0) && hasComputedGraph())
-        fg->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights, all_weights);
+        fg->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights);
 }
 
 void MolData::getRandomSampledTransitions(std::set<int> &selected_ids, double ratio){
@@ -768,8 +767,7 @@ double MolData::getWeightedJaccardScore(int engery_level){
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, std::set<unsigned int> &all_weights,
-                                 int energry_level) {
+void MolData::getSelectedWeights(std::vector<double> &selected_weights, int energry_level) {
 
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
@@ -782,7 +780,6 @@ void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, std::
         if(intensity_difference > cfg->ga_diff_sampling_difference){
             double peak_mass = peak_pair.second.mass;
             difference.insert(std::pair<double,double>(intensity_difference, peak_mass));
-            all_weights.insert(peak_mass);
         }
     }
     delete(cmp);
@@ -790,8 +787,9 @@ void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, std::
     for(const auto & diff:  difference){
         if(selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
             break;
-        selected_weights.insert(diff.second);
+        selected_weights.push_back(diff.second);
     }
+    std::sort(selected_weights.begin(),selected_weights.end());
 }
 
 MolData::~MolData() {

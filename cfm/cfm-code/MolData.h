@@ -196,8 +196,7 @@ public:
 
     void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
 
-    void getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights,
-                                            std::set<unsigned int> &all_weights);
+    void getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::vector<double> &selected_weights);
 
     void getRandomSampledTransitions(std::set<int> &selected_ids, double ratio);;;
 
@@ -239,8 +238,7 @@ public:
 
     int getFGHeight() const { return fg->getHeight(); };
 
-    void getSelectedWeights(std::set<unsigned int> &selected_weights, std::set<unsigned int> &all_weights,
-                            int energry_level);
+    void getSelectedWeights(std::vector<double> &selected_weights, int energry_level);
 
     double getWeightedJaccardScore(int engery_level);
 

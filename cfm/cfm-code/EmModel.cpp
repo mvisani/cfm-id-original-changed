@@ -654,11 +654,10 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
                                                           moldata.getWeightedJaccardScore(energy));
     } else if (sampling_method == USE_DIFFERENCE_SAMPLING) {
         moldata.computePredictedSpectra(*param, false, true, energy);
-        std::set<unsigned int> selected_weights;
-        std::set<unsigned int> all_weights;
+        std::vector<double> selected_weights;
 
-        moldata.getSelectedWeights(selected_weights, all_weights, energy);
-        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, selected_weights, all_weights);
+        moldata.getSelectedWeights(selected_weights, energy);
+        moldata.getSampledTransitionIdUsingDiffMap(selected_trans_id, selected_weights);
     }
 }
 
