@@ -167,9 +167,18 @@ public:
         tmp_thetas = *a_thetas;
     };
 
-    int getCount() const { return count; };
+    bool isDuplicate() { return is_duplicate; }
 
-    void increaseCount() { count++; };
+    void createdDuplication( const Transition & old){
+        from_id = old.from_id;
+        to_id = old.to_id;
+        nl_smiles = old.nl_smiles;
+        ion_smiles = old.ion_smiles;
+
+        feature_vector = new FeatureVector(*old.feature_vector);
+        is_duplicate = true;
+    };
+
 private:
     int from_id;
     int to_id;
@@ -189,8 +198,7 @@ private:
     // while we compute the likely fragment graph
     //(as above, don't use directly, will be moved)
 
-    // count of this trans
-    int count = 1;
+    bool is_duplicate = false;
 };
 
 class FragmentGraph {

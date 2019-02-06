@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_SUITE(EMTests)
         orig_cfg.lambda = 0.0000001;
         orig_cfg.use_single_energy_cfm = 1;
         //Feature Calculator
-        std::string feature_cfg_file = "test_data/example_feature_config_withquadratic.txt";
+        std::string feature_cfg_file = "test_data/example_feature_config.txt";
         FeatureCalculator fc(feature_cfg_file);
 
         //Prepare some simple data

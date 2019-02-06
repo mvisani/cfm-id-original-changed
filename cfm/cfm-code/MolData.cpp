@@ -330,8 +330,7 @@ void MolData::computeLogTransitionProbabilities() {
         for (unsigned int i = 0; i < fg->getNumFragments(); i++) {
             double denom = 1.0;
             for (auto trans_idx = (*from_id_map)[i].begin(); trans_idx != (*from_id_map)[i].end(); ++trans_idx){
-                double trans_weight = (double)fg->getTransitionAtIdx(*trans_idx)->getCount();
-                denom += exp(thetas[energy][*trans_idx]) * trans_weight;
+                denom += exp(thetas[energy][*trans_idx]);
             }
             denom_cache[i] = log(denom);
         }
@@ -339,11 +338,8 @@ void MolData::computeLogTransitionProbabilities() {
         // Set the transition log probabilities
         for (unsigned int i = 0; i < fg->getNumTransitions(); i++) {
             const Transition *t = fg->getTransitionAtIdx(i);
-            // logA - logB = log (A/B)
+            // log(A/B) = log A - log B
             log_probs[energy][i] = thetas[energy][i] - denom_cache[t->getFromId()];
-            /*double weight = (double)fg->getTransitionAtIdx(i)->getCount();
-            // logA * logB = log (A + B)
-            log_probs[energy][i] = logAdd(std::log(weight), (thetas[energy][i] - denom_cache[t->getFromId()]));*/
         }
 
         // Set the persistence log probabilities
