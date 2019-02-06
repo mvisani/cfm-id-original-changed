@@ -146,20 +146,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait
         after = time(nullptr);
-        if (!cfg->use_single_energy_cfm) {
-            total_numnonc = comm->collectSumInMaster(num_nonconverged);
-            tot_numc = comm->collectSumInMaster(num_converged);
-            std::string cvg_msg =
-                    "Num Converged: " + std::to_string(tot_numc);
-            std::string noncvg_msg = "Num Non-Converged: " +
-                                     std::to_string(total_numnonc);
-            if (comm->isMaster()) {
-                writeStatus(cvg_msg.c_str());
-                writeStatus(noncvg_msg.c_str());
-            }
-            comm->printToMasterOnly(cvg_msg.c_str());
-            comm->printToMasterOnly(noncvg_msg.c_str());
-        }
+
         std::string estep_time_msg =
                 "[E-Step]Completed E-step processing: Time Elapsed = " +
                 std::to_string(after - before) + " seconds";

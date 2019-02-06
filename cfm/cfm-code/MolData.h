@@ -80,7 +80,6 @@ public:
 
     const FeatureVector *getFeatureVectorForIdx(int index) const {
         return getTransitionAtIdx(index)->getFeatureVector();
-        //return fvs[index];
     };
 
     double getThetaForIdx(int energy, int index) const {

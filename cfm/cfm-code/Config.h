@@ -185,12 +185,11 @@ struct config_t {
     //Fragment Graph Configuration
     int fg_depth;
     int allow_frag_detours;
-    int do_prelim_bfs;
     int max_ring_breaks;
     int include_h_losses;
     int include_precursor_h_losses_only;
 
-    int use_single_energy_cfm;    //Use Single Energy CFM (rather than Combined Energy)
+    //Use Single Energy CFM (rather than Combined Energy)
     int ionization_mode;
     int include_isotopes;
     double isotope_thresh;
@@ -237,7 +236,7 @@ struct config_t {
     int param_init_type;
 
     //Gradient Ascent Configuration
-    double lambda;    //Regularization constant
+    double lambda;    //Regularization n
     int ga_method;
     int ga_decay_method;
     double ga_converge_thresh;
@@ -267,14 +266,11 @@ struct config_t {
     int update_bias_first;
     int ga_minibatch_nth_size;
     double ga_dropout_delta;
-    double ga_dropout_lowerbond;
 
     int fragraph_compute_timeout_in_secs;
 
     bool disable_cross_val_metrics;
     bool disable_training_metrics;
-    bool use_fg_graph;
-    int ring_break_depth_cap;
 };
 
 void initDefaultConfig(config_t &cfg);

@@ -66,7 +66,6 @@ BOOST_AUTO_TEST_SUITE(EMTests)
         std::string param_cfg_file = "test_data/example_param_config.txt";
         initConfig(orig_cfg, param_cfg_file);
         orig_cfg.lambda = 0.0000001;
-        orig_cfg.use_single_energy_cfm = 1;
         orig_cfg.spectrum_depths[1] = 2;
         orig_cfg.spectrum_depths[2] = 2;
         orig_cfg.include_h_losses = true;
@@ -137,7 +136,6 @@ BOOST_AUTO_TEST_SUITE(EMTests)
         std::string param_cfg_file = "test_data/example_nnparam_config.txt";
         initConfig(orig_cfg, param_cfg_file);
         orig_cfg.lambda = 0.0000001;
-        orig_cfg.use_single_energy_cfm = 1;
         //Feature Calculator
         std::string feature_cfg_file = "test_data/example_feature_config.txt";
         FeatureCalculator fc(feature_cfg_file);
@@ -219,7 +217,6 @@ BOOST_AUTO_TEST_SUITE(EMTests)
         std::string param_cfg_file = "test_data/example_param_config.txt";
         initConfig(orig_cfg, param_cfg_file);
         orig_cfg.lambda = 0.0000001;
-        orig_cfg.use_single_energy_cfm = 1;
         orig_cfg.spectrum_depths.resize(1);
         orig_cfg.spectrum_weights.resize(1);
         orig_cfg.include_isotopes = 1;

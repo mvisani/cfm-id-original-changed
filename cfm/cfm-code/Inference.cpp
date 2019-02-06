@@ -28,12 +28,13 @@ static const int DOWN = 0;
 static const int UP = 1;
 
 void Inference::calculateBeliefs(beliefs_t &beliefs, int current_energy) {
-
+    /*
+     * Disabled beacsuse we only havs se-cfm now
     if (!config->use_single_energy_cfm) {
         std::cout << "Error: Use of inference calculateBeliefs only valid for single energy model. Try IPFP instead."
                   << std::endl;
         throw InvalidInferenceException();
-    }
+    }*/
 
     //Pass the messages down
     std::vector<Message> down_msgs, up_msgs;

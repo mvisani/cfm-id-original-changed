@@ -45,7 +45,6 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ipfp_algorithm = DEFAULT_IPFP_ALGORITHM;
     cfg.ipfp_converge_thresh = DEFAULT_IPFP_CONVERGE_THRESH;
     cfg.osc_ipfp_converge_thresh = DEFAULT_IPFP_OSC_CONVERGE_THRESH;
-    cfg.use_single_energy_cfm = 1;
     cfg.ionization_mode = DEFAULT_IONIZATION_MODE;
     cfg.update_bias_first = 0;
     cfg.param_init_type = PARAM_DEFAULT_INIT;
@@ -53,7 +52,6 @@ void initDefaultConfig(config_t &cfg) {
     cfg.include_isotopes = DEFAULT_INCLUDE_ISOTOPES;
     cfg.isotope_thresh = DEFAULT_ISOTOPE_THRESH;
     cfg.allow_frag_detours = DEFAULT_ALLOW_FRAG_DETOURS;
-    cfg.do_prelim_bfs = DEFAULT_DO_PRELIM_BFS;
     cfg.max_ring_breaks = DEFAULT_MAX_RING_BREAKS;
     cfg.theta_function = DEFAULT_THETA_FUNCTION;
     cfg.ga_minibatch_nth_size = DEFAULT_GA_MINIBATCH_NTH_SIZE;
@@ -81,12 +79,9 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_diff_sampling_peak_num = 100;
     cfg.ga_diff_sampling_difference = 0.05;
     cfg.ga_dropout_delta = -0.05;
-    cfg.ga_dropout_lowerbond = 0.01;
     cfg.num_rbreak_nrbonds = 100000;
     cfg.disable_cross_val_metrics = false;
     cfg.disable_training_metrics = false;
-    cfg.use_fg_graph = false;
-    cfg.ring_break_depth_cap = 1;
 }
 
 
@@ -124,12 +119,11 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "decay_rate") cfg.decay_rate = (double) value;
         else if (name == "fg_depth") cfg.fg_depth = (int) value;
         else if (name == "allow_frag_detours") cfg.allow_frag_detours = (int) value;
-        else if (name == "do_prelim_bfs") cfg.do_prelim_bfs = (int) value;
+        else if (name == "do_prelim_bfs");
         else if (name == "max_ring_breaks") cfg.max_ring_breaks = (int) value;
         else if (name == "ipfp_algorithm") cfg.ipfp_algorithm = (int) value;
         else if (name == "ipfp_converge_thresh") cfg.ipfp_converge_thresh = (double) value;
         else if (name == "osc_ipfp_converge_thresh") cfg.osc_ipfp_converge_thresh = (double) value;
-        else if (name == "use_single_energy_cfm") cfg.use_single_energy_cfm = (int) value;
         else if (name == "include_isotopes") cfg.include_isotopes = (int) value;
         else if (name == "isotope_thresh") cfg.isotope_thresh = (double) value;
         else if (name == "ga_method") cfg.ga_method = (int) value;
@@ -165,12 +159,12 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_diff_sampling_peak_num") cfg.ga_diff_sampling_peak_num = (int) value;
         else if (name == "ga_diff_sampling_difference") cfg.ga_diff_sampling_difference = (double) value;
         else if (name == "ga_dropout_delta") cfg.ga_dropout_delta = (double) value;
-        else if (name == "ga_dropout_lowerbond") cfg.ga_dropout_lowerbond = (double) value;
+        else if (name == "ga_dropout_lowerbond");
         else if (name == "num_rbreak_nrbonds") cfg.num_rbreak_nrbonds = (int) value;
         else if (name == "disable_cross_val_metrics") cfg.disable_cross_val_metrics = (int) value;
         else if (name == "disable_training_metrics") cfg.disable_training_metrics = (int) value;
-        else if (name == "use_fg_graph") cfg.use_fg_graph = (int) value;
-        else if (name == "ring_break_depth_cap") cfg.ring_break_depth_cap = (int)value;
+        else if (name == "use_fg_graph");
+        else if (name == "ring_break_depth_cap");
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -205,8 +199,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
     //Report config parameters
     if (report_all) {
-        if (cfg.use_single_energy_cfm) std::cout << "Using Single Energy CFM" << std::endl;
-        else std::cout << "Using Combined Energy CFM" << std::endl;
         if (cfg.ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
             std::cout << "Positive ESI Ionization Mode" << std::endl;
         else if (cfg.ionization_mode == NEGATIVE_ESI_IONIZATION_MODE)
@@ -318,8 +310,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             std::cout << "Allowing fragmentation detours " << std::endl;
         } else {
             std::cout << "Disallowing fragmentation detours ";
-            if (cfg.do_prelim_bfs) std::cout << "with preliminary breadth-first search" << std::endl;
-            else std::cout << "without preliminary breadth-first search" << std::endl;
         }
         std::cout << "Maximum Ring Breaks " << cfg.max_ring_breaks << std::endl;
         std::cout << "Using Model Depth " << cfg.model_depth << std::endl;
@@ -329,14 +319,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         std::cout << std::endl;
         std::cout << "Using Absolute mass tolerance " << cfg.abs_mass_tol << std::endl;
         std::cout << "Using PPM mass tolerance " << cfg.ppm_mass_tol << std::endl;
-        if (!cfg.use_single_energy_cfm) {
-            if (cfg.ipfp_algorithm == 0) std::cout << "Using standard IPFP" << std::endl;
-            else if (cfg.ipfp_algorithm == 1) std::cout << "Using GEMA" << std::endl;
-            else if (cfg.ipfp_algorithm == 2) std::cout << "Using IPFP with Oscillatory Adjustment" << std::endl;
-            else std::cout << "Warning: Unknown IPFP algorithm id" << std::endl;
-            std::cout << "Using IPFP Converge Thresh " << cfg.ipfp_converge_thresh << std::endl;
-            std::cout << "Using IPFP Oscillatory Converge Thresh " << cfg.osc_ipfp_converge_thresh << std::endl;
-        }
         if (cfg.use_lower_energy_params_for_init)
             std::cout << "Initialising higher energy params with those of one level lower" << std::endl;
         if (cfg.theta_function == LINEAR_THETA_FUNCTION) std::cout << "Using linear function for theta" << std::endl;
@@ -383,10 +365,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 }
 
 void initDerivedConfig(config_t &cfg, int se_energy) {
-
-    //Force single energy where only one spectrum level
-    if (cfg.spectrum_depths.size() == 1)
-        cfg.use_single_energy_cfm = 1;
 
     //Derived Parameters
     cfg.map_d_to_energy.resize(cfg.model_depth);

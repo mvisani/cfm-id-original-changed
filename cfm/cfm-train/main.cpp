@@ -28,10 +28,6 @@
 void parseInputFile(std::vector<MolData> &data, std::string &input_filename, int mpi_rank, int mpi_nump, config_t *cfg);
 
 void
-trainCombinedEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalculator &fc, std::string &status_filename,
-                       int group, std::vector<MolData> &data, int start_repeat);
-
-void
 trainSingleEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalculator &fc, std::string &status_filename,
                      int group, std::vector<MolData> &data, int start_energy, int no_train, int start_repeat);
 
@@ -281,11 +277,10 @@ int main(int argc, char *argv[]) {
         param_filename += boost::lexical_cast<std::string>(group);
         param_filename += ".log";
 
-        if (cfg.use_single_energy_cfm)
+        if (!no_train)
             trainSingleEnergyCFM(param_filename, cfg, fc, status_filename, group, data, start_energy, no_train,
                                  start_repeat);
-        else if (!no_train)
-            trainCombinedEnergyCFM(param_filename, cfg, fc, status_filename, group, data, start_repeat);
+
         MPI_Barrier(MPI_COMM_WORLD);    //Wait for all threads
         if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
 
@@ -322,11 +317,8 @@ int main(int argc, char *argv[]) {
             if (!mit->hasComputedGraph()) continue;    //If we couldn't compute it's graph for some reason..
 
             //Predicted spectrum
-            if(cfg.use_single_energy_cfm)
-                for(auto e = start_energy; e < cfg.spectrum_depths.size(); ++e)
-                    mit->computePredictedSpectra(*param, false, false, e);
-            else
-                mit->computePredictedSpectra(*param, false, false);
+            for(auto e = start_energy; e < cfg.spectrum_depths.size(); ++e)
+                mit->computePredictedSpectra(*param, false, false, e);
 
             if (spectra_in_msp)
                 mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
@@ -355,37 +347,6 @@ int main(int argc, char *argv[]) {
     MPI_Finalize();
 
     return (0);
-}
-
-void
-trainCombinedEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalculator &fc, std::string &status_filename,
-                       int group, std::vector<MolData> &data, int start_repeat) {
-
-    int mpi_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-
-    //Run EM multiple times with random restarts, taking the final one with the best Q
-    double prev_Q = -DBL_MAX;
-    for (int repeat = start_repeat; repeat < cfg.num_em_restarts; repeat++) {
-        EmModel *em;
-        std::string repeat_filename = param_filename + boost::lexical_cast<std::string>(repeat);
-        std::string out_filename = repeat_filename;
-        if (!boost::filesystem::exists(repeat_filename)) repeat_filename = "";
-        if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION)
-            em = new EmNNModel(&cfg, &fc, status_filename, repeat_filename);
-        else
-            em = new EmModel(&cfg, &fc, status_filename, repeat_filename);
-
-        double Q = em->trainModel(data, group, out_filename, -1);
-        if (Q > prev_Q) {
-            if (mpi_rank == MASTER) {
-                std::cout << "Found better Q!" << std::endl;
-                em->writeParamsToFile(param_filename);
-            }
-            prev_Q = Q;
-        }
-        delete em;
-    }
 }
 
 void

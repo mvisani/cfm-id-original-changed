@@ -195,9 +195,9 @@ void MolData::computeFragmentEvidenceValues(std::vector<double> &evidence,
 
         // Find out the depth of the spectrum of interest in the beliefs
         int depth = cfg->dv_spectrum_depths[energy] - 1;
-        if (cfg->use_single_energy_cfm)
-            for (int i = 0; i < energy; i++)
-                depth += cfg->dv_spectrum_depths[i];
+
+        for (int i = 0; i < energy; i++)
+            depth += cfg->dv_spectrum_depths[i];
 
         // Compute the accumulated belief for the fragment of interest at the depth
         // of interest

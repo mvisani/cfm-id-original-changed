@@ -156,7 +156,6 @@ void EMTestSingleEnergySelfProduction::runTest() {
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
     initConfig(orig_cfg, param_cfg_file);
     orig_cfg.lambda = 0.0000001;
-    orig_cfg.use_single_energy_cfm = 1;
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;
     orig_cfg.include_h_losses = true;
@@ -232,7 +231,6 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
     initConfig(orig_cfg, param_cfg_file);
     orig_cfg.lambda = 0.0000001;
-    orig_cfg.use_single_energy_cfm = 1;
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;
     orig_cfg.include_h_losses = true;
@@ -354,7 +352,6 @@ void EMTestSingleEnergyIsotopeSelfProduction::runTest() {
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
     initConfig(orig_cfg, param_cfg_file);
     orig_cfg.lambda = 0.0000001;
-    orig_cfg.use_single_energy_cfm = 1;
     orig_cfg.spectrum_depths.resize(1);
     orig_cfg.spectrum_weights.resize(1);
     orig_cfg.include_isotopes = 1;
@@ -549,7 +546,6 @@ void EMTestBiasPreLearning::runTest() {
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
     initConfig(orig_cfg, param_cfg_file);
     orig_cfg.lambda = 0.0000001;
-    orig_cfg.use_single_energy_cfm = 1;
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;
 
