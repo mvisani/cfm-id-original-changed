@@ -339,10 +339,11 @@ void MolData::computeLogTransitionProbabilities() {
         // Set the transition log probabilities
         for (unsigned int i = 0; i < fg->getNumTransitions(); i++) {
             const Transition *t = fg->getTransitionAtIdx(i);
-            double weight = (double)fg->getTransitionAtIdx(i)->getCount();
-            // log(n * e ^ theta) = log(n) + log(e^theta) = log(n) + theta
-            // log A/B = logA-logB
-            log_probs[energy][i] = thetas[energy][i] + std::log(weight) - denom_cache[t->getFromId()];
+            // logA - logB = log (A/B)
+            log_probs[energy][i] = thetas[energy][i] - denom_cache[t->getFromId()];
+            /*double weight = (double)fg->getTransitionAtIdx(i)->getCount();
+            // logA * logB = log (A + B)
+            log_probs[energy][i] = logAdd(std::log(weight), (thetas[energy][i] - denom_cache[t->getFromId()]));*/
         }
 
         // Set the persistence log probabilities
