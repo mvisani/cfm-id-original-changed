@@ -328,12 +328,12 @@ void MolData::computeLogTransitionProbabilities() {
         std::vector<double> denom_cache(fg->getNumFragments());
         const tmap_t *from_id_map = fg->getFromIdTMap();
         for (unsigned int i = 0; i < fg->getNumFragments(); i++) {
-            double denom = 0.0;
+            double denom = 1.0;
             for (auto trans_idx = (*from_id_map)[i].begin(); trans_idx != (*from_id_map)[i].end(); ++trans_idx){
                 double trans_weight = (double)fg->getTransitionAtIdx(*trans_idx)->getCount();
-                denom = logAdd(denom, thetas[energy][*trans_idx] * trans_weight);
+                denom += exp(thetas[energy][*trans_idx]) * trans_weight;
             }
-            denom_cache[i] = denom;
+            denom_cache[i] = log(denom);
         }
 
         // Set the transition log probabilities

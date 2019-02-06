@@ -210,17 +210,17 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
         beliefs.tn[i].resize(mol_depth);
 
         for (unsigned int d = 0; d < mol_depth; d++) {
-
             double tmp;
             if ((d == 0 && t->getFromId() == 0) || (d > 0 && down_msgs[d - 1].getIdx(t->getFromId()) > -A_BIG_DBL)) {
                 tmp = moldata->getLogTransitionProbForIdx(current_energy, i);
+                // since we are using log, log(prob a * prob b) = log(prob a) + log(prob b)
                 tmp += up_msgs[d].getIdx(t->getToId());
-                if (d > 0) tmp += down_msgs[d - 1].getIdx(t->getFromId());
+                if (d > 0)
+                    tmp += down_msgs[d - 1].getIdx(t->getFromId());
                 norms[d] = logAdd(norms[d], tmp);
             } else tmp = NULL_PROB;
             beliefs.tn[i][d] = tmp;
         }
-
     }
 
     //Normalise
@@ -250,9 +250,9 @@ void Inference::createSpectrumMessage(Message &msg, int energy, Message &down_ms
 
         Spectrum::const_iterator pk = spectrum->begin();
         for (; pk != spectrum->end(); ++pk) {
-
-            Message peak_msg;    //This will store the fragment probabilites for this single peak
+            //This will store the fragment probabilites for this single peak
             //(each message needs to be normalised independently before combining)
+            Message peak_msg;
             peak_msg.reset(num_fragments);
 
             //Set peak sigma based on the specified mass tolerances and the peak of interest
@@ -261,17 +261,25 @@ void Inference::createSpectrumMessage(Message &msg, int energy, Message &down_ms
             double norm = -0.5 * std::log(4 * pi * peak_sigma * peak_sigma);
             double denom = 0.25 / (peak_sigma * peak_sigma);
             for (unsigned int j = 0; j < num_fragments; j++) {
-                if (down_msg.getIdx(j) < -10000.0) continue;    //Disallow fragments we can't get to in the model.
+
+                //Disallow fragments we can't get to in the model.
+                if (down_msg.getIdx(j) < -10000.0)
+                    continue;
+
+                //Disallow fragments from explaining distant peaks
+                //(problematic in the absence of a better explanation)
                 const Fragment *fgt = moldata->getFragmentAtIdx(j);
                 double mass_diff = fabs(fgt->getMass() - pk->mass);
-                if (mass_diff > 3 * peak_sigma) continue;    //Disallow fragments from explaining distant peaks
-                //(problematic in the absence of a better explanation)
+                if (mass_diff > 3 * peak_sigma)
+                    continue;
+
                 double sq_mass_diff = mass_diff * mass_diff;
-                if (config->obs_function == UNIFORM_OBS_FUNCTION) sq_mass_diff = 0.0;
-                peak_msg.addToIdx(j, norm - denom * sq_mass_diff + down_msg.getIdx(j));
+                if (config->obs_function == UNIFORM_OBS_FUNCTION)
+                    sq_mass_diff = 0.0;
                 //The down message is applied here to weight competing
                 //fragments for the same peak based on current probability
                 //estimates.
+                peak_msg.addToIdx(j, norm - denom * sq_mass_diff + down_msg.getIdx(j));
             }
             msg.addWeightedMessage(peak_msg, 0.01 * pk->intensity);
         }
