@@ -88,8 +88,7 @@ public:
     };
 
     double getLogTransitionProbForIdx(int energy, int index) const {
-        double weight = (double)fg->getTransitionAtIdx(index)->getCount();
-        return std::log(weight) + log_probs[energy][index];//logAdd(weight,log_probs[energy][index]);
+        return log_probs[energy][index];
     };
 
     double getLogPersistenceProbForIdx(int energy, int index) const {
@@ -119,9 +118,6 @@ public:
         std::vector<Spectrum>().swap(spectra);
         std::vector<Spectrum>().swap(predicted_spectra);
     };
-
-    // Spectrum Related Functions
-    void pruneGraphBySpectra(int energy_level, double abs_tol, double ppm_tol, bool aggressive);
 
     void removePeaksWithNoFragment(double abs_tol, double ppm_tol);
 
@@ -235,6 +231,10 @@ public:
 
     bool hasIsotopesIncluded() const{
         return fg->hasIsotopesIncluded();
+    }
+
+    double getTransitionWeight(int trans_idx) const {
+        return (double)fg->getTransitionAtIdx(trans_idx)->getCount();
     }
 
     int getFGHeight() const { return fg->getHeight(); };

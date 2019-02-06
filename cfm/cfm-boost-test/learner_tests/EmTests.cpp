@@ -35,8 +35,9 @@ void compareSpectra(const Spectrum *orig_spec, const Spectrum *predicted_spec, d
         for (; itp != predicted_spec->end(); ++itp) {
             double mass_tol = getMassTol(abs_mass_tol, ppm_mass_tol, itp->mass);
             if (fabs(itp->mass - ito->mass) < mass_tol) {
-                BOOST_CHECK_SMALL(itp->intensity - ito->intensity,intensity_tol);
-                found = true;
+                BOOST_CHECK_SMALL(itp->intensity - ito->intensity, intensity_tol);
+                if(fabs(itp->intensity - ito->intensity) < intensity_tol)
+                    found = true;
                 break;
             }
         }
@@ -111,6 +112,7 @@ BOOST_AUTO_TEST_SUITE(EMTests)
         //Compare the original and predicted spectra - should be able to overfit
         //very close to the actual values since training on same (and only same) mol
         for (unsigned int energy = 0; energy < data[0].getNumSpectra(); energy++) {
+            std::cout << "checking energy level " << energy << std::endl;
             const Spectrum *orig_spec = data[0].getSpectrum(energy);
             const Spectrum *predicted_spec = data[0].getPredictedSpectrum(energy);
             compareSpectra(orig_spec, predicted_spec, orig_cfg.abs_mass_tol, orig_cfg.ppm_mass_tol, intensity_tol);

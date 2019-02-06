@@ -595,7 +595,7 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
             // Calculate the denominator of the sum terms
             double denom = 1.0;
             for (auto trans_id : sampled_ids)
-                denom += exp(mol_data.getThetaForIdx(energy, trans_id));
+                denom += mol_data.getTransitionWeight(trans_id) * exp(mol_data.getThetaForIdx(energy, trans_id));
 
             // Complete the innermost sum terms	(sum over j')
             //std::map<unsigned int, double> sum_terms;
@@ -607,7 +607,7 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
                 for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                     auto fv_idx = *fv_it;
                     double val = exp(mol_data.getThetaForIdx(energy, trans_id)) / denom;
-                    sum_terms[fv_idx] += val;
+                    sum_terms[fv_idx] += mol_data.getTransitionWeight(trans_id) * val;
                 }
             }
 
@@ -684,13 +684,13 @@ double EmModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_coun
 
         // Calculate the denominator of the sum terms
         double denom = 1.0;
-        for (auto itt : *it)
-            denom += exp(moldata.getThetaForIdx(energy, itt));
+        for (auto trans_id : *it)
+            denom += moldata.getTransitionWeight(trans_id) * exp(moldata.getThetaForIdx(energy, trans_id));
 
         // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
-        for (auto itt : *it) {
-            double nu = (*suft_values)[itt + suft_offset];
-            q += nu * (moldata.getThetaForIdx(energy, itt) - log(denom));
+        for (auto trans_id : *it) {
+            double nu = (*suft_values)[trans_id + suft_offset];
+            q += nu * (moldata.getThetaForIdx(energy, trans_id) + log(moldata.getTransitionWeight(trans_id)) - log(denom));
         }
 
         // Accumulate the last term of each transition and the

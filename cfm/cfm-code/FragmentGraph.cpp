@@ -147,7 +147,7 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         t->deleteIon();
         t->deleteNeutralLoss();
     }else if(parentid >= 0 && existing_trans_id >= 0 &&
-        (allow_frag_detours || node.depth == fragments[id]->getDepth())){
+        node.depth == fragments[id]->getDepth()){
         // if those transitions does exists, increase count
         transitions[existing_trans_id]->increaseCount();
     }
@@ -338,7 +338,9 @@ void FragmentGraph::writeFullGraph(std::ostream &out) const {
             out << transition->getToId() << " ";
             out << *(transition->getNLSmiles()) << " ";
             out << *(transition->getIonSmiles()) << " ";
-            out << std::endl;
+        out << transition->getCount() << " ";
+
+        out << std::endl;
         //}
     }
 }
