@@ -594,8 +594,10 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
 
             // Calculate the denominator of the sum terms
             double denom = 1.0;
-            for (auto trans_id : sampled_ids)
-                denom += exp(mol_data.getThetaForIdx(energy, trans_id));
+            for (auto trans_id : sampled_ids){
+                double trans_weight = mol_data.getTransitionAtIdx(trans_id)->getCount();
+                denom += trans_weight * exp(mol_data.getThetaForIdx(energy, trans_id));
+            }
 
             // Complete the innermost sum terms	(sum over j')
             //std::map<unsigned int, double> sum_terms;
@@ -603,11 +605,12 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
 
             for (auto trans_id : sampled_ids) {
                 const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
+                double trans_weight = mol_data.getTransitionAtIdx(trans_id)->getCount();
 
                 for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
                     auto fv_idx = *fv_it;
                     double val = exp(mol_data.getThetaForIdx(energy, trans_id)) / denom;
-                    sum_terms[fv_idx] += val;
+                    sum_terms[fv_idx] += val * trans_weight;
                 }
             }
 
@@ -684,13 +687,13 @@ double EmModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_coun
 
         // Calculate the denominator of the sum terms
         double denom = 1.0;
-        for (auto itt : *it)
-            denom += exp(moldata.getThetaForIdx(energy, itt));
+        for (auto trans_id : *it)
+            denom += exp(moldata.getThetaForIdx(energy, trans_id));
 
         // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
-        for (auto itt : *it) {
-            double nu = (*suft_values)[itt + suft_offset];
-            q += nu * (moldata.getThetaForIdx(energy, itt) - log(denom));
+        for (auto trans_id : *it) {
+            double nu = (*suft_values)[trans_id + suft_offset];
+            q += nu * (moldata.getThetaForIdx(energy, trans_id) - log(denom));
         }
 
         // Accumulate the last term of each transition and the

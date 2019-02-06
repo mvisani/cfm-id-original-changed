@@ -111,6 +111,7 @@ BOOST_AUTO_TEST_SUITE(EMTests)
         //Compare the original and predicted spectra - should be able to overfit
         //very close to the actual values since training on same (and only same) mol
         for (unsigned int energy = 0; energy < data[0].getNumSpectra(); energy++) {
+            std::cout << "energy " << energy << std::endl;
             const Spectrum *orig_spec = data[0].getSpectrum(energy);
             const Spectrum *predicted_spec = data[0].getPredictedSpectrum(energy);
             compareSpectra(orig_spec, predicted_spec, orig_cfg.abs_mass_tol, orig_cfg.ppm_mass_tol, intensity_tol);
