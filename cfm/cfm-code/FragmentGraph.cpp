@@ -700,7 +700,7 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<unsigned int> &selected_we
     visited.insert(frag_id);
     // matched ids in childs
     std::vector<int> matched_selected_ids;
-    std::vector<int> matched_ids;
+    std::vector<int> trans_ids;
 
     for(const auto & trans_id : from_id_tmap[frag_id]){
         std::vector<int> path_to_current_child = path;
@@ -719,17 +719,20 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<unsigned int> &selected_we
     }
 
     if(!matched_selected_ids.empty()) {
+
+        // add all trans lead to this node
         for ( const auto & trans_id : path )
             selected_ids.insert(trans_id);
 
-        for (const auto &trans_id : matched_ids)
+        // add all trans in this node
+        for(const auto & trans_id : from_id_tmap[frag_id] )
             selected_ids.insert(trans_id);
     }
 }
 
 bool FragmentGraph::is_match(std::set<unsigned int> &weights, double mass) const {
 
-    unsigned int fixed_mass = (unsigned int)std::round(mass * TEN_K_DBL);
+    unsigned int fixed_mass = (unsigned int)std::round(mass * WEIGHT_SELECTION_SCALER);
     return (weights.find(fixed_mass) != weights.end());
 }
 

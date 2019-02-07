@@ -92,5 +92,5 @@ static std::mt19937 util_rng(util_rd());
 
 // A Big DBL number
 static const double A_BIG_DBL = 1000000000.0;
-static const double TEN_K_DBL = 10000.0;
+static const double WEIGHT_SELECTION_SCALER = 10000.0;
 #endif // __UTIL_H__

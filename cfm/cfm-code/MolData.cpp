@@ -787,7 +787,7 @@ void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int e
         if(selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
             break;
         // we only need 5 digitals after decimal
-        selected_weights.insert(std::round(diff.second * TEN_K_DBL));
+        selected_weights.insert((unsigned int)std::round(diff.second * WEIGHT_SELECTION_SCALER));
     }
 }
 
