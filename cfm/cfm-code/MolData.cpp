@@ -747,7 +747,8 @@ void MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, dou
         fg->getSampledTransitionIdsRandomWalk(selected_ids, ratio);
 }
 
-void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::vector<double> &selected_weights) {
+void
+MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights) {
     if (!hasEmptySpectrum(0) && hasComputedGraph())
         fg->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights);
 }
@@ -765,7 +766,7 @@ double MolData::getWeightedJaccardScore(int engery_level){
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::getSelectedWeights(std::vector<double> &selected_weights, int energry_level) {
+void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int energry_level) {
 
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
@@ -785,9 +786,9 @@ void MolData::getSelectedWeights(std::vector<double> &selected_weights, int ener
     for(const auto & diff:  difference){
         if(selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
             break;
-        selected_weights.push_back(diff.second);
+        // we only need 5 digitals after decimal
+        selected_weights.insert(std::round(diff.second * TEN_K_DBL));
     }
-    std::sort(selected_weights.begin(),selected_weights.end());
 }
 
 MolData::~MolData() {
@@ -796,5 +797,4 @@ MolData::~MolData() {
         delete fg;
     if (ev_graph_computed)
         delete ev_fg;
-
 }

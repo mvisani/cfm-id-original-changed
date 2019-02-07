@@ -632,8 +632,7 @@ void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &sel
 }
 
 void
-FragmentGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                         std::vector<double>&selected_weights) {
+FragmentGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights) {
 
     std::set<int> visited;
     std::vector<int> path;
@@ -688,9 +687,8 @@ getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
 }
 
 void FragmentGraph::
-getSampledTransitionIdsDifferenceWeightedBFS(std::vector<double> &selected_weights,
-                                             std::set<int> &visited, int frag_id,
-                                             std::vector<int> &path, std::set<int> &selected_ids) {
+getSampledTransitionIdsDifferenceWeightedBFS(std::set<unsigned int> &selected_weights, std::set<int> &visited,
+                                             int frag_id, std::vector<int> &path, std::set<int> &selected_ids) {
     // Note since we always start from root
     // and there is no arc lead to root ( or we does not care )
     // we should check all the child fragments
@@ -712,10 +710,8 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::vector<double> &selected_weigh
         double child_frag_mass = fragments[child_frag_id]->getMass();
 
         // check if child mass matches what we are looking for
-        if(is_match(selected_weights, child_frag_mass, 0.1))
+        if(is_match(selected_weights,child_frag_mass))
             matched_selected_ids.push_back(trans_id);
-
-        matched_ids.push_back(trans_id);
 
         getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, visited, child_frag_id,
                                                      path_to_current_child,
@@ -731,14 +727,10 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::vector<double> &selected_weigh
     }
 }
 
-bool FragmentGraph::is_match(std::vector<double> &weights, double mass, double tol) const {
+bool FragmentGraph::is_match(std::set<unsigned int> &weights, double mass) const {
 
-    // TODO: we need a binary search version
-    // this is a bit slow
-    for(const auto & weight : weights)
-        if (std::fabs(weight - mass) <= tol)
-            return true;
-    return false;
+    unsigned int fixed_mass = (unsigned int)std::round(mass * TEN_K_DBL);
+    return (weights.find(fixed_mass) != weights.end());
 }
 
 void FragmentGraph::getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio) {
