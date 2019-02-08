@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.7)
 set(CMAKE_CXX_STANDARD 11)
 
 # Set a default build type if none was specified
-set(default_build_type "Release")
+set(default_build_type "RelWithDebInfo")
 if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
     set(default_build_type "Debug")
 endif()
