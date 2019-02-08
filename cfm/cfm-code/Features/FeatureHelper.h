@@ -44,12 +44,9 @@ public:
 class FeatureHelper {
 public:
     FeatureHelper() {
-        exec_flags.resize(6);
-        std::fill(exec_flags.begin(),exec_flags.end(),0);
     };
 
     explicit FeatureHelper(FeatureCalculator *fc) {
-        exec_flags.resize(4);
         exec_flags[0] = fc->includesFeature("GasteigerCharges");
         exec_flags[1] = fc->includesFeature("HydrogenMovement") ||
                         fc->includesFeature("HydrogenRemoval");
@@ -118,7 +115,7 @@ public:
     static int getBondTypeAsInt(RDKit::Bond *bond);
 
 private:
-    std::vector<int> exec_flags;
+    std::vector<bool> exec_flags = {false,false,false,false,false,false};
 
     // Helper functions - used to create labels on atoms and bonds,
     // that will be used in Feature Calculations and can't be computed once
