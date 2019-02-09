@@ -492,6 +492,9 @@ void FragmentGraph::removeDetours() {
             id_map[i] = -1;
             ++id_idx;
         } else {
+            // remove ptr
+            delete transitions[next_id];
+            // copy new one over
             transitions[next_id] = transitions[i];
             id_map[i] = next_id++;
         }
