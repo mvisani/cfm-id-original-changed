@@ -92,7 +92,7 @@ void Inference::runInferenceDownwardPass(std::vector<Message> &down_msgs, int to
     down_msgs[0].addToIdx(0, moldata->getLogPersistenceProbForIdx(energy, 0));
 
     for (; it != tmap->end(); ++it) {
-        const Transition *t = moldata->getTransitionAtIdx(*it);
+        auto t = moldata->getTransitionAtIdx(*it);
         down_msgs[0].addToIdx(t->getToId(), moldata->getLogTransitionProbForIdx(energy, *it));
     }
 
@@ -142,9 +142,8 @@ void Inference::createMessage(factor_probs_t &tmp_log_probs, Message &m, Message
         if (prev_m.getIdx(id) > -A_BIG_DBL)
             log_sum = tmp_log_probs.ps[id][depth];
 
-        std::vector<int>::const_iterator itt = tmap->begin();
-        for (; itt != tmap->end(); ++itt) {
-            const Transition *t = moldata->getTransitionAtIdx(*itt);
+        for (auto itt = tmap->begin(); itt != tmap->end(); ++itt) {
+            auto t = moldata->getTransitionAtIdx(*itt);
             // if perm[fragment_id] is not super small
             // nothing should happen
             // else, prob to next depth - ps term at this depth  * trans term at this depth
@@ -207,7 +206,7 @@ void Inference::combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<
     //Compute Transition Beliefs (and track norms)
     beliefs.tn.resize(moldata->getNumTransitions());
     for (unsigned int i = 0; i < moldata->getNumTransitions(); i++) {
-        const Transition *t = moldata->getTransitionAtIdx(i);
+        auto t = moldata->getTransitionAtIdx(i);
         beliefs.tn[i].resize(mol_depth);
 
         for (unsigned int d = 0; d < mol_depth; d++) {

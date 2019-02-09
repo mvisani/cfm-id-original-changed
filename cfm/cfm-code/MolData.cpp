@@ -165,14 +165,14 @@ void MolData::computeEvidenceFragmentGraph(beliefs_t *beliefs,
                 continue;
 
             if (beliefs->tn[i][depth] >= log_belief_thresh) {
-                const Transition *t = fg->getTransitionAtIdx(i);
+                const TransitionPtr t = fg->getTransitionAtIdx(i);
                 const Fragment *f = fg->getFragmentAtIdx(t->getToId());
                 int from_id = id_lookup[t->getFromId()];
                 if (id_lookup[t->getToId()] == -1) {
                     std::vector<double> evidence;
                     computeFragmentEvidenceValues(evidence, t->getToId(), beliefs);
                     int to_id = ev_fg->addToGraphDirectNoCheck(
-                            EvidenceFragment(*f, -1, evidence), t, from_id);
+                            EvidenceFragment(*f, -1, evidence), t.get(), from_id);
                     id_lookup[t->getToId()] = to_id;
                 } else if (id_lookup[t->getFromId()] != -1)
                     ev_fg->addTransition(from_id, id_lookup[t->getToId()],
@@ -277,14 +277,14 @@ void MolData::annotatePeaks(double abs_tol, double ppm_tol,
     id_lookup[0] = new_ev_fg->addToGraphDirectNoCheck(*ev_fg->getFragmentAtIdx(0),
                                                       &null_t, -1);
     for (unsigned int i = 0; i < ev_fg->getNumTransitions(); i++) {
-        const Transition *t = ev_fg->getTransitionAtIdx(i);
+        const TransitionPtr t = ev_fg->getTransitionAtIdx(i);
         int fromid = t->getFromId();
         int toid = t->getToId();
         if (delete_flags[toid] || delete_flags[fromid])
             continue;
         if (id_lookup[toid] == -1)
             id_lookup[toid] = new_ev_fg->addToGraphDirectNoCheck(
-                    *ev_fg->getFragmentAtIdx(toid), t, id_lookup[fromid]);
+                    *ev_fg->getFragmentAtIdx(toid), t.get(), id_lookup[fromid]);
         else
             new_ev_fg->addTransition(id_lookup[fromid], id_lookup[toid],
                                      t->getNLSmiles());
@@ -337,7 +337,7 @@ void MolData::computeLogTransitionProbabilities() {
 
         // Set the transition log probabilities
         for (unsigned int i = 0; i < fg->getNumTransitions(); i++) {
-            const Transition *t = fg->getTransitionAtIdx(i);
+            const TransitionPtr t = fg->getTransitionAtIdx(i);
             // log(A/B) = log A - log B
             log_probs[energy][i] = thetas[energy][i] - denom_cache[t->getFromId()];
         }

@@ -280,7 +280,7 @@ void FragGenTestPositiveEIMultibreak::runTest(){
 			int num_rad = 0, num_nonrad = 0;
 			std::vector<int>::const_iterator itt = it->begin();
 			for( ; itt != it->end(); ++itt ){
-				const Transition *t = graph->getTransitionAtIdx(*itt);		
+				const TransitionPtr t = graph->getTransitionAtIdx(*itt);
 				int israd = moleculeHasSingleRadical( t->getIon()->mol.get() );
 				num_rad += israd;
 				num_nonrad += (1 - israd);
@@ -1084,7 +1084,7 @@ bool checkChildFragmentDepths( int parent_id, FragmentGraph *graph, int depth ){
 	const tmap_t *from_map = graph->getFromIdTMap();
 	std::vector<int>::const_iterator it = (*from_map)[parent_id].begin();
 	for( ; it != (*from_map)[parent_id].end(); ++it ){
-		const Transition *t = graph->getTransitionAtIdx(*it);
+		const TransitionPtr t = graph->getTransitionAtIdx(*it);
 		pass = pass && checkChildFragmentDepths( t->getToId(), graph, depth+1 );
 	}
 	return pass;
@@ -1152,7 +1152,7 @@ void FragGenTestDisallowDetourTransitions::runTest(){
 		std::vector<int> produced_flags( graph->getNumFragments(), 0 );
 		produced_flags[0] = 1;
 		for( int i = 0; i < graph->getNumTransitions(); i++ ){
-			const Transition *t = graph->getTransitionAtIdx(i);
+			const TransitionPtr t = graph->getTransitionAtIdx(i);
 			if( !produced_flags[t->getFromId()] ){
 				std::cout << "Warning: Fragment " << t->getFromId() << " occurs as a parent before it is seen as a child" << std::endl;
 				//pass = false;
@@ -1222,7 +1222,7 @@ bool checkGraphConsistency( FragmentGraph *graph ){
 
 	//Check that all transitions have uncharged neutral losses
 	for( int i = 0; i < graph->getNumTransitions(); i++ ){
-		const Transition *trans = graph->getTransitionAtIdx(i);
+		const TransitionPtr trans = graph->getTransitionAtIdx(i);
 		RDKit::RWMol *rwmol = RDKit::SmilesToMol( *trans->getNLSmiles() );
 		if( RDKit::MolOps::getFormalCharge(*rwmol ) != 0 ){
 			std::cout << "Invalid charge on neutral loss: " << *trans->getNLSmiles() << std::endl;
@@ -1233,7 +1233,7 @@ bool checkGraphConsistency( FragmentGraph *graph ){
 	//Check that mass(ion) + mass(nl) = mass(parent)
 	double tol = 0.01;
 	for( int i = 0; i < graph->getNumTransitions(); i++ ){
-		const Transition *trans = graph->getTransitionAtIdx(i);
+		const TransitionPtr trans = graph->getTransitionAtIdx(i);
 		const Fragment *parent = graph->getFragmentAtIdx( trans->getFromId() );
 		const Fragment *ion = graph->getFragmentAtIdx( trans->getToId() );
 		double nl_mass = getMonoIsotopicMass( trans->getNeutralLoss()->mol );
@@ -1247,7 +1247,7 @@ bool checkGraphConsistency( FragmentGraph *graph ){
 	//Check that all transitions are unique
 	std::set< std::pair<int, int> > from_to_pairs;
 	for( int i = 0; i < graph->getNumTransitions(); i++ ){
-		const Transition *t = graph->getTransitionAtIdx(i);
+		const TransitionPtr t = graph->getTransitionAtIdx(i);
 		if( from_to_pairs.find( std::pair<int,int>(t->getFromId(), t->getToId()) ) != from_to_pairs.end() ){
 			std::cout << "Found duplicate transition" << t->getFromId() << "-" << t->getToId() << std::endl;
 			return false;
@@ -1259,7 +1259,7 @@ bool checkGraphConsistency( FragmentGraph *graph ){
 	const tmap_t *to_map = graph->getToIdTMap();
 	const tmap_t *from_map = graph->getFromIdTMap();
 	for( int i = 1; i < graph->getNumTransitions(); i++ ){
-		const Transition *t = graph->getTransitionAtIdx(i);
+		const TransitionPtr t = graph->getTransitionAtIdx(i);
 		if( std::count( (*to_map)[t->getToId()].begin(), (*to_map)[t->getToId()].end(), i ) != 1 ){
 			std::cout << "Could not find transition" << i << "in correct to map" << std::endl;
 			return false;
@@ -1366,8 +1366,8 @@ void FVFragGraphSaveAndLoadState::runTest(){
 		}
 		if( !pass ) break;
 		for( int i = 0; i < morig.getNumTransitions(); i++ ){
-			const Transition *t1 = morig.getTransitionAtIdx(i);
-			const Transition *t2 = mload.getTransitionAtIdx(i);
+			const TransitionPtr t1 = morig.getTransitionAtIdx(i);
+			const TransitionPtr t2 = mload.getTransitionAtIdx(i);
 			if( t1->getFromId() != t2->getFromId() || t1->getToId() != t2->getToId() ){
 				std::cout << "Mismatch in transtions at idx: " << i << std::endl;
 				pass = false;

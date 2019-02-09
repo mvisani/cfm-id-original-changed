@@ -205,7 +205,7 @@ public:
         return fg->getNumFragments();
     };
 
-    const Transition *getTransitionAtIdx(int index) const {
+    const TransitionPtr getTransitionAtIdx(int index) const {
         return fg->getTransitionAtIdx(index);
     };
 

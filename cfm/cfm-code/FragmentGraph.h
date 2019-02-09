@@ -201,6 +201,8 @@ private:
     bool is_duplicate = false;
 };
 
+typedef std::shared_ptr<Transition> TransitionPtr;
+
 class FragmentGraph {
 public:
     FragmentGraph()
@@ -221,9 +223,6 @@ public:
             delete isotope;
         for (auto & fragment : fragments) {
             delete fragment;
-        }
-        for (auto & transition : transitions) {
-            delete transition;
         }
     };
 
@@ -285,7 +284,7 @@ public:
         return fragments.size();
     };
 
-    virtual const Transition *getTransitionAtIdx(int index) const {
+    virtual const TransitionPtr getTransitionAtIdx(int index) const {
         return transitions[index];
     };
 
@@ -325,7 +324,7 @@ public:
 
 protected:
     std::vector<Fragment*> fragments;
-    std::vector<Transition*> transitions;
+    std::vector<TransitionPtr> transitions;
     int depth = 0;
 
     tmap_t from_id_tmap; // Mapping between from_id and transitions with that from_id
@@ -405,7 +404,7 @@ public:
         return fragments.size();
     };
 
-    const Transition *getTransitionAtIdx(int index) const override{
+    const TransitionPtr getTransitionAtIdx(int index) const override{
         return transitions[index];
     };
 

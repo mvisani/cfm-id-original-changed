@@ -86,7 +86,7 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
             fragments[id]->setDepth(node.depth);    //Update the depth of the fragment
 
         int idx = (int) transitions.size();
-        transitions.push_back(new Transition(parentid, id, node.nl, node.ion));
+        transitions.push_back(std::make_shared<Transition>(parentid, id, node.nl, node.ion));
 
         //Update the tmaps
         from_id_tmap[parentid].push_back(idx);
@@ -117,14 +117,14 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         (allow_frag_detours || node.depth <= fragments[id]->getDepth())) {
 
         int idx = transitions.size();
-        transitions.push_back(new Transition(parentid, id, node.nl, node.ion));
+        transitions.push_back(std::make_shared<Transition>(parentid, id, node.nl, node.ion));
 
         //Update the tmaps
         from_id_tmap[parentid].push_back(idx);
         to_id_tmap[id].push_back(idx);
 
         //Compute a feature vector
-        Transition *t = transitions.back();
+        auto t = transitions.back();
         FeatureVector *fv;
         std::string frag_smiles = *fragments[parentid]->getIonSmiles();
         auto frag_ptr = createMolPtr(frag_smiles.c_str());
@@ -147,9 +147,9 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         (node.depth == fragments[id]->getDepth())){
         // if those transitions does exists, create a duplication
         int idx = transitions.size();
-        auto trans = new Transition();
+        transitions.push_back(std::make_shared<Transition>());
+        auto trans = transitions.back();
         trans->createdDuplication(*transitions[existing_trans_id]);
-        transitions.push_back(trans);
         //Update the tmaps
         from_id_tmap[parentid].push_back(idx);
         to_id_tmap[id].push_back(idx);
@@ -172,14 +172,14 @@ int FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std:
         (allow_frag_detours || node.depth <= fragments[id]->getDepth())) {
 
         int idx = transitions.size();
-        transitions.push_back(new Transition(parentid, id, node.nl, node.ion));
+        transitions.push_back(std::make_shared<Transition>(parentid, id, node.nl, node.ion));
 
         //Update the tmaps
         from_id_tmap[parentid].push_back(idx);
         to_id_tmap[id].push_back(idx);
 
         //Set the theta values and delete the mols
-        Transition *t = transitions.back();
+        auto t = transitions.back();
         t->setTmpThetas(thetas);
         t->deleteIon();
         t->deleteNeutralLoss();
@@ -450,7 +450,7 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
         }
         if (fv->getTotalLength() != fv_len)
             fv->addFeatureAtIdx(0.0, fv_len - 1);
-        transitions.push_back(new Transition(fromid, toid, &null));
+        transitions.push_back(std::make_shared<Transition>(fromid, toid, &null));
         transitions[i]->setFeatureVector(fv);
     }
 
@@ -492,9 +492,6 @@ void FragmentGraph::removeDetours() {
             id_map[i] = -1;
             ++id_idx;
         } else {
-            // remove ptr
-            delete transitions[next_id];
-            // copy new one over
             transitions[next_id] = transitions[i];
             id_map[i] = next_id++;
         }
@@ -772,7 +769,7 @@ int EvidenceFragmentGraph::addToGraphDirectNoCheck(const EvidenceFragment &fragm
 
 void EvidenceFragmentGraph::addTransition(int from_id, int to_id, const std::string *nl_smiles) {
     auto idx = transitions.size();
-    transitions.push_back(new Transition(from_id, to_id, nl_smiles));
+    transitions.push_back(std::make_shared<Transition>(from_id, to_id, nl_smiles));
     from_id_tmap[from_id].push_back(idx);
     to_id_tmap[to_id].push_back(idx);
 }

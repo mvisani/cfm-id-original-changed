@@ -362,7 +362,7 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx, MolDat
     // Accumulate the Sufficient Statistics
     for (unsigned int i = 0; i < num_transitions; i++) {
 
-        const Transition *t = moldata->getTransitionAtIdx(i);
+        const TransitionPtr t = moldata->getTransitionAtIdx(i);
 
         double belief = 0.0;
         //int energy = cfg->map_d_to_energy[0];
