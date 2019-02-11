@@ -21,18 +21,10 @@
 #include <exception>
 #include <vector>
 
-#include "tests/message_test.h"
-#include "tests/features_test.h"
 #include "tests/fraggen_test.h"
-#include "tests/param_test.h"
-#include "tests/nn_param_test.h"
-#include "tests/inference_test.h"
 #include "tests/libdai_inference_test.h"
 #include "tests/comms_test.h"
 #include "tests/em_test.h"
-#include "tests/comparator_test.h"
-#include "tests/spectrum_test.h"
-#include "tests/msp_reader_test.h"
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
@@ -118,18 +110,6 @@ int main(int argc, char *argv[])
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_nump );
 
-	if( mpi_nump == 1 ){
-
-//		tests.push_back( new FVFragGraphSaveAndLoadState() );
-//		tests.push_back( new FragGenTestDisallowDetourTransitions() );
-//        tests.push_back( new FragGenTestPositiveEIAlkane() );
-//        //tests.push_back( new FragGenTestPositiveEINistExceptions() );
-//        tests.push_back( new FragGenTestCasesFromGross() ); // NOTE THIS IS NOT WORKING
-//        tests.push_back( new FragGenTestPositiveEIAndESIDegreeLpBonding() );
-        // tests.push_back( new FragGenTestPositiveEIOxygenAromatic() );
-        //tests.push_back( new FragGenTestPositiveEITriple() );
-        //tests.push_back( new FragGenTestPositiveEISplitCharge() );
-	}
 	if( mpi_nump > 2 ){
 		tests.push_back( new CommsTestSetMasterUsedIdxs() );
 		tests.push_back( new CommsTestCollectQInMaster() );
