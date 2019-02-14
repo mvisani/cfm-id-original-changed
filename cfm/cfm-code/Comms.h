@@ -32,7 +32,7 @@ public:
 
     virtual void setMasterUsedIdxs() = 0;
 
-    virtual void collectGradsInMaster(double *grads) = 0;
+    virtual void collectGradsInMaster(std::vector<double> &grads) = 0;
 
     virtual void broadcastParamsWeights(Param *param) = 0;
 
@@ -71,7 +71,7 @@ class WorkerComms : public Comms {
 public:
     void setMasterUsedIdxs() override;
 
-    void collectGradsInMaster(double *grads) override;
+    void collectGradsInMaster(std::vector<double> &grads) override;
 
     void broadcastParamsWeights(Param *param) override;
 
@@ -83,7 +83,7 @@ class MasterComms : public Comms {
 public:
     void setMasterUsedIdxs() override;
 
-    void collectGradsInMaster(double *grads) override;
+    void collectGradsInMaster(std::vector<double> &grads) override;
 
     void broadcastParamsWeights(Param *param) override;
 

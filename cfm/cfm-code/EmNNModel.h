@@ -33,9 +33,9 @@ public:
               std::string initial_params_filename = "");
 
     //This is public so the test can access it....there must be a better way?
-    void computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
-                                      bool record_used_idxs, std::set<unsigned int> &used_idxs,
-                                      int sampling_method, unsigned int energy) override;
+    int computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
+                                     bool record_used_idxs, std::set<unsigned int> &used_idxs,
+                                     int sampling_method, unsigned int energy) override;
 
     double computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft, unsigned int energy) override;
 

@@ -131,7 +131,7 @@ void Comms::broadcastDropouts(Param *param) {
         MPI_Bcast(&((*dropouts)[0]), dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
 }
 
-void WorkerComms::collectGradsInMaster(double *grads) {
+void WorkerComms::collectGradsInMaster(std::vector<double> &grads) {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
     if (num_used == 0) return;
@@ -139,11 +139,11 @@ void WorkerComms::collectGradsInMaster(double *grads) {
     std::vector<double> used_grads(num_used);
     std::set<unsigned int>::iterator it = used_idxs.begin();
     for (int i = 0; it != used_idxs.end(); ++it, i++)
-        used_grads[i] = *(grads + *it);
+        used_grads[i] = grads[*it];
     MPI_Send(&(used_grads[0]), num_used, MPI::DOUBLE, MASTER, 0, MPI_COMM_WORLD);
 }
 
-void MasterComms::collectGradsInMaster(double *grads) {
+void MasterComms::collectGradsInMaster(std::vector<double> &grads) {
 
     MPI_Status status;
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
@@ -158,9 +158,12 @@ void MasterComms::collectGradsInMaster(double *grads) {
 
             std::set<unsigned int>::iterator it = worker_used_idxs[i].begin();
             for (int j = 0; it != worker_used_idxs[i].end(); ++it, j++)
-                *(grads + *it) += used_grads[j];
+                grads[*it] += used_grads[j];
         }
     }
+    // Normarlized By  number of processes
+    for(auto & grad :grads)
+        grad /= double(mpi_nump);
 }
 
 

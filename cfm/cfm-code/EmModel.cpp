@@ -423,12 +423,16 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             std::cout << "[M-Step] GA Initial Calculation ...";
 
         auto itdata = data.begin();
+        double num_trans = 0;
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group){
-                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0, energy);
+                num_trans += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0, energy);
                 computeThetas(&(*itdata));
             }
         }
+        if(num_trans >0)
+            for(auto & grad : grads)
+                grad /= num_trans;
 
         comm->setMasterUsedIdxs();
         if (comm->isMaster())
@@ -467,18 +471,23 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         std::fill(grads.begin(), grads.end(), 0.0);
         auto mol_it = data.begin();
         for (auto batch_idx = 0; batch_idx < num_batch; ++batch_idx) {
-
+            double num_trans = 0;
             for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
                 if (minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group) {
                     // so now it should not crash anymore
                     if (!mol_it->hasComputedGraph())
                         continue;
 
-                    computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs,
+                    num_trans += computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs,
                                                  sampling_method, energy);
                 }
             }
-            comm->collectGradsInMaster(&grads[0]);
+
+            if(num_trans >0)
+                for(auto & grad : grads)
+                    grad /= num_trans;
+
+            comm->collectGradsInMaster(grads);
 
             // Step the parameters
             if (comm->isMaster()) {
@@ -538,17 +547,17 @@ double EmModel::getUpdatedLearningRate(double learning_rate, double current_loss
     return learning_rate;
 }
 
-void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
-                                           bool record_used_idxs, std::set<unsigned int> &used_idxs,
-                                           int sampling_method, unsigned int energy) {
+int EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
+                                          bool record_used_idxs, std::set<unsigned int> &used_idxs,
+                                          int sampling_method, unsigned int energy) {
 
     unsigned int num_transitions = mol_data.getNumTransitions();
     unsigned int num_fragments = mol_data.getNumFragments();
 
     int offset = num_transitions;
-
+    int num_used_transitions = 0;
     if (!mol_data.hasComputedGraph())
-        return;
+        return num_used_transitions;
 
     suft_t *suft_values = &(suft.values[mol_idx]);
 
@@ -573,11 +582,14 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
             //Do some random selection
             std::vector<int> sampled_ids;
             if (sampling_method != USE_NO_SAMPLING) {
-                for (auto id: *frag_trans_map)
+                for (auto & id: *frag_trans_map)
                     if (selected_trans_id.find(id) != selected_trans_id.end())
                         sampled_ids.push_back(id);
             } else
                 sampled_ids = *frag_trans_map;
+
+            // set num_used_transitions
+            num_used_transitions = sampled_ids.size();
 
             // Calculate the denominator of the sum terms
             double denom = 1.0;
@@ -622,6 +634,8 @@ void EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &
     // Compute the latest transition thetas
     if (!record_used_idxs)
         mol_data.computeTransitionThetas(*param);
+
+    return num_used_transitions;
 }
 
 

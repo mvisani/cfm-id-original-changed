@@ -55,9 +55,9 @@ void EmNNModel::writeParamsToFile(std::string &filename) {
 }
 
 //Gradient Computation using Backpropagation
-void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
-                                             bool record_used_idxs, std::set<unsigned int> &used_idxs,
-                                             int sampling_method, unsigned int energy) {
+int EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
+                                            bool record_used_idxs, std::set<unsigned int> &used_idxs,
+                                            int sampling_method, unsigned int energy) {
 
     //const FragmentGraph *fg = moldata.getFragmentGraph();
     unsigned int num_transitions = mol_data.getNumTransitions();
@@ -67,8 +67,9 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
     unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();
     int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
 
+    int num_used_transitions = 0;
     if (!mol_data.hasComputedGraph())
-        return;
+        return num_used_transitions;
 
     suft_t *suft_values = &(suft.values[mol_idx]);
 
@@ -92,6 +93,9 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
                     sampled_trans_id.push_back(trans_id);
             from_id_map = &sampled_trans_id;
         }
+
+        //
+        num_used_transitions = from_id_map->size();
 
         if (from_id_map->empty())
             continue;
@@ -152,9 +156,10 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
         //Add used indexes for the subsequent layers (all of them)
         for (int i = layer2_offset; i < weights_per_energy; i++)
             used_idxs.insert(grad_offset + i);
-    }
-}
 
+    }
+    return num_used_transitions;
+}
 double EmNNModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft, unsigned int energy) {
 
     double Q = 0.0;

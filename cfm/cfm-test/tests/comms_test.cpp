@@ -165,7 +165,7 @@ void CommsTestCollectGradsInMaster::runTest(){
 	}
 
 	//Run the code
-	comm->collectGradsInMaster(&grads[0]);
+	comm->collectGradsInMaster(grads);
 
 	//Check results
 	if( mpi_rank == MASTER ){
