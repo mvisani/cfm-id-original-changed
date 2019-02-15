@@ -77,8 +77,10 @@ int EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData 
     unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
     std::set<int> selected_trans_id;
-    if (!record_used_idxs && sampling_method != USE_NO_SAMPLING)
+    if (!record_used_idxs && sampling_method != USE_NO_SAMPLING){
         getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
+        num_used_transitions = selected_trans_id.size();
+    }
 
     //Iterate over from_id (i)
     const tmap_t *from_map = mol_data.getFromIdTMap();
@@ -93,9 +95,6 @@ int EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData 
                     sampled_trans_id.push_back(trans_id);
             from_id_map = &sampled_trans_id;
         }
-
-        //
-        num_used_transitions = from_id_map->size();
 
         if (from_id_map->empty())
             continue;

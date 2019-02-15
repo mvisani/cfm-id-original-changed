@@ -423,16 +423,12 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             std::cout << "[M-Step] GA Initial Calculation ...";
 
         auto itdata = data.begin();
-        double num_trans = 0;
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group){
-                num_trans += computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0, energy);
+                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0, energy);
                 computeThetas(&(*itdata));
             }
         }
-        if(num_trans >0)
-            for(auto & grad : grads)
-                grad /= num_trans;
 
         comm->setMasterUsedIdxs();
         if (comm->isMaster())
@@ -565,8 +561,10 @@ int EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &m
     unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
     std::set<int> selected_trans_id;
-    if (!record_used_idxs && sampling_method != USE_NO_SAMPLING)
+    if (!record_used_idxs && sampling_method != USE_NO_SAMPLING){
         getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
+        num_used_transitions = selected_trans_id.size();
+    }
 
     // Iterate over from_id (i)
     auto frag_trans_map = mol_data.getFromIdTMap()->begin();
@@ -587,9 +585,6 @@ int EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &m
                         sampled_ids.push_back(id);
             } else
                 sampled_ids = *frag_trans_map;
-
-            // set num_used_transitions
-            num_used_transitions = sampled_ids.size();
 
             // Calculate the denominator of the sum terms
             double denom = 1.0;
