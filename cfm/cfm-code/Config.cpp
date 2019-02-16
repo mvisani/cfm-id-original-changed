@@ -25,26 +25,18 @@ void initDefaultConfig(config_t &cfg) {
 
     cfg.lambda = DEFAULT_LAMBDA;
     cfg.ga_method = DEFAULT_USE_ADAM_FOR_GA;
-    //cfg.converge_count_thresh = DEFAULT_CONVERGE_COUNT_THRESH;
     cfg.em_converge_thresh = DEFAULT_EM_CONVERGE_THRESH;
     cfg.ga_converge_thresh = DEFAULT_GA_CONVERGE_THRESH;
     cfg.model_depth = DEFAULT_MODEL_DEPTH;
     cfg.abs_mass_tol = DEFAULT_ABS_MASS_TOL;
     cfg.ppm_mass_tol = DEFAULT_PPM_MASS_TOL;
     cfg.num_em_restarts = DEFAULT_NUM_EM_RESTARTS;
-    //cfg.line_search_alpha = DEFAULT_LINE_SEARCH_ALPHA;
-    //cfg.line_search_beta = DEFAULT_LINE_SEARCH_BETA;
     cfg.starting_step_size = DEFAULT_LEARNING_RATE;
     cfg.decay_rate = DEFAULT_DECAY_RATE;
-    //cfg.max_search_count = DEFAULT_MAX_SEARCH_COUNT;
     cfg.spectrum_depths.clear();
     cfg.spectrum_weights.clear();
     cfg.dv_spectrum_indexes.clear();
-    cfg.intermediate_weights = 0.0;
     cfg.fg_depth = DEFAULT_FRAGGRAPH_DEPTH;
-    cfg.ipfp_algorithm = DEFAULT_IPFP_ALGORITHM;
-    cfg.ipfp_converge_thresh = DEFAULT_IPFP_CONVERGE_THRESH;
-    cfg.osc_ipfp_converge_thresh = DEFAULT_IPFP_OSC_CONVERGE_THRESH;
     cfg.ionization_mode = DEFAULT_IONIZATION_MODE;
     cfg.update_bias_first = 0;
     cfg.param_init_type = PARAM_DEFAULT_INIT;
@@ -76,12 +68,12 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_graph_sampling_k = DEFAULT_GRAPH_SAMPLING_K;
     cfg.reset_sampling = false;
     cfg.reset_sampling_lr_ratio = 1.0;
-    cfg.ga_diff_sampling_peak_num = 100;
+    cfg.ga_diff_sampling_peak_num = 20;
     cfg.ga_diff_sampling_difference = 0.05;
     cfg.ga_dropout_delta = -0.05;
-    cfg.num_rbreak_nrbonds = 100000;
     cfg.disable_cross_val_metrics = false;
     cfg.disable_training_metrics = false;
+    //cfg.max_transitions_per_iteration = 100;
 }
 
 
@@ -119,11 +111,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "decay_rate") cfg.decay_rate = (double) value;
         else if (name == "fg_depth") cfg.fg_depth = (int) value;
         else if (name == "allow_frag_detours") cfg.allow_frag_detours = (int) value;
-        else if (name == "do_prelim_bfs");
         else if (name == "max_ring_breaks") cfg.max_ring_breaks = (int) value;
-        else if (name == "ipfp_algorithm") cfg.ipfp_algorithm = (int) value;
-        else if (name == "ipfp_converge_thresh") cfg.ipfp_converge_thresh = (double) value;
-        else if (name == "osc_ipfp_converge_thresh") cfg.osc_ipfp_converge_thresh = (double) value;
         else if (name == "include_isotopes") cfg.include_isotopes = (int) value;
         else if (name == "isotope_thresh") cfg.isotope_thresh = (double) value;
         else if (name == "ga_method") cfg.ga_method = (int) value;
@@ -160,7 +148,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_diff_sampling_difference") cfg.ga_diff_sampling_difference = (double) value;
         else if (name == "ga_dropout_delta") cfg.ga_dropout_delta = (double) value;
         else if (name == "ga_dropout_lowerbond");
-        else if (name == "num_rbreak_nrbonds") cfg.num_rbreak_nrbonds = (int) value;
         else if (name == "disable_cross_val_metrics") cfg.disable_cross_val_metrics = (int) value;
         else if (name == "disable_training_metrics") cfg.disable_training_metrics = (int) value;
         else if (name == "use_fg_graph");

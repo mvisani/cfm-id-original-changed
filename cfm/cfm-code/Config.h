@@ -203,6 +203,7 @@ struct config_t {
     double ga_sampling_explore_weight;
     int ga_diff_sampling_peak_num;
     double ga_diff_sampling_difference;
+    //int max_transitions_per_iteration;
 
     //Model Level Configuration
     unsigned int model_depth; //Total Depth
@@ -210,13 +211,11 @@ struct config_t {
     std::vector<double> spectrum_weights;
     double abs_mass_tol;
     double ppm_mass_tol;
-    double intermediate_weights;
     std::vector<int> map_d_to_energy;    //Derived parameter
     std::vector<int> dv_spectrum_depths;    //Either a direct copy, or interpolated values.
     std::vector<int> dv_spectrum_indexes;    //Index of each spectrum in the list of spectra in MolData
     std::vector<double> dv_spectrum_weights;
     int obs_function;    //Function used for the observation function
-    int num_rbreak_nrbonds;
 
     //Theta function Configuration (Linear or Neural Net)
     int theta_function;
@@ -224,10 +223,6 @@ struct config_t {
     std::vector<int> theta_nn_hlayer_num_nodes;
     std::vector<int> theta_nn_layer_act_func_ids;
     std::vector<double> nn_layer_dropout_probs;
-    //IPFP Configuration
-    int ipfp_algorithm;    //0 = IPFP, 1 = GEMA, 2 = IPFP_WITH_OSC_ADJUST
-    double ipfp_converge_thresh;
-    double osc_ipfp_converge_thresh;
 
     //EM Configuration
     double em_converge_thresh;
