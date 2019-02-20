@@ -420,7 +420,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
     //Initial Q and gradient calculation (to determine used indexes)
     if (comm->used_idxs.empty()) {
         if (comm->isMaster())
-            std::cout << "[M-Step] GA Initial Calculation ...";
+            std::cout << "[M-Step] Collect Used Index ...";
 
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
