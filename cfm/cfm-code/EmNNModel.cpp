@@ -155,19 +155,17 @@ void EmNNModel::collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_i
     unsigned int num_fragments = mol_data.getNumFragments();
     unsigned int grad_offset = energy * nn_param->getNumWeightsPerEnergyLevel();
 
-    //Iterate over from_id (i)
-    for (int from_idx = 0; from_idx < num_fragments; from_idx++) {
-        // Iterate over from_id (i)
-        auto frag_trans_map = mol_data.getFromIdTMap()->begin();
-        for (int from_idx = 0; frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
-            for (auto trans_id : *frag_trans_map) {
-                const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
-                unsigned int feature_len = fv->getTotalLength();
-                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
-                    nn_param->collectUsedIdx(used_idxs, feature_len,  grad_offset, *fv_it, energy);
-            }
+
+    // Iterate over from_id (i)
+    for (auto frag_trans_map = mol_data.getFromIdTMap()->begin(); frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map) {
+        for (auto trans_id : *frag_trans_map) {
+            const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
+            unsigned int feature_len = fv->getTotalLength();
+            for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
+                nn_param->collectUsedIdx(used_idxs, feature_len,  grad_offset, *fv_it, energy);
         }
     }
+
 
     int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
     unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();

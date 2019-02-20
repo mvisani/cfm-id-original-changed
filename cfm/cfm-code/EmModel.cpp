@@ -628,8 +628,8 @@ void EmModel::collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_idx
     unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
 
     // Iterate over from_id (i)
-    auto frag_trans_map = mol_data.getFromIdTMap()->begin();
-    for (int from_idx = 0; frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
+    for (auto frag_trans_map = mol_data.getFromIdTMap()->begin(); frag_trans_map != mol_data.getFromIdTMap()->end();
+    ++frag_trans_map) {
         for (auto trans_id : *frag_trans_map) {
             const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
             for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
