@@ -158,7 +158,8 @@ BOOST_AUTO_TEST_SUITE(ParamsTestComputeAndAccumulateGradient)
         BOOST_CHECK_CLOSE_FRACTION(Q, expected_Q, tol);
 
         // get used flags
-        em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, 0);
+        //em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, 0);
+        em.collectUsedIdx(moldata,used_idxs, 0);
         //Check the used flags
         BOOST_CHECK_EQUAL(used_idxs.find(0) != used_idxs.end(), true);
         BOOST_CHECK_EQUAL(used_idxs.find(1) != used_idxs.end(), true);
@@ -167,7 +168,7 @@ BOOST_AUTO_TEST_SUITE(ParamsTestComputeAndAccumulateGradient)
 
         //Check the gradients for low energy level
         int energy = 0;
-        em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, false, used_idxs, 0, energy);
+        em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, 0, energy);
         double expected_grads[6] = {-0.1624, 0.2499, 0, 0, 0, 0}; //-0.0568,0.2554,0.1649,0.4663};
 
         for (unsigned int i = 0; i < 6; i++) {

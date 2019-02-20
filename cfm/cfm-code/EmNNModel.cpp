@@ -56,10 +56,8 @@ void EmNNModel::writeParamsToFile(std::string &filename) {
 
 //Gradient Computation using Backpropagation
 int EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
-                                            bool record_used_idxs, std::set<unsigned int> &used_idxs,
                                             int sampling_method, unsigned int energy) {
 
-    //const FragmentGraph *fg = moldata.getFragmentGraph();
     unsigned int num_transitions = mol_data.getNumTransitions();
     unsigned int num_fragments = mol_data.getNumFragments();
 
@@ -77,7 +75,7 @@ int EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData 
     unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
     std::set<int> selected_trans_id;
-    if (!record_used_idxs && sampling_method != USE_NO_SAMPLING){
+    if (sampling_method != USE_NO_SAMPLING){
         getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
         num_used_transitions = selected_trans_id.size();
     }
@@ -89,7 +87,7 @@ int EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData 
         const std::vector<int> *from_id_map = &(*from_map)[from_idx];
         std::vector<int> sampled_trans_id;
 
-        if (sampling_method != USE_NO_SAMPLING && !record_used_idxs) {
+        if (sampling_method != USE_NO_SAMPLING) {
             for (const auto &trans_id : (*from_map)[from_idx])
                 if (selected_trans_id.find(trans_id) != selected_trans_id.end())
                     sampled_trans_id.push_back(trans_id);
@@ -144,21 +142,41 @@ int EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData 
                 *(grads + grad_offset + i) += nu * unweighted_grads[idx][i];
         }
 
-        if (record_used_idxs) {
-            //Combine the used indexes for the first layer
-            for (sit = from_id_used_idxs.begin(); sit != from_id_used_idxs.end(); ++sit)
-                used_idxs.insert(grad_offset + *sit);
-        }
-    }
-
-    if (record_used_idxs) {
-        //Add used indexes for the subsequent layers (all of them)
-        for (int i = layer2_offset; i < weights_per_energy; i++)
-            used_idxs.insert(grad_offset + i);
-
     }
     return num_used_transitions;
 }
+
+void EmNNModel::collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_idxs, unsigned int energy){
+
+
+    if (!mol_data.hasComputedGraph())
+        return;
+
+    unsigned int num_fragments = mol_data.getNumFragments();
+    unsigned int grad_offset = energy * nn_param->getNumWeightsPerEnergyLevel();
+
+    //Iterate over from_id (i)
+    for (int from_idx = 0; from_idx < num_fragments; from_idx++) {
+        // Iterate over from_id (i)
+        auto frag_trans_map = mol_data.getFromIdTMap()->begin();
+        for (int from_idx = 0; frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
+            for (auto trans_id : *frag_trans_map) {
+                const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
+                unsigned int feature_len = fv->getTotalLength();
+                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
+                    nn_param->collectUsedIdx(used_idxs, feature_len,  grad_offset, *fv_it, energy);
+            }
+        }
+    }
+
+    int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
+    unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();
+
+    //Add used indexes for the subsequent layers (all of them)
+    for (int i = layer2_offset; i < weights_per_energy; i++)
+        used_idxs.insert(grad_offset + i);
+}
+
 double EmNNModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft, unsigned int energy) {
 
     double Q = 0.0;

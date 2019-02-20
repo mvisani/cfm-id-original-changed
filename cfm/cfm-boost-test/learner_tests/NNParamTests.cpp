@@ -259,7 +259,8 @@ BOOST_FIXTURE_TEST_SUITE(NNParamsComputeTests, NNParamTestFixture)
         int energy_level = 0;
         int mol_idx = 0;
         double Q_only  = em.computeLogLikelihoodLoss(mol_idx, moldata, suft, energy_level);
-        em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, true, used_idxs, 0, energy_level);
+        em.collectUsedIdx(moldata,used_idxs, 0);
+        em.computeAndAccumulateGradient(&grads[0], 0, moldata, suft, 0, energy_level);
 
         //Check Q
         double theta1 = 12.0, theta2 = 10.0;

@@ -99,6 +99,12 @@ public:
     
     void rollDropouts() override;
 
+    void collectUsedIdx(std::set<unsigned int> &used_idxs, unsigned int feature_len, unsigned offset,
+            unsigned fv_idx, unsigned int energy) {
+        for (int hnode = 0; hnode < h_layer_num_nodes[0]; hnode++)
+            used_idxs.insert(offset + hnode * feature_len + fv_idx);
+    };
+
 protected:
     //Initialisation options
     virtual void randomUniformInit() override;

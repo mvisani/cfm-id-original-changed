@@ -425,7 +425,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group){
-                computeAndAccumulateGradient(&grads[0], molidx, *itdata, suft, true, comm->used_idxs, 0, energy);
+                collectUsedIdx(*itdata, comm->used_idxs, energy);
                 computeThetas(&(*itdata));
             }
         }
@@ -474,8 +474,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                     if (!mol_it->hasComputedGraph())
                         continue;
 
-                    num_trans += computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft, false, comm->used_idxs,
-                                                 sampling_method, energy);
+                    num_trans += computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft,
+                                                              sampling_method, energy);
                 }
             }
 
@@ -544,7 +544,6 @@ double EmModel::getUpdatedLearningRate(double learning_rate, double current_loss
 }
 
 int EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
-                                          bool record_used_idxs, std::set<unsigned int> &used_idxs,
                                           int sampling_method, unsigned int energy) {
 
     unsigned int num_transitions = mol_data.getNumTransitions();
@@ -561,7 +560,7 @@ int EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &m
     unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
     std::set<int> selected_trans_id;
-    if (!record_used_idxs && sampling_method != USE_NO_SAMPLING){
+    if (sampling_method != USE_NO_SAMPLING){
         getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
         num_used_transitions = selected_trans_id.size();
     }
@@ -570,13 +569,6 @@ int EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &m
     auto frag_trans_map = mol_data.getFromIdTMap()->begin();
     for (int from_idx = 0; frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
 
-        if (record_used_idxs) {
-            for (auto trans_id : *frag_trans_map) {
-                const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
-                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
-                    used_idxs.insert(*fv_it + grad_offset);
-            }
-        } else {
             //Do some random selection
             std::vector<int> sampled_ids;
             if (sampling_method != USE_NO_SAMPLING) {
@@ -624,15 +616,27 @@ int EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &m
                 if(sum_terms[idx] != 0)
                     *(grads + idx + grad_offset) -= (nu_sum + nu) * sum_terms[idx];
         }
-    }
-
-    // Compute the latest transition thetas
-    if (!record_used_idxs)
-        mol_data.computeTransitionThetas(*param);
 
     return num_used_transitions;
 }
 
+void EmModel::collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_idxs, unsigned int energy){
+
+    if (!mol_data.hasComputedGraph())
+        return;
+
+    unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
+
+    // Iterate over from_id (i)
+    auto frag_trans_map = mol_data.getFromIdTMap()->begin();
+    for (int from_idx = 0; frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
+        for (auto trans_id : *frag_trans_map) {
+            const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
+            for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
+                    used_idxs.insert(*fv_it + grad_offset);
+        }
+    }
+}
 
 void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, unsigned int energy,
                                        std::set<int> &selected_trans_id) const {
