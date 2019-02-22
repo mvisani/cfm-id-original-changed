@@ -81,9 +81,9 @@ int main(int argc, char *argv[]) {
              "Name of folder to write tmp data for training. If not specified will write to tmp_data")
             ("log_file,l", po::value<std::string>(&status_filename)->default_value("status.log"),
              "Name of log file")
-            ("start_energy,se", po::value<int>(&start_energy)->default_value(0),
+            ("start_energy,e", po::value<int>(&start_energy)->default_value(0),
              "Set to starting energy if want to start training part way through (single energy only -default 0)")
-            ("start_repeat,sr", po::value<int>(&start_repeat)->default_value(0),
+            ("start_repeat,r", po::value<int>(&start_repeat)->default_value(0),
              "Set to starting repeat if want to start training part way through (default 0)");
 
     try {
