@@ -150,8 +150,6 @@ int main(int argc, char *argv[]) {
     parseInputFile(data, input_filename, mpi_rank, mpi_nump, &cfg);
     if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
 
-
-
     //Fragment Graph Computation (or load from file)
     time_t before_fg, after_fg;
     before_fg = time(nullptr);
@@ -165,23 +163,15 @@ int main(int argc, char *argv[]) {
             if (!no_train) {
 
                 std::string fv_filename = fv_fragment_graphs_folder + "/" +
-                                          boost::lexical_cast<std::string>(mit->getId()) + "_graphs.fg";
-
-
-                // file mutex
-                //boost::interprocess::file_lock flock(fv_filename.c_str());
-
+                                          boost::lexical_cast<std::string>(mit->getId()) + "_graph.fg";
 
                 // if there is a cached/precomputed fv/graph file
                 if (boost::filesystem::exists(fv_filename)) {
 
-                    //flock.lock();
                     std::ifstream fv_ifs;
                     fv_ifs = std::ifstream(fv_filename.c_str(), std::ifstream::in | std::ios::binary);
                     mit->readInFVFragmentGraphFromStream(fv_ifs);
                     fv_ifs.close();
-                    //flock.unlock();
-
 
                     std::ofstream eout;
                     eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
@@ -205,27 +195,22 @@ int main(int argc, char *argv[]) {
                     eout << " Num Trans = " << mit->getNumTransitions() << std::endl;
                     eout.close();
 
-                    if (!boost::filesystem::exists(fv_filename)){
+                    if (!boost::filesystem::exists(fv_filename)) {
                         std::string fv_tmp_filename = fv_filename + "_tmp";
 
                         std::ofstream fv_out;
                         fv_out.open(fv_tmp_filename.c_str(), std::ios::out | std::ios::binary);
-
-                        //lock the file
-                        //flock.lock();
                         mit->writeFVFragmentGraphToStream(fv_out);
-                        //flock.unlock();
-
-                        //close ofs
                         fv_out.close();
-                        boost::filesystem::rename(fv_tmp_filename,fv_filename);
+                        //rename file
+                        boost::filesystem::rename(fv_tmp_filename, fv_filename);
                     }
 
                 }
                 success_count++;
             }
         }
-        catch (std::exception & e) {
+        catch (std::exception &e) {
             std::ofstream eout;
             eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
             eout << "Exception occurred computing fragment graph for " << mit->getId() << std::endl;
@@ -236,6 +221,7 @@ int main(int argc, char *argv[]) {
             eout.close();
         }
     }
+
     MPI_Barrier(MPI_COMM_WORLD);
     after_fg = time(nullptr);
     if (mpi_rank == MASTER)
