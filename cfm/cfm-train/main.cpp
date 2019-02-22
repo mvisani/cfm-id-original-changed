@@ -22,8 +22,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/interprocess/sync/file_lock.hpp>
+
 
 #include "EmModel.h"
 #include "EmNNModel.h"
@@ -169,12 +169,19 @@ int main(int argc, char *argv[]) {
                 std::string fv_filename = fv_fragment_graphs_folder + "/" +
                                           boost::lexical_cast<std::string>(mit->getId()) + "_graphs.fg";
 
+                // file mutex
+                boost::interprocess::file_lock flock(fv_filename.c_str());
+
                 // if there is a cached/precomputed fv/graph file
-                if (boost::filesystem::exists(fv_filename)) {
+                if (boost::filesystem::exists(fv_filename) && flock.try_lock()) {
+
+
                     std::ifstream fv_ifs;
                     fv_ifs = std::ifstream(fv_filename.c_str(), std::ifstream::in | std::ios::binary);
                     mit->readInFVFragmentGraphFromStream(fv_ifs);
                     fv_ifs.close();
+                    flock.unlock();
+
 
                     std::ofstream eout;
                     eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
@@ -199,14 +206,16 @@ int main(int argc, char *argv[]) {
                     eout.close();
 
                     //We always write it, in case we haven't already computed all of them
-                    std::ofstream fv_out;
-                    fv_out.open(fv_filename.c_str(), std::ios::out | std::ios::binary);
-                    //boost::archive::text_oarchive text_oa(fv_out);
-                    //text_oa << mit->getFragmentGraph();
-                    mit->writeFVFragmentGraphToStream(fv_out);
-                    fv_out.close();
+                    if(flock.try_lock()){
+                        std::ofstream fv_out;
+                        fv_out.open(fv_filename.c_str(), std::ios::out | std::ios::binary);
+                        //boost::archive::text_oarchive text_oa(fv_out);
+                        //text_oa << mit->getFragmentGraph();
+                        mit->writeFVFragmentGraphToStream(fv_out);
+                        fv_out.close();
+                        flock.unlock();
+                    }
                 }
-
                 success_count++;
             }
         }
