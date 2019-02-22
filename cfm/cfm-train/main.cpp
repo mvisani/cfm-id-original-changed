@@ -21,6 +21,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include "EmModel.h"
 #include "EmNNModel.h"
@@ -37,74 +40,86 @@ int main(int argc, char *argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_nump);
 
-    if (argc < 4 || argc > 11) {
-        std::cout << std::endl << std::endl;
-        std::cout << std::endl
-                  << "Usage: cfm-train.exe <input_filename> <feature_filename> <config_filename> <peakfile_dir> <group> <status_filename> <no_train> <start_energy>"
-                  << std::endl << std::endl << std::endl;
-        std::cout << std::endl << "input_filename:" << std::endl << "Text file with number of mols on first line, then "
-                  << std::endl << "id smiles_or_inchi cross_validation_group" << std::endl << "on each line after that."
-                  << std::endl;
-        std::cout << std::endl << "feature_filename:" << std::endl
-                  << "Text file with list of feature names to include, line separated:" << std::endl << "BreakAtomPair"
-                  << std::endl << "IonRootPairs...etc" << std::endl;
-        std::cout << std::endl << "config_filename:" << std::endl
-                  << "Text file listing configuration parameters. Line separated 'name value'." << std::endl;
-        std::cout << std::endl << "peakfile_dir_or_msp:" << std::endl
-                  << "Input MSP file, with ID fields corresponding to id fields in input_file (the MSP filename not including the .msp extension) OR Directory containing files with spectra. Each file should be called <id>.txt, where <id> is the id specified in the input file, and contains a list of peaks 'mass intensity' on each line, with either 'low','med' and 'high' lines beginning spectra of different energy levels, or 'energy0', 'energy1', etc. ";
-        std::cout << "e.g." << std::endl << "energy0" << std::endl << "65.02 40.0" << std::endl << "86.11 60.0"
-                  << std::endl << "energy1" << std::endl << "65.02 100.0 ... etc" << std::endl;
-        std::cout << std::endl << "group (opt):" << std::endl
-                  << "Cross validation group to run. Otherwise will assume 10 groups and run all of them." << std::endl;
-        std::cout << std::endl << "status_filename (opt):" << std::endl
-                  << "Name of file to write logging information as the program runs. If not specified will write to status.log<group>, or status.log if no group is specified"
-                  << std::endl;
-        std::cout << std::endl << "tmp_data_foldername (opt):" << std::endl
-                  << "Name of folder to write tmp data for training. If not specified will write to tmp_data"
-                  << std::endl;
-
-        std::cout << std::endl << "no_train (opt):" << std::endl
-                  << "Set to 1 if the training part should be skipped (useful in debugging - default 0)" << std::endl;
-        std::cout << std::endl << "start_energy (opt - se only)" << std::endl
-                  << "Set to starting energy if want to start training part way through (single energy only -default 0)"
-                  << std::endl;
-        std::cout << std::endl << "start_repeat (opt)" << std::endl
-                  << "Set to starting repeat if want to start training part way through (default 0)" << std::endl;
-        std::cout << std::endl;
-        exit(1);
-    }
-
-    if (mpi_rank == MASTER)
-        std::cout << "[MPI INFO] Number of processors: " << mpi_nump << std::endl;
-
-    std::string input_filename = argv[1];    //List (one per line): id, smiles_or_inchi, group
-    std::string feature_filename = argv[2]; //List of features, line-spaced
-    std::string config_filename = argv[3];    //Parameter configuration
-    std::string peakfile_dir_or_msp = argv[4];    //MSP file or Directory containing the peak files for each molecule (in format <id>.txt)
+    // Define parameters
+    std::string input_filename;   //List (one per line): id, smiles_or_inchi, group
+    std::string feature_filename; //List of features, line-spaced
+    std::string config_filename;    //Parameter configuration
+    std::string peakfile_dir_or_msp;    //MSP file or Directory containing the peak files for each molecule (in format <id>.txt)
+    std::string data_folder;
+    std::string status_filename;
+    bool no_train = false;
+    int start_energy = 0, start_repeat = 0;
 
     //Cross validation groups to process
     int min_group = 0, max_group = 9;
-    if (argc >= 6) {
-        min_group = atoi(argv[5]);
-        max_group = min_group;
-    }
-    std::string status_filename("status.log");    //Status file to write to
-    if (argc >= 7) status_filename = argv[6];
-    else if (argc >= 6) status_filename = "status.log" + std::string(argv[5]);    //status.log<group>
 
-    std::string data_folder = "tmp_data";
-    if (argc >= 8) data_folder = std::string(argv[7]);
+    //Define and parse the program options
+    namespace po = boost::program_options;
+    po::options_description general_options("Uasge");
+    general_options.add_options()
+            ("help,h", "Help message")
+            ("input_filename,i", po::value<std::string>(&input_filename)->required(),
+             "Text file with number of mols on first line, "
+             "then id smiles_or_inchi cross_validation_group on each line after that.")
+            ("feature_filename,f", po::value<std::string>(&feature_filename)->required(),
+             "Text file with list of feature names to include, line separated")
+            ("config_filename,c", po::value<std::string>(&config_filename)->required(),
+             "Text file listing configuration parameters."
+             " Line separated 'name value'.")
+            ("peakfile_dir_or_msp,p", po::value<std::string>(&peakfile_dir_or_msp)->required(),
+             "Input MSP file, with ID fields corresponding to id fields in input_file ("
+             "the MSP filename not including the .msp extension) OR "
+             "Directory containing files with spectra. Each file should be called <id>.txt, "
+             "where <id> is the id specified in the input file, and contains a list of peaks "
+             "'mass intensity' on each line, with either 'low','med' and 'high' lines beginning "
+             "spectra of different energy levels, or 'energy0', 'energy1', "
+             "etc. e.g:energy0 65.02 40.086.11 60.0 energy1 65.02 100.0 .")
+            ("group,g", po::value<int>(&min_group)->default_value(0),
+             "Name of file to write logging information as the program runs."
+             "If not specified will write to status.log<group>, or status.log if no group is specified")
+            ("tmp_data_folder,t", po::value<std::string>(&data_folder)->default_value("tmp_data"),
+             "Name of folder to write tmp data for training. If not specified will write to tmp_data")
+            ("log_file,l", po::value<std::string>(&status_filename)->default_value("status.log"),
+             "Name of log file")
+            ("start_energy,se", po::value<int>(&start_energy)->default_value(0),
+             "Set to starting energy if want to start training part way through (single energy only -default 0)")
+            ("start_repeat,sr", po::value<int>(&start_repeat)->default_value(0),
+             "Set to starting repeat if want to start training part way through (default 0)");
+
+    try {
+        po::command_line_parser parser{argc, argv};
+        parser.options(general_options).allow_unregistered().style(
+                po::command_line_style::default_style |
+                po::command_line_style::allow_slash_for_short);
+        po::parsed_options parsed_options = parser.run();
+
+        po::variables_map vm;
+
+        store(parsed_options, vm);
+
+        //help option
+
+        if (vm.count("help")) {
+            if (mpi_rank == MASTER)
+                std::cout << general_options << std::endl;
+            return 0;
+        } else
+            po::notify(vm);
+    }
+    catch (po::error &e) {
+        if (mpi_rank == MASTER) {
+            std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+            std::cout << general_options << std::endl;
+        }
+        return 0;
+    }
+
 
     status_filename = data_folder + '/' + status_filename;
     std::string enumrated_output_folder = data_folder + "/enumerated_output";
     std::string predicted_output_folder = data_folder + "/predicted_output";
     std::string fv_fragment_graphs_folder = data_folder + "/fv_fragment_graphs";
 
-    int no_train = 0;
-    int start_energy = 0, start_repeat = 0;
-    if (argc >= 9) no_train = atoi(argv[8]);
-    if (argc >= 10) start_energy = atoi(argv[9]);
-    if (argc >= 11) start_repeat = atoi(argv[10]);
 
     if (mpi_rank == MASTER) {
 
@@ -137,56 +152,44 @@ int main(int argc, char *argv[]) {
     parseInputFile(data, input_filename, mpi_rank, mpi_nump, &cfg);
     if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
 
-    //Configure fragment graph state files
-    std::string fv_filename_out =
-            fv_fragment_graphs_folder + "/P" + boost::lexical_cast<std::string>(mpi_rank) + "_graphs.fg";
-    std::string fv_filename_in =
-            fv_fragment_graphs_folder + "/P" + boost::lexical_cast<std::string>(mpi_rank) + "_graphs.fg_tmp";
-    if (min_group != 0) fv_filename_in = fv_filename_out;
-    if (min_group == 0 && boost::filesystem::exists(fv_filename_in))
-        boost::filesystem::remove(fv_filename_in);
-    if (min_group == 0 && boost::filesystem::exists(fv_filename_out))
-        boost::filesystem::copy_file(fv_filename_out, fv_filename_in);
-    std::ifstream *fv_ifs;
-    std::string next_id = "";
-    if (boost::filesystem::exists(fv_filename_in)) {
-        fv_ifs = new std::ifstream(fv_filename_in.c_str(), std::ifstream::in | std::ios::binary);
-        if (!(*fv_ifs)) std::cout << "Could not open file " << fv_filename_in << std::endl;
-        else {
-            unsigned int id_size;
-            fv_ifs->read(reinterpret_cast<char *>(&id_size), sizeof(id_size));
-            next_id.resize(id_size);
-            fv_ifs->read(&next_id[0], id_size);
-        }
-    }
-    std::ofstream fv_out;
-    if (min_group == 0)
-        fv_out.open(fv_filename_out.c_str(), std::ios::out | std::ios::binary);
+
 
     //Fragment Graph Computation (or load from file)
     time_t before_fg, after_fg;
     before_fg = time(nullptr);
-    if (mpi_rank == MASTER) std::cout << "Computing fragmentation graphs and features..";
-    std::vector<MolData>::iterator mit = data.begin();
+    if (mpi_rank == MASTER)
+        std::cout << "Computing fragmentation graphs and features..";
+
     int success_count = 0, except_count = 0;
-    for (; mit != data.end(); ++mit) {
+    for (auto mit = data.begin(); mit != data.end(); ++mit) {
         try {
             //If we're not training, only load the ones we'll be testing
-            if ((mit->getGroup() >= min_group && mit->getGroup() <= max_group) || !no_train) {
-                if (mit->getId() == next_id) {
-                    mit->readInFVFragmentGraphFromStream(*fv_ifs);
-                    unsigned int id_size;
-                    fv_ifs->read(reinterpret_cast<char *>(&id_size), sizeof(id_size));
-                    if (!fv_ifs->eof()) {
-                        next_id.resize(id_size);
-                        fv_ifs->read(&next_id[0], id_size);
-                    }
-                    else next_id = "NULL_ID";
+            if (!no_train) {
+
+                std::string fv_filename = fv_fragment_graphs_folder + "/" +
+                                          boost::lexical_cast<std::string>(mit->getId()) + "_graphs.fg";
+
+                // if there is a cached/precomputed fv/graph file
+                if (boost::filesystem::exists(fv_filename)) {
+                    std::ifstream fv_ifs;
+                    fv_ifs = std::ifstream(fv_filename.c_str(), std::ifstream::in | std::ios::binary);
+                    mit->readInFVFragmentGraphFromStream(fv_ifs);
+                    fv_ifs.close();
+
+                    std::ofstream eout;
+                    eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
+                    eout << "ID: " << mit->getId() << " is Loaded from cached file ";
+                    eout << " Num Frag = " << mit->getNumFragments();
+                    eout << " Num Trans = " << mit->getNumTransitions() << std::endl;
+                    eout.close();
+
 
                 } else {
                     time_t before, after;
                     before = time(nullptr);
                     mit->computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
+
+                    // write log
                     std::ofstream eout;
                     eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
                     after = time(nullptr);
@@ -194,18 +197,20 @@ int main(int argc, char *argv[]) {
                     eout << " Num Frag = " << mit->getNumFragments();
                     eout << " Num Trans = " << mit->getNumTransitions() << std::endl;
                     eout.close();
+
+                    //We always write it, in case we haven't already computed all of them
+                    std::ofstream fv_out;
+                    fv_out.open(fv_filename.c_str(), std::ios::out | std::ios::binary);
+                    //boost::archive::text_oarchive text_oa(fv_out);
+                    //text_oa << mit->getFragmentGraph();
+                    mit->writeFVFragmentGraphToStream(fv_out);
+                    fv_out.close();
                 }
-                unsigned int id_size = mit->getId().size();
-                if (min_group == 0) {
-                    fv_out.write(reinterpret_cast<const char *>(&id_size), sizeof(id_size));
-                    fv_out.write(&(mit->getId()[0]), id_size);
-                    mit->writeFVFragmentGraphToStream(
-                            fv_out);    //We always write it, in case we haven't already computed all of them
-                }
+
                 success_count++;
             }
         }
-        catch (std::exception e) {
+        catch (std::exception & e) {
             std::ofstream eout;
             eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
             eout << "Exception occurred computing fragment graph for " << mit->getId() << std::endl;
@@ -218,18 +223,16 @@ int main(int argc, char *argv[]) {
     }
     MPI_Barrier(MPI_COMM_WORLD);
     after_fg = time(nullptr);
-    if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
+    if (mpi_rank == MASTER)
+        std::cout << "Done" << std::endl;
+
     std::cout << mpi_rank << ": " << success_count << " successfully computed. " << except_count << " exceptions."
               << std::endl;
+
     if (mpi_rank == MASTER)
         std::cout << "Total Fragmentation Graph Computation Time Elaspsed = "
-                     << (after_fg - before_fg) << " Seconds" << std::endl;
-    if (min_group == 0) fv_out.close();
-    if (boost::filesystem::exists(fv_filename_in)) {
-        if (*fv_ifs) fv_ifs->close();
-        delete fv_ifs;
-        if (min_group == 0) boost::filesystem::remove(fv_filename_in);
-    }
+                  << (after_fg - before_fg) << " Seconds" << std::endl;
+
 
     //Loading input spectra
     MPI_Barrier(MPI_COMM_WORLD);
@@ -246,6 +249,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+
     //MSP Setup
     MspReader *msp = nullptr;
     std::ostream *out_enum_msp, *out_pred_msp;
@@ -253,7 +257,7 @@ int main(int argc, char *argv[]) {
     //Create the MSP lookup
     if (spectra_in_msp)
         msp = new MspReader(peakfile_dir_or_msp.c_str(), "");
-    for (mit = data.begin(); mit != data.end(); ++mit) {
+    for (auto mit = data.begin(); mit != data.end(); ++mit) {
         if ((mit->getGroup() >= min_group && mit->getGroup() <= max_group) || !no_train) {
             if (spectra_in_msp)
                 mit->readInSpectraFromMSP(*msp);
@@ -264,6 +268,7 @@ int main(int argc, char *argv[]) {
             mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
         }
     }
+
     MPI_Barrier(MPI_COMM_WORLD);
     if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
 
@@ -312,12 +317,12 @@ int main(int argc, char *argv[]) {
             param = new NNParam(param_filename);
         else
             param = new Param(param_filename);
-        for (mit = data.begin(); mit != data.end(); ++mit) {
+        for (auto mit = data.begin(); mit != data.end(); ++mit) {
             if (mit->getGroup() != group) continue;
             if (!mit->hasComputedGraph()) continue;    //If we couldn't compute it's graph for some reason..
 
             //Predicted spectrum
-            for(auto e = start_energy; e < cfg.spectrum_depths.size(); ++e)
+            for (auto e = start_energy; e < cfg.spectrum_depths.size(); ++e)
                 mit->computePredictedSpectra(*param, false, false, e);
 
             if (spectra_in_msp)
@@ -404,7 +409,7 @@ trainSingleEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalculat
                 final_params = new NNParam(eparam_filename);
             else
                 final_params = new Param(eparam_filename);
-        } else if(energy > start_energy){
+        } else if (energy > start_energy) {
             Param *eparam;
             if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION)
                 eparam = new NNParam(eparam_filename);

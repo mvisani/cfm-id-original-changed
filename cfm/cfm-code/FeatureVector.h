@@ -26,7 +26,7 @@ class FeatureVector {
 public:
     FeatureVector() { fv_idx = 0; };
 
-    FeatureVector(const FeatureVector & old) {
+    FeatureVector(const FeatureVector &old) {
         fv_idx = old.fv_idx;
         fv = old.fv;
         //std::copy(old.fv.begin(), old.fv.end(), fv.begin());

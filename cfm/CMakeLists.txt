@@ -36,7 +36,7 @@ set(INCLUDE_TRAIN OFF CACHE BOOL "Do you want to build the training code?")
 set(Boost_USE_STATIC_LIBS ON)
 include(FindBoost)
 
-set(Boost_componets filesystem system serialization)
+set(Boost_componets filesystem system serialization program_options)
 # For some reason msvc with give LNK2019 if not include thread
 if (MSVC)
     list(APPEND Boost_componets thread)
