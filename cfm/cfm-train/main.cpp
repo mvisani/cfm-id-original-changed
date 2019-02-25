@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     int start_energy = 0, start_repeat = 0;
 
     //Cross validation groups to process
-    int min_group = 0, max_group = 9;
+    int min_group = 0, max_group = 0;
 
     //Define and parse the program options
     namespace po = boost::program_options;
@@ -72,13 +72,17 @@ int main(int argc, char *argv[]) {
              "'mass intensity' on each line, with either 'low','med' and 'high' lines beginning "
              "spectra of different energy levels, or 'energy0', 'energy1', "
              "etc. e.g:energy0 65.02 40.086.11 60.0 energy1 65.02 100.0 .")
-            ("group,g", po::value<int>(&min_group)->default_value(0),
-             "Name of file to write logging information as the program runs."
-             "If not specified will write to status.log<group>, or status.log if no group is specified")
+            ("group,g", po::value<int>(&min_group)->default_value(-1),
+                    "validation group for cross validation, if not provide cross validation"
+                    "will apply on every group (n-fold cross validation )")
+            ("num_fold,n", po::value<int>(&max_group)->default_value(0),
+             "number for n-fold cross validation, if not provide, noy cross validation will be applied. "
+             "If group number is set, this number will be igroned.")
             ("tmp_data_folder,t", po::value<std::string>(&data_folder)->default_value("tmp_data"),
              "Name of folder to write tmp data for training. If not specified will write to tmp_data")
             ("log_file,l", po::value<std::string>(&status_filename)->default_value("status.log"),
-             "Name of log file")
+             "Name of file to write logging information as the program runs."
+             "If not specified will write to status.log<group>, or status.log if no group is specified")
             ("start_energy,e", po::value<int>(&start_energy)->default_value(0),
              "Set to starting energy if want to start training part way through (single energy only -default 0)")
             ("start_repeat,r", po::value<int>(&start_repeat)->default_value(0),
@@ -96,7 +100,6 @@ int main(int argc, char *argv[]) {
         store(parsed_options, vm);
 
         //help option
-
         if (vm.count("help")) {
             if (mpi_rank == MASTER)
                 std::cout << general_options << std::endl;
@@ -112,6 +115,9 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    //set group
+    if (min_group != -1)
+        max_group = min_group + 1;
 
     status_filename = data_folder + '/' + status_filename;
     std::string enumrated_output_folder = data_folder + "/enumerated_output";
@@ -249,8 +255,7 @@ int main(int argc, char *argv[]) {
             peakfile_dir_or_msp.replace(peakfile_dir_or_msp.size() - 7, 3, boost::lexical_cast<std::string>(mpi_rank));
         }
     }
-
-
+    
     //MSP Setup
     MspReader *msp = nullptr;
     std::ostream *out_enum_msp, *out_pred_msp;
@@ -259,7 +264,7 @@ int main(int argc, char *argv[]) {
     if (spectra_in_msp)
         msp = new MspReader(peakfile_dir_or_msp.c_str(), "");
     for (auto mit = data.begin(); mit != data.end(); ++mit) {
-        if ((mit->getGroup() >= min_group && mit->getGroup() <= max_group) || !no_train) {
+        if (!no_train) {
             if (spectra_in_msp)
                 mit->readInSpectraFromMSP(*msp);
             else {
@@ -274,7 +279,7 @@ int main(int argc, char *argv[]) {
     if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
 
     //Training
-    for (int group = min_group; group <= max_group; group++) {
+    for (int group = min_group; group < max_group; group++) {
         if (mpi_rank == MASTER) std::cout << "Running EM to train parameters for Group " << group << std::endl;
 
         time_t before, after;
