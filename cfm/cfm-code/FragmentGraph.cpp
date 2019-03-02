@@ -347,6 +347,8 @@ void FragmentGraph::writeFullGraph(std::ostream &out) const {
 
 void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isotopes) const {
 
+    // Write Depth of Graph
+    out.write(reinterpret_cast<const char *>(&depth), sizeof(depth));
     //Fragments
     unsigned int inlcis = include_isotopes;
     out.write(reinterpret_cast<const char *>(&inlcis), sizeof(inlcis));
@@ -402,8 +404,12 @@ void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isot
 void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
 
     std::string null = "";
+    // Set Depth of Graph
+    ifs.read(reinterpret_cast<char *>(&depth), sizeof(depth));
+    // Include Isotope Flag
     unsigned int include_isotopes;
     ifs.read(reinterpret_cast<char *>(&include_isotopes), sizeof(include_isotopes));
+    // Fragaments
     unsigned int numf;
     ifs.read(reinterpret_cast<char *>(&numf), sizeof(numf));
     for (int i = 0; i < numf; i++) {
