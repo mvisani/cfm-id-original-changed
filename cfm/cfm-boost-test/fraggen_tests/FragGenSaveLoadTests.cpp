@@ -43,6 +43,7 @@ BOOST_AUTO_TEST_SUITE(FragGenSaveAndLoadTests)
         //Compare orig vs loaded
         BOOST_CHECK_EQUAL( morig.getNumFragments(),mload.getNumFragments());
         BOOST_CHECK_EQUAL( morig.getNumTransitions(),mload.getNumTransitions());
+        BOOST_CHECK_EQUAL( morig.getFGHeight(), mload.getFGHeight());
 
         for( int i = 0; i < morig.getNumFragments(); i++ ){
             const Fragment *f1 = morig.getFragmentAtIdx(i);
