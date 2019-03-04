@@ -197,6 +197,8 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
             // if we are using drop out
             // and current node is dropped
             weights_it += fv_length;
+            z_values[neuron_idx] = 0.0;
+            a_values[neuron_idx] = 0.0;
         }
         neuron_idx++;
     }
@@ -225,6 +227,8 @@ double NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_
                 // if dropped out move by num_input + 1
                 // 1 for bais num_input weights
                 weights_it += 1 + num_input;
+                z_values[neuron_idx] = 0.0;
+                a_values[neuron_idx] = 0.0;
             }
             neuron_idx ++;
         }
