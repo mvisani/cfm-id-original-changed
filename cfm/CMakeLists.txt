@@ -12,7 +12,7 @@
 # of the cfm source tree.
 #########################################################################*/
 # We may need higher verison cmake
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.12)
 set(CMAKE_CXX_STANDARD 11)
 
 # Set a default build type if none was specified
@@ -52,15 +52,22 @@ find_package(Boost 1.62 REQUIRED COMPONENTS ${Boost_componets})
 
 include_directories(${Boost_INCLUDE_DIRS})
 
+#include cmake finds
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 # Find Eigen 3
-# find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-#if (TARGET Eigen3::Eigen)
-    # Use the imported target
-#endif (TARGET Eigen3::Eigen)
+#include(FindEigen3)
+#find_package (Eigen3 3.3.4 REQUIRED)
+#If( EIGEN3_FOUND)
+#    MESSAGE( "Found Eigen3 " ${EIGEN3_VERSION} ${EIGEN3_INCLUDE_DIR})
+#    include_directories(${EIGEN3_INCLUDE_DIR})
+#else()
+#    MESSAGE(FATAL_ERROR "Can not find Eigen3")
+#endif()
 
 # RDKit
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 include(FindRDKit)
+
 if (RDKIT_FOUND)
     include_directories(${RDKIT_INCLUDE_DIR} ${RDKIT_INCLUDE_EXT_DIR})
     link_directories(${RDKIT_LIBRARY_DIR})
