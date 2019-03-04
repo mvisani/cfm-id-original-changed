@@ -45,6 +45,8 @@ int main(int argc, char *argv[]) {
     std::string peakfile_dir_or_msp;    //MSP file or Directory containing the peak files for each molecule (in format <id>.txt)
     std::string data_folder;
     std::string status_filename;
+    std::string fv_fragment_graphs_folder;
+
     bool no_train = false;
     int start_energy = 0, start_repeat = 0;
 
@@ -86,7 +88,10 @@ int main(int argc, char *argv[]) {
             ("start_energy,e", po::value<int>(&start_energy)->default_value(0),
              "Set to starting energy if want to start training part way through (single energy only -default 0)")
             ("start_repeat,r", po::value<int>(&start_repeat)->default_value(0),
-             "Set to starting repeat if want to start training part way through (default 0)");
+             "Set to starting repeat if want to start training part way through (default 0)")
+            ("fv_fragment_graphs_folder,a",  po::value<std::string>(&fv_fragment_graphs_folder)->default_value(""),
+             "Name of folder to write and read fragement cache data for training. If not specified will write to "
+             "tmp_data/fv_fragment_graphs_folder");
 
     try {
         po::command_line_parser parser{argc, argv};
@@ -122,8 +127,8 @@ int main(int argc, char *argv[]) {
     status_filename = data_folder + '/' + status_filename;
     std::string enumrated_output_folder = data_folder + "/enumerated_output";
     std::string predicted_output_folder = data_folder + "/predicted_output";
-    std::string fv_fragment_graphs_folder = data_folder + "/fv_fragment_graphs";
-
+    if(fv_fragment_graphs_folder.empty())
+        fv_fragment_graphs_folder = data_folder + "/fv_fragment_graphs";
 
     if (mpi_rank == MASTER) {
 
