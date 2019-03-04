@@ -139,8 +139,11 @@ int main(int argc, char *argv[]) {
             boost::filesystem::create_directory(enumrated_output_folder);
         if (!boost::filesystem::exists(predicted_output_folder))
             boost::filesystem::create_directory(predicted_output_folder);
-        if (!boost::filesystem::exists(fv_fragment_graphs_folder))
-            boost::filesystem::create_directory(fv_fragment_graphs_folder);
+
+        boost::filesystem::path fv_fragment_graphs_folder_path(fv_fragment_graphs_folder);
+        if (!boost::filesystem::exists(fv_fragment_graphs_folder_path))
+            boost::filesystem::create_directories(fv_fragment_graphs_folder_path);
+
         //Delete the status file if it already exists
         if (boost::filesystem::exists(status_filename))
             boost::filesystem::remove_all(status_filename);
