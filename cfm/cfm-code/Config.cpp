@@ -108,6 +108,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "abs_mass_tol") cfg.abs_mass_tol = (double) value;
         else if (name == "ppm_mass_tol") cfg.ppm_mass_tol = (double) value;
         else if (name == "num_em_restarts") cfg.num_em_restarts = (int) value;
+        else if (name == "starting_step_size") cfg.starting_step_size = (double) value;
         else if (name == "ending_step_size") cfg.ending_step_size = (double) value;
         else if (name == "decay_rate") cfg.decay_rate = (double) value;
         else if (name == "fg_depth") cfg.fg_depth = (int) value;
