@@ -95,7 +95,7 @@ protected:
     computeMetrics(int energy_level, std::vector<MolData, std::allocator<MolData>>::iterator &itdata,
                        double &jaccard, double &w_jaccard);
 
-    double getUpdatedLearningRate(double learning_rate, double current_loss, double prev_loss, int iter) const;
+    double getUpdatedLearningRate(double learning_rate, int iter) const;
 
     void updateTraningParams(double loss, double prev_loss, double q_ratio, double &learning_rate, int &sampling_method,
                              int &count_no_progress) const;

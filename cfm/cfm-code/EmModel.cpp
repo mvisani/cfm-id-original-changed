@@ -293,8 +293,8 @@ EmModel::updateTraningParams(double loss, double prev_loss, double loss_ratio, d
                              int &sampling_method,
                              int &count_no_progress) const {
     if (loss_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
-        if (learning_rate > cfg->starting_step_size * 0.2)
-            learning_rate *= 0.5;
+        if (learning_rate > cfg->ending_step_size)
+            learning_rate = std::max(learning_rate * 0.5, cfg->ending_step_size);
         count_no_progress += 1;
     } else
         count_no_progress = 0;
@@ -454,7 +454,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         // update learning rate
         if (comm->isMaster() && USE_NO_DECAY != cfg->ga_decay_method) {
-            learning_rate = getUpdatedLearningRate(learning_rate, loss, prev_loss, iter);
+            learning_rate = getUpdatedLearningRate(learning_rate, iter);
             solver->setLearningRate(learning_rate);
         }
 
@@ -525,7 +525,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
     return loss;
 }
 
-double EmModel::getUpdatedLearningRate(double learning_rate, double current_loss, double prev_loss, int iter) const {
+double EmModel::getUpdatedLearningRate(double learning_rate, int iter) const {
 
     if (USE_NO_DECAY == cfg->ga_decay_method)
         return learning_rate;
@@ -537,9 +537,6 @@ double EmModel::getUpdatedLearningRate(double learning_rate, double current_loss
     else if (USE_STEP_DECAY == cfg->ga_decay_method)
         learning_rate *= pow(cfg->step_decay_drop, floor(iter / cfg->step_decay_epochs_drop));
 
-    /*if (current_loss < prev_loss && iter > 1 && learning_rate > cfg->starting_step_size * 0.02) {
-        learning_rate = learning_rate * 0.5;
-    }*/
     return learning_rate;
 }
 

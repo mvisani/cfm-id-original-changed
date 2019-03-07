@@ -237,6 +237,7 @@ struct config_t {
     double ga_converge_thresh;
 
     double starting_step_size;
+    double ending_step_size;
     int ga_max_iterations;
     int ga_use_best_q;
 
