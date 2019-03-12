@@ -185,7 +185,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
     }
     // set default  ending_step_size
     if ( cfg.ending_step_size < 0)
-        cfg.ending_step_size = cfg.starting_step_size * 0.125;
+        cfg.ending_step_size = cfg.starting_step_size * 0.125f;
 
     initDerivedConfig(cfg);
 
