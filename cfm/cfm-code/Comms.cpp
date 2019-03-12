@@ -31,6 +31,14 @@ void Comms::printWithWorkerId(const char *msg) {
     std::cout << mpi_rank << ": " << msg << std::endl;
 }
 
+void Comms::collectGradsInMasterOrigMpi(std::vector<float> &grads){
+    std::vector<float> global_grads(grads.size(),0.0f);
+    MPI_Reduce(&grads[0], &global_grads[0], grads.size(), MPI::FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
+    grads = global_grads;
+    for(auto & grad : grads)
+        grad /= float(mpi_nump);
+}
+
 int Comms::collectSumInMaster(int partial) {
     int tmp = partial;
     int total;

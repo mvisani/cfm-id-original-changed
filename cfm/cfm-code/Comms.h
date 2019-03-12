@@ -34,6 +34,8 @@ public:
 
     virtual void collectGradsInMaster(std::vector<float> &grads) = 0;
 
+    void collectGradsInMasterOrigMpi(std::vector<float> &grads);
+
     virtual void broadcastParamsWeights(Param *param) = 0;
 
     virtual void printToMasterOnly(const char *msg) = 0;

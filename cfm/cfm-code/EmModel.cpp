@@ -483,7 +483,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 for(auto & grad : grads)
                     grad /= num_trans;
 
-            comm->collectGradsInMaster(grads);
+            comm->collectGradsInMasterOrigMpi(grads);
 
             // Step the parameters
             if (comm->isMaster()) {
@@ -494,7 +494,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             }
 
             // this should be a better way in large number of cores
-            comm->broadcastParamsWeights(param.get());
+            // comm->broadcastParamsWeights(param.get());
+            comm->broadcastParamsWeightsOrigMpi(param.get());
         }
 
         // End of batch
