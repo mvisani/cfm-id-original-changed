@@ -83,7 +83,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     // make of copy of learing rate
     // so we can share the save lr var over all em iterations
     //init some flags
-    double learning_rate = cfg->starting_step_size;
+    float learning_rate = cfg->starting_step_size;
     int sampling_method = cfg->ga_sampling_method;
     int em_no_progress_count = 0;
 
@@ -289,12 +289,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 }
 
 void
-EmModel::updateTraningParams(double loss, double prev_loss, double loss_ratio, double &learning_rate,
+EmModel::updateTraningParams(double loss, double prev_loss, double loss_ratio, float &learning_rate,
                              int &sampling_method,
                              int &count_no_progress) const {
     if (loss_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
         if (learning_rate > cfg->ending_step_size)
-            learning_rate = std::max(learning_rate * 0.5, cfg->ending_step_size);
+            learning_rate = std::max(learning_rate * 0.5f, cfg->ending_step_size);
         count_no_progress += 1;
     } else
         count_no_progress = 0;
@@ -410,7 +410,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
     // -DBL_MAX is the smallest negative double
     double loss = 0.0, prev_loss = -DBL_MAX, Best_Loss = -DBL_MAX;
 
-    std::vector<double> grads(param->getNumWeights(), 0.0);
+    std::vector<float> grads(param->getNumWeights(), 0.0);
 
     Solver *solver = nullptr;
     if (comm->isMaster()) {
@@ -540,7 +540,7 @@ double EmModel::getUpdatedLearningRate(double learning_rate, int iter) const {
     return learning_rate;
 }
 
-int EmModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
+int EmModel::computeAndAccumulateGradient(float *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
                                           int sampling_method, unsigned int energy) {
 
     unsigned int num_transitions = mol_data.getNumTransitions();
@@ -722,12 +722,12 @@ double EmModel::getRegularizationTerm(unsigned int energy) {
     return reg_term;
 }
 
-void EmModel::updateGradientForRegularizationTerm(double *grads, unsigned int energy) {
+void EmModel::updateGradientForRegularizationTerm(float *grads, unsigned int energy) {
 
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
         if(withinGradOffset(*it, energy)) {
-            double weight = param->getWeightAtIdx(*it);
+            float weight = param->getWeightAtIdx(*it);
             *(grads + *it) -= cfg->lambda * weight;
         }
     }
@@ -737,7 +737,7 @@ void EmModel::updateGradientForRegularizationTerm(double *grads, unsigned int en
     for (unsigned int energy = 0; energy < param->getNumEnergyLevels();
          energy++) {
         if(withinGradOffset(*it, energy)) {
-            double bias = param->getWeightAtIdx(energy * weights_per_energy);
+            float bias = param->getWeightAtIdx(energy * weights_per_energy);
             *(grads + energy * weights_per_energy) += cfg->lambda * bias;
         }
     }

@@ -32,7 +32,7 @@ public:
 
     virtual void setMasterUsedIdxs() = 0;
 
-    virtual void collectGradsInMaster(std::vector<double> &grads) = 0;
+    virtual void collectGradsInMaster(std::vector<float> &grads) = 0;
 
     virtual void broadcastParamsWeights(Param *param) = 0;
 
@@ -44,7 +44,7 @@ public:
 
     void printWithWorkerId(const char *msg);
 
-    double collectQInMaster(double Q);
+    float collectQInMaster(float Q);
 
     bool isMaster() { return mpi_rank == MASTER; };
 
@@ -54,7 +54,7 @@ public:
 
     int collectSumInMaster(int partial);
 
-    double broadcastQ(double Q);
+    float broadcastQ(float Q);
 
     std::set<unsigned int> used_idxs;
     unsigned int num_used;
@@ -71,7 +71,7 @@ class WorkerComms : public Comms {
 public:
     void setMasterUsedIdxs() override;
 
-    void collectGradsInMaster(std::vector<double> &grads) override;
+    void collectGradsInMaster(std::vector<float> &grads) override;
 
     void broadcastParamsWeights(Param *param) override;
 
@@ -83,7 +83,7 @@ class MasterComms : public Comms {
 public:
     void setMasterUsedIdxs() override;
 
-    void collectGradsInMaster(std::vector<double> &grads) override;
+    void collectGradsInMaster(std::vector<float> &grads) override;
 
     void broadcastParamsWeights(Param *param) override;
 

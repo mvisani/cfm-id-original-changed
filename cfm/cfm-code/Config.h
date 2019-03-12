@@ -222,7 +222,7 @@ struct config_t {
     //Neural Net Configuration
     std::vector<int> theta_nn_hlayer_num_nodes;
     std::vector<int> theta_nn_layer_act_func_ids;
-    std::vector<double> nn_layer_dropout_probs;
+    std::vector<float> nn_layer_dropout_probs;
 
     //EM Configuration
     double em_converge_thresh;
@@ -236,8 +236,8 @@ struct config_t {
     int ga_decay_method;
     double ga_converge_thresh;
 
-    double starting_step_size;
-    double ending_step_size;
+    float starting_step_size;
+    float ending_step_size;
     int ga_max_iterations;
     int ga_use_best_q;
 

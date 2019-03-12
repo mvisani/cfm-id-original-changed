@@ -51,7 +51,7 @@ struct LinearModelThetaTestFixture {
 BOOST_FIXTURE_TEST_SUITE(ParamsTestComputeTransitionThetas, LinearModelThetaTestFixture)
 
     BOOST_AUTO_TEST_CASE(FeatureVectorOne) {
-        double tol = 1e-10;
+        double tol = 1e-5;
         FeatureVector fv;
 
         int med_offset = param->getNumWeightsPerEnergyLevel();
@@ -72,7 +72,7 @@ BOOST_FIXTURE_TEST_SUITE(ParamsTestComputeTransitionThetas, LinearModelThetaTest
     }
 
     BOOST_AUTO_TEST_CASE(FeatureVectorTwo) {
-        double tol = 1e-10;
+        double tol = 1e-5;
         FeatureVector fv;
 
         int med_offset = param->getNumWeightsPerEnergyLevel();
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_SUITE(ParamsTestComputeAndAccumulateGradient)
 
         double tol = 1e-3;
 
-        std::vector<double> grads;
+        std::vector<float> grads;
 
         suft_counts_t suft;
 

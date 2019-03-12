@@ -55,7 +55,7 @@ void EmNNModel::writeParamsToFile(std::string &filename) {
 }
 
 //Gradient Computation using Backpropagation
-int EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
+int EmNNModel::computeAndAccumulateGradient(float *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
                                             int sampling_method, unsigned int energy) {
 
     unsigned int num_transitions = mol_data.getNumTransitions();
@@ -125,7 +125,7 @@ int EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData 
         nn_param->computeDeltas(deltasA, deltasB, z_values, a_values, denom, energy);
 
         //Compute the unweighted gradients
-        std::vector<std::vector<double> > unweighted_grads;
+        std::vector<std::vector<float> > unweighted_grads;
         std::set<unsigned int> from_id_used_idxs;
         nn_param->computeUnweightedGradients(unweighted_grads, from_id_used_idxs, fvs, deltasA, deltasB, a_values);
 
@@ -217,7 +217,7 @@ double EmNNModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_co
     return Q;
 }
 
-void EmNNModel::updateGradientForRegularizationTerm(double *grads, unsigned int energy) {
+void EmNNModel::updateGradientForRegularizationTerm(float *grads, unsigned int energy) {
     
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {

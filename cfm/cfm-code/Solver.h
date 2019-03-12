@@ -13,58 +13,58 @@
 
 class Solver {
 public:
-    virtual void adjustWeights(std::vector<double> &grads,
+    virtual void adjustWeights(std::vector<float> &grads,
                                std::set<unsigned int> &used_idxs,
                                boost::shared_ptr<Param> param) = 0;
 
-    void setLearningRate(const double lr) { this->learning_rate = lr; };
+    void setLearningRate(const float lr) { this->learning_rate = lr; };
 
     virtual ~Solver() = default;
 protected:
-    double learning_rate;
+    float learning_rate;
 };
 
 class Sgd: public Solver {
 public:
-    Sgd(double learning_rate);
-    void adjustWeights(std::vector<double> &grads,
+    Sgd(float learning_rate);
+    void adjustWeights(std::vector<float> &grads,
                        std::set<unsigned int> &used_idxs,
                        boost::shared_ptr<Param> param) override;
 };
 
 class Momentum : public Solver {
 public:
-    Momentum(unsigned int length, double learning_rate, double momentum);
+    Momentum(unsigned int length, float learning_rate, float momentum);
 
-    void adjustWeights(std::vector<double> &grads,
+    void adjustWeights(std::vector<float> &grads,
                        std::set<unsigned int> &used_idxs,
                        boost::shared_ptr<Param> param) override;
 
 private:
-    std::vector<double> prev_v;
-    double momentum;
+    std::vector<float> prev_v;
+    float momentum;
 
 };
 
 class Adam : public Solver {
 public:
     Adam(unsigned int length,
-         double learning_rate,
-         double beta_1,
-         double beta_2,
-         double eps);
+         float learning_rate,
+         float beta_1,
+         float beta_2,
+         float eps);
 
-    void adjustWeights(std::vector<double> &grads,
+    void adjustWeights(std::vector<float> &grads,
                        std::set<unsigned int> &used_idxs,
                        boost::shared_ptr<Param> param) override;
 
 protected:
-    double beta_1;
-    double beta_2;
-    double eps;
+    float beta_1;
+    float beta_2;
+    float eps;
     int iteration_count;
-    std::vector<double> first_moment_vector;
-    std::vector<double> second_moment_vector;
+    std::vector<float> first_moment_vector;
+    std::vector<float> second_moment_vector;
 
 };
 
@@ -73,62 +73,62 @@ protected:
 class AdamW : public Adam {
 public:
     AdamW(unsigned int length,
-         double learning_rate,
-         double beta_1,
-         double beta_2,
-         double eps,
-          double w) : Adam(length, learning_rate, beta_1, beta_2, eps) {
+         float learning_rate,
+         float beta_1,
+         float beta_2,
+         float eps,
+          float w) : Adam(length, learning_rate, beta_1, beta_2, eps) {
         this->w = w;
     };
 
-    void adjustWeights(std::vector<double> &grads,
+    void adjustWeights(std::vector<float> &grads,
                        std::set<unsigned int> &used_idxs,
                        boost::shared_ptr<Param> param) override;
     
 private:
-    double w;
+    float w;
 };
 
 class Adadelta : public Solver {
 public:
     Adadelta(unsigned int length,
-             double learning_rate,
-             double decay_rate,
-             double eps);
+             float learning_rate,
+             float decay_rate,
+             float eps);
 
-    void adjustWeights(std::vector<double> &grads,
+    void adjustWeights(std::vector<float> &grads,
                        std::set<unsigned int> &used_idxs,
                        boost::shared_ptr<Param> param) override;
 
 private:
-    double decay_rate;
-    double eps;
+    float decay_rate;
+    float eps;
     int iteration_count;
-    std::vector<double> mean_squared_delta_x;
-    std::vector<double> mean_squared_gradients;
+    std::vector<float> mean_squared_delta_x;
+    std::vector<float> mean_squared_gradients;
 };
 
 
 class AMSgrad : public Solver {
 public:
     AMSgrad(unsigned int length,
-            double learning_rate,
-            double beta_1,
-            double beta_2,
-            double eps);
+            float learning_rate,
+            float beta_1,
+            float beta_2,
+            float eps);
 
-    void adjustWeights(std::vector<double> &grads,
+    void adjustWeights(std::vector<float> &grads,
                        std::set<unsigned int> &used_idxs,
                        boost::shared_ptr<Param> param) override;
 
 private:
-    double beta_1;
-    double beta_2;
-    double eps;
+    float beta_1;
+    float beta_2;
+    float eps;
     int iteration_count;
-    std::vector<double> first_moment_vector;
-    std::vector<double> second_moment_vector;
-    std::vector<double> second_moment_max_vector;
+    std::vector<float> first_moment_vector;
+    std::vector<float> second_moment_vector;
+    std::vector<float> second_moment_max_vector;
 };
 
 

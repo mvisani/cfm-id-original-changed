@@ -33,7 +33,7 @@ public:
               std::string initial_params_filename = "");
 
     //This is public so the test can access it....there must be a better way?
-    int computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
+    int computeAndAccumulateGradient(float *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
                                      int sampling_method, unsigned int energy) override;
 
     void collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_idxs, unsigned int energy) override;
@@ -42,7 +42,7 @@ public:
 
     double getRegularizationTerm(unsigned int energy) override;
 
-    void updateGradientForRegularizationTerm(double *grads, unsigned int energy) override;
+    void updateGradientForRegularizationTerm(float *grads, unsigned int energy) override;
 
     void writeParamsToFile(std::string &filename) override;
 
