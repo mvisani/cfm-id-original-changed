@@ -430,7 +430,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             }
         }
 
-        comm->setMasterUsedIdxs();
+        //comm->setMasterUsedIdxs();
         if (comm->isMaster())
             zeroUnusedParams();
         if (comm->isMaster())
