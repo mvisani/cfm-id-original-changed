@@ -108,8 +108,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "abs_mass_tol") cfg.abs_mass_tol = (double) value;
         else if (name == "ppm_mass_tol") cfg.ppm_mass_tol = (double) value;
         else if (name == "num_em_restarts") cfg.num_em_restarts = (int) value;
-        else if (name == "starting_step_size") cfg.starting_step_size = (double) value;
-        else if (name == "ending_step_size") cfg.ending_step_size = (double) value;
+        else if (name == "starting_step_size") cfg.starting_step_size = (float) value;
+        else if (name == "ending_step_size") cfg.ending_step_size = (float) value;
         else if (name == "decay_rate") cfg.decay_rate = (double) value;
         else if (name == "fg_depth") cfg.fg_depth = (int) value;
         else if (name == "allow_frag_detours") cfg.allow_frag_detours = (int) value;
@@ -122,7 +122,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "theta_function") cfg.theta_function = (int) value;
         else if (name == "theta_nn_hlayer_num_nodes") cfg.theta_nn_hlayer_num_nodes.push_back((int) value);
         else if (name == "theta_nn_layer_act_func_ids") cfg.theta_nn_layer_act_func_ids.push_back((int) value);
-        else if (name == "nn_layer_dropout_probs") cfg.nn_layer_dropout_probs.push_back((double) value);
+        else if (name == "nn_layer_dropout_probs") cfg.nn_layer_dropout_probs.push_back((float) value);
         else if (name == "ga_minibatch_nth_size") cfg.ga_minibatch_nth_size = (int) value;
         else if (name == "ga_max_iterations") cfg.ga_max_iterations = (int) value;
         else if (name == "ga_momentum") cfg.ga_momentum = (double) value;
@@ -185,7 +185,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
     }
     // set default  ending_step_size
     if ( cfg.ending_step_size < 0)
-        cfg.ending_step_size = cfg.starting_step_size * 0.125;
+        cfg.ending_step_size = cfg.starting_step_size * 0.125f;
 
     initDerivedConfig(cfg);
 

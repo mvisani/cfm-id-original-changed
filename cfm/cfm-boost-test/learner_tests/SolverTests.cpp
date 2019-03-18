@@ -24,14 +24,14 @@ struct SolverTestFixture {
         grads = {1.0, 0.0, -3.0, 3.3, -1.0, 0.0, 20, 17.8};
         used_idxs = {0,1,2,3};
 
-        std::vector<double> init_weights (8,0.0);
+        std::vector<float> init_weights (8,0.0);
         std::vector<std::string> fake_fnames = {"BreakAtomPair"};
         int num_energy_levels = 1;
         param = boost::shared_ptr<Param>(new Param(fake_fnames, num_energy_levels));
         param->setWeights(init_weights);
     };
     ~SolverTestFixture() { };
-    std::vector<double> grads;
+    std::vector<float> grads;
     boost::shared_ptr<Param> param;
     std::set<unsigned int> used_idxs;
 

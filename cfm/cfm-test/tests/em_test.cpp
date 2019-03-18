@@ -242,7 +242,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     act_ids[0] = RELU_NN_ACTIVATION_FUNCTION;
     act_ids[1] = RELU_NN_ACTIVATION_FUNCTION;
     act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;    //Final theta should be linear
-    std::vector<double> dropout_probs(2,0);
+    std::vector<float> dropout_probs(2,0);
     orig_cfg.theta_nn_hlayer_num_nodes = hlayer_numnodes;
     orig_cfg.theta_nn_layer_act_func_ids = act_ids;
     orig_cfg.nn_layer_dropout_probs = dropout_probs;

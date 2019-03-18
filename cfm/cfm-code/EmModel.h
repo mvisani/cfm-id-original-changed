@@ -52,7 +52,7 @@ public:
     trainModel(std::vector<MolData> &molDataSet, int group, std::string &out_param_filename, int energy_level) override;
 
     //This is public so the test can access it....there must be a better way?
-    virtual int computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
+    virtual int computeAndAccumulateGradient(float *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
                                              int sampling_method, unsigned int energy);
 
     virtual void collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_idxs, unsigned int energy);
@@ -87,7 +87,7 @@ protected:
     // nullptr means do not update grads
     virtual double getRegularizationTerm(unsigned int energy);
 
-    virtual void updateGradientForRegularizationTerm(double *grads, unsigned int energy);
+    virtual void updateGradientForRegularizationTerm(float *grads, unsigned int energy);
 
     void getSubSampledTransitions(MolData &moldata, int sampling_method, unsigned int energy,
                                   std::set<int> &selected_trans_id) const;
@@ -97,7 +97,8 @@ protected:
 
     double getUpdatedLearningRate(double learning_rate, int iter) const;
 
-    void updateTraningParams(double loss, double prev_loss, double q_ratio, double &learning_rate, int &sampling_method,
+    void updateTraningParams(double loss, double prev_loss, double loss_ratio, float &learning_rate,
+                             int &sampling_method,
                              int &count_no_progress) const;
 
     bool withinGradOffset(int idx, unsigned energy) {

@@ -34,12 +34,12 @@ struct NNParamTestFixture {
                                  RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION,
                                  LINEAR_NN_ACTIVATION_FUNCTION};
 
-        std::vector<double> dropout_probs(2, 0.0);
+        std::vector<float> dropout_probs(2, 0.0);
         param = new NNParam(fnames, 3, hlayer_numnodes, act_ids, dropout_probs);
 
         param->initWeights(PARAM_RANDOM_INIT);
 
-        std::vector<double> weights(37, 0.0);
+        std::vector<float> weights(37, 0.0);
 
         // Input Layer 6 Nodes
         weights[0] = 1.0;
@@ -72,7 +72,7 @@ struct NNParamTestFixture {
         weights[35] = -2.0;
         weights[36] = -1.0;    //Theta
 
-        std::vector<double> weights_for_all_energy = weights;
+        std::vector<float> weights_for_all_energy = weights;
         std::copy(weights.begin(), weights.end(), std::back_inserter(weights_for_all_energy));
         std::copy(weights.begin(), weights.end(), std::back_inserter(weights_for_all_energy));
 
@@ -87,7 +87,7 @@ struct NNParamTestFixture {
 BOOST_FIXTURE_TEST_SUITE(NNParamsComputeTests, NNParamTestFixture)
 
     BOOST_AUTO_TEST_CASE(ComputeThetasTest) {
-        double tol = 1e-10;
+        double tol = 1e-5;
         FeatureVector fv;
 
         fv.addFeatureAtIdx(1.0, 0);
@@ -103,7 +103,7 @@ BOOST_FIXTURE_TEST_SUITE(NNParamsComputeTests, NNParamTestFixture)
     std::vector<int> energies = {0, 1, 2};
 
     BOOST_DATA_TEST_CASE(ComputeDeltasTest, bdata::make(energies), energy) {
-        double tol = 1e-10;
+        double tol = 1e-5;
 
         FeatureVector fv1, fv2;
         fv1.addFeatureAtIdx(1.0, 0);
@@ -146,7 +146,7 @@ BOOST_FIXTURE_TEST_SUITE(NNParamsComputeTests, NNParamTestFixture)
     }
 
     BOOST_DATA_TEST_CASE(UnweightedGradientsTest, bdata::make(energies), energy) {
-        double tol = 1e-10;
+        double tol = 1e-2;
 
         FeatureVector fv1, fv2;
         fv1.addFeatureAtIdx(1.0, 0);
@@ -167,7 +167,7 @@ BOOST_FIXTURE_TEST_SUITE(NNParamsComputeTests, NNParamTestFixture)
         param->computeDeltas(deltasA, deltasB, z_values, a_values, rho_denom, energy);
 
         //Now compute the unweighted gradients
-        std::vector<std::vector<double> > unweighted_grads;
+        std::vector<std::vector<float> > unweighted_grads;
         std::set<unsigned int> used_idxs;
         std::vector<const FeatureVector *> fvs(2);
         fvs[0] = &fv1;
@@ -175,17 +175,17 @@ BOOST_FIXTURE_TEST_SUITE(NNParamsComputeTests, NNParamTestFixture)
         param->computeUnweightedGradients(unweighted_grads, used_idxs, fvs, deltasA, deltasB, a_values);
 
         //Check the values
-        double x1 = exp(theta1) / rho_denom, x2 = exp(theta2) / rho_denom;
-        double exp_unweighted_1[] = {-5 + 5 * x1, 0, -5 + 5 * x1, 0, 0, -5 + 5 * x1, -4 + 4 * x1, 0, -4 + 4 * x1, 0, 0,
+        float x1 = exp(theta1) / rho_denom, x2 = exp(theta2) / rho_denom;
+        float exp_unweighted_1[] = {-5 + 5 * x1, 0, -5 + 5 * x1, 0, 0, -5 + 5 * x1, -4 + 4 * x1, 0, -4 + 4 * x1, 0, 0,
                                      -4 + 4 * x1, -8 * x2, 0, 0, -8 * x2, 0, -8 * x2, 0, 0, 0, 0, 0, 0,
                                      -2 + 2 * x1 + 2 * x2, -2 * 2 + 2 * 2 * x1, 5 * 2 - 5 * 2 * x1, 2 * x2, 0,
                                      -1 + x1 + x2, -2 + 2 * x1, 5 - 5 * x1, x2, 0, 1 - x1 - x2, 3 - 3 * x1 - x2,
                                      -13 + 13 * x1 + 7 * x2};
-        double exp_unweighted_2[] = {5 * x1, 0, 5 * x1, 0, 0, 5 * x1, 4 * x1, 0, 4 * x1, 0, 0, 4 * x1, 8 - 8 * x2, 0, 0,
+        float exp_unweighted_2[] = {5 * x1, 0, 5 * x1, 0, 0, 5 * x1, 4 * x1, 0, 4 * x1, 0, 0, 4 * x1, 8 - 8 * x2, 0, 0,
                                      8 - 8 * x2, 0, 8 - 8 * x2, 0, 0, 0, 0, 0, 0, -2 + 2 * x1 + 2 * x2, 4 * x1,
                                      -5 * 2 * x1, -2 + 2 * x2, 0, -1 + x1 + x2, 2 * x1, -5 * x1, -1 + x2, 0,
                                      1 - x1 - x2, +1 - 3 * x1 - x2, -7 + 13 * x1 + 7 * x2};
-        double exp_unweighted_persist[] = {5 * x1, 0, 5 * x1, 0, 0, 5 * x1, 4 * x1, 0, 4 * x1, 0, 0, 4 * x1, -8 * x2, 0,
+        float exp_unweighted_persist[] = {5 * x1, 0, 5 * x1, 0, 0, 5 * x1, 4 * x1, 0, 4 * x1, 0, 0, 4 * x1, -8 * x2, 0,
                                            0, -8 * x2, 0, -8 * x2, 0, 0, 0, 0, 0, 0, 2 * x1 + 2 * x2, 4 * x1,
                                            -5 * 2 * x1, 2 * x2, 0, x1 + x2, 2 * x1, -5 * x1, x2, 0, -x1 - x2,
                                            -3 * x1 - x2, 13 * x1 + 7 * x2};
@@ -214,7 +214,7 @@ BOOST_FIXTURE_TEST_SUITE(NNParamsComputeTests, NNParamTestFixture)
             MPI::Init();
 
         double tol = 1e-3;
-        std::vector<double> grads;
+        std::vector<float> grads;
 
         suft_counts_t suft;
 
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_SUITE(NNParamsIndexAndDropOutTests)
         std::vector<int> act_ids{RELU_NN_ACTIVATION_FUNCTION, RELU_NN_ACTIVATION_FUNCTION,
                                  RELU_NN_ACTIVATION_FUNCTION, LINEAR_NN_ACTIVATION_FUNCTION};
 
-        std::vector<double> dropout_probs(2, 0.0);
+        std::vector<float> dropout_probs(2, 0.0);
         NNParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
 
         std::vector<unsigned int> bias_indexes;
@@ -318,7 +318,7 @@ BOOST_AUTO_TEST_SUITE(NNParamsIndexAndDropOutTests)
         std::vector<int> act_ids{RELU_NN_ACTIVATION_FUNCTION, RELU_NN_ACTIVATION_FUNCTION,
                                  RELU_NN_ACTIVATION_FUNCTION, LINEAR_NN_ACTIVATION_FUNCTION};
 
-        std::vector<double> dropout_probs{0.5, 0.5, 0, 0};
+        std::vector<float> dropout_probs{0.5, 0.5, 0, 0};
         NNParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
 
         auto dropout_prob_ptr = param.getDropoutsProbPtr();
@@ -358,7 +358,7 @@ BOOST_AUTO_TEST_SUITE(NNParamsIndexAndDropOutTests)
     }
     BOOST_AUTO_TEST_CASE(SaveAndLoadParamFileTest){
 
-        double tol = 1e-6;
+        double tol = 1e-5;
 
         //Create some parameters
         std::vector<std::string> fnames;
@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_SUITE(NNParamsIndexAndDropOutTests)
                                  RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION,
                                  LINEAR_NN_ACTIVATION_FUNCTION};
 
-        std::vector<double> dropout_probs(2,0.0);
+        std::vector<float> dropout_probs(2,0.0);
         NNParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
         param.initWeights(PARAM_RANDOM_INIT);
 

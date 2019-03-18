@@ -154,7 +154,7 @@ void CommsTestCollectGradsInMaster::runTest(){
 	comm->setMasterUsedIdxs();
 
 	//Set some gradients
-	std::vector<double> grads( mpi_nump + 1 );
+	std::vector<float> grads( mpi_nump + 1 );
 	for( unsigned int i = 0; i < grads.size(); i++ ){
 		if( mpi_rank == MASTER ) grads[i] = 0.0;
 		else grads[i] = rand();	//Make sure other unused grads are ignored
