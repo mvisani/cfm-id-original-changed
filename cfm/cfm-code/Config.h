@@ -60,60 +60,33 @@ static const int USE_EXP_DECAY = 2;
 static const int USE_STEP_DECAY = 3;
 
 // Decay
-static const double DEFAULT_DECAY_RATE = 0.0;
-static const double DEFAULT_EXP_DECAY_K = 0.1;
-static const double DEFAULT_STEP_DECAY_DROP = 0.5;
-static const double DEFAULT_STEP_DECAY_EPOCHS_DROP = 10;
+static const float DEFAULT_DECAY_RATE = 0.0;
+static const float DEFAULT_EXP_DECAY_K = 0.1;
+static const float DEFAULT_STEP_DECAY_DROP = 0.5;
+static const int DEFAULT_STEP_DECAY_EPOCHS_DROP = 10;
 
 // Learning Rate
-static const double DEFAULT_LEARNING_RATE = 0.001;
+static const float DEFAULT_LEARNING_RATE = 0.001;
 
 //Momentum term used in Gradient Ascent
-static const double DEFAULT_MOMENTUM_ALPHA = 0.1;
+static const float DEFAULT_MOMENTUM_ALPHA = 0.1;
 
 //ADAM
-static const double DEFAULT_ADAM_BETA_1 = 0.9;
-static const double DEFAULT_ADAM_BETA_2 = 0.999;
+static const float DEFAULT_ADAM_BETA_1 = 0.9;
+static const float DEFAULT_ADAM_BETA_2 = 0.999;
 
 //AdaDelta
-static const double DEFAULT_ADADELTA_LEARNING_RATE = 1.0;
-static const double DEFAULT_ADADELTA_RHO = 0.95;
+static const float DEFAULT_ADADELTA_LEARNING_RATE = 1.0;
+static const float DEFAULT_ADADELTA_RHO = 0.95;
 
 // EPS
-static const double DEFAULT_EPS = 1e-8;
+static const float DEFAULT_EPS = 1e-8;
 
-//Whether or not gradient ascent should be stochastic
-static const int DEFAULT_STOCHASTIC_GA = 0;
-
-//Max by which Q can change between iterations to call convergence 
-static const double DEFAULT_EM_CONVERGE_THRESH = 0.001;
-
-//Number of iterations gradient ascent must remain converged
-//before being considered converged
-static const int DEFAULT_CONVERGE_COUNT_THRESH = 1;
-
-//Which IPFP-like algorithm to run during E-step
-static const int DEFAULT_IPFP_ALGORITHM = 2;    //IPFP_WITH_OSC_ADJUST
-
-//Threshold for testing convergence of the IPFP algorithm
-static const double DEFAULT_IPFP_CONVERGE_THRESH = 0.005;
-
-//Threshold for testing oscillatory convergence of the IPFP algorithm
-static const double DEFAULT_IPFP_OSC_CONVERGE_THRESH = 0.999;
+//Max by which Q can change between iterations to call convergence
+static const float DEFAULT_EM_CONVERGE_THRESH = 0.001;
 
 //Number of times to do a random restart of EM
 static const int DEFAULT_NUM_EM_RESTARTS = 3;
-
-//Default weight for undetected mass in the spectrum
-static const double DEFAULT_LOST_PROB = 0.0;
-
-//Default weight given to the next highest spectrum reading for unobserved fragments
-static const double DEFAULT_BETWEEN_LOST_PROB = 1.0;
-
-//Gradient Ascent Line Search Parameters
-static const double DEFAULT_LINE_SEARCH_ALPHA = 0.1;
-static const double DEFAULT_LINE_SEARCH_BETA = 0.5;
-static const int DEFAULT_MAX_SEARCH_COUNT = 20;
 
 static const int POSITIVE_ESI_IONIZATION_MODE = 1;
 static const int NEGATIVE_ESI_IONIZATION_MODE = 2;
