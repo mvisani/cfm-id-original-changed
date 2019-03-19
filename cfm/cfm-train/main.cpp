@@ -91,7 +91,8 @@ int main(int argc, char *argv[]) {
              "Set to starting repeat if want to start training part way through (default 0)")
             ("fv_fragment_graphs_folder,a",  po::value<std::string>(&fv_fragment_graphs_folder)->default_value(""),
              "Name of folder to write and read fragement cache data for training. If not specified will write to "
-             "tmp_data/fv_fragment_graphs_folder");
+             "tmp_data/fv_fragment_graphs_folder")
+            ("no_train",po::value<bool>(&no_train)->default_value(false),"no training flag, defualt false");
 
     try {
         po::command_line_parser parser{argc, argv};
