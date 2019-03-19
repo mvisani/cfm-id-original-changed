@@ -74,6 +74,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_dropout_delta = -0.05;
     cfg.disable_cross_val_metrics = false;
     cfg.disable_training_metrics = false;
+    cfg.em_no_progress_count = 3;
+    cfg.ga_no_progress_count = 3;
     //cfg.max_transitions_per_iteration = 100;
 }
 
@@ -152,8 +154,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_dropout_lowerbond");
         else if (name == "disable_cross_val_metrics") cfg.disable_cross_val_metrics = (int) value;
         else if (name == "disable_training_metrics") cfg.disable_training_metrics = (int) value;
-        else if (name == "use_fg_graph");
-        else if (name == "ring_break_depth_cap");
+        else if (name == "em_no_progress_count") cfg.em_no_progress_count = (int) value;
+        else if (name == "ga_no_progress_count") cfg.ga_no_progress_count = (int) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();

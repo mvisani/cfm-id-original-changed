@@ -265,7 +265,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         // check if EM meet halt flag
         updateTraningParams(loss, prev_loss, loss_ratio, learning_rate, sampling_method, em_no_progress_count);
 
-        if (em_no_progress_count >= 3) {
+        if (em_no_progress_count >= cfg->em_no_progress_count) {
             comm->printToMasterOnly(
                     ("EM Stopped after " + std::to_string(em_no_progress_count) + " No Progress Iterations").c_str());
             comm->printToMasterOnly(("EM Converged after " + std::to_string(iter) + " iterations").c_str());
@@ -447,7 +447,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
     int max_iteration = cfg->ga_max_iterations;
     int ga_no_progress_count = 0;
-    while (iter++ < max_iteration && ga_no_progress_count <= 3) {
+    while (iter++ < max_iteration && ga_no_progress_count <= cfg->ga_no_progress_count) {
 
         if (iter > 1)
             prev_loss = loss;
