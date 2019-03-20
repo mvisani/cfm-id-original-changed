@@ -20,6 +20,11 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+
 void reportMeanStd(std::ostream &out, std::vector<double> &scores);
 
 void parseInputFile(std::vector<MolData> &data, std::string &input_filename);
@@ -446,12 +451,18 @@ double addSq(double x, double y) { return x + y * y; }
 
 void reportMeanStd(std::ostream &out, std::vector<double> &scores) {
 
-    double mean =
+    /*double mean =
             std::accumulate(scores.begin(), scores.end(), 0.0) / scores.size();
     double sq_mean =
             std::accumulate(scores.begin(), scores.end(), 0.0, addSq) / scores.size();
-    double stddev = std::sqrt(sq_mean - mean * mean) / scores.size();
-    out << mean << " " << stddev << std::endl;
+    double stddev = std::sqrt(sq_mean - mean * mean) / scores.size();*/
+
+    using namespace boost::accumulators;
+    accumulator_set<double, stats<tag::variance> > acc;
+    for(auto & score : scores)
+        acc(score);
+
+    out << mean(acc) << " " << sqrt(variance(acc)) << std::endl;
 }
 
 void parseInputFile(std::vector<MolData> &data, std::string &input_filename) {
