@@ -310,13 +310,13 @@ public:
                                                    std::vector<double> &thetas, double explore_weight);
 
     // Get a list of transitions ids , with random walk
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_selection);
 
     // Get a list of transitions ids , with random walk
     void
     getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
 
-    void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio);
+    void getRandomSampledTransitions(std::set<int> &selected_trans_id, int max_selection);
 
     int getHeight() { return depth; };
 

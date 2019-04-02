@@ -27,9 +27,7 @@
 static const int DEFAULT_FRAGGRAPH_DEPTH = 2;
 
 //Fragmentation depth in the model
-static const int DEFAULT_MODEL_DEPTH = 6;
-static const int DEFAULT_MED_DEPTH = 4;
-static const int DEFAULT_LOW_DEPTH = 2;
+static const int DEFAULT_MODEL_DEPTH = 2;
 
 //Observation variance (parameters to the peak gaussian distribution -
 // indicative of mass spec mass accuracy)
@@ -147,10 +145,9 @@ static const int DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS = -1;    //-1 is no t
 static const int DEFAULT_NOT_USE_GRAPH_PRUNING = 0;
 static const int DEFAULT_USE_BEST_Q_IN_GA = 0;
 static const int USE_NO_SAMPLING = 0;
-static const int USE_GRAPH_RANDOM_WALK_SAMPLING = 1;
-static const int USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING = 2;
+static const int USE_RANDOM_SAMPLING = 1;
+static const int USE_GRAPH_RANDOM_WALK_SAMPLING = 2;
 static const int USE_DIFFERENCE_SAMPLING = 3;
-static const double DEFAULT_GRAPH_SAMPLING_K = 1.0;
 
 //Configuration
 struct config_t {
@@ -172,8 +169,7 @@ struct config_t {
     bool reset_sampling;
     double reset_sampling_lr_ratio;
     int ga_sampling_method;
-    double ga_graph_sampling_k;
-    double ga_sampling_explore_weight;
+    int ga_sampling_max_iteration;
     int ga_diff_sampling_peak_num;
     double ga_diff_sampling_difference;
     //int max_transitions_per_iteration;
@@ -231,10 +227,8 @@ struct config_t {
     // For adadelta
     double ga_adadelta_rho;
 
-    int max_search_count;
     int update_bias_first;
     int ga_minibatch_nth_size;
-    double ga_dropout_delta;
 
     int fragraph_compute_timeout_in_secs;
 

@@ -531,17 +531,16 @@ void FragmentGraph::removeDetours() {
 }
 
 void
-FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio) {
+FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_selection) {
 
     // use ceil so we are at least get one
-    int limited = (int) std::ceil((double) transitions.size() * ratio);
 
     std::vector<std::uniform_int_distribution<int>> uniform_int_distributions;
     // add to discrete_distributions
     for (auto &frag_trans_ids: from_id_tmap)
         uniform_int_distributions.emplace_back(std::uniform_int_distribution<>(0, (int) frag_trans_ids.size() - 1));
 
-    while (selected_ids.size() < limited) {
+    while (selected_ids.size() < max_selection) {
         // init queue and add root
         std::queue<int> fgs;
         std::set<int> visited_fgs;
@@ -746,16 +745,15 @@ bool FragmentGraph::is_match(std::set<unsigned int> &weights, double mass) const
     return (weights.find(fixed_mass) != weights.end());
 }
 
-void FragmentGraph::getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio) {
-    int limited = (int) std::ceil((double) transitions.size() * ratio);
+void FragmentGraph::getRandomSampledTransitions(std::set<int> &selected_trans_id, int max_selection) {
 
     std::vector<int> ids(transitions.size());
     std::iota(ids.begin(), ids.end(), 0);
     std::shuffle(ids.begin(), ids.end(), util_rng);
 
-    for (int i = 0; i < limited; ++i)
+    max_selection = std::min(max_selection, (int)transitions.size());
+    for (int i = 0; i < max_selection; ++i)
         selected_trans_id.insert(ids[i]);
-
 }
 
 void FragmentGraph::clearAllSmiles() {

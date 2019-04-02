@@ -191,11 +191,11 @@ public:
     void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                    double explore_weight);
 
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_selection);
 
     void getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
 
-    void getRandomSampledTransitions(std::set<int> &selected_ids, double ratio);;;
+    void getRandomSampledTransitions(std::set<int> &selected_ids, int max_selection);
 
     unsigned int getNumTransitions() const {
         return fg->getNumTransitions();

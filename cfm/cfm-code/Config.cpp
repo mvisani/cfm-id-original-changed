@@ -66,12 +66,11 @@ void initDefaultConfig(config_t &cfg) {
     cfg.use_graph_pruning = DEFAULT_NOT_USE_GRAPH_PRUNING;
     cfg.ga_use_best_q = DEFAULT_USE_BEST_Q_IN_GA;
     cfg.ga_sampling_method = USE_NO_SAMPLING;
-    cfg.ga_graph_sampling_k = DEFAULT_GRAPH_SAMPLING_K;
     cfg.reset_sampling = false;
     cfg.reset_sampling_lr_ratio = 1.0;
+    cfg.ga_sampling_max_iteration = 100;
     cfg.ga_diff_sampling_peak_num = 20;
     cfg.ga_diff_sampling_difference = 0.05;
-    cfg.ga_dropout_delta = -0.05;
     cfg.disable_cross_val_metrics = false;
     cfg.disable_training_metrics = false;
     cfg.em_no_progress_count = 3;
@@ -144,14 +143,11 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "use_graph_pruning") cfg.use_graph_pruning = (int) value;
         else if (name == "ga_use_best_q") cfg.ga_use_best_q = (int) value;
         else if (name == "ga_sampling_method") cfg.ga_sampling_method = (int) value;
-        else if (name == "ga_graph_sampling_k") cfg.ga_graph_sampling_k = (double) value;
         else if (name == "reset_sampling") cfg.reset_sampling = (bool) value;
         else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double) value;
-        else if (name == "ga_sampling_explore_weight") cfg.ga_sampling_explore_weight = (double) value;
+        else if (name == "ga_sampling_max_iteration") cfg.ga_sampling_max_iteration = (int) value;
         else if (name == "ga_diff_sampling_peak_num") cfg.ga_diff_sampling_peak_num = (int) value;
         else if (name == "ga_diff_sampling_difference") cfg.ga_diff_sampling_difference = (double) value;
-        else if (name == "ga_dropout_delta") cfg.ga_dropout_delta = (double) value;
-        else if (name == "ga_dropout_lowerbond");
         else if (name == "disable_cross_val_metrics") cfg.disable_cross_val_metrics = (int) value;
         else if (name == "disable_training_metrics") cfg.disable_training_metrics = (int) value;
         else if (name == "em_no_progress_count") cfg.em_no_progress_count = (int) value;
@@ -284,14 +280,11 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         }
 
         switch (cfg.ga_sampling_method) {
-            case USE_GRAPH_RANDOM_WALK_SAMPLING:
-                std::cout << "Using Graph Random Walk Sampling on transitions with K="
-                             << cfg.ga_graph_sampling_k << std::endl;
+            case USE_RANDOM_SAMPLING:
+                std::cout << "Using Random Sampling on transitions" << std::endl;
                 break;
-            case USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING:
-                std::cout << "Using Graph Weighted Random Walk Sampling on transitions with K="
-                             << cfg.ga_graph_sampling_k << " explore weight=" << cfg.ga_sampling_explore_weight
-                          << std::endl;
+            case USE_GRAPH_RANDOM_WALK_SAMPLING:
+                std::cout << "Using Graph Random Walk Sampling on transitions" << std::endl;
                 break;
             case USE_DIFFERENCE_SAMPLING:
                 std::cout << "Using Difference sampling" << std::endl;
