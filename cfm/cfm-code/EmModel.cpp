@@ -642,12 +642,12 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
     switch (sampling_method) {
         case USE_RANDOM_SAMPLING:
         {
-            moldata.getRandomSampledTransitions(selected_trans_id, cfg->ga_sampling_max_iteration);
+            moldata.getRandomSampledTransitions(selected_trans_id, cfg->ga_sampling_max_selection);
             break;
         }
         case USE_GRAPH_RANDOM_WALK_SAMPLING:
         {
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id,cfg->ga_sampling_max_iteration);
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id,cfg->ga_sampling_max_selection);
             break;
         }
         case USE_DIFFERENCE_SAMPLING:{

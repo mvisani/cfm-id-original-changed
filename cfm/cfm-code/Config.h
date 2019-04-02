@@ -169,7 +169,7 @@ struct config_t {
     bool reset_sampling;
     double reset_sampling_lr_ratio;
     int ga_sampling_method;
-    int ga_sampling_max_iteration;
+    int ga_sampling_max_selection;
     int ga_diff_sampling_peak_num;
     double ga_diff_sampling_difference;
     //int max_transitions_per_iteration;

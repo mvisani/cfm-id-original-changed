@@ -68,7 +68,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_sampling_method = USE_NO_SAMPLING;
     cfg.reset_sampling = false;
     cfg.reset_sampling_lr_ratio = 1.0;
-    cfg.ga_sampling_max_iteration = 100;
+    cfg.ga_sampling_max_selection = 100;
     cfg.ga_diff_sampling_peak_num = 20;
     cfg.ga_diff_sampling_difference = 0.05;
     cfg.disable_cross_val_metrics = false;
@@ -145,7 +145,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_sampling_method") cfg.ga_sampling_method = (int) value;
         else if (name == "reset_sampling") cfg.reset_sampling = (bool) value;
         else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double) value;
-        else if (name == "ga_sampling_max_iteration") cfg.ga_sampling_max_iteration = (int) value;
+        else if (name == "ga_sampling_max_selection") cfg.ga_sampling_max_selection = (int) value;
         else if (name == "ga_diff_sampling_peak_num") cfg.ga_diff_sampling_peak_num = (int) value;
         else if (name == "ga_diff_sampling_difference") cfg.ga_diff_sampling_difference = (double) value;
         else if (name == "disable_cross_val_metrics") cfg.disable_cross_val_metrics = (int) value;
@@ -284,10 +284,12 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                 std::cout << "Using Random Sampling on transitions" << std::endl;
                 break;
             case USE_GRAPH_RANDOM_WALK_SAMPLING:
-                std::cout << "Using Graph Random Walk Sampling on transitions" << std::endl;
+                std::cout << "Using Graph Random Walk Sampling with "
+                          << cfg.ga_sampling_max_selection << " iterations" << std::endl;
                 break;
             case USE_DIFFERENCE_SAMPLING:
-                std::cout << "Using Difference sampling" << std::endl;
+                std::cout << "Using Difference sampling with max selection cut off at "
+                    << cfg.ga_sampling_max_selection << std::endl;
                 break;
             case USE_NO_SAMPLING:
             default:
