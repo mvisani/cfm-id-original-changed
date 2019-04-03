@@ -329,7 +329,7 @@ void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocat
     Comparator *weighed_jaccard_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
     moldata->computePredictedSpectra(*param, false, false, energy_level);
-    moldata->postprocessPredictedSpectra(80, 1, 30);
+    moldata->postprocessPredictedSpectra(80, 1, 1000);
     jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                              moldata->getPredictedSpectrum(energy_level));
     w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
