@@ -263,7 +263,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         // check if EM meet halt flag
-        updateTraningParams(loss, prev_loss, loss_ratio, learning_rate, sampling_method, em_no_progress_count);
+        updateTrainingParams(loss, prev_loss, loss_ratio, learning_rate, sampling_method, em_no_progress_count);
 
         if (em_no_progress_count >= cfg->em_no_progress_count) {
             comm->printToMasterOnly(
@@ -289,13 +289,14 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 }
 
 void
-EmModel::updateTraningParams(double loss, double prev_loss, double loss_ratio, float &learning_rate,
-                             int &sampling_method,
-                             int &count_no_progress) const {
+EmModel::updateTrainingParams(double loss, double prev_loss, double loss_ratio, float &learning_rate,
+                              int &sampling_method,
+                              int &count_no_progress) const {
     if (loss_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
         if (learning_rate > cfg->ending_step_size)
             learning_rate = std::max(learning_rate * 0.5f, cfg->ending_step_size);
-        count_no_progress += 1;
+        else
+            count_no_progress += 1;
     } else
         count_no_progress = 0;
 }
@@ -328,7 +329,7 @@ void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocat
     Comparator *weighed_jaccard_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
     moldata->computePredictedSpectra(*param, false, false, energy_level);
-    moldata->postprocessPredictedSpectra(100, 1, 30, 2.0);
+    moldata->postprocessPredictedSpectra(100, 1, 30);
     jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                              moldata->getPredictedSpectrum(energy_level));
     w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
