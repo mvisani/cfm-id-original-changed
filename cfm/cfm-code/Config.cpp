@@ -183,7 +183,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
     }
     // set default  ending_step_size
     if ( cfg.ending_step_size < 0)
-        cfg.ending_step_size = cfg.starting_step_size * 0.125f;
+        cfg.ending_step_size = cfg.starting_step_size * 0.25f;
 
     initDerivedConfig(cfg);
 
@@ -223,12 +223,12 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (USE_MOMENTUM_FOR_GA == cfg.ga_method) {
             std::cout << "Using simple gradient ascent implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
-                      << " decay rate " << cfg.decay_rate
+                      << " decay rate " << cfg.decay_rate << " Ending Step Size " << cfg.ending_step_size
                       << std::endl;
         } else if (USE_ADADELTA_FOR_GA == cfg.ga_method) {
             std::cout << "Using AdaDelta implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " decay rate " << cfg.decay_rate
-                      << " eps " << cfg.ga_adam_eps
+                      << " eps " << cfg.ga_adam_eps << " Ending Step Size " << cfg.ending_step_size
                       << std::endl;
         } else if (USE_ADAM_FOR_GA == cfg.ga_method
                    || USE_AMSGRAD_FOR_GA == cfg.ga_method
@@ -245,7 +245,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                 }
             }
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " beta1  " << cfg.ga_adam_beta_1
-                      << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_adam_eps;
+                      << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_adam_eps
+                      << " Ending Step Size " << cfg.ending_step_size;
             if (USE_ADAMW_FOR_GA == cfg.ga_method)
                 std::cout << " ga_adamw_w " << cfg.ga_adamw_w;
             std::cout << std::endl;
