@@ -266,13 +266,19 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         updateTrainingParams(loss, prev_loss, loss_ratio, learning_rate, sampling_method, em_no_progress_count);
 
         if (em_no_progress_count >= cfg->em_no_progress_count) {
-            comm->printToMasterOnly(
-                    ("EM Stopped after " + std::to_string(em_no_progress_count) + " No Progress Iterations").c_str());
-            comm->printToMasterOnly(("EM Converged after " + std::to_string(iter) + " iterations").c_str());
-            //time to stop
-            //before stop, let us load best model
-            param->readFromFile(out_param_filename);
-            break;
+            if (cfg->ga_reset_sampling && cfg->ga_sampling_method != USE_NO_SAMPLING){
+                cfg->ga_reset_sampling = false;
+                cfg->ga_sampling_method = cfg->ga_sampling_method2;
+            }
+            else{
+                comm->printToMasterOnly(
+                        ("EM Stopped after " + std::to_string(em_no_progress_count) + " No Progress Iterations").c_str());
+                comm->printToMasterOnly(("EM Converged after " + std::to_string(iter) + " iterations").c_str());
+                //time to stop
+                //before stop, let us load best model
+                param->readFromFile(out_param_filename);
+                break;
+            }
         }
 
         prev_loss = loss;

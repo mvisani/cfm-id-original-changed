@@ -63,19 +63,17 @@ void initDefaultConfig(config_t &cfg) {
     cfg.include_h_losses = DEFAULT_INCLUDE_H_LOSSES;
     cfg.include_precursor_h_losses_only = DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY;
     cfg.fragraph_compute_timeout_in_secs = DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS;
-    cfg.use_graph_pruning = DEFAULT_NOT_USE_GRAPH_PRUNING;
     cfg.ga_use_best_q = DEFAULT_USE_BEST_Q_IN_GA;
     cfg.ga_sampling_method = USE_NO_SAMPLING;
-    cfg.reset_sampling = false;
-    cfg.reset_sampling_lr_ratio = 1.0;
+    cfg.ga_sampling_method2 = USE_NO_SAMPLING;
+    cfg.ga_reset_sampling = false;
     cfg.ga_sampling_max_selection = 100;
     cfg.ga_diff_sampling_peak_num = 20;
     cfg.ga_diff_sampling_difference = 0.05;
     cfg.disable_cross_val_metrics = false;
     cfg.disable_training_metrics = false;
-    cfg.em_no_progress_count = 3;
+    cfg.em_no_progress_count = 2;
     cfg.ga_no_progress_count = 3;
-    //cfg.max_transitions_per_iteration = 100;
 }
 
 
@@ -140,11 +138,10 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "include_h_losses") cfg.include_h_losses = (int) value;
         else if (name == "include_precursor_h_losses_only") cfg.include_precursor_h_losses_only = (int) value;
         else if (name == "fragraph_compute_timeout_in_secs") cfg.fragraph_compute_timeout_in_secs = (int) value;
-        else if (name == "use_graph_pruning") cfg.use_graph_pruning = (int) value;
         else if (name == "ga_use_best_q") cfg.ga_use_best_q = (int) value;
         else if (name == "ga_sampling_method") cfg.ga_sampling_method = (int) value;
-        else if (name == "reset_sampling") cfg.reset_sampling = (bool) value;
-        else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double) value;
+        else if (name == "ga_sampling_method2") cfg.ga_sampling_method2 = (int) value;
+        else if (name == "ga_reset_sampling") cfg.ga_reset_sampling = (bool) value;
         else if (name == "ga_sampling_max_selection") cfg.ga_sampling_max_selection = (int) value;
         else if (name == "ga_diff_sampling_peak_num") cfg.ga_diff_sampling_peak_num = (int) value;
         else if (name == "ga_diff_sampling_difference") cfg.ga_diff_sampling_difference = (double) value;
@@ -274,10 +271,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (cfg.ga_use_best_q)
             std::cout << "Using Best Q instead of Prev Q in GA" << std::endl;
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
-        if (cfg.use_graph_pruning != DEFAULT_NOT_USE_GRAPH_PRUNING) {
-            std::cout << "Using graph pruning" << std::endl;
-            std::cout << "Reset_sampling: " << cfg.reset_sampling << std::endl;
-            std::cout << "reset_sampling_lr_rati: " << cfg.reset_sampling_lr_ratio << std::endl;
+        if (cfg.ga_reset_sampling) {
+            std::cout << "Reset_sampling: " << cfg.ga_reset_sampling << std::endl;
         }
 
         switch (cfg.ga_sampling_method) {

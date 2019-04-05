@@ -165,14 +165,12 @@ struct config_t {
     double isotope_thresh;
 
     // For sampling
-    int use_graph_pruning;
-    bool reset_sampling;
-    double reset_sampling_lr_ratio;
+    bool ga_reset_sampling;
     int ga_sampling_method;
+    int ga_sampling_method2;
     int ga_sampling_max_selection;
     int ga_diff_sampling_peak_num;
     double ga_diff_sampling_difference;
-    //int max_transitions_per_iteration;
 
     //Model Level Configuration
     unsigned int model_depth; //Total Depth
