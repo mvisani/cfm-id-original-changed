@@ -722,20 +722,16 @@ double EmModel::getRegularizationTerm(unsigned int energy) {
     double reg_term = 0.0;
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
-        if(withinGradOffset(*it, energy)){
-            double weight = param->getWeightAtIdx(*it);
-            reg_term -= 0.5 * cfg->lambda * weight * weight;
-        }
+        double weight = param->getWeightAtIdx(*it);
+        reg_term -= 0.5 * cfg->lambda * weight * weight;
     }
 
     // Remove the Bias terms (don't regularize the bias terms!)
     unsigned int weights_per_energy = param->getNumWeightsPerEnergyLevel();
     for (unsigned int energy = 0; energy < param->getNumEnergyLevels();
          energy++) {
-        if(withinGradOffset(*it, energy)) {
             double bias = param->getWeightAtIdx(energy * weights_per_energy);
             reg_term += 0.5 * cfg->lambda * bias * bias;
-        }
     }
     return reg_term;
 }
@@ -744,19 +740,15 @@ void EmModel::updateGradientForRegularizationTerm(float *grads, unsigned int ene
 
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
-        if(withinGradOffset(*it, energy)) {
             float weight = param->getWeightAtIdx(*it);
             *(grads + *it) -= cfg->lambda * weight;
-        }
     }
 
     // Remove the Bias terms (don't regularize the bias terms!)
     unsigned int weights_per_energy = param->getNumWeightsPerEnergyLevel();
     for (unsigned int energy = 0; energy < param->getNumEnergyLevels();
          energy++) {
-        if(withinGradOffset(*it, energy)) {
             float bias = param->getWeightAtIdx(energy * weights_per_energy);
             *(grads + energy * weights_per_energy) += cfg->lambda * bias;
-        }
     }
 }

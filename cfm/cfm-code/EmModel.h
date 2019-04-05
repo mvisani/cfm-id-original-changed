@@ -100,11 +100,6 @@ protected:
     void updateTrainingParams(double loss, double prev_loss, double loss_ratio, float &learning_rate,
                               int &sampling_method,
                               int &count_no_progress) const;
-
-    bool withinGradOffset(int idx, unsigned energy) {
-        unsigned int grad_offset = energy * param->getNumWeightsPerEnergyLevel();
-       return (grad_offset * energy) <= idx && (grad_offset * (energy+1) > idx);
-    };
 };
 
 #endif // __EM_TRAIN_H__
