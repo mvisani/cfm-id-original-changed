@@ -76,7 +76,6 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_no_progress_count = 3;
 }
 
-
 void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
     std::string line, name;
