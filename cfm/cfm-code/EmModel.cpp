@@ -269,6 +269,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             if (cfg->ga_reset_sampling && sampling_method != cfg->ga_sampling_method2){
                 cfg->ga_reset_sampling = false;
                 sampling_method = cfg->ga_sampling_method2;
+                learning_rate = cfg->starting_step_size;
                 comm->printToMasterOnly(("Switched to sampling method: " + std::to_string(sampling_method)).c_str());
             }
             else{
