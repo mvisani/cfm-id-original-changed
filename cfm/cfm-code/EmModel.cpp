@@ -266,9 +266,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         updateTrainingParams(loss, prev_loss, loss_ratio, learning_rate, sampling_method, em_no_progress_count);
 
         if (em_no_progress_count >= cfg->em_no_progress_count) {
-            if (cfg->ga_reset_sampling && cfg->ga_sampling_method != cfg->ga_sampling_method2){
+            if (cfg->ga_reset_sampling && sampling_method != cfg->ga_sampling_method2){
                 cfg->ga_reset_sampling = false;
-                cfg->ga_sampling_method = cfg->ga_sampling_method2;
+                sampling_method = cfg->ga_sampling_method2;
             }
             else{
                 comm->printToMasterOnly(
