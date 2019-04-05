@@ -266,21 +266,14 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         updateTrainingParams(loss, prev_loss, loss_ratio, learning_rate, sampling_method, em_no_progress_count);
 
         if (em_no_progress_count >= cfg->em_no_progress_count) {
-            if (cfg->ga_reset_sampling && sampling_method != cfg->ga_sampling_method2){
-                cfg->ga_reset_sampling = false;
-                sampling_method = cfg->ga_sampling_method2;
-                learning_rate = cfg->starting_step_size;
-                comm->printToMasterOnly(("Switched to sampling method: " + std::to_string(sampling_method)).c_str());
-            }
-            else{
-                comm->printToMasterOnly(
-                        ("EM Stopped after " + std::to_string(em_no_progress_count) + " No Progress Iterations").c_str());
-                comm->printToMasterOnly(("EM Converged after " + std::to_string(iter) + " iterations").c_str());
-                //time to stop
-                //before stop, let us load best model
-                param->readFromFile(out_param_filename);
-                break;
-            }
+
+            comm->printToMasterOnly(
+                    ("EM Stopped after " + std::to_string(em_no_progress_count) + " No Progress Iterations").c_str());
+            comm->printToMasterOnly(("EM Converged after " + std::to_string(iter) + " iterations").c_str());
+            //time to stop
+            //before stop, let us load best model
+            param->readFromFile(out_param_filename);
+            break;
         }
 
         prev_loss = loss;
@@ -301,7 +294,12 @@ EmModel::updateTrainingParams(double loss, double prev_loss, double loss_ratio, 
                               int &sampling_method,
                               int &count_no_progress) const {
     if (loss_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
-        if (learning_rate > cfg->ending_step_size)
+        if (cfg->ga_reset_sampling && sampling_method != cfg->ga_sampling_method2){
+            cfg->ga_reset_sampling = false;
+            sampling_method = cfg->ga_sampling_method2;
+            comm->printToMasterOnly(("Switched to sampling method: " + std::to_string(sampling_method)).c_str());
+        }
+        else if (learning_rate > cfg->ending_step_size)
             learning_rate = std::max(learning_rate * 0.5f, cfg->ending_step_size);
         else
             count_no_progress += 1;
