@@ -114,7 +114,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         int num_converged = 0, num_nonconverged = 0;
         int tot_numc = 0, total_numnonc = 0;
-        start_time = time(nullptr);
         before = time(nullptr);
 
         // Do the inference part (E-step)
@@ -149,7 +148,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         after = time(nullptr);
 
         std::string estep_time_msg =
-                "[E-Step]Completed E-step processing: Time Elapsed = " +
+                "[E-Step][T+"+std::to_string(after - start_time)+"s]Completed E-step processing: Time Elapsed = " +
                 std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(estep_time_msg.c_str());
@@ -165,7 +164,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         after = time(nullptr);
         std::string param_update_time_msg =
-                "[M-Step][+"+ std::to_string(after - start_time)+"s]Completed M-step nn_param update: Time Elapsed = " +
+                "[M-Step][T+"+ std::to_string(after - start_time)+"s]Completed M-step nn_param update: Time Elapsed = " +
                 std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(param_update_time_msg.c_str());
@@ -202,7 +201,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
         after = time(nullptr);
         std::string q_time_msg =
-                "[M-Step][+"+ std::to_string(after - start_time)+"s] Finished Q compute: Time Elapsed = " +
+                "[M-Step][T+"+ std::to_string(after - start_time)+"s]Finished loss compute: Time Elapsed = " +
                 std::to_string(after - before) + " seconds";
         if (comm->isMaster())
             writeStatus(q_time_msg.c_str());
@@ -224,7 +223,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         // Check for convergence
         double loss_ratio = fabs((loss - prev_loss) / loss);
         if (comm->isMaster()) {
-            std::string qdif_str = "[M-Step][+" + std::to_string(after - start_time) + "s]";
+            std::string qdif_str = "[M-Step][T+" + std::to_string(after - start_time) + "s]";
             qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols);
 
             if (prev_loss != -DBL_MAX)
@@ -444,8 +443,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             zeroUnusedParams();
         time_t after = time(nullptr);
         if (comm->isMaster())
-            std::cout << "[M-Step][+" << std::to_string(after - start_time) <<
-            "s] Collect Used Index, Time Used: " << std::to_string(after - before) + " seconds" << std::endl;
+            std::cout << "[M-Step][T+" << std::to_string(after - start_time) <<
+            "s]Collect Used Index, Time Used: " << std::to_string(after - before) + "s" << std::endl;
     }
 
     int n = 0;
@@ -515,8 +514,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         loss = computeLoss(data, suft, energy);
         time_t after = time(nullptr);
         if (comm->isMaster()) {
-            std::cout << "[" << iter << "][+" << std::to_string(after - start_time) <<"s] " << ":  Loss=" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
-                      <<  " Time Used: " << std::to_string(after - before) + " seconds" << std::endl;
+            std::cout << iter << ".[T+" << std::to_string(after - start_time) <<"s] " << "Loss=" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
+                      <<  " Time Used: " << std::to_string(after - before) + "s" << std::endl;
             // let us roll Dropouts
             param->rollDropouts();
         }
