@@ -100,6 +100,8 @@ protected:
     void updateTrainingParams(double loss, double prev_loss, double loss_ratio, float &learning_rate,
                               int &sampling_method,
                               int &count_no_progress) const;
+
+    time_t start_time;
 };
 
 #endif // __EM_TRAIN_H__
