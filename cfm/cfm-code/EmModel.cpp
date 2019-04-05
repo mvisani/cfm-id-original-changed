@@ -428,6 +428,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
     //Initial Q and gradient calculation (to determine used indexes)
     if (comm->used_idxs.empty()) {
+        time_t before = time(nullptr);
         if (comm->isMaster())
             std::cout << "[M-Step] Collect Used Index ...";
 
@@ -442,8 +443,9 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         comm->setMasterUsedIdxs();
         if (comm->isMaster())
             zeroUnusedParams();
+        time_t after = time(nullptr);
         if (comm->isMaster())
-            std::cout << "Done" << std::endl;
+            std::cout << "Done. Time Used: " << std::to_string(after - before) + " seconds" << std::endl;
     }
 
     int n = 0;
@@ -473,6 +475,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         setMiniBatchFlags(minibatch_flags, num_batch);
 
         // Compute the gradient
+        time_t before = time(nullptr);
         std::fill(grads.begin(), grads.end(), 0.0);
         auto mol_it = data.begin();
         for (auto batch_idx = 0; batch_idx < num_batch; ++batch_idx) {
@@ -510,9 +513,10 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         // End of batch
         // compute loss
         loss = computeLoss(data, suft, energy);
+        time_t after = time(nullptr);
         if (comm->isMaster()) {
             std::cout << iter << ":  Loss=" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
-                      << std::endl;
+                      <<  " Time Used: " << std::to_string(after - before) + " seconds" << std::endl;
             // let us roll Dropouts
             param->rollDropouts();
         }
