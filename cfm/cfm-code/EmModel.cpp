@@ -336,7 +336,7 @@ EmModel::updateTrainingParams(double loss, double prev_loss, double loss_ratio, 
 }
 
 double
-EmModel::computeLoss(std::vector<MolData> &data, suft_counts_t &suft, unsigned int energy) {
+EmModel::computeAndSyncLoss(std::vector<MolData> &data, suft_counts_t &suft, unsigned int energy) {
 
     double loss = 0.0;
     auto mol_it = data.begin();
@@ -528,7 +528,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         float cpu_time = getUsedCupTime(c_start,c_end);
         auto max_cpu_time = comm->getTimeUsages(cpu_time,MPI_MAX);
         auto min_cpu_time = comm->getTimeUsages(cpu_time,MPI_MIN);
-        loss = computeLoss(data, suft, energy);
+        loss = computeAndSyncLoss(data, suft, energy);
 
         time_t after = time(nullptr);
         if (comm->isMaster()) {

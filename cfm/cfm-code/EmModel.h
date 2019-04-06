@@ -78,7 +78,7 @@ protected:
     double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
                                           int sampling_method, unsigned int energy);
 
-    double computeLoss(std::vector<MolData> &data, suft_counts_t &suft, unsigned int energy);
+    double computeAndSyncLoss(std::vector<MolData> &data, suft_counts_t &suft, unsigned int energy);
 
     //Helper functions
 
