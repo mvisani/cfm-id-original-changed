@@ -535,8 +535,9 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         if (comm->isMaster()) {
             std::cout << iter << ".[T+" << std::to_string(after - start_time) <<"s] " << "Loss=" <<
             loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
-            << " CPU Usage: min=" << min_cpu_time << "ms max=" << max_cpu_time << "ms" << " avg=" << avg_cpu_time << "ms"
-            std::endl;
+            << " CPU Usage: min=" << min_cpu_time << "ms max=" << max_cpu_time
+            << "ms" << " avg=" << avg_cpu_time << "ms"
+            << std::endl;
             // let us roll Dropouts
             param->rollDropouts();
         }
