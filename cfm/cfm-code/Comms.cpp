@@ -48,7 +48,7 @@ int Comms::collectSumInMaster(int partial) {
 
 float Comms::getTimeUsages(float time_used, MPI_Op op){
     float rev = 0.0;
-    MPI_Reduce(&time_used, &rev, 1, MPI_INT, op, MASTER, MPI_COMM_WORLD);
+    MPI_Reduce(&time_used, &rev, 1, MPI_FLOAT, op, MASTER, MPI_COMM_WORLD);
     return rev;
 }
 
