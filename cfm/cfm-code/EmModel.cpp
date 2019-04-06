@@ -528,10 +528,10 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         float cpu_time = getUsedCupTime(c_start,c_end);
         auto max_cpu_time = comm->getTimeUsages(cpu_time,MPI_MAX);
         auto min_cpu_time = comm->getTimeUsages(cpu_time,MPI_MIN);
+        loss = computeLoss(data, suft, energy);
 
         time_t after = time(nullptr);
         if (comm->isMaster()) {
-            loss = computeLoss(data, suft, energy);
             std::cout << iter << ".[T+" << std::to_string(after - start_time) <<"s] " << "Loss=" <<
             loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
             << " CPU Usage: min=" << min_cpu_time << "ms max=" << max_cpu_time << "ms" <<
