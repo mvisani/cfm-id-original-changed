@@ -67,6 +67,7 @@ public:
     std::set<unsigned int> used_idxs;
     unsigned int num_used;
 
+    const int getNumProcesses() { return mpi_nump; };
     virtual ~Comms() = default;
 
 protected:
