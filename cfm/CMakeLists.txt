@@ -37,7 +37,7 @@ set(Boost_USE_STATIC_LIBS ON)
 include(FindBoost)
 
 set(Boost_componets filesystem system serialization program_options)
-# For some reason msvc with give LNK2019 if not include thread
+# For some reason msvc will give LNK2019 if not include thread
 if (MSVC)
     list(APPEND Boost_componets thread)
 endif()
@@ -55,15 +55,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 #include cmake finds
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-# Find Eigen 3
-#include(FindEigen3)
-#find_package (Eigen3 3.3.4 REQUIRED)
-#If( EIGEN3_FOUND)
-#    MESSAGE( "Found Eigen3 " ${EIGEN3_VERSION} ${EIGEN3_INCLUDE_DIR})
-#    include_directories(${EIGEN3_INCLUDE_DIR})
-#else()
-#    MESSAGE(FATAL_ERROR "Can not find Eigen3")
-#endif()
 
 # RDKit
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})

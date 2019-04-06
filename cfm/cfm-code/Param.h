@@ -89,9 +89,6 @@ public:
 
     virtual void initWeights(int init_type);
 
-    // do nothing roolDropots function
-    // we may add Dropouts for linear model later
-    virtual void updateDropoutsRate(float delta, float lower_bound) {};
     virtual void rollDropouts() {};
 
     void readFromFile(const std::string &filename);

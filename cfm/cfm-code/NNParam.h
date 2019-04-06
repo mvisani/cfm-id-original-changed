@@ -87,15 +87,7 @@ public:
     virtual void initWeights(int init_type) override;
 
     virtual boost::container::vector<bool> *getDropoutsPtr() override { return &is_dropped; } ;
-    virtual std::vector<float> *getDropoutsProbPtr() override { return &hlayer_dropout_probs; };
-
-    virtual void updateDropoutsRate(float delta, float lower_bound) {
-        for(auto & hlayer_dropout_prob : hlayer_dropout_probs){
-            if(hlayer_dropout_prob + delta > lower_bound){
-                hlayer_dropout_prob += delta;
-            }
-        }
-    };
+    virtual std::vector<float> *getDropoutsProbPtr() override { return &hlayer_dropout_probs; };;
     
     void rollDropouts() override;
 

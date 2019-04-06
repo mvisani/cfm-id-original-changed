@@ -18,6 +18,8 @@
 #ifndef __COMMS_H__
 #define __COMMS_H__
 
+#include "mpi.h"
+
 #include "Param.h"
 #include "NNParam.h"
 #include <string>
@@ -57,6 +59,10 @@ public:
     int collectSumInMaster(int partial);
 
     float broadcastQ(float Q);
+
+    float getTimeUsages(float time_used, MPI_Op op);
+
+    void gatherTimeUsages(float time_used, std::vector<float> &time_used_vector);
 
     std::set<unsigned int> used_idxs;
     unsigned int num_used;

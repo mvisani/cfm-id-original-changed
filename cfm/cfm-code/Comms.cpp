@@ -46,6 +46,20 @@ int Comms::collectSumInMaster(int partial) {
     return total;
 }
 
+float Comms::getTimeUsages(float time_used, MPI_Op op){
+    float rev = 0.0;
+    MPI_Reduce(&time_used, &rev, 1, MPI_INT, op, MASTER, MPI_COMM_WORLD);
+    return rev;
+}
+
+void Comms::gatherTimeUsages(float time_used, std::vector<float> &time_used_vector) {
+    time_used_vector.resize(mpi_nump);
+    std::vector<float> local_time_used(mpi_nump, 0.0f);
+    local_time_used[mpi_rank] = time_used;
+    MPI_Gather(&time_used_vector[0], time_used_vector.size(),
+            MPI_FLOAT, &time_used_vector[0], 1, MPI_FLOAT, MASTER, MPI_COMM_WORLD);
+}
+
 void WorkerComms::setMasterUsedIdxs() {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait

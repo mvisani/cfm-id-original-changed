@@ -17,6 +17,8 @@
 # of the cfm source tree.
 #########################################################################*/
 #include "mpi.h"
+#include <ctime>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
@@ -137,7 +139,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
             // Apply the peak evidence, compute the beliefs and record the sufficient
             // statistics
-
             beliefs_t beliefs;
             Inference infer(moldata, cfg);
             infer.calculateBeliefs(beliefs, energy_level);
@@ -149,7 +150,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         std::string estep_time_msg =
                 "[E-Step][T+"+std::to_string(after - start_time)+"s]Completed E-step processing: Time Elapsed = " +
-                std::to_string(after - before) + " seconds";
+                std::to_string(after - before) + " s";
         if (comm->isMaster())
             writeStatus(estep_time_msg.c_str());
         comm->printToMasterOnly(estep_time_msg.c_str());
@@ -157,22 +158,27 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
         // Find a new set of parameters to maximize the expected log likelihood
         // (M-step)
-
         before = time(nullptr);
-
         loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, sampling_method, energy_level);
-
-        after = time(nullptr);
-        std::string param_update_time_msg =
-                "[M-Step][T+"+ std::to_string(after - start_time)+"s]Completed M-step nn_param update: Time Elapsed = " +
-                std::to_string(after - before) + " seconds";
-        if (comm->isMaster())
-            writeStatus(param_update_time_msg.c_str());
-        comm->printToMasterOnly(param_update_time_msg.c_str());
 
         // Write the params
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
 
+        //std::vector<float> cpu_times;
+        //comm->gatherTimeUsages(cpu_time_used, cpu_times);
+
+        after = time(nullptr);
+        std::string param_update_time_msg =
+                "[M-Step][T+"+ std::to_string(after - start_time)+"s]Completed M-step update: Time Elapsed = " +
+                std::to_string(after - before);
+        if (comm->isMaster())
+            writeStatus(param_update_time_msg.c_str());
+        comm->printToMasterOnly(param_update_time_msg.c_str());
+
+        //for(const auto & cpu_time : cpu_times)
+        //    comm->printToMasterOnly(("used cpu time:" + std::to_string(cpu_time)).c_str());
+
+        //compute loss
         before = time(nullptr);
         // validation Q value
         double val_q = 0.0;
@@ -181,21 +187,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double train_jaccard = 0.0, train_w_jaccard = 0.0;
         double val_jaccard = 0.0, val_w_jaccard = 0.0;
         for (mol_it = molDataSet.begin(); mol_it != molDataSet.end(); ++mol_it, molidx++) {
-            if (mol_it->getGroup() == validation_group && !cfg->disable_cross_val_metrics){
-                num_val_mols++;
-                val_q += computeLogLikelihoodLoss(molidx, *mol_it, suft, energy_level);
-                computeMetrics(energy_level, mol_it, val_jaccard,
-                               val_w_jaccard);
-
-            }
-            else{
-                num_training_mols++;
-                if(!cfg->disable_training_metrics){
-                    computeMetrics(energy_level, mol_it, train_jaccard,
-                                   train_w_jaccard);
-                }
-            }
-
+            computeLossAndMetrics(energy_level, molidx, mol_it, suft, val_q, num_val_mols, num_training_mols,
+                                  train_jaccard, train_w_jaccard,
+                                  val_jaccard, val_w_jaccard);
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
@@ -223,26 +217,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         // Check for convergence
         double loss_ratio = fabs((loss - prev_loss) / loss);
         if (comm->isMaster()) {
-            std::string qdif_str = "[M-Step][T+" + std::to_string(after - start_time) + "s]";
-            qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols);
-
-            if (prev_loss != -DBL_MAX)
-                qdif_str += "\nLoss_Ratio= " + std::to_string(loss_ratio) + " Prev_Loss=" + std::to_string(prev_loss);
-
-            if (best_loss != -DBL_MAX)
-                qdif_str += " Best_Loss=" + std::to_string(best_loss);
-
-            if (!cfg->disable_training_metrics) {
-                qdif_str += "\nJaccard_Avg=" + std::to_string(train_jaccard / num_training_mols)
-                            + " Weighted_Jaccard_Avg=" += std::to_string(train_w_jaccard / num_training_mols);
-            }
-
-            if (!cfg->disable_cross_val_metrics) {
-                qdif_str += "\nValidation_Loss=" + std::to_string(val_q)
-                            + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
-                            + "\nValidation_Jaccard_Avg=" + std::to_string(val_jaccard / num_val_mols)
-                            + " Weighted_Validation_Jaccard_Avg=" += std::to_string(val_w_jaccard / num_val_mols);
-            }
+            std::string qdif_str = getMetricsString(loss, prev_loss, best_loss, after, val_q, num_val_mols,
+                                                    num_training_mols, train_jaccard,
+                                                    train_w_jaccard, val_jaccard, val_w_jaccard, loss_ratio);
 
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
@@ -287,6 +264,57 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                                         .c_str());
 
     return best_loss;
+}
+
+float EmModel::getUsedCupTime(clock_t c_start, clock_t c_end) const {
+    return float(1000.0 * (c_end - c_start) / CLOCKS_PER_SEC);
+}
+
+void EmModel::computeLossAndMetrics(int energy_level, int molidx,
+                                    std::vector<MolData, std::allocator<MolData>>::iterator &mol_it,
+                                    suft_counts_t &suft, double &val_q, int &num_val_mols, int &num_training_mols,
+                                    double &train_jaccard, double &train_w_jaccard, double &val_jaccard,
+                                    double &val_w_jaccard) {
+    if (mol_it->getGroup() == validation_group && !cfg->disable_cross_val_metrics) {
+        num_val_mols++;
+        val_q += computeLogLikelihoodLoss(molidx, *mol_it, suft, energy_level);
+        computeMetrics(energy_level, mol_it, val_jaccard,
+                       val_w_jaccard);
+
+    } else {
+        num_training_mols++;
+        if (!cfg->disable_training_metrics) {
+            computeMetrics(energy_level, mol_it, train_jaccard,
+                           train_w_jaccard);
+        }
+    }
+}
+
+std::string
+EmModel::getMetricsString(double loss, double prev_loss, double best_loss, time_t after, double val_q, int num_val_mols,
+                          int num_training_mols, double train_jaccard, double train_w_jaccard, double val_jaccard,
+                          double val_w_jaccard, double loss_ratio) const {
+    std::string qdif_str = "[M-Step][T+" + std::to_string(after - start_time) + "s]";
+    qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols);
+
+    if (prev_loss != -DBL_MAX)
+        qdif_str += "\nLoss_Ratio= " + std::to_string(loss_ratio) + " Prev_Loss=" + std::to_string(prev_loss);
+
+    if (best_loss != -DBL_MAX)
+        qdif_str += " Best_Loss=" + std::to_string(best_loss);
+
+    if (!cfg->disable_training_metrics) {
+        qdif_str += "\nJaccard_Avg=" + std::to_string(train_jaccard / num_training_mols)
+                    + " Weighted_Jaccard_Avg=" += std::to_string(train_w_jaccard / num_training_mols);
+    }
+
+    if (!cfg->disable_cross_val_metrics) {
+        qdif_str += "\nValidation_Loss=" + std::to_string(val_q)
+                    + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
+                    + "\nValidation_Jaccard_Avg=" + std::to_string(val_jaccard / num_val_mols)
+                    + " Weighted_Validation_Jaccard_Avg=" += std::to_string(val_w_jaccard / num_val_mols);
+    }
+    return qdif_str;
 }
 
 void
@@ -377,12 +405,6 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx, MolDat
             belief += exp(beliefs->tn[i][0]);
 
         for (unsigned int d = 1; d < depth; d++) {
-            /*energy = cfg->map_d_to_energy[d];
-            if (energy != cfg->map_d_to_energy[d - 1]) {
-                suft.values[molidx][i + cfg->map_d_to_energy[d - 1] * len_offset] =
-                        belief;
-                belief = 0.0;
-            }*/
             belief += exp(beliefs->tn[i][d]);
         }
         suft.values[molidx][i + energy * len_offset] = belief;
@@ -393,17 +415,10 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx, MolDat
     for (unsigned int i = 0; i < num_fragments; i++) {
 
         double belief = 0.0;
-        //int energy = cfg->map_d_to_energy[0];
 
         if (i == 0) // main ion is always id = 0
             belief += exp(beliefs->ps[i][0]);
         for (unsigned int d = 1; d < depth; d++) {
-            /*energy = cfg->map_d_to_energy[d];
-            if (energy != cfg->map_d_to_energy[d - 1]) {
-                suft.values[molidx][i + offset +
-                                    cfg->map_d_to_energy[d - 1] * len_offset] = belief;
-                belief = 0.0;
-            }*/
             belief += exp(beliefs->ps[i][d]);
         }
         suft.values[molidx][i + offset + energy * len_offset] = belief;
@@ -474,6 +489,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         // Compute the gradient
         std::fill(grads.begin(), grads.end(), 0.0);
         auto mol_it = data.begin();
+        std::clock_t  c_start = clock();
         for (auto batch_idx = 0; batch_idx < num_batch; ++batch_idx) {
             double num_trans = 0;
             for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
@@ -506,12 +522,20 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             comm->broadcastParamsWeightsOrigMpi(param.get());
         }
 
-        // End of batch
+        // End of epoch
         // compute loss
-        loss = computeLoss(data, suft, energy);
+        std::clock_t  c_end = clock();
+        float cpu_time = getUsedCupTime(c_start,c_end);
+        auto max_cpu_time = comm->getTimeUsages(cpu_time,MPI_MAX);
+        auto min_cpu_time = comm->getTimeUsages(cpu_time,MPI_MIN);
+
         time_t after = time(nullptr);
         if (comm->isMaster()) {
-            std::cout << iter << ".[T+" << std::to_string(after - start_time) <<"s] " << "Loss=" << loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate << std::endl;
+            loss = computeLoss(data, suft, energy);
+            std::cout << iter << ".[T+" << std::to_string(after - start_time) <<"s] " << "Loss=" <<
+            loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
+            << " CPU Usage: min=" << min_cpu_time << "ms max=" << max_cpu_time << "ms" <<
+            std::endl;
             // let us roll Dropouts
             param->rollDropouts();
         }
@@ -527,7 +551,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         if (iter == cfg->ga_max_iterations)
             std::cout << "Gradient ascent did not converge" << std::endl;
         else
-            std::cout << "Gradient ascent converged after " << iter << " iterations"
+            std::cout << "Gradient ascent converged after " << iter - 1 << " iterations"
                       << std::endl;
         delete solver;
     }
@@ -694,11 +718,11 @@ double EmModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_coun
 
         // Calculate the denominator of the sum terms
         double denom = 1.0;
-        for (auto itt : *it)
+        for (const auto & itt : *it)
             denom += exp(moldata.getThetaForIdx(energy, itt));
 
         // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
-        for (auto itt : *it) {
+        for (const auto & itt: *it) {
             double nu = (*suft_values)[itt + suft_offset];
             q += nu * (moldata.getThetaForIdx(energy, itt) - log(denom));
         }
@@ -723,11 +747,9 @@ double EmModel::getRegularizationTerm(unsigned int energy) {
 
     // Remove the Bias terms (don't regularize the bias terms!)
     unsigned int weights_per_energy = param->getNumWeightsPerEnergyLevel();
-    for (unsigned int energy = 0; energy < param->getNumEnergyLevels();
-         energy++) {
-            double bias = param->getWeightAtIdx(energy * weights_per_energy);
-            reg_term += 0.5 * cfg->lambda * bias * bias;
-    }
+    double bias = param->getWeightAtIdx(energy * weights_per_energy);
+    reg_term += 0.5 * cfg->lambda * bias * bias;
+
     return reg_term;
 }
 
@@ -741,9 +763,6 @@ void EmModel::updateGradientForRegularizationTerm(float *grads, unsigned int ene
 
     // Remove the Bias terms (don't regularize the bias terms!)
     unsigned int weights_per_energy = param->getNumWeightsPerEnergyLevel();
-    for (unsigned int energy = 0; energy < param->getNumEnergyLevels();
-         energy++) {
-            float bias = param->getWeightAtIdx(energy * weights_per_energy);
-            *(grads + energy * weights_per_energy) += cfg->lambda * bias;
-    }
+    float bias = param->getWeightAtIdx(energy * weights_per_energy);
+    *(grads + energy * weights_per_energy) += cfg->lambda * bias;
 }

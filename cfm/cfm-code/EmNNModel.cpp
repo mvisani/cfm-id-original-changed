@@ -229,13 +229,10 @@ void EmNNModel::updateGradientForRegularizationTerm(float *grads, unsigned int e
     unsigned int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
     std::vector<unsigned int> bias_indexes;
     nn_param->getBiasIndexes(bias_indexes);
-    for (unsigned int energy = 0; energy < nn_param->getNumEnergyLevels(); energy++) {
-        auto it = bias_indexes.begin();
-        int offset = energy * weights_per_energy;
-        for (; it != bias_indexes.end(); ++it) {
-            double bias = nn_param->getWeightAtIdx(offset + *it);
-            *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
-        }
+    int offset = energy * weights_per_energy;
+    for (auto it = bias_indexes.begin(); it != bias_indexes.end(); ++it) {
+        double bias = nn_param->getWeightAtIdx(offset + *it);
+        *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
     }
 }
 
@@ -252,13 +249,10 @@ double EmNNModel::getRegularizationTerm(unsigned int energy) {
     unsigned int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
     std::vector<unsigned int> bias_indexes;
     nn_param->getBiasIndexes(bias_indexes);
-    for (unsigned int energy = 0; energy < nn_param->getNumEnergyLevels(); energy++) {
-        auto it = bias_indexes.begin();
-        int offset = energy * weights_per_energy;
-        for (; it != bias_indexes.end(); ++it) {
-            double bias = nn_param->getWeightAtIdx(offset + *it);
-            req_term += 0.99 * 0.5 * cfg->lambda * bias * bias;
-        }
+    int offset = energy * weights_per_energy;
+    for (auto it = bias_indexes.begin();it != bias_indexes.end(); ++it) {
+        double bias = nn_param->getWeightAtIdx(offset + *it);
+        req_term += 0.99 * 0.5 * cfg->lambda * bias * bias;
     }
     return req_term;
 }

@@ -100,8 +100,19 @@ protected:
     void updateTrainingParams(double loss, double prev_loss, double loss_ratio, float &learning_rate,
                               int &sampling_method,
                               int &count_no_progress) const;
-
     time_t start_time;
+
+    std::string
+    getMetricsString(double loss, double prev_loss, double best_loss, time_t after, double val_q, int num_val_mols,
+                     int num_training_mols, double train_jaccard, double train_w_jaccard, double val_jaccard,
+                     double val_w_jaccard, double loss_ratio) const;
+
+    void
+    computeLossAndMetrics(int energy_level, int molidx, std::vector<MolData, std::allocator<MolData>>::iterator &mol_it,
+                          suft_counts_t &suft, double &val_q, int &num_val_mols, int &num_training_mols,
+                          double &train_jaccard, double &train_w_jaccard, double &val_jaccard, double &val_w_jaccard);
+
+    float getUsedCupTime(clock_t c_start, clock_t c_end) const;
 };
 
 #endif // __EM_TRAIN_H__
