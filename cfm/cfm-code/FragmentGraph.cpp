@@ -652,13 +652,11 @@ FragmentGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected
 
     std::set<int> visited;
     std::map<double, std::set<int>> selected_trans_map;
-    std::set<double> selected_weights_set;
 
-    std::copy(selected_weights.begin(), selected_weights.end(), std::inserter(selected_weights_set, selected_weights_set.begin()));
 
     std::map<int, std::vector<int>> frag_trans_map;
     std::vector<std::pair<int,int>> frag_trans_pair_path;
-    getCommonAncestors(selected_weights_set, visited, 0, frag_trans_pair_path, frag_trans_map);
+    getCommonAncestors(selected_weights, visited, 0, frag_trans_pair_path, frag_trans_map);
 
     for(const auto & record : frag_trans_map){
         if(record.second.size() > 1)
@@ -668,33 +666,21 @@ FragmentGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected
 }
 
 void FragmentGraph::
-getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
+getCommonAncestors(std::set<unsigned int> &selected_weights, std::set<int> &visited,
                    int frag_id, std::vector<std::pair<int, int>> &path,
-                   std::map<int, std::vector<int>> &frag_trans_map) {
+                   std::map<int, std::vector<int>> &trans_to_interest_frags_map) {
 
     double frag_mass = fragments[frag_id]->getMass();
 
     /*if(frag_mass < stop_mass)
         return;*/
 
-    auto lower_bound = selected_weights.lower_bound(frag_mass);
-    auto upper_bound = selected_weights.upper_bound(frag_mass);
-
-    bool save = false;
-    if (selected_weights.find(frag_mass) != selected_weights.end()) {
-        save = true;
-    } else if (lower_bound != selected_weights.end()) {
-        save = (std::fabs(*lower_bound - frag_mass) <= 0.00001);
-    } else if (upper_bound != selected_weights.end()) {
-        save = (std::fabs(*upper_bound - frag_mass) <= 0.00001);
-    }
-
-    if (save) {
+    if (is_match(selected_weights, frag_mass)) {
         // record troubled frag_id to each transition
         for (const auto &frag_trans_pair : path) {
-            if (frag_trans_map.find(frag_trans_pair.first) == frag_trans_map.end())
-                frag_trans_map[frag_trans_pair.first];
-            frag_trans_map[frag_trans_pair.first].push_back(frag_trans_pair.second);
+            if (trans_to_interest_frags_map.find(frag_trans_pair.first) == trans_to_interest_frags_map.end())
+                trans_to_interest_frags_map[frag_trans_pair.first];
+            trans_to_interest_frags_map[frag_trans_pair.first].push_back(frag_trans_pair.second);
         }
     }
 
@@ -706,7 +692,7 @@ getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
     for (const auto &trans_id : from_id_tmap[frag_id]) {
         auto current_path = path;
         current_path.push_back(std::pair<int, int>(frag_id, trans_id));
-        getCommonAncestors(selected_weights, visited, transitions[trans_id]->getToId(), current_path, frag_trans_map);
+        getCommonAncestors(selected_weights, visited, transitions[trans_id]->getToId(), current_path, trans_to_interest_frags_map);
     }
 
 }
