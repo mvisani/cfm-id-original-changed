@@ -18,7 +18,9 @@
 #########################################################################*/
 #include "mpi.h"
 #include <ctime>
-
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
@@ -47,7 +49,7 @@ EmModel::EmModel(config_t *a_cfg, FeatureCalculator *an_fc,
         comm->printToMasterOnly(msg.c_str());
     }
     sparse_params = true;
-    start_time = time(nullptr);
+    start_time = std::chrono::high_resolution_clock::now();
 }
 
 EmModel::~EmModel() { delete comm; }
@@ -107,7 +109,6 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             writeStatus(msg.c_str());
         comm->printToMasterOnly(msg.c_str());
 
-        time_t before, after;
         std::vector<MolData>::iterator mol_it;
 
         // Reset sufficient counts
@@ -116,7 +117,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         int num_converged = 0, num_nonconverged = 0;
         int tot_numc = 0, total_numnonc = 0;
-        before = time(nullptr);
+        auto before = std::chrono::high_resolution_clock::now();
 
         // Do the inference part (E-step)
         mol_it = molDataSet.begin();
@@ -146,11 +147,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait
-        after = time(nullptr);
-
+        auto after = std::chrono::high_resolution_clock::now();
+        
         std::string estep_time_msg =
-                "[E-Step][T+"+std::to_string(after - start_time)+"s]Completed E-step processing: Time Elapsed = " +
-                std::to_string(after - before) + " s";
+                "[E-Step][T+"+getTimeDifferenceStr(start_time, after)+"s]Completed E-step processing: Time Elapsed = " +
+                getTimeDifferenceStr(before, after) + " s";
         if (comm->isMaster())
             writeStatus(estep_time_msg.c_str());
         comm->printToMasterOnly(estep_time_msg.c_str());
@@ -158,7 +159,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
         // Find a new set of parameters to maximize the expected log likelihood
         // (M-step)
-        before = time(nullptr);
+        before = std::chrono::high_resolution_clock::now();
+        if (comm->isMaster())
+            std::cout << "[M-SteP]Learning_Rate=" << learning_rate << std::endl;
         loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, sampling_method, energy_level);
 
         // Write the params
@@ -167,10 +170,10 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         //std::vector<float> cpu_times;
         //comm->gatherTimeUsages(cpu_time_used, cpu_times);
 
-        after = time(nullptr);
+        after = std::chrono::high_resolution_clock::now();
         std::string param_update_time_msg =
-                "[M-Step][T+"+ std::to_string(after - start_time)+"s]Completed M-step update: Time Elapsed = " +
-                std::to_string(after - before);
+                "[M-Step][T+"+ std::to_string(getTimeDifference(start_time, after))+"s]Completed M-step update: Time Elapsed = " +
+                getTimeDifferenceStr(before, after);
         if (comm->isMaster())
             writeStatus(param_update_time_msg.c_str());
         comm->printToMasterOnly(param_update_time_msg.c_str());
@@ -179,7 +182,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         //    comm->printToMasterOnly(("used cpu time:" + std::to_string(cpu_time)).c_str());
 
         //compute loss
-        before = time(nullptr);
+        before = std::chrono::high_resolution_clock::now();
         // validation Q value
         double val_q = 0.0;
 
@@ -193,10 +196,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
-        after = time(nullptr);
+        after = std::chrono::high_resolution_clock::now();
+
         std::string q_time_msg =
-                "[M-Step][T+"+ std::to_string(after - start_time)+"s]Finished loss compute: Time Elapsed = " +
-                std::to_string(after - before) + " seconds";
+                "[M-Step][T+"+ getTimeDifferenceStr(start_time, after)+"s]Finished loss compute: Time Elapsed = " +
+                getTimeDifferenceStr(before, after) + " seconds";
         if (comm->isMaster())
             writeStatus(q_time_msg.c_str());
 
@@ -266,8 +270,23 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     return best_loss;
 }
 
+float
+EmModel::getTimeDifference(const std::chrono::system_clock::time_point &before,
+        const std::chrono::system_clock::time_point &after) const {
+    auto count = std::chrono::duration_cast<std::chrono::microseconds>(after - before).count();
+    return count/1000.0f;
+}
+
+std::string EmModel::getTimeDifferenceStr(const std::chrono::system_clock::time_point &before,
+                                 const std::chrono::system_clock::time_point &after) const{
+    float value = getTimeDifference(before, after);
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(2) << value;
+    return stream.str();
+}
+
 float EmModel::getUsedCupTime(clock_t c_start, clock_t c_end) const {
-    return float(1000.0 * (c_end - c_start) / CLOCKS_PER_SEC);
+    return std::round((float)(c_end - c_start) / (float)CLOCKS_PER_SEC * 100) / 100;
 }
 
 void EmModel::computeLossAndMetrics(int energy_level, int molidx,
@@ -291,10 +310,12 @@ void EmModel::computeLossAndMetrics(int energy_level, int molidx,
 }
 
 std::string
-EmModel::getMetricsString(double loss, double prev_loss, double best_loss, time_t after, double val_q, int num_val_mols,
+EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
+                          const std::chrono::system_clock::time_point &after,
+                          double val_q, int num_val_mols,
                           int num_training_mols, double train_jaccard, double train_w_jaccard, double val_jaccard,
                           double val_w_jaccard, double loss_ratio) const {
-    std::string qdif_str = "[M-Step][T+" + std::to_string(after - start_time) + "s]";
+    std::string qdif_str = "[M-Step][T+" + getTimeDifferenceStr(start_time, after) + "s]";
     qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols);
 
     if (prev_loss != -DBL_MAX)
@@ -441,7 +462,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
     //Initial Q and gradient calculation (to determine used indexes)
     if (comm->used_idxs.empty()) {
-        time_t before = time(nullptr);
+        auto before = std::chrono::high_resolution_clock::now();
 
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
@@ -454,10 +475,10 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         comm->setMasterUsedIdxs();
         if (comm->isMaster())
             zeroUnusedParams();
-        time_t after = time(nullptr);
+        auto after = std::chrono::high_resolution_clock::now();
         if (comm->isMaster())
-            std::cout << "[M-Step][T+" << std::to_string(after - start_time) <<
-            "s]Collect Used Index, Time Used: " << std::to_string(after - before) + "s" << std::endl;
+            std::cout << "[M-Step][T+" << getTimeDifferenceStr(start_time, after) <<
+            "s]Collect Used Index, Time Used: " << getTimeDifferenceStr(before, after) + "s" << std::endl;
     }
 
     int n = 0;
@@ -472,6 +493,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
     int ga_no_progress_count = 0;
     while (iter++ < max_iteration && ga_no_progress_count <= cfg->ga_no_progress_count) {
 
+        auto before = std::chrono::high_resolution_clock::now();
         if (iter > 1)
             prev_loss = loss;
 
@@ -524,19 +546,22 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         // End of epoch
         // compute loss
-        std::clock_t  c_end = clock();
-        float cpu_time = getUsedCupTime(c_start,c_end);
+        std::clock_t c_end = clock();
+        float cpu_time = getUsedCupTime(c_start, c_end);
         auto max_cpu_time = comm->getTimeUsages(cpu_time,MPI_MAX);
         auto min_cpu_time = comm->getTimeUsages(cpu_time,MPI_MIN);
-        auto avg_cpu_time = comm->getTimeUsages(cpu_time,MPI_SUM) / (float) comm->getNumProcesses();
+        auto total_cpu_time = comm->getTimeUsages(cpu_time,MPI_SUM);
+        auto avg_cpu_time =  total_cpu_time/ (float) comm->getNumProcesses();
         loss = computeAndSyncLoss(data, suft, energy);
 
-        time_t after = time(nullptr);
+        auto after = std::chrono::high_resolution_clock::now();
+
         if (comm->isMaster()) {
-            std::cout << iter << ".[T+" << std::to_string(after - start_time) <<"s] " << "Loss=" <<
-            loss << " Prev_Loss=" << prev_loss << " Learning_Rate=" << learning_rate
-            << " CPU Usage: min=" << min_cpu_time << "ms max=" << max_cpu_time
-            << "ms" << " avg=" << avg_cpu_time << "ms"
+            std::cout << iter << ".[T+" << getTimeDifferenceStr(start_time, after) <<"s] " << "Loss=" <<
+            loss << " Prev_Loss=" << prev_loss
+            << " Time_Escaped: " << getTimeDifferenceStr(before, after) << "s"
+            << " CPU_Usage(min,max,avg):" << min_cpu_time << "s " << max_cpu_time
+            << "s " << avg_cpu_time << "s"
             << std::endl;
             // let us roll Dropouts
             param->rollDropouts();

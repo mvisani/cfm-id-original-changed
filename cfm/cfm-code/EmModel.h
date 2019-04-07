@@ -19,6 +19,7 @@
 
 #ifndef __EM_TRAIN_H__
 #define __EM_TRAIN_H__
+#include <chrono>
 
 static const int MAX_EM_ITERATIONS = 100;
 
@@ -60,6 +61,8 @@ public:
     virtual double computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft, unsigned int energy);
 
 protected:
+    // timer
+    std::chrono::system_clock::time_point start_time;
 
     //Further virtual functions
     virtual void computeThetas(MolData *moldata);
@@ -100,10 +103,12 @@ protected:
     void updateTrainingParams(double loss, double prev_loss, double loss_ratio, float &learning_rate,
                               int &sampling_method,
                               int &count_no_progress) const;
-    time_t start_time;
+
 
     std::string
-    getMetricsString(double loss, double prev_loss, double best_loss, time_t after, double val_q, int num_val_mols,
+    getMetricsString(double loss, double prev_loss, double best_loss,
+                     const std::chrono::system_clock::time_point &after,
+                     double val_q, int num_val_mols,
                      int num_training_mols, double train_jaccard, double train_w_jaccard, double val_jaccard,
                      double val_w_jaccard, double loss_ratio) const;
 
@@ -113,6 +118,12 @@ protected:
                           double &train_jaccard, double &train_w_jaccard, double &val_jaccard, double &val_w_jaccard);
 
     float getUsedCupTime(clock_t c_start, clock_t c_end) const;
+
+    float getTimeDifference(const std::chrono::system_clock::time_point &before,
+                            const std::chrono::system_clock::time_point &after) const;
+
+    std::string getTimeDifferenceStr(const std::chrono::system_clock::time_point &before,
+                            const std::chrono::system_clock::time_point &after) const;
 };
 
 #endif // __EM_TRAIN_H__
