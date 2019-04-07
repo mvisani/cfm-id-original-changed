@@ -645,10 +645,26 @@ void
 FragmentGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
                                                          std::set<unsigned int> &selected_weights) {
 
-    std::set<int> visited;
+    /*std::set<int> visited;
     std::vector<int> path;
     getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, visited, 0, path,
-                                                 selected_ids);
+                                                 selected_ids);*/
+
+    std::set<int> visited;
+    std::map<double, std::set<int>> selected_trans_map;
+    std::set<double> selected_weights_set;
+
+    std::copy(selected_weights.begin(), selected_weights.end(), std::inserter(selected_weights_set, selected_weights_set.begin()));
+
+    std::map<int, std::vector<int>> frag_trans_map;
+    std::vector<std::pair<int,int>> frag_trans_pair_path;
+    getCommonAncestors(selected_weights_set, visited, 0, frag_trans_pair_path, frag_trans_map);
+
+    for(const auto & record : frag_trans_map){
+        if(record.second.size() > 1)
+            for(const auto & trans_id :record.second)
+                selected_ids.insert(trans_id);
+    }
 }
 
 void FragmentGraph::
@@ -733,9 +749,9 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<unsigned int> &selected_we
         for (const auto &trans_id : path)
             selected_ids.insert(trans_id);
 
-        // add all trans in this node
-        // for (const auto &trans_id : matched_selected_ids)
-        //    selected_ids.insert(trans_id);
+        //add all trans in this node
+        for (const auto &trans_id : matched_selected_ids)
+           selected_ids.insert(trans_id);
     }
 }
 
