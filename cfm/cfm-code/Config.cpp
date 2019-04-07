@@ -21,6 +21,7 @@
 #include <sstream>
 #include <fstream>
 
+
 void initDefaultConfig(config_t &cfg) {
 
     cfg.lambda = DEFAULT_LAMBDA;
@@ -270,26 +271,14 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (cfg.ga_use_best_q)
             std::cout << "Using Best Q instead of Prev Q in GA" << std::endl;
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
+
+        std::cout << "Using ";
+        printSamplingConfig(cfg.ga_sampling_method, cfg);
         if (cfg.ga_reset_sampling) {
-            std::cout << "Reset_sampling: " << cfg.ga_reset_sampling << std::endl;
+            std::cout << "Reset Sampling Enabled , Reset to ";
+            printSamplingConfig(cfg.ga_sampling_method2, cfg);
         }
 
-        switch (cfg.ga_sampling_method) {
-            case USE_RANDOM_SAMPLING:
-                std::cout << "Using Random Sampling on transitions" << std::endl;
-                break;
-            case USE_GRAPH_RANDOM_WALK_SAMPLING:
-                std::cout << "Using Graph Random Walk Sampling with "
-                          << cfg.ga_sampling_max_selection << " iterations" << std::endl;
-                break;
-            case USE_DIFFERENCE_SAMPLING:
-                std::cout << "Using Difference sampling with max selection cut off at "
-                    << cfg.ga_sampling_max_selection << std::endl;
-                break;
-            case USE_NO_SAMPLING:
-            default:
-                std::cout << "NOT Using Sampling Method" << std::endl;
-        }
         if (cfg.allow_frag_detours) {
             std::cout << "Allowing fragmentation detours " << std::endl;
         } else {
@@ -345,6 +334,26 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (cfg.fragraph_compute_timeout_in_secs > 0)
             std::cout << "Timeout set on fragment graph computation to " << cfg.fragraph_compute_timeout_in_secs
                       << " mins" << std::endl;
+    }
+}
+
+void printSamplingConfig(const int sampling_method, config_t &cfg) {
+    switch (sampling_method) {
+        case USE_RANDOM_SAMPLING:
+            std::cout << "Random Sampling on transitions  with max selection cut off at "
+                      << cfg.ga_sampling_max_selection << std::endl;
+            break;
+        case USE_GRAPH_RANDOM_WALK_SAMPLING:
+            std::cout << "Graph Random Walk Sampling with "
+                      << cfg.ga_sampling_max_selection << " iterations" << std::endl;
+            break;
+        case USE_DIFFERENCE_SAMPLING:
+            std::cout << "Difference sampling with max selected peak count at "
+                      << cfg.ga_diff_sampling_peak_num << std::endl;
+            break;
+        case USE_NO_SAMPLING:
+        default:
+            std::cout << "NO Sampling Method" << std::endl;
     }
 }
 
