@@ -547,12 +547,19 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         // End of epoch
         // compute loss
         std::clock_t c_end = clock();
-        float cpu_time = getUsedCupTime(c_start, c_end);
-        auto max_cpu_time = comm->getTimeUsages(cpu_time,MPI_MAX);
-        auto min_cpu_time = comm->getTimeUsages(cpu_time,MPI_MIN);
-        auto total_cpu_time = comm->getTimeUsages(cpu_time,MPI_SUM);
-        auto avg_cpu_time =  std::floor(total_cpu_time/ (float) comm->getNumProcesses() * 100.0f)/ 100.0f;
-        auto idle_cpu_time = max_cpu_time * (float) comm->getNumProcesses() - total_cpu_time;
+        std::string cpu_usage_string = "";
+        if(!cfg->disable_cpu_usage_metrics){
+            float cpu_time = getUsedCupTime(c_start, c_end);
+            auto max_cpu_time = comm->getTimeUsages(cpu_time,MPI_MAX);
+            auto min_cpu_time = comm->getTimeUsages(cpu_time,MPI_MIN);
+            auto total_cpu_time = comm->getTimeUsages(cpu_time,MPI_SUM);
+            auto avg_cpu_time =  std::floor(total_cpu_time/ (float) comm->getNumProcesses() * 100.0f)/ 100.0f;
+            auto idle_cpu_time = max_cpu_time * (float) comm->getNumProcesses() - total_cpu_time;
+            cpu_usage_string =  "CPU_Usage(min,max,avg,idle/total): " + std::to_string(min_cpu_time) + "s "
+                    + std::to_string(max_cpu_time) + "s " + std::to_string(avg_cpu_time) + "s "
+                    + std::to_string(idle_cpu_time) + "/" + std::to_string(total_cpu_time) + "s";
+        }
+
         loss = computeAndSyncLoss(data, suft, energy);
 
         auto after = std::chrono::high_resolution_clock::now();
@@ -560,10 +567,11 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         if (comm->isMaster()) {
             std::cout << iter << ".[T+" << getTimeDifferenceStr(start_time, after) <<"s]" << "Loss=" <<
             loss << " Prev_Loss=" << prev_loss
-            << " Time_Escaped: " << getTimeDifferenceStr(before, after) << "s"
-            << " CPU_Usage(min,max,avg,idle/total): " << min_cpu_time << "s " << max_cpu_time
-            << "s " << avg_cpu_time << "s " << idle_cpu_time << "/" << total_cpu_time << "s"
-            << std::endl;
+            << " Time_Escaped: " << getTimeDifferenceStr(before, after) << "s";
+            if(!cfg->disable_cpu_usage_metrics){
+                std::cout << cpu_usage_string;
+            }
+            std::cout << std::endl;
             // let us roll Dropouts
             param->rollDropouts();
         }

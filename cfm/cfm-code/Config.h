@@ -232,6 +232,7 @@ struct config_t {
 
     bool disable_cross_val_metrics;
     bool disable_training_metrics;
+    bool disable_cpu_usage_metrics;
 
     int em_no_progress_count;
     int ga_no_progress_count;

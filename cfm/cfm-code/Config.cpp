@@ -73,6 +73,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_diff_sampling_difference = 0.05;
     cfg.disable_cross_val_metrics = false;
     cfg.disable_training_metrics = false;
+    cfg.disable_cpu_usage_metrics = true;
     cfg.em_no_progress_count = 2;
     cfg.ga_no_progress_count = 3;
 }
@@ -147,6 +148,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_diff_sampling_difference") cfg.ga_diff_sampling_difference = (double) value;
         else if (name == "disable_cross_val_metrics") cfg.disable_cross_val_metrics = (int) value;
         else if (name == "disable_training_metrics") cfg.disable_training_metrics = (int) value;
+        else if (name == "disable_cpu_usage_metrics") cfg.disable_cpu_usage_metrics = (bool) value;
         else if (name == "em_no_progress_count") cfg.em_no_progress_count = (int) value;
         else if (name == "ga_no_progress_count") cfg.ga_no_progress_count = (int) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
