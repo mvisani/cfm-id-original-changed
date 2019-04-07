@@ -734,8 +734,8 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<unsigned int> &selected_we
             selected_ids.insert(trans_id);
 
         // add all trans in this node
-        for (const auto &trans_id : matched_selected_ids)
-            selected_ids.insert(trans_id);
+        // for (const auto &trans_id : matched_selected_ids)
+        //    selected_ids.insert(trans_id);
     }
 }
 
