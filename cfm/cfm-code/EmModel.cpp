@@ -561,8 +561,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             std::cout << iter << ".[T+" << getTimeDifferenceStr(start_time, after) <<"s]" << "Loss=" <<
             loss << " Prev_Loss=" << prev_loss
             << " Time_Escaped: " << getTimeDifferenceStr(before, after) << "s"
-            << " CPU_Usage(min,max,avg,total_idle): " << min_cpu_time << "s " << max_cpu_time
-            << "s " << avg_cpu_time << "s " << idle_cpu_time << "s"
+            << " CPU_Usage(min,max,avg,idle/total): " << min_cpu_time << "s " << max_cpu_time
+            << "s " << avg_cpu_time << "s " << idle_cpu_time << "/" << total_cpu_time << "s"
             << std::endl;
             // let us roll Dropouts
             param->rollDropouts();
