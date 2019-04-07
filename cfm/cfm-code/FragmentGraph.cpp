@@ -641,22 +641,22 @@ void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &sel
     }
 }
 
-void
-FragmentGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                         std::set<unsigned int> &selected_weights) {
-
-    /*std::set<int> visited;
+void FragmentGraph::
+getSampledTransitionIdsDiffMapBFS(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights){
+    std::set<int> visited;
     std::vector<int> path;
-    getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, visited, 0, path,
-                                                 selected_ids);*/
+    getSampledTransitionIdsWeightedBFS(selected_weights, visited, 0, path,
+                                       selected_ids);
+}
 
+void FragmentGraph::
+getSampledTransitionIdsDiffMapCA(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights){
     std::set<int> visited;
     std::map<double, std::set<int>> selected_trans_map;
 
-
     std::map<int, std::vector<int>> frag_trans_map;
     std::vector<std::pair<int,int>> frag_trans_pair_path;
-    getCommonAncestors(selected_weights, visited, 0, frag_trans_pair_path, frag_trans_map);
+    getSampledTransitionIdsCommonAncestors(selected_weights, visited, 0, frag_trans_pair_path, frag_trans_map);
 
     for(const auto & record : frag_trans_map){
         if(record.second.size() > 1)
@@ -666,9 +666,9 @@ FragmentGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected
 }
 
 void FragmentGraph::
-getCommonAncestors(std::set<unsigned int> &selected_weights, std::set<int> &visited,
-                   int frag_id, std::vector<std::pair<int, int>> &path,
-                   std::map<int, std::vector<int>> &trans_to_interest_frags_map) {
+getSampledTransitionIdsCommonAncestors(std::set<unsigned int> &selected_weights, std::set<int> &visited,
+                                       int frag_id, std::vector<std::pair<int, int>> &path,
+                                       std::map<int, std::vector<int>> &trans_to_interest_frags_map) {
 
     double frag_mass = fragments[frag_id]->getMass();
 
@@ -692,14 +692,15 @@ getCommonAncestors(std::set<unsigned int> &selected_weights, std::set<int> &visi
     for (const auto &trans_id : from_id_tmap[frag_id]) {
         auto current_path = path;
         current_path.push_back(std::pair<int, int>(frag_id, trans_id));
-        getCommonAncestors(selected_weights, visited, transitions[trans_id]->getToId(), current_path, trans_to_interest_frags_map);
+        getSampledTransitionIdsCommonAncestors(selected_weights, visited, transitions[trans_id]->getToId(),
+                                               current_path, trans_to_interest_frags_map);
     }
 
 }
 
 void FragmentGraph::
-getSampledTransitionIdsDifferenceWeightedBFS(std::set<unsigned int> &selected_weights, std::set<int> &visited,
-                                             int frag_id, std::vector<int> &path, std::set<int> &selected_ids) {
+getSampledTransitionIdsWeightedBFS(std::set<unsigned int> &selected_weights, std::set<int> &visited,
+                                   int frag_id, std::vector<int> &path, std::set<int> &selected_ids) {
     // Note since we always start from root
     // and there is no arc lead to root ( or we does not care )
     // we should check all the child fragments
@@ -724,9 +725,9 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<unsigned int> &selected_we
         if (is_match(selected_weights, child_frag_mass))
             matched_selected_ids.push_back(trans_id);
 
-        getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, visited, child_frag_id,
-                                                     path_to_current_child,
-                                                     selected_ids);
+        getSampledTransitionIdsWeightedBFS(selected_weights, visited, child_frag_id,
+                                           path_to_current_child,
+                                           selected_ids);
     }
 
     if (!matched_selected_ids.empty()) {

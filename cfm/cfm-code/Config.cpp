@@ -349,8 +349,12 @@ void printSamplingConfig(const int sampling_method, config_t &cfg) {
             std::cout << "Graph Random Walk Sampling with "
                       << cfg.ga_sampling_max_selection << " iterations" << std::endl;
             break;
-        case USE_DIFFERENCE_SAMPLING:
-            std::cout << "Difference sampling with max selected peak count at "
+        case USE_DIFFERENCE_SAMPLING_BFS:
+            std::cout << "Difference sampling BFS with max selected peak count at "
+                      << cfg.ga_diff_sampling_peak_num << std::endl;
+            break;
+        case USE_DIFFERENCE_SAMPLING_CA:
+            std::cout << "Difference sampling Common Ancestors with max selected peak count at "
                       << cfg.ga_diff_sampling_peak_num << std::endl;
             break;
         case USE_NO_SAMPLING:

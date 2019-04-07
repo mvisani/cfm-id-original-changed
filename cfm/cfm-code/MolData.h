@@ -193,7 +193,9 @@ public:
 
     void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_selection);
 
-    void getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
+    void getSampledTransitionIdUsingDiffMapBFS(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
+
+    void getSampledTransitionIdUsingDiffMapCA(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
 
     void getRandomSampledTransitions(std::set<int> &selected_ids, int max_selection);
 

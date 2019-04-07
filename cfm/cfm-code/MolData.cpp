@@ -746,17 +746,20 @@ void MolData::getRandomSampledTransitions(std::set<int> &selected_ids, int max_s
 }
 
 void MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_selection) {
-
     if(!hasEmptySpectrum(0) && hasComputedGraph())
         fg->getSampledTransitionIdsRandomWalk(selected_ids, max_selection);
 }
 
 void
-MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights) {
+MolData::getSampledTransitionIdUsingDiffMapBFS(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights) {
     if (!hasEmptySpectrum(0) && hasComputedGraph())
-        fg->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights);
+        fg->getSampledTransitionIdsDiffMapBFS(selected_ids, selected_weights);
 }
 
+void MolData::getSampledTransitionIdUsingDiffMapCA(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights){
+    if (!hasEmptySpectrum(0) && hasComputedGraph())
+        fg->getSampledTransitionIdsDiffMapCA(selected_ids, selected_weights);
+}
 
 double MolData::getWeightedJaccardScore(int engery_level){
     Comparator *cmp = new WeightedJaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
