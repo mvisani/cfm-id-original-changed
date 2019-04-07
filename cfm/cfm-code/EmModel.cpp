@@ -273,7 +273,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 float
 EmModel::getTimeDifference(const std::chrono::system_clock::time_point &before,
         const std::chrono::system_clock::time_point &after) const {
-    auto count = std::chrono::duration_cast<std::chrono::microseconds>(after - before).count();
+    auto count = std::chrono::duration_cast<std::chrono::milliseconds>(after - before).count();
     return count/1000.0f;
 }
 
