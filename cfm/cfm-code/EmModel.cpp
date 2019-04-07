@@ -552,6 +552,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         auto min_cpu_time = comm->getTimeUsages(cpu_time,MPI_MIN);
         auto total_cpu_time = comm->getTimeUsages(cpu_time,MPI_SUM);
         auto avg_cpu_time =  std::floor(total_cpu_time/ (float) comm->getNumProcesses() * 100.0f)/ 100.0f;
+        auto idle_cpu_time = max_cpu_time * (float) comm->getNumProcesses() - total_cpu_time;
         loss = computeAndSyncLoss(data, suft, energy);
 
         auto after = std::chrono::high_resolution_clock::now();
@@ -560,8 +561,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             std::cout << iter << ".[T+" << getTimeDifferenceStr(start_time, after) <<"s]" << "Loss=" <<
             loss << " Prev_Loss=" << prev_loss
             << " Time_Escaped: " << getTimeDifferenceStr(before, after) << "s"
-            << " CPU_Usage(min,max,avg): " << min_cpu_time << "s " << max_cpu_time
-            << "s " << avg_cpu_time << "s"
+            << " CPU_Usage(min,max,avg,total_idle): " << min_cpu_time << "s " << max_cpu_time
+            << "s " << avg_cpu_time << "s " << idle_cpu_time << "s"
             << std::endl;
             // let us roll Dropouts
             param->rollDropouts();
