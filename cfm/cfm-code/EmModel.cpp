@@ -467,7 +467,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         auto itdata = data.begin();
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group){
-                collectUsedIdx(*itdata, comm->used_idxs, energy);
+                if(param->getNumWeightsPerEnergyLevel() != comm->used_idxs.size())
+                    collectUsedIdx(*itdata, comm->used_idxs, energy);
                 computeThetas(&(*itdata));
             }
         }
