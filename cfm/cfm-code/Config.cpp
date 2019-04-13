@@ -76,6 +76,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.disable_cpu_usage_metrics = true;
     cfg.em_no_progress_count = 2;
     cfg.ga_no_progress_count = 3;
+    cfg.collected_all_used_idx = false;
 }
 
 void initConfig(config_t &cfg, std::string &filename, bool report_all) {
@@ -151,6 +152,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "disable_cpu_usage_metrics") cfg.disable_cpu_usage_metrics = (bool) value;
         else if (name == "em_no_progress_count") cfg.em_no_progress_count = (int) value;
         else if (name == "ga_no_progress_count") cfg.ga_no_progress_count = (int) value;
+        else if (name == "collected_all_used_idx") cfg.collected_all_used_idx = (bool) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();

@@ -465,9 +465,19 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         auto before = std::chrono::high_resolution_clock::now();
 
         auto itdata = data.begin();
+
+        // igorne used idx collection
+        // include all idx
+
+        if(cfg->collected_all_used_idx){
+            auto grad_offset = energy * param->getNumWeightsPerEnergyLevel();
+            for(int i = 0 ; i < param->getNumWeightsPerEnergyLevel(); ++i)
+                comm->used_idxs.insert(grad_offset + i);
+        }
+
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
             if (itdata->getGroup() != validation_group){
-                if(param->getNumWeightsPerEnergyLevel() != comm->used_idxs.size())
+                if(!cfg->collected_all_used_idx)
                     collectUsedIdx(*itdata, comm->used_idxs, energy);
                 computeThetas(&(*itdata));
             }

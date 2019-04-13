@@ -237,6 +237,8 @@ struct config_t {
 
     int em_no_progress_count;
     int ga_no_progress_count;
+
+    bool collected_all_used_idx;
 };
 
 void initDefaultConfig(config_t &cfg);
