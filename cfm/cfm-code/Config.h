@@ -133,6 +133,7 @@ static const double DEFAULT_GA_MOMENTUM = 0.9;
 
 static const int DEFAULT_GA_MINIBATCH_NTH_SIZE = 1;
 static const int DEFAULT_GA_MAX_ITERATIONS = 20;
+static const int DEFAULT_EM_MAX_ITERATIONS = 100;
 
 static const int NORMAL_OBS_FUNCTION = 1;
 static const int UNIFORM_OBS_FUNCTION = 2;
@@ -208,6 +209,7 @@ struct config_t {
     float ending_step_size;
     int ga_max_iterations;
     int ga_use_best_q;
+    int em_max_iterations;
 
     // Decay
     double decay_rate;

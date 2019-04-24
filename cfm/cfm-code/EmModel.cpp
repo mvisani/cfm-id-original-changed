@@ -100,7 +100,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                       << std::endl;
     }
 
-    while (iter < MAX_EM_ITERATIONS) {
+    while (iter < cfg->em_max_iterations) {
         std::string iter_out_param_filename =
                 out_param_filename + "_" + std::to_string(iter);
 
@@ -261,7 +261,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         iter++;
     }
 
-    if (iter >= MAX_EM_ITERATIONS)
+    if (iter >= cfg->em_max_iterations)
         comm->printToMasterOnly(("Warning: EM did not converge after " +
                                  std::to_string(iter) +
                                  " iterations.")

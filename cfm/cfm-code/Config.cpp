@@ -77,6 +77,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.em_no_progress_count = 2;
     cfg.ga_no_progress_count = 3;
     cfg.collected_all_used_idx = false;
+    cfg.em_max_iterations = DEFAULT_EM_MAX_ITERATIONS;
 }
 
 void initConfig(config_t &cfg, std::string &filename, bool report_all) {
@@ -153,6 +154,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "em_no_progress_count") cfg.em_no_progress_count = (int) value;
         else if (name == "ga_no_progress_count") cfg.ga_no_progress_count = (int) value;
         else if (name == "collected_all_used_idx") cfg.collected_all_used_idx = (bool) value;
+        else if (name == "em_max_iterations") cfg.em_max_iterations = (int) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();

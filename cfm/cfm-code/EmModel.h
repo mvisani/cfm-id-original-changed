@@ -21,8 +21,6 @@
 #define __EM_TRAIN_H__
 #include <chrono>
 
-static const int MAX_EM_ITERATIONS = 100;
-
 #include "Config.h"
 #include "MolData.h"
 #include "Param.h"
