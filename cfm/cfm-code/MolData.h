@@ -255,7 +255,7 @@ protected
     bool ev_graph_computed;
     // spectra , which will be pruned during traning
     std::vector<Spectrum> spectra;
-    // origonal copy of spectra;
+    // orig copy of spectra
     std::vector<Spectrum> orig_spectra;
     // predicted spectra
     std::vector<Spectrum> predicted_spectra;

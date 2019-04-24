@@ -21,7 +21,8 @@ void
 Comparator::getMatchingPeakPairs(std::vector<peak_pair_t> &peak_pairs, const Spectrum *p, const Spectrum *q) const {
 
     //Check that the input spectra are sorted and normalized correctly
-    if (!p->isNormalizedAndSorted() || !q->isNormalizedAndSorted()) throw ComparatorException();
+    if (!p->isNormalizedAndSorted() || !q->isNormalizedAndSorted())
+        throw ComparatorException();
 
     //Use Dynamic Programming to find the best match between peaks
     //such that each peak matches at most one other

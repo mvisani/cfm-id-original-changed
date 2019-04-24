@@ -86,13 +86,14 @@ void Spectrum::quantisePeaksByMass(int num_dec_places) {
     // Note: this is mostly used for extreme cases like the NIST data, where
     // masses are given only to integer precision.
     normalizeAndSort();
+
     long long prev_mass = 0;
     auto it = peaks.begin();
     for (; it != peaks.end(); ++it) {
         auto tmp_mass =
                 (long long) (it->mass * std::pow(10.0, num_dec_places) + 0.5);
         it->mass = tmp_mass * std::pow(10.0, -num_dec_places);
-        if (tmp_mass == prev_mass) {
+        if (tmp_mass == prev_mass && it != peaks.begin()) {
             it->intensity += (it - 1)->intensity;
             it->annotations.insert(it->annotations.end(),
                                    (it - 1)->annotations.begin(),
