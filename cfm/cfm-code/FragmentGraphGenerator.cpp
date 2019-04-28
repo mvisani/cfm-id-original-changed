@@ -182,23 +182,20 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
     node.generateBreaks(breaks, h_loss_allowed);
 
     bool ring_can_break = (remaining_ring_breaks > 0);
-    int num_child_created = 0;
-
     for (auto it = breaks.begin(); it != breaks.end(); ++it) {
         if (it->isRingBreak() && !ring_can_break)
             continue;
 
         CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
                          id, &(*it));
-
-        num_child_created += node.children.size();
         node.children = std::vector<FragmentTreeNode>();
     }
-    //}
 }
 
 void
-FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id, Break *brk) {
+FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_depth,
+        int remaining_ring_breaks,
+        int id, Break *brk) {
     for (int ifrag_idx = 0; ifrag_idx < brk->getNumIonicFragAllocations(); ifrag_idx++) {
 
         node.applyBreak(*brk, ifrag_idx);
@@ -227,7 +224,9 @@ FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_d
 //Compute a FragmentGraph starting at the given node and computing to the depth given.
 //The output will be appended to the current_graph
 void
-LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parentid, double parent_log_prob,
+LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth,
+                                      int parentid,
+                                      double parent_log_prob,
                                       int remaining_ring_breaks) {
 
     //Check Timeout
@@ -314,9 +313,14 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
         }
         if (max_child_prob >= log_prob_thresh) {
             int child_remaining_ring_breaks = remaining_ring_breaks;
-            if (children_isring[child_idx] && child_remaining_ring_breaks > 0)
+            if (children_isring[child_idx] && child_remaining_ring_breaks > 0){
+                // if current break is ring break , remaining_depth will not change
+                // ring break tak two events
                 child_remaining_ring_breaks--;
-            compute(*itt, remaining_depth - 1, id, max_child_prob, child_remaining_ring_breaks);
+                compute(*itt, remaining_depth, id, max_child_prob, child_remaining_ring_breaks);
+            }
+            else
+                compute(*itt, remaining_depth - 1, id, max_child_prob, child_remaining_ring_breaks);
         }
     }
 
