@@ -29,26 +29,22 @@ public:
     Break()
             : h_only_break(true), ring_break(false), ionic_break(false), bond_idx(-1),
               ring_idx(-1), num_ionic_frag_allocations(1),
-              ionic_idx(-1), fg_break(false) {};
+              ionic_idx(-1) {};
 
-    // Constructor for a Non-Ring Break (ionic or standard)
-    Break(int a_bond_or_ionic_atom_idx, bool a_ionic_break = false,
-          int a_num_ionic_frag_allocations = 1, bool is_fg_break = false)
-            : h_only_break(false), ring_break(false), ionic_break(a_ionic_break),
+    // Constructor for Break (ionic or standard or ring)
+    Break(int a_bond_or_ionic_atom_idx, bool a_ionic_break,
+             bool is_ring_break, int a_ring_idx, int a_num_ionic_frag_allocations)
+            : h_only_break(false), ring_break(is_ring_break), ionic_break(a_ionic_break),
               bond_idx(-1), ring_idx(-1), ionic_idx(-1),
-              num_ionic_frag_allocations(a_num_ionic_frag_allocations), fg_break(is_fg_break) {
+              num_ionic_frag_allocations(a_num_ionic_frag_allocations) {
+
+        if (is_ring_break)
+            ring_idx = a_ring_idx;
         if (ionic_break)
             ionic_idx = a_bond_or_ionic_atom_idx;
         else
             bond_idx = a_bond_or_ionic_atom_idx;
     };
-
-    // Constructor for a Ring Break
-    Break(int a_bond_or_ionic_atom_idx, int a_ring_idx,
-          int a_num_ionic_frag_allocations = 1)
-            : h_only_break(false), ring_break(true), ionic_break(false),
-              num_ionic_frag_allocations(a_num_ionic_frag_allocations),
-              bond_idx(a_bond_or_ionic_atom_idx), ring_idx(a_ring_idx), ionic_idx(-1) {};
 
     // Access functions (note: bools convert to ints for use in RDKit properties)
     int getBondIdx() const { return bond_idx; };
@@ -65,7 +61,6 @@ public:
 
     int getNumIonicFragAllocations() const { return num_ionic_frag_allocations; };
 
-    bool isFgBreak() {return fg_break; };
 private:
     int bond_idx;    // Indexes of the broken bond(s)
 
@@ -77,8 +72,6 @@ private:
     int num_ionic_frag_allocations;
 
     bool h_only_break;
-
-    bool fg_break; // Flag indicating if this is break between functional groups
 };
 
 // Class for generating fragments via the systematic bond disconnection approach
@@ -95,7 +88,7 @@ public:
         labelIonProperties();
     };
 
-    // used for creat start node
+    // used for create start node
     FragmentTreeNode(romol_ptr_t an_ion, int a_ion_free_ep, int a_depth,
                      FeatureHelper *a_fh, std::vector<int> &a_e_loc)
             : ion(an_ion), ion_free_epairs(a_ion_free_ep), depth(a_depth), fh(a_fh),

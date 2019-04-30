@@ -264,10 +264,15 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
         std::vector<romol_ptr_t> mols = RDKit::MolOps::getMolFrags(rwmol, false);
 
         if(brk.isRingBreak()){
-            // if there is bond break on the ring
-            romol_ptr_t child_ion = mols[0];
+            romol_ptr_t child_ion, child_nl;
+            // TODO NOT the smartest way to do this, we need better way to handle ring break and multi frags
+            for(const auto & mol : mols)
+                // if there is bond break on the ring, and it come with root
+                if (nullptr != getLabeledAtom(mol, "Root"))
+                     child_ion = mol;
+
             // make a copy of ion/nl
-            romol_ptr_t child_nl = boost::make_shared<RDKit::ROMol>(RDKit::ROMol(*mols[0]));
+            child_nl = boost::make_shared<RDKit::ROMol>(RDKit::ROMol(*child_ion));
 
             //Record some of the properties of the break in the neutral loss
             //e.g. ring break? aromaticity etc.
@@ -280,6 +285,8 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
 
             // set other root to root
             RDKit::ROMol::AtomIterator ai;
+            // since nl and ion are the same mol ( different copy)
+            // we need make sure nl has different root
             for (ai = child_nl.get()->beginAtoms(); ai != child_nl.get()->endAtoms(); ++ai) {
                 int is_root, is_other_root;
                 (*ai)->getProp("Root", is_root);
@@ -730,7 +737,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
         (*ai)->getProp("IonicFragmentCharge", ionic_frag_q);
         if (ionic_frag_q != 0 &&
             num_ionic != ion.get()->getNumAtoms()) //(must have at least one non-ionic atom to break further)
-            breaks.push_back(Break((*ai)->getIdx(), true, computeNumIonicAlloc(num_ionic - 1)));
+            breaks.push_back(Break((*ai)->getIdx(), true, false, -1, computeNumIonicAlloc(num_ionic - 1)));
     }
 
     // if previous break is a ring break
@@ -763,14 +770,8 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
         if(had_ring_break && !was_on_the_ring)
             continue;
 
-        //find all functional group break
-        //int between_fg;
-        //bond->getProp("BetweenFG", between_fg);
-        //NOTE this is disabled
-
-        int between_fg = 0;
         if (rinfo->numBondRings(bidx) == 0)
-            breaks.push_back(Break(bidx, false, computeNumIonicAlloc(num_ionic), between_fg));
+            breaks.push_back(Break(bidx, false, false, -1, computeNumIonicAlloc(num_ionic)));
         else
             ring_bonds_count ++;
     }
@@ -784,27 +785,19 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
     // Complete ring breakss
     if (had_ring_break == 0) {
         auto brings = rinfo->bondRings();
-
         auto bit = brings.begin();
-
         for (int ring_idx = 0; bit != brings.end(); ++bit, ring_idx++) {
-
             //Only include rings with size less than MAX_BREAKABLE_RING_SIZE
             //(larger rings can exist, but will not break since it blows out the computation)
             if (bit->size() > MAX_BREAKABLE_RING_SIZE)
                 continue;
 
-            //All pairs of bonds within the ring, that don't
-            //belong to any other ring
-            RDKit::RingInfo::INT_VECT::iterator it;
-            for (it = bit->begin(); it != bit->end(); ++it) {
+            //bond within the ring, that don't belong to any other ring
+            for (auto it = bit->begin(); it != bit->end(); ++it) {
 
-                //if ((ion.get()->getBondWithIdx(*it))->getBondType() == RDKit::Bond::AROMATIC)
-                //    continue;
                 if (rinfo->numBondRings(*it) != 1)
                     continue;
-
-                breaks.push_back(Break(*it, ring_idx, computeNumIonicAlloc(num_ionic)));
+                breaks.push_back(Break(*it, false, true, ring_idx, computeNumIonicAlloc(num_ionic)));
             }
         }
     }
