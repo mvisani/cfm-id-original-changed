@@ -280,38 +280,46 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
     }
 
     //Compute child thetas
-    std::vector<FragmentTreeNode>::iterator itt = node.children.begin();
-    for (; itt != node.children.end(); ++itt) {
-        Transition tmp_t(-1, -1, itt->nl, itt->ion);
+    for (auto child = node.children.begin(); child != node.children.end(); ++child) {
+        Transition tmp_t(-1, -1, child->nl, child->ion);
         // NOTE Depth in here is child depth
         FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), node.depth + 1, node.ion);
         for (int engy = cfg->spectrum_depths.size() - 1; engy >= 0; engy--) {
             if (is_nn_params)
-                itt->setTmpTheta(nnparam->computeTheta(*fv, engy), engy);
+                child->setTmpTheta(nnparam->computeTheta(*fv, engy), engy);
             else
-                itt->setTmpTheta(param->computeTheta(*fv, engy), engy);
+                child->setTmpTheta(param->computeTheta(*fv, engy), engy);
         }
         delete fv;
     }
 
+    // map to record child count, in case of duplication
+    std::map<std::string, int> child_count;
+
     //Compute child probabilities (including persistence) - for all energy levels
-    std::vector<double> denom(cfg->spectrum_depths.size());
-    for (int i = 0; i < denom.size(); i++) denom[i] = 0.0;
-    for (itt = node.children.begin(); itt != node.children.end(); ++itt) {
+    std::vector<double> denom(cfg->spectrum_depths.size(), 0.0);
+
+    for (auto itt = node.children.begin(); itt != node.children.end(); ++itt) {
         for (int energy = 0; energy < denom.size(); energy++)
             denom[energy] = logAdd(denom[energy], itt->getTmpTheta(energy));
+        std::string key = RDKit::MolToSmiles(*(itt->ion)) + " " + RDKit::MolToSmiles(*(itt->nl));
+        child_count[key] ++;
     }
 
     //Add and recur over likely children if above threshold for any energy level
     double max_child_prob;
     int child_idx = 0;
-    for (itt = node.children.begin(); itt != node.children.end(); ++itt, child_idx++) {
+
+    for (auto itt = node.children.begin(); itt != node.children.end(); ++itt, child_idx++) {
         max_child_prob = log_prob_thresh - 10.0;
         for (int energy = 0; energy < denom.size(); energy++) {
             double child_log_prob = itt->getTmpTheta(energy) - denom[energy] + parent_log_prob;
-            if (child_log_prob > max_child_prob) max_child_prob = child_log_prob;
+            if (child_log_prob > max_child_prob)
+                max_child_prob = child_log_prob;
         }
-        if (max_child_prob >= log_prob_thresh) {
+
+        std::string key = RDKit::MolToSmiles(*(itt->ion)) + " " + RDKit::MolToSmiles(*(itt->nl));
+        if (max_child_prob >= log_prob_thresh - log(child_count[key])) {
             int child_remaining_ring_breaks = remaining_ring_breaks;
             if (children_isring[child_idx] && child_remaining_ring_breaks > 0){
                 // if current break is ring break , remaining_depth will not change
