@@ -312,14 +312,15 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
 
     for (auto itt = node.children.begin(); itt != node.children.end(); ++itt, child_idx++) {
         max_child_prob = log_prob_thresh - 10.0;
+        std::string key = RDKit::MolToSmiles(*(itt->ion)) + " " + RDKit::MolToSmiles(*(itt->nl));
         for (int energy = 0; energy < denom.size(); energy++) {
-            double child_log_prob = itt->getTmpTheta(energy) - denom[energy] + parent_log_prob;
+            // normal prob + dups (last term)
+            double child_log_prob = itt->getTmpTheta(energy) - denom[energy] + parent_log_prob + log(child_count[key]);
             if (child_log_prob > max_child_prob)
                 max_child_prob = child_log_prob;
         }
 
-        std::string key = RDKit::MolToSmiles(*(itt->ion)) + " " + RDKit::MolToSmiles(*(itt->nl));
-        if (max_child_prob >= log_prob_thresh - log(child_count[key])) {
+        if (max_child_prob >= log_prob_thresh) {
             int child_remaining_ring_breaks = remaining_ring_breaks;
             if (children_isring[child_idx] && child_remaining_ring_breaks > 0){
                 // if current break is ring break , remaining_depth will not change
