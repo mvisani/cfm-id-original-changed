@@ -76,9 +76,16 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
     //Iterate through the possible solutions, adding them to the node as children
     int min_f0 = total_free_epairs - f1_max_e;
     int max_f0 = f0_max_e;
-    for (int charge_frag = 0; charge_frag <= 1; charge_frag++) {
+    if (brk.isRingBreak()) {
+        int charge_frag = 0;
         for (int e_f0 = min_f0; e_f0 <= max_f0; e_f0++) {
             addChild(e_f0, total_free_epairs, f0_output_bmax, brk, charge_frag);
+        }
+    } else {
+        for (int charge_frag = 0; charge_frag <= 1; charge_frag++) {
+            for (int e_f0 = min_f0; e_f0 <= max_f0; e_f0++) {
+                addChild(e_f0, total_free_epairs, f0_output_bmax, brk, charge_frag);
+            }
         }
     }
 }
