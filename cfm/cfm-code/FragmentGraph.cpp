@@ -97,35 +97,35 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
 }
 
 //As for previous function, but delete the mols in the transition and compute and store a feature vector instead
-int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid, FeatureCalculator *fc) {
+int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parent_frag_id, FeatureCalculator *fc) {
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
+    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
 
-    if (fragments[id]->getDepth() == -1 || node.depth < fragments[id]->getDepth())
-        fragments[id]->setDepth(node.depth);    //Set start fragment depth
+    if (fragments[frag_id]->getDepth() == -1 || node.depth < fragments[frag_id]->getDepth())
+        fragments[frag_id]->setDepth(node.depth);    //Set start fragment depth
 
     // find if this trans does exist
     int existing_trans_id = -1;
-    if (parentid >= 0)
-        existing_trans_id = findMatchingTransition(parentid, id);
+    if (parent_frag_id >= 0)
+        existing_trans_id = findMatchingTransition(parent_frag_id, frag_id);
 
     //Add a transition, if one does not exist
-    if (parentid >= 0 && existing_trans_id < 0 &&
-        (allow_frag_detours || node.depth <= fragments[id]->getDepth())) {
+    if (parent_frag_id >= 0 && existing_trans_id < 0 &&
+        (allow_frag_detours || node.depth <= fragments[frag_id]->getDepth())) {
 
         int idx = transitions.size();
-        transitions.push_back(std::make_shared<Transition>(parentid, id, node.nl, node.ion));
+        transitions.push_back(std::make_shared<Transition>(parent_frag_id, frag_id, node.nl, node.ion));
 
         //Update the tmaps
-        from_id_tmap[parentid].push_back(idx);
-        to_id_tmap[id].push_back(idx);
+        from_id_tmap[parent_frag_id].push_back(idx);
+        to_id_tmap[frag_id].push_back(idx);
 
         //Compute a feature vector
         auto t = transitions.back();
         FeatureVector *fv;
-        std::string frag_smiles = *fragments[parentid]->getIonSmiles();
+        std::string frag_smiles = *fragments[parent_frag_id]->getIonSmiles();
         auto frag_ptr = createMolPtr(frag_smiles.c_str());
 
         try {
@@ -142,19 +142,19 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         //Delete the mols
         t->deleteIon();
         t->deleteNeutralLoss();
-    } else if (parentid >= 0 && existing_trans_id >= 0 &&
-               (node.depth == fragments[id]->getDepth())) {
+    } else if (parent_frag_id >= 0 && existing_trans_id >= 0 &&
+               (node.depth == fragments[frag_id]->getDepth())) {
         // if those transitions does exists, create a duplication
-        int idx = transitions.size();
+        int trans_idx = transitions.size();
         transitions.push_back(std::make_shared<Transition>());
         auto trans = transitions.back();
         trans->createdDuplication(*transitions[existing_trans_id]);
         //Update the tmaps
-        from_id_tmap[parentid].push_back(idx);
-        to_id_tmap[id].push_back(idx);
+        from_id_tmap[parent_frag_id].push_back(trans_idx);
+        to_id_tmap[frag_id].push_back(trans_idx);
     }
 
-    return id;
+    return frag_id;
 }
 
 int FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std::vector<double> *thetas, int parentid) {

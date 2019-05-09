@@ -238,7 +238,7 @@ public:
 
     // As for previous function, but delete the mols in the transition and compute
     // and store a feature vector instead
-    int addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid, FeatureCalculator *fc);
+    int addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parent_frag_id, FeatureCalculator *fc);
 
     // As for previous function, but don't store the mols in the transition and
     // insert the pre-computed thetas instead
