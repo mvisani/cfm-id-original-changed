@@ -241,21 +241,25 @@ void FingerPrintFeature::addMorganFingerPrintFeatures(FeatureVector &fv,
 }
 
 std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
-                                                const RDKit::Atom *parent_atom,
                                                 std::map<unsigned int, unsigned int> &distances,
                                                 std::map<unsigned int, std::string> &labels) const {
-    auto atom_idx = atom->getIdx();
-    if(labels.count(atom_idx) > 0)
-        labels[atom->getIdx()] = "";
-    else
-        return "";
+    auto distance_to_root = distances[atom->getIdx()];
 
     // add bond and atom label
     std::string atom_key;
-    if(parent_atom != nullptr){
+
+    // in case we have more than one bond lead to this node
+    for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second; ++itp.first) {
+        RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
+        auto child_distance_to_root = distances[nbr_atom->getIdx()];
+        int bond_type = 10;
         int bond_int = FeatureHelper::getBondTypeAsInt(
-                mol->getBondBetweenAtoms(parent_atom->getIdx(), atom->getIdx()));
-        atom_key += std::to_string(bond_int);
+                mol->getBondBetweenAtoms(atom->getIdx(), nbr_atom->getIdx()));
+
+        // use smallest bond order
+        if (child_distance_to_root < distance_to_root && bond_int < bond_type)
+            bond_type = bond_int;
+        atom_key += std::to_string(bond_type);
     }
 
     std::string symbol_str = atom->getSymbol();
@@ -264,28 +268,29 @@ std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol, const RDK
         symbol_str += " ";
     atom_key += symbol_str;
 
-    auto distance_to_root = distances[atom->getIdx()];
-
     std::vector<std::string> children_keys;
     for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second; ++itp.first) {
         RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
         auto child_distance_to_root = distances[nbr_atom->getIdx()];
         // make sure we are not going back and not going in a loop
-        if (nbr_atom != parent_atom && child_distance_to_root > distance_to_root) {
+        if (child_distance_to_root > distance_to_root) {
             std::string child_key;
-            child_key = getSortingLabel(mol, nbr_atom, atom, distances, labels);
+            child_key = getSortingLabel(mol, nbr_atom, distances, labels);
             children_keys.push_back(child_key);
         }
     }
 
     std::sort(children_keys.begin(), children_keys.end());
-    if(!children_keys.empty())
-        atom_key +="|";
 
     // get child atom keys str
     std::string children_atom_key;
     for (const auto child_key : children_keys)
         children_atom_key += child_key;
+    // save the label
+    if(!children_keys.empty())
+        labels[atom->getIdx()] = atom_key + "|" + children_atom_key;
+    else
+        labels[atom->getIdx()] = atom_key;
 
     return atom_key;
 }
@@ -374,7 +379,7 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const RootedROMol *roMolPtr, std::
 
     // get labels for each atoms
     std::map<unsigned int, std::string> sorting_labels;
-    getSortingLabel(mol, root, nullptr, distances_map, sorting_labels);
+    getSortingLabel(mol, root, distances_map, sorting_labels);
 
     // maybe a struct is a better idea
     // but this is a one off

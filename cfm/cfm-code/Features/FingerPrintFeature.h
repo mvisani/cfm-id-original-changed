@@ -62,7 +62,7 @@ private:
     void getAtomVisitOrderBFS(const RootedROMol *roMolPtr, std::vector<unsigned int> &visit_order,
                                   std::vector<unsigned int> &visit_atom_distance, int num_atoms, int depth) const;
 
-    std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom, const RDKit::Atom *parent_atom,
+    std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
                                     std::map<unsigned int, unsigned int> &distances,
                                     std::map<unsigned int, std::string> &labels) const;
 
