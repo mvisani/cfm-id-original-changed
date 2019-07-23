@@ -246,19 +246,21 @@ std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol, const RDK
     auto distance_to_root = distances[atom->getIdx()];
 
     // add bond and atom label
-    std::string atom_key;
+    std::string atom_key = "";
 
     // in case we have more than one bond lead to this node
-    for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second; ++itp.first) {
-        RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
-        auto child_distance_to_root = distances[nbr_atom->getIdx()];
+    if (distance_to_root > 0) {
         int bond_type = 10;
-        int bond_int = FeatureHelper::getBondTypeAsInt(
-                mol->getBondBetweenAtoms(atom->getIdx(), nbr_atom->getIdx()));
+        for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second; ++itp.first) {
+            RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
+            auto child_distance_to_root = distances[nbr_atom->getIdx()];
+            int bond_int = FeatureHelper::getBondTypeAsInt(
+                    mol->getBondBetweenAtoms(atom->getIdx(), nbr_atom->getIdx()));
 
-        // use smallest bond order
-        if (child_distance_to_root < distance_to_root && bond_int < bond_type)
-            bond_type = bond_int;
+            // use smallest bond order
+            if (child_distance_to_root < distance_to_root && bond_int < bond_type)
+                bond_type = bond_int;
+        }
         atom_key += std::to_string(bond_type);
     }
 
