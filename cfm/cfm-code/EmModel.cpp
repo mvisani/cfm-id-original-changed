@@ -729,15 +729,15 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
             moldata.getSampledTransitionIdsRandomWalk(selected_trans_id,cfg->ga_sampling_max_selection);
             break;
         }
-        case USE_DIFFERENCE_SAMPLING_BFS:
-        case USE_DIFFERENCE_SAMPLING_CA:{
+        case USE_DIFFERENCE_SAMPLING_BFS_CO:
+        case USE_DIFFERENCE_SAMPLING_BFS:{
             moldata.computePredictedSpectra(*param, false, true, energy);
             std::set<unsigned int> selected_weights;
 
             moldata.getSelectedWeights(selected_weights, energy);
-            if (sampling_method == USE_DIFFERENCE_SAMPLING_BFS)
+            if (sampling_method == USE_DIFFERENCE_SAMPLING_BFS_CO)
                 moldata.getSampledTransitionIdUsingDiffMapBFS(selected_trans_id, selected_weights);
-            else if (sampling_method == USE_DIFFERENCE_SAMPLING_CA)
+            else if (sampling_method == USE_DIFFERENCE_SAMPLING_BFS)
                 moldata.getSampledTransitionIdUsingDiffMapCA(selected_trans_id, selected_weights);
             break;
         }

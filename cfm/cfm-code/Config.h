@@ -148,8 +148,8 @@ static const int DEFAULT_USE_BEST_Q_IN_GA = 0;
 static const int USE_NO_SAMPLING = 0;
 static const int USE_RANDOM_SAMPLING = 1;
 static const int USE_GRAPH_RANDOM_WALK_SAMPLING = 2;
-static const int USE_DIFFERENCE_SAMPLING_BFS = 3;
-static const int USE_DIFFERENCE_SAMPLING_CA = 4;
+static const int USE_DIFFERENCE_SAMPLING_BFS_CO = 3;
+static const int USE_DIFFERENCE_SAMPLING_BFS = 4;
 
 //Configuration
 struct config_t {
