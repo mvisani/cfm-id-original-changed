@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
                   << std::endl;
         std::cout << std::endl
                   << "apply_cutoffs (opt):" << std::endl
-                  << "Whether to apply minimum and maximum peak cutoffs of 5 and "
+                  << "Whether to apply minimum and maximum peak cutoffs of 0 and "
                      "30 respectively (default = 0(off))"
                   << std::endl;
         std::cout << std::endl
@@ -330,7 +330,7 @@ int main(int argc, char *argv[]) {
                 mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
             }
             if (apply_cutoffs)
-                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
+                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0, 30, min_intensity);
             else
                 mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0, 1000000, min_intensity);
 
