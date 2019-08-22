@@ -111,7 +111,8 @@ void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, dou
     double total = 0.0;
     auto it = peaks.begin();
     int count = 0;
-
+    // we need at least 1 peak
+    min_peaks = std::max(min_peaks,1);
     for (; it != peaks.end(); ++it) {
         total += it->intensity;
         count++;
