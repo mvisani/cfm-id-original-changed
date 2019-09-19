@@ -156,7 +156,8 @@ int main(int argc, char *argv[]) {
     if (spectrum_file.substr(spectrum_file.size() - 4, 4) == ".msp") {
         MspReader msp(spectrum_file.c_str(), "");
         targetData.readInSpectraFromMSP(msp);
-    } else targetData.readInSpectraFromFile(spectrum_file);
+    } else
+        targetData.readInSpectraFromFile(spectrum_file);
 
     //Fetch the list of candidates
     std::vector<Candidate> candidates;

@@ -75,6 +75,12 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
         cmps.push_back(new OrigSteinDotProduct(ppm_mass_tol, abs_mass_tol));
     }
 
+    // get list of energies in target
+    std::vector<int> used_engeries;
+    for(auto idx = 0; idx < target_spectra->size(); ++ idx)
+        if(target_spectra[idx].size() > 0)
+            used_engeries.push_back(idx);
+
     //Compute the scores for each candidate
     std::vector<Candidate>::iterator it = candidates.begin();
     for (; it != candidates.end(); ++it) {
@@ -95,8 +101,11 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
             double precursor_mass = moldata.getFragmentAtIdx(0)->getMass();
 
             //Predict the spectra (and post-process, use existing thetas)
-            moldata.computePredictedSpectra(*param, false, true);
-            if (output_all_scores) std::cout << *it->getId() << ":";
+            for(auto & energy_level: used_engeries)
+                moldata.computePredictedSpectra(*param, false, true, energy_level);
+            
+            if (output_all_scores)
+                std::cout << *it->getId() << ":";
 
             score = 0.0;
             for (int postprocess = 0; postprocess <= 1; postprocess++) {
@@ -118,7 +127,9 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
                     }
                 }
 
-                //Compute and report all comparator scores: (hack to save computation during testing - enabled by output_all_scores flag (disabled by default))
+                //Compute and report all comparator scores:
+                // (hack to save computation during testing -
+                // enabled by output_all_scores flag (disabled by default))
                 boost::ptr_vector<Comparator>::iterator itc = cmps.begin();
                 for (; itc != cmps.end(); ++itc) {
                     double tmp_score = 0.0;
