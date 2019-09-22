@@ -335,7 +335,7 @@ int main(int argc, char *argv[]) {
                 mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
             }
             if (apply_cutoffs)
-                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0, 30, min_intensity);
+                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
             else
                 mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0, 1000000, min_intensity);
 
@@ -362,7 +362,7 @@ int main(int argc, char *argv[]) {
             jscores[idx] += norm * energy_jscores[idx];
             energy_dscores[idx] =
                     dcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
-            dscores[idx] += norm * energy_jscores[idx];
+            dscores[idx] += norm * energy_dscores[idx];
 
             energy_dpscores[idx] =
                     dot.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
