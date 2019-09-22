@@ -249,7 +249,21 @@ double Jaccard::computeScore(const Spectrum *measured, const Spectrum *predicted
         return 0.0;
 
     // return 2 * (double) peak_pairs.size() / (measured->size() + predicted->size());
-    return  (double) peak_pairs.size() / (measured->size() + predicted->size() - peak_pairs.size());
+    // return  (double) peak_pairs.size() / (measured->size() + predicted->size() - peak_pairs.size());
+}
+
+double Dice::computeScore(const Spectrum *measured, const Spectrum *predicted) const {
+
+    std::vector<peak_pair_t> peak_pairs;
+    getMatchingPeakPairs(peak_pairs, measured, predicted);
+    double intersection_sum = peak_pairs.size();
+    double total = measured->size() + predicted->size();
+
+    // union = total - intersection
+    if (total != 0.0)
+        return 2 * intersection_sum / total;
+    else
+        return 0.0;
 }
 
 double Combined::computeScore(const Spectrum *measured, const Spectrum *predicted) const {
