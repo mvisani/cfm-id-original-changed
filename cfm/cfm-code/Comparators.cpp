@@ -229,7 +229,10 @@ double WeightedJaccard::computeScore(const Spectrum *measured, const Spectrum *p
         union_sum += std::max(it->first.intensity, it->second.intensity);
     }
     // union = total - intersection
-    return intersection_sum / union_sum;
+    if (union_sum != 0.0)
+        return intersection_sum / union_sum;
+    else
+        return 0.0;
 }
 
 
@@ -238,7 +241,6 @@ double Jaccard::computeScore(const Spectrum *measured, const Spectrum *predicted
     std::vector<peak_pair_t> peak_pairs;
     getMatchingPeakPairs(peak_pairs, measured, predicted);
     return 2 * (double) peak_pairs.size() / (measured->size() + predicted->size());
-
 }
 
 double Combined::computeScore(const Spectrum *measured, const Spectrum *predicted) const {

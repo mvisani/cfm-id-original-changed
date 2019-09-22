@@ -249,7 +249,7 @@ int main(int argc, char *argv[]) {
     WeightedRecall wrcmp(ppm_mass_tol, abs_mass_tol);
     WeightedPrecision wpcmp(ppm_mass_tol, abs_mass_tol);
     Jaccard jcmp(ppm_mass_tol, abs_mass_tol);
-    WeightedJaccard wjcmp(ppm_mass_tol, abs_mass_tol);
+    //WeightedJaccard wjcmp(ppm_mass_tol, abs_mass_tol);
     DotProduct dot(ppm_mass_tol, abs_mass_tol);
     OrigSteinDotProduct odot(ppm_mass_tol, abs_mass_tol);
     ScatterOutput shout(ppm_mass_tol, abs_mass_tol);
@@ -355,9 +355,9 @@ int main(int argc, char *argv[]) {
             energy_jscores[idx] =
                     jcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             jscores[idx] += norm * energy_jscores[idx];
-            energy_wjscores[idx] =
-                    wjcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
-            wjscores[idx] += norm * energy_wjscores[idx];
+            //energy_wjscores[idx] =
+            //        wjcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
+            //wjscores[idx] += norm * energy_wjscores[idx];
             energy_dpscores[idx] =
                     dot.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             dpscores[idx] += norm * energy_dpscores[idx];
@@ -404,8 +404,8 @@ int main(int argc, char *argv[]) {
         reportMeanStd(out, energy_wpscores);
         out << std::endl << "Jaccard (mean, std err): ";
         reportMeanStd(out, energy_jscores);
-        out << std::endl << "Weighted Jaccard (mean, std err): ";
-        reportMeanStd(out, energy_wjscores);
+        //out << std::endl << "Weighted Jaccard (mean, std err): ";
+       // reportMeanStd(out, energy_wjscores);
         out << std::endl << "Dot Product (mean, std err): ";
         reportMeanStd(out, energy_dpscores);
         out << std::endl << "Original Stein Dot Product (mean, std err): ";
@@ -429,8 +429,8 @@ int main(int argc, char *argv[]) {
     reportMeanStd(out, wpscores);
     out << std::endl << "Jaccard (mean, std err): ";
     reportMeanStd(out, jscores);
-    out << std::endl << "Weighted Jaccard (mean, std err): ";
-    reportMeanStd(out, wjscores);
+    //out << std::endl << "Weighted Jaccard (mean, std err): ";
+    //reportMeanStd(out, wjscores);
     out << std::endl << "Altered Dot Product (mean, std err): ";
     reportMeanStd(out, adscores);
     out << std::endl << "Dot Product (mean, std err): ";
