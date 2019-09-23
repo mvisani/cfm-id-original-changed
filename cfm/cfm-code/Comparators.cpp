@@ -220,15 +220,14 @@ double WeightedPrecision::computeScore(const Spectrum *measured, const Spectrum 
 double WeightedJaccard::computeScore(const Spectrum *measured, const Spectrum *predicted) const {
 
     std::vector<peak_pair_t> peak_pairs;
-    getMatchingPeakPairsWithNoneMatchs(peak_pairs, measured, predicted);
+    getMatchingPeakPairs(peak_pairs, measured, predicted);
     double intersection_sum = 0.0;
     double union_sum = 0.0;
     std::vector<peak_pair_t>::iterator it = peak_pairs.begin();
-    for (; it != peak_pairs.end(); ++it) {
-        intersection_sum += 2 * std::min(it->first.intensity, it->second.intensity);
-        union_sum += std::max(it->first.intensity, it->second.intensity);
-    }
-    // union = total - intersection
+    for (; it != peak_pairs.end(); ++it) //{
+        intersection_sum += std::min(it->first.intensity, it->second.intensity);
+  
+    union_sum = 200.0 - intersection_sum;
     if (union_sum != 0.0)
         return intersection_sum / union_sum;
     else
@@ -241,8 +240,7 @@ double Jaccard::computeScore(const Spectrum *measured, const Spectrum *predicted
     std::vector<peak_pair_t> peak_pairs;
     getMatchingPeakPairs(peak_pairs, measured, predicted);
     double intersection_sum = peak_pairs.size();
-    double union_sim = measured->size() + predicted->size() - peak_pairs.size();
-    // union = total - intersection
+    double union_sim = measured->size() + predicted->size() - intersection_sum;
     if (union_sim != 0.0)
         return intersection_sum / union_sim;
     else
@@ -252,7 +250,7 @@ double Jaccard::computeScore(const Spectrum *measured, const Spectrum *predicted
 double WeightedDice::computeScore(const Spectrum *measured, const Spectrum *predicted) const {
 
     std::vector<peak_pair_t> peak_pairs;
-    getMatchingPeakPairsWithNoneMatchs(peak_pairs, measured, predicted);
+    getMatchingPeakPairs(peak_pairs, measured, predicted);
 
     double intersection_sum = 0.0;
     for (auto it = peak_pairs.begin(); it != peak_pairs.end(); ++it)
