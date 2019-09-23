@@ -96,9 +96,10 @@ int main(int argc, char *argv[]) {
                   << "Filter out any peaks below this intensity (default = 0 (off))"
                   << std::endl;
         std::cout << std::endl
-                  << "apply_cutoffs (opt):" << std::endl
-                  << "Whether to apply minimum and maximum peak cutoffs of 0 and "
-                     "30 respectively (default = 0(off))"
+                  << "minimum peak cutoffs (opt) (default = 1))" << std::endl
+                  << std::endl;
+        std::cout << std::endl
+                  << "maximum peak cutoffs (opt) (default = 1000000):"
                   << std::endl;
         std::cout << std::endl
                   << "clean_target_spectra (opt):" << std::endl
@@ -191,7 +192,9 @@ int main(int argc, char *argv[]) {
 
     double cumulative_intensity_thresh = 100;
     double min_intensity = 0.0;
-    int apply_cutoffs = 0, clean_target_spectra = 0;
+    int min_peak_cutoffs = 1, clean_target_spectra = 0;
+    int max_peak_cutoffs = 1000000;
+
     int quantise_spectra_dec_pl = -1;
     if (argc >= 9) {
         try {
@@ -211,30 +214,40 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
     }
+
     if (argc >= 11) {
         try {
-            apply_cutoffs = boost::lexical_cast<bool>(argv[10]);
+            min_peak_cutoffs = boost::lexical_cast<int>(argv[10]);
         } catch (boost::bad_lexical_cast e) {
-            std::cout << "Invalid apply_cutoffs (Expecting 0 or 1): " << argv[10]
+            std::cout << "Invalid min_peak_cutoffs (Expecting int) " << argv[10]
                       << std::endl;
             exit(1);
         }
     }
     if (argc >= 12) {
         try {
-            clean_target_spectra = boost::lexical_cast<bool>(argv[11]);
+            max_peak_cutoffs = boost::lexical_cast<int>(argv[11]);
         } catch (boost::bad_lexical_cast e) {
-            std::cout << "Invalid apply_cutoffs (Expecting 0 or 1): " << argv[11]
+            std::cout << "Invalid max_peak_cutoffs (Expecting int) " << argv[11]
                       << std::endl;
             exit(1);
         }
     }
     if (argc >= 13) {
         try {
-            quantise_spectra_dec_pl = boost::lexical_cast<int>(argv[12]);
+            clean_target_spectra = boost::lexical_cast<bool>(argv[12]);
+        } catch (boost::bad_lexical_cast e) {
+            std::cout << "Invalid apply_cutoffs (Expecting 0 or 1): " << argv[12]
+                      << std::endl;
+            exit(1);
+        }
+    }
+    if (argc >= 14) {
+        try {
+            quantise_spectra_dec_pl = boost::lexical_cast<int>(argv[13]);
         } catch (boost::bad_lexical_cast e) {
             std::cout << "Invalid quantise_spectra_dec_pl (Expecting integer): "
-                      << argv[12] << std::endl;
+                      << argv[13] << std::endl;
             exit(1);
         }
     }
@@ -270,7 +283,7 @@ int main(int argc, char *argv[]) {
     out << "Config: "  << std::endl;
     out << "cumulative_intensity_thresh " << cumulative_intensity_thresh << std::endl;
     out << "min_intensity " << min_intensity << std::endl;
-    out << "apply_cutoffs " << apply_cutoffs << std::endl;
+    out << "peak_cutoffs(min, max) " << min_peak_cutoffs << " " << max_peak_cutoffs << std::endl;
     out << "clean_target_spectra " << clean_target_spectra << std::endl;
     out << "quantise_spectra_dec_pl " << quantise_spectra_dec_pl << std::endl << std::endl;
 
@@ -338,10 +351,10 @@ int main(int argc, char *argv[]) {
                 mit->quantisePredictedSpectra(quantise_spectra_dec_pl);
                 mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
             }
-            if (apply_cutoffs)
-                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
-            else
-                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0, 1000000, min_intensity);
+            //if (apply_cutoffs)
+            // mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
+            //else
+            mit->postprocessPredictedSpectra(cumulative_intensity_thresh, min_peak_cutoffs, max_peak_cutoffs, min_intensity);
 
             //num_spectra = mit->GetNumSpectra();
             if (clean_target_spectra)

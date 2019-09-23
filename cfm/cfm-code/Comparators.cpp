@@ -226,7 +226,7 @@ double WeightedJaccard::computeScore(const Spectrum *measured, const Spectrum *p
     std::vector<peak_pair_t>::iterator it = peak_pairs.begin();
     for (; it != peak_pairs.end(); ++it) //{
         intersection_sum += std::min(it->first.intensity, it->second.intensity);
-  
+
     union_sum = 200.0 - intersection_sum;
     if (union_sum != 0.0)
         return intersection_sum / union_sum;
