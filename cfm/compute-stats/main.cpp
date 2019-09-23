@@ -368,7 +368,7 @@ int main(int argc, char *argv[]) {
             // weighted jaccard score
             energy_wjscores[idx] =
                     wjcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
-            wjscores[idx] += norm * energy_jscores[idx];
+            wjscores[idx] += norm * energy_wjscores[idx];
             // dice coef
             energy_dscores[idx] =
                     dcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
@@ -376,7 +376,7 @@ int main(int argc, char *argv[]) {
             // weighted dice coef
             energy_wdscores[idx] =
                     wdcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
-            wdscores[idx] += norm * energy_jscores[idx];
+            wdscores[idx] += norm * energy_wdscores[idx];
             // dot product
             energy_dpscores[idx] =
                     dot.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
