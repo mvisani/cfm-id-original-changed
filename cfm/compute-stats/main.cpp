@@ -249,8 +249,9 @@ int main(int argc, char *argv[]) {
     WeightedRecall wrcmp(ppm_mass_tol, abs_mass_tol);
     WeightedPrecision wpcmp(ppm_mass_tol, abs_mass_tol);
     Jaccard jcmp(ppm_mass_tol, abs_mass_tol);
+    WeightedJaccard wjcmp(ppm_mass_tol, abs_mass_tol);
     Dice dcmp(ppm_mass_tol, abs_mass_tol);
-    //WeightedJaccard wjcmp(ppm_mass_tol, abs_mass_tol);
+    WeightedDice wdcmp(ppm_mass_tol, abs_mass_tol);
     DotProduct dot(ppm_mass_tol, abs_mass_tol);
     OrigSteinDotProduct odot(ppm_mass_tol, abs_mass_tol);
     ScatterOutput shout(ppm_mass_tol, abs_mass_tol);
@@ -277,7 +278,8 @@ int main(int argc, char *argv[]) {
     // Compute the scores (per energy level and average scores across energy
     // levels)
     std::vector<double> rscores(data.size(), 0.0), pscores(data.size(), 0.0),
-            jscores(data.size(), 0.0), wjscores(data.size(), 0.0), dscores(data.size());
+            jscores(data.size(), 0.0), wjscores(data.size(), 0.0),
+            dscores(data.size(),0.0), wdscores(data.size());
 
     std::vector<double> wrscores(data.size(), 0.0), wpscores(data.size(), 0.0),
             adscores(data.size(), 0.0);
@@ -285,7 +287,9 @@ int main(int argc, char *argv[]) {
     std::vector<double> dpscores(data.size(), 0.0), odpscores(data.size(), 0.0);
 
     std::vector<double> energy_rscores(data.size()), energy_pscores(data.size()),
-            energy_jscores(data.size()), energy_dscores(data.size());
+            energy_jscores(data.size()), energy_dscores(data.size()),
+            energy_wjscores(data.size()), energy_wdscores(data.size());
+
     std::vector<double> energy_wrscores(data.size()),
             energy_wpscores(data.size()), energy_adscores(data.size());
     std::vector<double> energy_dpscores(data.size()),
@@ -357,13 +361,23 @@ int main(int argc, char *argv[]) {
             energy_wpscores[idx] =
                     wpcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             wpscores[idx] += norm * energy_wpscores[idx];
+            // jaccard Score
             energy_jscores[idx] =
                     jcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             jscores[idx] += norm * energy_jscores[idx];
+            // weighted jaccard score
+            energy_wjscores[idx] =
+                    wjcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
+            wjscores[idx] += norm * energy_jscores[idx];
+            // dice coef
             energy_dscores[idx] =
                     dcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             dscores[idx] += norm * energy_dscores[idx];
-
+            // weighted dice coef
+            energy_wdscores[idx] =
+                    wdcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
+            wdscores[idx] += norm * energy_jscores[idx];
+            // dot product
             energy_dpscores[idx] =
                     dot.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             dpscores[idx] += norm * energy_dpscores[idx];
@@ -372,7 +386,8 @@ int main(int argc, char *argv[]) {
             odpscores[idx] += norm * energy_odpscores[idx];
             out << mit->getId() << "\t" << energy_rscores[idx] << "\t"
                 << energy_pscores[idx] << "\t" << energy_wrscores[idx] << "\t"
-                << energy_wpscores[idx] << "\t" << energy_jscores[idx] << "\t" << "\t"
+                << energy_wpscores[idx] << "\t" << energy_jscores[idx] << "\t" <<  energy_wjscores[idx]  <<  "\t"
+                << energy_dscores[idx] << "\t" << energy_wdscores[idx] << "\t"
                 << energy_dpscores[idx] << "\t" << energy_odpscores[idx] << std::endl;
             idx++;
         }
@@ -380,7 +395,9 @@ int main(int argc, char *argv[]) {
         out << "Num mols in computation:" << idx << std::endl;
         energy_wpscores.resize(idx);
         energy_jscores.resize(idx);
+        energy_wjscores.resize(idx);
         energy_dscores.resize(idx);
+        energy_wdscores.resize(idx);
         energy_wrscores.resize(idx);
         energy_rscores.resize(idx);
         energy_pscores.resize(idx);
@@ -389,6 +406,8 @@ int main(int argc, char *argv[]) {
         wpscores.resize(idx);
         jscores.resize(idx);
         wjscores.resize(idx);
+        dscores.resize(idx);
+        wdscores.resize(idx);
         wrscores.resize(idx);
         rscores.resize(idx);
         pscores.resize(idx);
@@ -409,8 +428,12 @@ int main(int argc, char *argv[]) {
         reportMeanStd(out, energy_wpscores);
         out << std::endl << "Jaccard (mean, std err): ";
         reportMeanStd(out, energy_jscores);
+        out << std::endl << "Weighted Jaccard (mean, std err): ";
+        reportMeanStd(out, energy_wjscores);
         out << std::endl << "Dice (mean, std err): ";
         reportMeanStd(out, energy_dscores);
+        out << std::endl << "Weighted Dice (mean, std err): ";
+        reportMeanStd(out, energy_wdscores);
         out << std::endl << "Dot Product (mean, std err): ";
         reportMeanStd(out, energy_dpscores);
         out << std::endl << "Original Stein Dot Product (mean, std err): ";
@@ -434,8 +457,12 @@ int main(int argc, char *argv[]) {
     reportMeanStd(out, wpscores);
     out << std::endl << "Jaccard (mean, std err): ";
     reportMeanStd(out, jscores);
+    out << std::endl << "Weighted Jaccard (mean, std err): ";
+    reportMeanStd(out, wjscores);
     out << std::endl << "Dice (mean, std err): ";
     reportMeanStd(out, dscores);
+    out << std::endl << "Weighted Dice (mean, std err): ";
+    reportMeanStd(out, wdscores);
     out << std::endl << "Altered Dot Product (mean, std err): ";
     reportMeanStd(out, adscores);
     out << std::endl << "Dot Product (mean, std err): ";

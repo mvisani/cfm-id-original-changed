@@ -247,9 +247,18 @@ double Jaccard::computeScore(const Spectrum *measured, const Spectrum *predicted
         return intersection_sum / union_sim;
     else
         return 0.0;
+}
 
-    // return 2 * (double) peak_pairs.size() / (measured->size() + predicted->size());
-    // return  (double) peak_pairs.size() / (measured->size() + predicted->size() - peak_pairs.size());
+double WeightedDice::computeScore(const Spectrum *measured, const Spectrum *predicted) const {
+
+    std::vector<peak_pair_t> peak_pairs;
+    getMatchingPeakPairsWithNoneMatchs(peak_pairs, measured, predicted);
+
+    double intersection_sum = 0.0;
+    for (auto it = peak_pairs.begin(); it != peak_pairs.end(); ++it)
+        intersection_sum += 2 * std::min(it->first.intensity, it->second.intensity);
+
+    return intersection_sum / 200.0;
 }
 
 double Dice::computeScore(const Spectrum *measured, const Spectrum *predicted) const {
