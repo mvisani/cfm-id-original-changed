@@ -139,7 +139,10 @@ bool FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 //Compute a FragmentGraph starting at the given node and computing to the depth given.
 //The output will be appended to the current_graph
 void
-FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parent_id, int remaining_ring_breaks) {
+FragmentGraphGenerator::compute(FragmentTreeNode &node,
+        int remaining_depth,
+        int parent_id,
+        int remaining_ring_breaks) {
 
     if (current_graph->getNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
         || current_graph->getNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
@@ -228,6 +231,7 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
                                       int parentid,
                                       double parent_log_prob,
                                       int remaining_ring_breaks) {
+    //std::cout << node.isIntermediate() << std::endl;
 
     //Check Timeout
     if (parentid < 0) start_time = time(nullptr);
@@ -240,6 +244,8 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
     //Add the node to the graph, and return a fragment id: note, no mols or fv will be set,
     //but the precomputed theta value will be used instead
     int id = current_graph->addToGraphWithThetas(node, node.getAllTmpThetas(), parentid);
+    std::cout <<  parentid << " "  <<
+            id << " " <<  RDKit::MolToSmiles(*node.ion)  << " " << parent_log_prob << std::endl;
 
     //Reached max depth?
     if (remaining_depth <= 0) return;
@@ -262,7 +268,8 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
     for (; it != breaks.end(); ++it) {
 
         //Record the index where the children for this break start (if there are any)
-        if (remaining_ring_breaks == 0 && it->isRingBreak())
+        // if this is not
+        if (remaining_ring_breaks == 0 && it->isRingBreak() && !node.isIntermediate())
             continue;
 
         int start_idx = node.children.size();
@@ -321,15 +328,13 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
         }
 
         if (max_child_prob >= log_prob_thresh) {
-            int child_remaining_ring_breaks = remaining_ring_breaks;
-            if (children_isring[child_idx] && child_remaining_ring_breaks > 0){
+            if (children_isring[child_idx] && remaining_ring_breaks > 0){
                 // if current break is ring break , remaining_depth will not change
                 // ring break tak two events
-                child_remaining_ring_breaks--;
-                compute(*itt, remaining_depth, id, max_child_prob, child_remaining_ring_breaks);
+                compute(*itt, remaining_depth, id, max_child_prob, remaining_ring_breaks - 1);
             }
             else
-                compute(*itt, remaining_depth - 1, id, max_child_prob, child_remaining_ring_breaks);
+                compute(*itt, remaining_depth - 1, id, max_child_prob, remaining_ring_breaks);
         }
     }
 

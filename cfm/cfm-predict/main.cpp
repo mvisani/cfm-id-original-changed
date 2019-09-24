@@ -206,10 +206,22 @@ int main(int argc, char *argv[]) {
                 fgen = new LikelyFragmentGraphGenerator(nn_param, &cfg, prob_thresh_for_prune);
             else
                 fgen = new LikelyFragmentGraphGenerator(param, &cfg, prob_thresh_for_prune);
-            it->computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
 
+            //it->computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
+            if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION){
+                FeatureCalculator fc(*(nn_param->getFeatureNames()));
+                it->computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
+                it->computePredictedSpectra(*nn_param, apply_postprocessing, false);
+
+            }
+            else{
+                FeatureCalculator fc(*(param->getFeatureNames()));
+                it->computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
+                it->computePredictedSpectra(*param, apply_postprocessing, false);
+            }
+
+            //it->writeFragmentsOnly( std::cout );
             //Predict the spectra (and post-process, use existing thetas)
-            it->computePredictedSpectra(*param, apply_postprocessing, true);
         }
         catch (RDKit::MolSanitizeException e) {
             std::cout << "Could not sanitize input: " << it->getSmilesOrInchi() << std::endl;

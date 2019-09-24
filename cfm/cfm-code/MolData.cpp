@@ -657,21 +657,21 @@ void MolData::getEnumerationSpectraMasses(std::vector<double> &output_masses) {
     std::vector<double> all_masses;
     if (fg->hasIsotopesIncluded()) {
         for (unsigned int i = 0; i < numf; i++) {
-            if(!fg->getFragmentAtIdx(i)->isIntermediate()) {
+            //if(!fg->getFragmentAtIdx(i)->isIntermediate()) {
                 const Fragment *f = fg->getFragmentAtIdx(i);
                 const Spectrum *isotope_spec = f->getIsotopeSpectrum();
                 Spectrum::const_iterator itp = isotope_spec->begin();
                 for (; itp != isotope_spec->end(); ++itp)
                     all_masses.push_back(itp->mass);
-            }
+            //}
         }
     } else {
         all_masses.resize(numf);
         for (unsigned int i = 0; i < numf; i++) {
-            if(!fg->getFragmentAtIdx(i)->isIntermediate()){
+            //if(!fg->getFragmentAtIdx(i)->isIntermediate()){
                 const Fragment *f = fg->getFragmentAtIdx(i);
                 all_masses[i] = f->getMass();
-            }
+           // }
         }
     }
     std::sort(all_masses.begin(), all_masses.end());
