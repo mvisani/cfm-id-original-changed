@@ -23,7 +23,7 @@ param.cpp.
 #include <GraphMol/Fingerprints/MorganFingerprints.h>
 #include <GraphMol/MolOps.h>
 
-void FragmentFingerPrintFeature::compute(FeatureVector &fv, romol_ptr_t precursor_ion, int depth) const{
+void FragmentFingerPrintFeature::compute(FeatureVector &fv, romol_ptr_t precursor_ion) const{
 
     ExplicitBitVect *finger_print =
             RDKit::MorganFingerprints::getFingerprintAsBitVect(*precursor_ion, 2,

@@ -79,8 +79,7 @@ public:
     // Compute the feature vector for the input ion and nl (with labeled Root
     // atoms)
     // - NB: responsibility of caller to delete.
-    FeatureVector *computeFeatureVector(const RootedROMol *ion, const RootedROMol *nl, int tree_depth,
-                                        const romol_ptr_t precursor_ion);
+    FeatureVector *computeFeatureVector(const RootedROMol *ion, const RootedROMol *nl, const romol_ptr_t precursor_ion);
 
     bool includesFeature(const std::string &fname);
 

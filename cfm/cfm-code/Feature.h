@@ -68,5 +68,5 @@ protected:
 
 class FragmentFeature: public Feature{
 public:
-    virtual void compute(FeatureVector &fv, romol_ptr_t precursor_ion, int depth) const = 0;
+    virtual void compute(FeatureVector &fv, romol_ptr_t precursor_ion) const = 0;
 };

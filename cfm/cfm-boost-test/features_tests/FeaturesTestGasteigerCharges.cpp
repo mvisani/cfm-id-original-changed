@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_SUITE(FeaturesTestGasteigerCharges)
         nl.get()->getAtomWithIdx(0)->setProp<double>("OrigGasteigerCharge", -0.00652530);
         RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 
-        FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
+        FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, nullptr);
 
         std::vector<unsigned> expected_feature_vector = {0, 9};
         // Test feature name list sizes

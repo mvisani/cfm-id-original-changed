@@ -25,7 +25,7 @@ param.cpp.
 #include <GraphMol/ForceFieldHelpers/MMFF/AtomTyper.h>
 
 
-void FragmentFunctionalGroupFeature::compute(FeatureVector &fv, romol_ptr_t precursor_ion, int depth) const {
+void FragmentFunctionalGroupFeature::compute(FeatureVector &fv, romol_ptr_t precursor_ion) const {
 
     auto fparams = new RDKit::FragCatParams(FGRPS_PICKLE);
 

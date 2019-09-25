@@ -290,7 +290,7 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
     for (auto child = node.children.begin(); child != node.children.end(); ++child) {
         Transition tmp_t(-1, -1, child->nl, child->ion);
         // NOTE Depth in here is child depth
-        FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), node.depth + 1, node.ion);
+        FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), node.ion);
         for (int engy = cfg->spectrum_depths.size() - 1; engy >= 0; engy--) {
             if (is_nn_params)
                 child->setTmpTheta(nnparam->computeTheta(*fv, engy), engy);

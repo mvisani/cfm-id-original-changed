@@ -26,6 +26,6 @@ public:
         size = 1024;
         name = "FragmentFingerPrint";
     };
-    virtual void compute(FeatureVector &fv, romol_ptr_t precursor_ion, int depth) const override;
+    virtual void compute(FeatureVector &fv, romol_ptr_t precursor_ion) const override;
 };
 

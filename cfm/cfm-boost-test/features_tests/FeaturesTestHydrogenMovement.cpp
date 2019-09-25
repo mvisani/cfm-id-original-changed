@@ -26,7 +26,7 @@ FeatureVector *getFeatureTestHydrgeMovementFV(std::string ion_str, std::string n
     initMolProps(nl);
     RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 
-    FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
+    FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, nullptr);
 
     delete fc;
     return fv;

@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_SUITE(FeaturesTestLength)
             FeatureCalculator fc( feature_list );
 
             //Compute the feature vector
-            FeatureVector *fv = fc.computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, node->ion);
+            FeatureVector *fv = fc.computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), node->ion);
             BOOST_CHECK(fv->getTotalLength() == fc.getNumFeatures());
 
             delete fv;

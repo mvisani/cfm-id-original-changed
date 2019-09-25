@@ -93,7 +93,6 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
     }
 
     return id;
-
 }
 
 //As for previous function, but delete the mols in the transition and compute and store a feature vector instead
@@ -129,7 +128,7 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         auto frag_ptr = createMolPtr(frag_smiles.c_str());
 
         try {
-            fv = fc->computeFeatureVector(t->getIon(), t->getNeutralLoss(), node.depth, frag_ptr);
+            fv = fc->computeFeatureVector(t->getIon(), t->getNeutralLoss(), frag_ptr);
             t->setFeatureVector(fv);
         }
         catch (FeatureCalculationException &e) {

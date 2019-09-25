@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_SUITE(FeaturesTestQuadraticFeatures)
         RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
         nl.get()->setProp("IsRingBreak", 0);
 
-        FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
+        FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, nullptr);
 
         // Check Results
         std::vector<unsigned> expected_feature_vector = {0, 2, 45, 995};

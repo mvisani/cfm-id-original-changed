@@ -50,7 +50,6 @@
 #include "Features/NLRootMatrixFP.h"
 #include "Features/IonRootMatrixSimpleFP.h"
 #include "Features/NLRootMatrixSimpleFP.h"
-#include "Features/GraphDepthFeature.h"
 #include "Features/FragmentFingerPrintFeature.h"
 #include "Features/FragmentFunctionalGroupFeature.h"
 #include "Features/NLFingerPrintFeature.h"
@@ -127,7 +126,6 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new IonFingerPrintFeature());
         //cogs.push_back(new NLRootEncodingMorganD3());
         //cogs.push_back(new IonRootEncodingMorganD3());
-
         initialised = true;
     }
     return cogs;
@@ -138,9 +136,9 @@ const boost::ptr_vector<FragmentFeature> &FeatureCalculator::fragmentFeatureCogs
     static bool initialised = false;
 
     if (!initialised) {
-        cogs.push_back(new GraphDepthFeature());
-        cogs.push_back(new FragmentFingerPrintFeature());
-        cogs.push_back(new FragmentFunctionalGroupFeature());
+        // Disabled for now
+        //cogs.push_back(new FragmentFingerPrintFeature());
+        //cogs.push_back(new FragmentFunctionalGroupFeature());
         initialised = true;
     }
     return cogs;
@@ -262,7 +260,7 @@ unsigned int FeatureCalculator::getNumFeatures() {
 }
 
 FeatureVector *
-FeatureCalculator::computeFeatureVector(const RootedROMol *ion, const RootedROMol *nl, int tree_depth,
+FeatureCalculator::computeFeatureVector(const RootedROMol *ion, const RootedROMol *nl,
                                         const romol_ptr_t precursor_ion) {
 
     FeatureVector *fv = new FeatureVector();
@@ -287,7 +285,7 @@ FeatureCalculator::computeFeatureVector(const RootedROMol *ion, const RootedROMo
         for (const auto &feature_idx : used_fragement_feature_idxs) {
             auto feature = &fragmentFeatureCogs()[feature_idx];
             try {
-                feature->compute(*fv, precursor_ion, tree_depth);
+                feature->compute(*fv, precursor_ion);
             } catch (std::exception &e) {
                 std::cout << "Could not compute " << feature->getName()
                           << std::endl;

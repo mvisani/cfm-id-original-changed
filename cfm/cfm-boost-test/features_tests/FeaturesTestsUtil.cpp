@@ -40,7 +40,7 @@ FeatureVector *getFeatureVector(std::string ion_str, std::string nl_str, std::ve
     initMolProps(nl);
     RootedROMol rtd_nl(nl, nl.get()->getAtomWithIdx(0));
 
-    FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, 0, nullptr);
+    FeatureVector *fv = fc->computeFeatureVector(&rtd_ion, &rtd_nl, nullptr);
 
     delete fc;
     return fv;
@@ -74,7 +74,7 @@ getFeatureVector(std::string smiles_or_inchi, std::vector<std::string> &fnames, 
     FragmentTreeNode *child = &(node->children[0]);
     Transition transition(-1, -1, child->nl, child->ion);
 
-    FeatureVector *fv = fc->computeFeatureVector(transition.getIon(), transition.getNeutralLoss(), 0, nullptr);
+    FeatureVector *fv = fc->computeFeatureVector(transition.getIon(), transition.getNeutralLoss(), nullptr);
 
     delete fc;
     return fv;

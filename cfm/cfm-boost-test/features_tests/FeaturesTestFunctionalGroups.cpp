@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_SUITE(FeaturesTestFunctionalGroups)
 
         FragmentTreeNode *child = &(node->children[0]);
         Transition tmp_t(-1, -1, child->nl, child->ion);
-        FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
+        FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), nullptr);
 
         // Check Results
         std::vector<unsigned> expected_feature_vector = {0, 8, 10, 87, 163, 173, 246, 270, 486};

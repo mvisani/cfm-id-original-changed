@@ -36,7 +36,7 @@ FeatureVector *getFeaturesTestIonicFeaturesFV(int break_idx, int ionic_idx, bool
     }
 
     Transition tmp_t( -1, -1, child->nl, child->ion );
-    FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), 0, nullptr);
+    FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), nullptr);
 
     return fv;
 }
