@@ -72,13 +72,12 @@ public:
     //Destructor
     ~FragmentGraphGenerator() { delete fh; };
 
-    virtual //Start a graph. Compute can then add to this graph, but it is the caller's
+    //Start a graph. Compute can then add to this graph, but it is the caller's
     //responsibility to delete it
-    FragmentGraph *createNewGraph(config_t *cfg);
+    virtual FragmentGraph *createNewGraph(config_t *cfg);
 
     //Create the starting node from a smiles or inchi string - responsibility of caller to delete
     FragmentTreeNode *createStartNode(std::string &smiles_or_inchi, int ionization_mode);
-
 
     //Compute a FragmentGraph starting at the given node and computing to the depth given.
     //The output will be appended to the current_graph
@@ -92,13 +91,13 @@ protected:
     bool mols_to_fv;
     int verbose;
 
-private:
-
     //Record of previous computations so we know to what depth each fragment has been computed
+    // std::map<int, int> id_depth_computed_cache;
     std::map<int, int> id_depth_computed_cache;
-
     //Helper function - check if the fragment has already been computed to at least this depth
     bool alreadyComputed(int id, int remaining_depth);
+
+private:
 
     //Static Helper functions
     static int countExtraElectronPairs(RDKit::RWMol *rwmol, std::vector<int> &output_e_loc);
@@ -146,9 +145,7 @@ private:
 
     //Record of previous computations so we know to what probability each fragment has been computed at
     std::map<int, double> id_prob_computed_cache;
-
-    int alreadyComputed(int id, double prob_offset);
-
+    int alreadyComputedProb(int id, double prob_offset);
 };
 
 #endif // __FRAG_GEN_H__

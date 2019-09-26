@@ -40,6 +40,7 @@ FragmentGraph *FragmentGraphGenerator::createNewGraph(config_t *cfg) {
 FragmentGraph *LikelyFragmentGraphGenerator::createNewGraph(config_t *cfg) {
     current_graph = new FragmentGraph(cfg);
     id_prob_computed_cache.clear();    //The graph is empty, so clear all computation records
+    id_depth_computed_cache.clear();
     return current_graph;
 }
 
@@ -157,10 +158,13 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node,
     //Add the node to the graph, and return a fragment id
     int id = -1;
     if (mols_to_fv)
+        //id = current_graph->addToGraphWithThetas(node, node.getAllTmpThetas(), parent_id);
         id = current_graph->addToGraphAndReplaceMolWithFV(node, parent_id, fc);
     else
         id = current_graph->addToGraph(node, parent_id);
 
+    std::cout <<  parent_id << " "  <<
+              id << " " <<  RDKit::MolToSmiles(*node.ion)  << std::endl;
     //Only compute to the desired depth
     if (remaining_depth <= 0)
         return;
@@ -199,6 +203,7 @@ void
 FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_depth,
         int remaining_ring_breaks,
         int id, Break *brk) {
+
     for (int ifrag_idx = 0; ifrag_idx < brk->getNumIonicFragAllocations(); ifrag_idx++) {
 
         node.applyBreak(*brk, ifrag_idx);
@@ -231,7 +236,6 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
                                       int parentid,
                                       double parent_log_prob,
                                       int remaining_ring_breaks) {
-    //std::cout << node.isIntermediate() << std::endl;
 
     //Check Timeout
     if (parentid < 0) start_time = time(nullptr);
@@ -244,15 +248,23 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
     //Add the node to the graph, and return a fragment id: note, no mols or fv will be set,
     //but the precomputed theta value will be used instead
     int id = current_graph->addToGraphWithThetas(node, node.getAllTmpThetas(), parentid);
-    std::cout <<  parentid << " "  <<
-            id << " " <<  RDKit::MolToSmiles(*node.ion)  << " " << parent_log_prob << std::endl;
 
     //Reached max depth?
     if (remaining_depth <= 0) return;
 
     //If we've already run the fragmentation on this fragment with an equal or higher
+    //If the node was already in the graph at sufficient depth, skip any further computation
+    if (alreadyComputed(id, remaining_depth)) {
+        return;
+    }
+
     //probability offset, we don't need to run again, unless it is persisting
-    if (alreadyComputed(id, parent_log_prob)) return;
+    if (alreadyComputedProb(id, parent_log_prob))
+        return;
+
+    // Important height trick
+    if (current_graph->getHeight() < (node.depth + 1))
+        current_graph->setHeight(node.depth + 1);
 
     //Generate Children
     std::vector<Break> breaks;
@@ -263,33 +275,42 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
 
     node.generateBreaks(breaks, h_loss_allowed);
-    std::vector<Break>::iterator it = breaks.begin();
-    std::vector<int> children_isring;
-    for (; it != breaks.end(); ++it) {
 
+    std::vector<Break>::iterator it = breaks.begin();
+
+    std::vector<int> children_remaining_ring_breaks;
+    std::vector<int> children_remaining_depth;
+    for (; it != breaks.end(); ++it) {
         //Record the index where the children for this break start (if there are any)
         // if this is not
-        if (remaining_ring_breaks == 0 && it->isRingBreak() && !node.isIntermediate())
+        if (remaining_ring_breaks == 0 && it->isRingBreak())
             continue;
-
-        int start_idx = node.children.size();
 
         //Generate the children
         for (int iidx = 0; iidx < it->getNumIonicFragAllocations(); iidx++) {
             node.applyBreak(*it, iidx);
             node.generateChildrenOfBreak(*it);
+
+            // if this is ring break
+            // update control vars
+            int child_remaining_ring_breaks = remaining_ring_breaks;
+            int child_remaining_depth = remaining_depth - 1;
+            if (it->isRingBreak()) {
+                child_remaining_depth++;
+                child_remaining_ring_breaks--;
+            }
+
+            while(children_remaining_ring_breaks.size() < node.children.size()){
+                children_remaining_ring_breaks.push_back(child_remaining_ring_breaks);
+                children_remaining_depth.push_back(child_remaining_depth);
+            }
             node.undoBreak(*it, iidx);
         }
-
-        //Record whether each child was generated from a ring break
-        for (int i = start_idx; i < node.children.size(); i++)
-            children_isring.push_back(it->isRingBreak());
     }
 
     //Compute child thetas
-    for (auto child = node.children.begin(); child != node.children.end(); ++child) {
+   for (auto child = node.children.begin(); child != node.children.end(); ++child) {
         Transition tmp_t(-1, -1, child->nl, child->ion);
-        // NOTE Depth in here is child depth
         FeatureVector *fv = fc->computeFeatureVector(tmp_t.getIon(), tmp_t.getNeutralLoss(), node.ion);
         for (int engy = cfg->spectrum_depths.size() - 1; engy >= 0; engy--) {
             if (is_nn_params)
@@ -300,17 +321,15 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
         delete fv;
     }
 
-    // map to record child count, in case of duplication
-    std::map<std::string, int> child_count;
-
     //Compute child probabilities (including persistence) - for all energy levels
     std::vector<double> denom(cfg->spectrum_depths.size(), 0.0);
 
     for (auto itt = node.children.begin(); itt != node.children.end(); ++itt) {
-        for (int energy = 0; energy < denom.size(); energy++)
+        for (int energy = 0; energy < denom.size(); energy++){
             denom[energy] = logAdd(denom[energy], itt->getTmpTheta(energy));
-        std::string key = RDKit::MolToSmiles(*(itt->ion)) + " " + RDKit::MolToSmiles(*(itt->nl));
-        child_count[key] ++;
+            if(node.isIntermediate())
+                denom[energy] = logAdd(denom[energy], -1000000);
+        }
     }
 
     //Add and recur over likely children if above threshold for any energy level
@@ -319,22 +338,15 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
 
     for (auto itt = node.children.begin(); itt != node.children.end(); ++itt, child_idx++) {
         max_child_prob = log_prob_thresh - 10.0;
-        std::string key = RDKit::MolToSmiles(*(itt->ion)) + " " + RDKit::MolToSmiles(*(itt->nl));
         for (int energy = 0; energy < denom.size(); energy++) {
             // normal prob + dups (last term)
-            double child_log_prob = itt->getTmpTheta(energy) - denom[energy] + parent_log_prob + log(child_count[key]);
-            if (child_log_prob > max_child_prob)
-                max_child_prob = child_log_prob;
+            double child_log_prob = itt->getTmpTheta(energy) - denom[energy] + parent_log_prob;;
+            max_child_prob = std::max(child_log_prob,max_child_prob);
         }
 
         if (max_child_prob >= log_prob_thresh) {
-            if (children_isring[child_idx] && remaining_ring_breaks > 0){
-                // if current break is ring break , remaining_depth will not change
-                // ring break tak two events
-                compute(*itt, remaining_depth, id, max_child_prob, remaining_ring_breaks - 1);
-            }
-            else
-                compute(*itt, remaining_depth - 1, id, max_child_prob, remaining_ring_breaks);
+            compute(*itt, children_remaining_depth[child_idx],
+                    id, max_child_prob, children_remaining_ring_breaks[child_idx]);
         }
     }
 
@@ -380,7 +392,7 @@ void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization
 
 
 //Helper function - check if the fragment has already been computed with at least this probability offset
-int LikelyFragmentGraphGenerator::alreadyComputed(int id, double prob_offset) {
+int LikelyFragmentGraphGenerator::alreadyComputedProb(int id, double prob_offset) {
     if (id_prob_computed_cache.find(id) == id_prob_computed_cache.end()
         || id_prob_computed_cache[id] < prob_offset) {                    //Or computed previously with lower prob
         id_prob_computed_cache[id] = prob_offset;

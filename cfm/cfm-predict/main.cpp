@@ -207,20 +207,8 @@ int main(int argc, char *argv[]) {
             else
                 fgen = new LikelyFragmentGraphGenerator(param, &cfg, prob_thresh_for_prune);
 
-            //it->computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
-            if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION){
-                FeatureCalculator fc(*(nn_param->getFeatureNames()));
-                it->computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
-                it->computePredictedSpectra(*nn_param, apply_postprocessing, false);
-
-            }
-            else{
-                FeatureCalculator fc(*(param->getFeatureNames()));
-                it->computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
-                it->computePredictedSpectra(*param, apply_postprocessing, false);
-            }
-
-            //it->writeFragmentsOnly( std::cout );
+            it->computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
+            it->computePredictedSpectra(*nn_param, apply_postprocessing, true);
             //Predict the spectra (and post-process, use existing thetas)
         }
         catch (RDKit::MolSanitizeException e) {

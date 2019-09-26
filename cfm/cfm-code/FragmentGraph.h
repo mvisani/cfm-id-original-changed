@@ -174,9 +174,10 @@ public:
         to_id = old.to_id;
         nl_smiles = old.nl_smiles;
         ion_smiles = old.ion_smiles;
-
-        feature_vector = new FeatureVector(*old.feature_vector);
+        if(old.feature_vector != nullptr)
+            feature_vector = new FeatureVector(*old.feature_vector);
         is_duplicate = true;
+        tmp_thetas = old.tmp_thetas;
     };
 
 private:
@@ -242,8 +243,7 @@ public:
 
     // As for previous function, but don't store the mols in the transition and
     // insert the pre-computed thetas instead
-    int addToGraphWithThetas(const FragmentTreeNode &node,
-                             const std::vector<double> *thetas, int parentid);
+    int addToGraphWithThetas(const FragmentTreeNode &node, const std::vector<double> *thetas, int parent_frag_id);
 
     // Write the Fragments only to file (formerly the backtrack output - without
     // extra details)

@@ -156,34 +156,51 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
     return frag_id;
 }
 
-int FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std::vector<double> *thetas, int parentid) {
+int
+FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std::vector<double> *thetas,
+                                    int parent_frag_id) {
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
+    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
 
-    if (parentid < 0 || fragments[id]->getDepth() == -1)
-        fragments[id]->setDepth(node.depth);    //Set start fragment depth
+    if (parent_frag_id < 0 || fragments[frag_id]->getDepth() == -1)
+        fragments[frag_id]->setDepth(node.depth);    //Set start fragment depth
 
     //Add a transition, if one does not exist
-    if (parentid >= 0 && findMatchingTransition(parentid, id) < 0 &&
-        (allow_frag_detours || node.depth <= fragments[id]->getDepth())) {
+    int existing_trans_id = -1;
+    if (parent_frag_id >= 0)
+        existing_trans_id = findMatchingTransition(parent_frag_id, frag_id);
+
+    if (parent_frag_id >= 0 && existing_trans_id < 0 &&
+        (allow_frag_detours || node.depth <= fragments[frag_id]->getDepth())) {
 
         int idx = transitions.size();
-        transitions.push_back(std::make_shared<Transition>(parentid, id, node.nl, node.ion));
+        transitions.push_back(std::make_shared<Transition>(parent_frag_id, frag_id, node.nl, node.ion));
 
         //Update the tmaps
-        from_id_tmap[parentid].push_back(idx);
-        to_id_tmap[id].push_back(idx);
+        from_id_tmap[parent_frag_id].push_back(idx);
+        to_id_tmap[frag_id].push_back(idx);
 
         //Set the theta values and delete the mols
         auto t = transitions.back();
         t->setTmpThetas(thetas);
         t->deleteIon();
         t->deleteNeutralLoss();
+
+    } else if (parent_frag_id >= 0 && existing_trans_id >= 0 &&
+               (node.depth == fragments[frag_id]->getDepth())) {
+        // if those transitions does exists, create a duplication
+        int trans_idx = transitions.size();
+        transitions.push_back(std::make_shared<Transition>());
+        auto trans = transitions.back();
+        trans->createdDuplication(*transitions[existing_trans_id]);
+        //Update the tmaps
+        from_id_tmap[parent_frag_id].push_back(trans_idx);
+        to_id_tmap[frag_id].push_back(trans_idx);
     }
 
-    return id;
+    return frag_id;
 }
 
 
