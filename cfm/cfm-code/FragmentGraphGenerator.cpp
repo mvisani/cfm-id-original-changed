@@ -328,7 +328,7 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
         for (int energy = 0; energy < denom.size(); energy++){
             denom[energy] = logAdd(denom[energy], itt->getTmpTheta(energy));
             if(node.isIntermediate())
-                denom[energy] = logAdd(denom[energy], -1000000);
+                denom[energy] = logAdd(denom[energy], -100000000);
         }
     }
 
