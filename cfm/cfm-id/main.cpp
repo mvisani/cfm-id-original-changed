@@ -59,7 +59,7 @@ void printUsage() {
               << "The filename where the configuration parameters of the cfm model can be found (if not given, assumes param_config.txt in current directory)"
               << std::endl;
     std::cout << std::endl << "score_type (opt):" << std::endl
-              << "The type of scoring function to use when comparing spectra. Options: Jaccard (default for ESI-MS/MS), DotProduct (default for EI-MS)"
+              << "The type of scoring function to use when comparing spectra. Options: Dice (default for ESI-MS/MS), DotProduct (default for EI-MS)"
               << std::endl;
     std::cout << std::endl << "apply_postprocessing (opt):" << std::endl
               << "Whether or not to post-process predicted spectra to take the top 80% of energy (at least 5 peaks), or the highest 30 peaks (whichever comes first) (0 = OFF (default for EI-MS), 1 = ON (default for ESI-MS/MS))."
@@ -174,6 +174,10 @@ int main(int argc, char *argv[]) {
     } else if (score_type == "Jaccard") {
         std::cout << "Using Jaccard score function" << std::endl;
         cmp = new Jaccard(ppm_mass_tol, abs_mass_tol);
+    }
+    else if (score_type == "Dice") {
+        std::cout << "Using Dice score function" << std::endl;
+        cmp = new Dice(ppm_mass_tol, abs_mass_tol);
     } else if (score_type == "Combined") {
         std::cout << "Using Combined score function" << std::endl;
         cmp = new Combined(ppm_mass_tol, abs_mass_tol);
