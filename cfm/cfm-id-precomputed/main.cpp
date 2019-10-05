@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     //Dummy param and config (since the spectra are already computed)
     config_t cfg;
     initDefaultConfig(cfg);
-    std::vector<std::string> blank_feature_list;
+    std::vector<std::string> blank_feature_list{"BreakAtomPair"};
     Param param(blank_feature_list, 1);
 
 
