@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     std::string output_filename;
     int num_highest = -1;
     double abs_mass_tol = 0.01, ppm_mass_tol = 10.0;
-    std::string score_type = "Jaccard";
+    std::string score_type = "Dice";
 
     if (argc < 4 || argc > 9) {
         std::cout << std::endl << std::endl;
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
                   << "The mass tolerance in abs Da to use when matching peaks within the dot product comparison - will use higher resulting tolerance of ppm and abs ( if not given defaults to 0.01Da)"
                   << std::endl;
         std::cout << std::endl << "score_type (opt):" << std::endl
-                  << "The type of scoring function to use when comparing spectra. Options: Jaccard (default), DotProduct"
+                  << "The type of scoring function to use when comparing spectra. Options: Dice (default), DotProduct , Jaccard"
                   << std::endl;
         std::cout << std::endl << "output_filename (opt):" << std::endl
                   << "The filename of the output file to write to (if not given, prints to stdout)" << std::endl;
@@ -123,7 +123,11 @@ int main(int argc, char *argv[]) {
     } else if (score_type == "OrigSteinDotProduct") {
         std::cout << "Using OrigSteinDotProduct score function" << std::endl;
         cmp = new OrigSteinDotProduct(ppm_mass_tol, abs_mass_tol);
-    } else if (score_type == "Jaccard") {
+    }  else if (score_type == "Dice") {
+        std::cout << "Using Dice score function" << std::endl;
+        cmp = new Dice(ppm_mass_tol, abs_mass_tol);
+    }
+    else if (score_type == "Jaccard") {
         std::cout << "Using Jaccard score function" << std::endl;
         cmp = new Jaccard(ppm_mass_tol, abs_mass_tol);
     } else if (score_type == "Combined") {
