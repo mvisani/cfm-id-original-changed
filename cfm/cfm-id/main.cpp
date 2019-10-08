@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
         if (cfg.ionization_mode == POSITIVE_EI_IONIZATION_MODE)
             score_type = "DotProduct";
         else
-            score_type = "Jaccard";
+            score_type = "Dice";
     }
 
     //Read in the input spectrum
