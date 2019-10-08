@@ -211,28 +211,35 @@ int main(int argc, char *argv[]) {
             it->computePredictedSpectra(*nn_param, apply_postprocessing, true);
             //Predict the spectra (and post-process, use existing thetas)
         }
-        catch (RDKit::MolSanitizeException e) {
+        catch (RDKit::MolSanitizeException & e) {
             std::cout << "Could not sanitize input: " << it->getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions)
                 throw SpectrumPredictionException("RDKit could not sanitize input: " + it->getSmilesOrInchi());
             continue;
         }
-        catch (RDKit::SmilesParseException pe) {
+        catch (RDKit::SmilesParseException & pe) {
             std::cout << "Could not parse input: " << it->getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions)
                 throw SpectrumPredictionException("RDKit could not parse input: " + it->getSmilesOrInchi());
             continue;
         }
-        catch (FragmentGraphGenerationException ge) {
+        catch (FragmentGraphGenerationException & ge) {
             std::cout << "Could not compute fragmentation graph for input: " << it->getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions)
                 throw SpectrumPredictionException(
                         "Could not compute fragmentation graph for input: " + it->getSmilesOrInchi());
             continue;
         }
-        catch (IonizationException ie) {
+        catch (IonizationException & ie) {
             std::cout << "Could not ionize: " << it->getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions) throw IonizationException();
+            continue;
+        }
+        catch (std::runtime_error & e) {
+            // whatever else can go wrong
+            std::cout << e.what()<< std::endl;
+            if (!batch_run && !suppress_exceptions)
+                throw std::runtime_error(e.what());
             continue;
         }
 
