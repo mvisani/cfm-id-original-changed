@@ -163,8 +163,8 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node,
     else
         id = current_graph->addToGraph(node, parent_id);
 
-    std::cout <<  parent_id << " "  <<
-              id << " " <<  RDKit::MolToSmiles(*node.ion)  << std::endl;
+    //std::cout <<  parent_id << " "  <<
+    //          id << " " <<  RDKit::MolToSmiles(*node.ion)  << std::endl;
     //Only compute to the desired depth
     if (remaining_depth <= 0)
         return;
