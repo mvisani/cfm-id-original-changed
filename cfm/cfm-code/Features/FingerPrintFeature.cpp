@@ -250,7 +250,7 @@ std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol, const RDK
 
     // in case we have more than one bond lead to this node
     if (distance_to_root > 0) {
-        int bond_type = 10;
+        int bond_type = 1;
         for (auto itp = mol->getAtomNeighbors(atom); itp.first != itp.second; ++itp.first) {
             RDKit::Atom *nbr_atom = mol->getAtomWithIdx(*itp.first);
             auto child_distance_to_root = distances[nbr_atom->getIdx()];
@@ -287,10 +287,10 @@ std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol, const RDK
     // get child atom keys str
     std::string children_atom_key;
     for (const auto child_key : children_keys)
-        children_atom_key += child_key;
+        children_atom_key +=  "[" + child_key +"]";
     // save the label
     if(!children_keys.empty())
-        labels[atom->getIdx()] = atom_key + "|" + children_atom_key;
+        labels[atom->getIdx()] = atom_key + children_atom_key;
     else
         labels[atom->getIdx()] = atom_key;
 
