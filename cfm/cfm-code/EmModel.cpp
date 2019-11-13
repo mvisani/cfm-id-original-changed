@@ -187,12 +187,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double val_q = 0.0;
 
         int molidx = 0, num_val_mols = 0, num_training_mols = 0;
-        double train_jaccard = 0.0, train_w_jaccard = 0.0;
-        double val_jaccard = 0.0, val_w_jaccard = 0.0;
+        double train_dice = 0.0, train_w_dice = 0.0;
+        double val_dice = 0.0, val_w_dice = 0.0;
         for (mol_it = molDataSet.begin(); mol_it != molDataSet.end(); ++mol_it, molidx++) {
             computeLossAndMetrics(energy_level, molidx, mol_it, suft, val_q, num_val_mols, num_training_mols,
-                                  train_jaccard, train_w_jaccard,
-                                  val_jaccard, val_w_jaccard);
+                                  train_dice, train_w_dice,
+                                  val_dice, val_w_dice);
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
@@ -207,23 +207,23 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         num_training_mols = comm->collectSumInMaster(num_training_mols);
 
         if (!cfg->disable_training_metrics) {
-            train_jaccard = comm->collectQInMaster(train_jaccard);
-            train_w_jaccard = comm->collectQInMaster(train_w_jaccard);
+            train_dice = comm->collectQInMaster(train_dice);
+            train_w_dice = comm->collectQInMaster(train_w_dice);
         }
 
         if (!cfg->disable_cross_val_metrics) {
             val_q = comm->collectQInMaster(val_q);
             num_val_mols = comm->collectSumInMaster(num_val_mols);
-            val_jaccard = comm->collectQInMaster(val_jaccard);
-            val_w_jaccard = comm->collectQInMaster(val_w_jaccard);
+            val_dice = comm->collectQInMaster(val_dice);
+            val_w_dice = comm->collectQInMaster(val_w_dice);
         }
 
         // Check for convergence
         double loss_ratio = fabs((loss - prev_loss) / loss);
         if (comm->isMaster()) {
             std::string qdif_str = getMetricsString(loss, prev_loss, best_loss, after, val_q, num_val_mols,
-                                                    num_training_mols, train_jaccard,
-                                                    train_w_jaccard, val_jaccard, val_w_jaccard, loss_ratio);
+                                                    num_training_mols, train_dice,
+                                                    train_w_dice, val_dice, val_w_dice, loss_ratio);
 
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
@@ -292,19 +292,19 @@ float EmModel::getUsedCupTime(clock_t c_start, clock_t c_end) const {
 void EmModel::computeLossAndMetrics(int energy_level, int molidx,
                                     std::vector<MolData, std::allocator<MolData>>::iterator &mol_it,
                                     suft_counts_t &suft, double &val_q, int &num_val_mols, int &num_training_mols,
-                                    double &train_jaccard, double &train_w_jaccard, double &val_jaccard,
-                                    double &val_w_jaccard) {
+                                    double &train_dice, double &train_w_dice, double &val_dice,
+                                    double &val_w_dice) {
     if (mol_it->getGroup() == validation_group && !cfg->disable_cross_val_metrics) {
         num_val_mols++;
         val_q += computeLogLikelihoodLoss(molidx, *mol_it, suft, energy_level);
-        computeMetrics(energy_level, mol_it, val_jaccard,
-                       val_w_jaccard);
+        computeMetrics(energy_level, mol_it, val_dice,
+                       val_w_dice);
 
     } else {
         num_training_mols++;
         if (!cfg->disable_training_metrics) {
-            computeMetrics(energy_level, mol_it, train_jaccard,
-                           train_w_jaccard);
+            computeMetrics(energy_level, mol_it, train_dice,
+                           train_w_dice);
         }
     }
 }
@@ -313,8 +313,8 @@ std::string
 EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
                           const std::chrono::system_clock::time_point &after,
                           double val_q, int num_val_mols,
-                          int num_training_mols, double train_jaccard, double train_w_jaccard, double val_jaccard,
-                          double val_w_jaccard, double loss_ratio) const {
+                          int num_training_mols, double train_dice, double train_w_dice, double val_dice,
+                          double val_w_dice, double loss_ratio) const {
     std::string qdif_str = "[M-Step][T+" + getTimeDifferenceStr(start_time, after) + "s]";
     qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols);
 
@@ -325,15 +325,15 @@ EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
         qdif_str += " Best_Loss=" + std::to_string(best_loss);
 
     if (!cfg->disable_training_metrics) {
-        qdif_str += "\nJaccard_Avg=" + std::to_string(train_jaccard / num_training_mols)
-                    + " Weighted_Jaccard_Avg=" += std::to_string(train_w_jaccard / num_training_mols);
+        qdif_str += "\nDice_Avg=" + std::to_string(train_dice / num_training_mols)
+                    + " Weighted_Dice_Avg=" += std::to_string(train_w_dice / num_training_mols);
     }
 
     if (!cfg->disable_cross_val_metrics) {
         qdif_str += "\nValidation_Loss=" + std::to_string(val_q)
                     + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
-                    + "\nValidation_Jaccard_Avg=" + std::to_string(val_jaccard / num_val_mols)
-                    + " Weighted_Validation_Jaccard_Avg=" += std::to_string(val_w_jaccard / num_val_mols);
+                    + "\nValidation_Dice_Avg=" + std::to_string(val_dice / num_val_mols)
+                    + " Weighted_Validation_Dice_Avg=" += std::to_string(val_w_dice / num_val_mols);
     }
     return qdif_str;
 }
@@ -378,20 +378,20 @@ EmModel::computeAndSyncLoss(std::vector<MolData> &data, suft_counts_t &suft, uns
 }
 
 void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocator<MolData>>::iterator &moldata,
-                             double &jaccard, double &w_jaccard) {
+                             double &dice, double &w_dice) {
 
-    Comparator *jaccard_cmp = new Jaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
-    Comparator *weighed_jaccard_cmp = new WeightedJaccard(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+    Comparator *dice_cmp = new Dice(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+    Comparator *weighed_dice_cmp = new WeightedDice(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
     moldata->computePredictedSpectra(*param, false, false, energy_level);
     moldata->postprocessPredictedSpectra(80, 1, 1000);
-    jaccard += jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
+    dice += dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                              moldata->getPredictedSpectrum(energy_level));
-    w_jaccard += weighed_jaccard_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
+    w_dice += weighed_dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                                        moldata->getPredictedSpectrum(energy_level));
 
-    delete jaccard_cmp;
-    delete weighed_jaccard_cmp;
+    delete dice_cmp;
+    delete weighed_dice_cmp;
 }
 
 void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
