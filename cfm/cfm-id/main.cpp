@@ -20,6 +20,7 @@ int main(int argc, char *argv[]);
 #include "FragmentGraphGenerator.h"
 #include "MolData.h"
 #include "Identifier.h"
+#include "Version.h"
 
 void readInCandidates(std::vector<Candidate> &candidates, std::string &candidate_file);
 
@@ -29,6 +30,7 @@ void printUsage() {
 
     std::cout << std::endl << std::endl;
     std::cout << std::endl
+              << "CFM-ID Version:  "<< PROJECT_VER << std::endl
               << "Usage: cfm-id.exe <spectrum_file> <id> <candidate_file> <num_highest> <ppm_mass_tol> <abs_mass_tol> <prob_thresh_for_prune> <param_filename> <config_filename> <score_type> <apply_postprocessing> <output_filename> <output_msp_or_mgf>"
               << std::endl << std::endl << std::endl;
     std::cout << std::endl << "spectrum_file:" << std::endl

@@ -123,7 +123,7 @@ public:
 
     bool hasEmptySpectrum(int energy_level = -1) const;
 
-    void writePredictedSpectraToFile(std::string &filename);
+    void writePredictedSpectraToFile(std::string &filename, bool add_version = true);
 
     void writePredictedSpectraToMspFileStream(std::ostream &out);
 

@@ -21,7 +21,8 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
     set(default_build_type "Debug")
 endif()
 
-project(cfm)
+project(cfm VERSION 4.0.0)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/cfm-code/Version.h)
 
 set(CFM_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin CACHE STRING "Where do you want the output binaries to install to?")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -54,7 +55,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 #include cmake finds
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
 
 # RDKit
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})

@@ -8,7 +8,7 @@
 # Last Modified: Sep 2017
 ##########################################################################
 
-set(BASE_HEADERS FragmentGraph.h Feature.h FeatureVector.h FeatureCalculator.h Config.h Spectrum.h
+set(BASE_HEADERS Version.h FragmentGraph.h Feature.h FeatureVector.h FeatureCalculator.h Config.h Spectrum.h
         FragmentGraphGenerator.h FragmentTreeNode.h Inference.h MILP.h Isotope.h
         MolData.h MspReader.h Param.h NNParam.h Util.h Message.h Identifier.h Comparators.h
         FunctionalGroups.h)

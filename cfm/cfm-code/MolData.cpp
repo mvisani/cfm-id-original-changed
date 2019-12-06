@@ -27,6 +27,7 @@ probabilities using those thetas.
 #include "Comparators.h"
 #include "MolData.h"
 #include "Inference.h"
+#include "Version.h"
 
 #include <GraphMol/Fingerprints/Fingerprints.h>
 #include <GraphMol/RDKitBase.h>
@@ -375,6 +376,9 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
         getline(ifs, line);
         if (line.size() < 3)
             continue;
+        // in case we are seen version string
+        if (line.substr(0, VERSION_STRING.size()) == VERSION_STRING)
+            continue;
         // Check for the energy specifier - start a new spectrum if found
         // or start one anyway if there is no energy specifier
         if (line.substr(0, 3) == "low" || line.substr(0, 3) == "med" ||
@@ -578,7 +582,7 @@ void MolData::translatePeaksFromMsgToSpectraWithIsotopes(Spectrum &out_spec,
         out_spec.push_back(itm->second);
 }
 
-void MolData::writePredictedSpectraToFile(std::string &filename) {
+void MolData::writePredictedSpectraToFile(std::string &filename, bool add_version) {
 
     std::ofstream of;
     of.open(filename.c_str());
@@ -590,6 +594,10 @@ void MolData::writePredictedSpectraToFile(std::string &filename) {
     std::streambuf *buf = of.rdbuf();
     std::ostream out(buf);
     outputSpectra(out, "Predicted");
+    if(add_version){
+        out << std::endl << std::endl;
+        out << VERSION_STRING << PROJECT_VER << std::endl;
+    }
     of.close();
 }
 

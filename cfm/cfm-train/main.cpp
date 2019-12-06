@@ -25,6 +25,7 @@
 
 #include "EmModel.h"
 #include "EmNNModel.h"
+#include "Version.h"
 
 void parseInputFile(std::vector<MolData> &data, std::string &input_filename, int mpi_rank, int mpi_nump, config_t *cfg);
 
@@ -344,7 +345,7 @@ int main(int argc, char *argv[]) {
                 mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
             else {
                 std::string spectra_filename = data_folder + "/predicted_output/" + mit->getId() + ".log";
-                mit->writePredictedSpectraToFile(spectra_filename);
+                mit->writePredictedSpectraToFile(spectra_filename, false);
             }
         }
         delete param;
