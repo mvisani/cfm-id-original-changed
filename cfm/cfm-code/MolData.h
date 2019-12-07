@@ -123,7 +123,7 @@ public:
 
     bool hasEmptySpectrum(int energy_level = -1) const;
 
-    void writePredictedSpectraToFile(std::string &filename, bool add_version = true);
+    void writePredictedSpectraToFile(std::string &filename);
 
     void writePredictedSpectraToMspFileStream(std::ostream &out);
 
@@ -134,7 +134,7 @@ public:
     void writeFullEnumerationSpectrumToMspFileStream(std::ostream &out);
 
     void outputSpectra(std::ostream &out, const char *spec_type,
-                       bool do_annotate = false);
+                       bool do_annotate = false, bool add_version = true);
 
     // More memory efficient alternative to calling computeFragmentGraph and
     // then computeFeatureVectors with deleteMols = true

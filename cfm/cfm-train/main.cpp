@@ -345,7 +345,7 @@ int main(int argc, char *argv[]) {
                 mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
             else {
                 std::string spectra_filename = data_folder + "/predicted_output/" + mit->getId() + ".log";
-                mit->writePredictedSpectraToFile(spectra_filename, false);
+                mit->writePredictedSpectraToFile(spectra_filename);
             }
         }
         delete param;

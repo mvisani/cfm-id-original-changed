@@ -582,7 +582,7 @@ void MolData::translatePeaksFromMsgToSpectraWithIsotopes(Spectrum &out_spec,
         out_spec.push_back(itm->second);
 }
 
-void MolData::writePredictedSpectraToFile(std::string &filename, bool add_version) {
+void MolData::writePredictedSpectraToFile(std::string &filename) {
 
     std::ofstream of;
     of.open(filename.c_str());
@@ -594,10 +594,6 @@ void MolData::writePredictedSpectraToFile(std::string &filename, bool add_versio
     std::streambuf *buf = of.rdbuf();
     std::ostream out(buf);
     outputSpectra(out, "Predicted");
-    if(add_version){
-        out << std::endl << std::endl;
-        out << VERSION_STRING << PROJECT_VER << std::endl;
-    }
     of.close();
 }
 
@@ -699,7 +695,7 @@ void MolData::getEnumerationSpectraMasses(std::vector<double> &output_masses) {
 }
 
 void MolData::outputSpectra(std::ostream &out, const char *spec_type,
-                            bool do_annotate) {
+                            bool do_annotate, bool add_version) {
 
     std::vector<Spectrum> *spectra_to_output;
     if (std::string(spec_type) == "Predicted")
@@ -708,6 +704,10 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
         spectra_to_output = &spectra;
     else
         std::cout << "Unknown spectrum type to output: " << spec_type << std::endl;
+
+    if ((std::string(spec_type) == "Predicted") && add_version){
+            out << VERSION_STRING << PROJECT_VER << std::endl;
+    }
 
     std::vector<Spectrum>::iterator it = spectra_to_output->begin();
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
