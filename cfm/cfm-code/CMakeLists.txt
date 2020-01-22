@@ -8,8 +8,8 @@
 # Last Modified: Sep 2017
 ##########################################################################
 
-set(BASE_HEADERS FragmentGraph.h Feature.h FeatureVector.h FeatureCalculator.h Config.h Spectrum.h
-        FragmentGraphGenerator.h FragmentTreeNode.h Inference.h IPFP.h MILP.h Isotope.h
+set(BASE_HEADERS Version.h FragmentGraph.h Feature.h FeatureVector.h FeatureCalculator.h Config.h Spectrum.h
+        FragmentGraphGenerator.h FragmentTreeNode.h Inference.h MILP.h Isotope.h
         MolData.h MspReader.h Param.h NNParam.h Util.h Message.h Identifier.h Comparators.h
         FunctionalGroups.h)
 
@@ -28,7 +28,6 @@ set(BASE_SRC_FILES FragmentGraph.cpp
         FunctionalGroups.cpp
         Identifier.cpp
         Inference.cpp
-        IPFP.cpp
         Isotope.cpp
         Message.cpp
         MILP.cpp
@@ -60,6 +59,8 @@ endif ()
 
 add_library(cfm-code STATIC ${SRC_FILES} ${HEADER_FILES})
 target_link_libraries(cfm-code ${REQUIRED_LIBS})
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/ISOTOPE.DAT DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ISOTOPE.DAT
         DESTINATION ${CFM_OUTPUT_DIR})

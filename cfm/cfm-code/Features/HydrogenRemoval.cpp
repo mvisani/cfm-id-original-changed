@@ -20,8 +20,7 @@
 #include <GraphMol/AtomIterators.h>
 
 void
-HydrogenRemoval::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,
-                         int depth) const {
+HydrogenRemoval::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     double h_movement = 0.0;
 

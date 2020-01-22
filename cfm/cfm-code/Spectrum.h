@@ -93,7 +93,7 @@ public:
 
     const std::vector<Peak> *getPeaks() const { return &peaks; };
 
-    bool isNormalizedAndSorted() const { return is_normalized && is_sorted; };;
+    bool isNormalizedAndSorted() const { return is_normalized && is_sorted; };
 
     void postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_intensity = 0.0);
 
@@ -109,7 +109,7 @@ public:
 
     void outputToMgfStream(std::ostream &out, std::string id, int ionization_mode, int energy, double mw) const;
 
-    void removePeaksWithNoFragment(std::vector<double> &frag_masses, double abs_tol, double ppm_tol);
+    int removePeaksWithNoFragment(std::vector<double> &frag_masses, double abs_tol, double ppm_tol);
 
     void quantisePeaksByMass(int num_dec_places);
 

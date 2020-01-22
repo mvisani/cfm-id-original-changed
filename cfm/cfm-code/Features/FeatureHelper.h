@@ -44,14 +44,9 @@ public:
 class FeatureHelper {
 public:
     FeatureHelper() {
-        // TODO fix this: magic number is evil
-        exec_flags.resize(6);
-        for (int i = 0; i < 6; i++)
-            exec_flags[i] = 0;
     };
 
     explicit FeatureHelper(FeatureCalculator *fc) {
-        exec_flags.resize(6);
         exec_flags[0] = fc->includesFeature("GasteigerCharges");
         exec_flags[1] = fc->includesFeature("HydrogenMovement") ||
                         fc->includesFeature("HydrogenRemoval");
@@ -63,17 +58,6 @@ public:
 
         exec_flags[3] = fc->includesFeature("BrokenOrigBondType") ||
                         fc->includesFeature("NeighbourOrigBondTypes");
-        /*||
-        fc->includesFeature("IonRootEncodingD3") ||
-        fc->includesFeature("NLRootEncodingD3") ||
-        fc->includesFeature("NLRootEncodingD4") ||
-        fc->includesFeature("IonRootEncodingD4") ||
-        fc->includesFeature("NLRootEncodingD4Long") ||
-        fc->includesFeature("IonRootEncodingD4Long") ||
-        fc->includesFeature("NLRootEncodingMorganD3") ||
-        fc->includesFeature("IonRootEncodingMorganD3") ||
-        fc->includesFeature("NLRootEncodingMorganD3Long") ||
-        fc->includesFeature("IonRootEncodingMorganD3Long");*/
 
         exec_flags[4] = fc->includesFeature("IonFunctionalGroupFeatures") ||
                         fc->includesFeature("NLFunctionalGroupFeatures") ||
@@ -91,6 +75,7 @@ public:
                 throw FeatureHelperException(
                         "Mismatch in expected and found number of functional groups");
         }
+
         if (exec_flags[5]) {
             xfparams = new RDKit::FragCatParams(EXTRA_FGRPS_PICKLE);
             if (xfparams->getNumFuncGroups() != NUM_EXTRA_FGRPS)
@@ -100,9 +85,9 @@ public:
     };
 
     ~FeatureHelper() {
-        if (exec_flags[4])
+        if(fparams != nullptr)
             delete fparams;
-        if (exec_flags[5])
+        if(xfparams != nullptr)
             delete xfparams;
     }
 
@@ -121,6 +106,7 @@ public:
             labelFunctionalGroups(rwmol, false);
         if (exec_flags[5])
             labelFunctionalGroups(rwmol, true);
+
         labelAtomsWithLonePairs(rwmol);
     };
 
@@ -129,7 +115,7 @@ public:
     static int getBondTypeAsInt(RDKit::Bond *bond);
 
 private:
-    std::vector<int> exec_flags;
+    std::vector<bool> exec_flags = {false,false,false,false,false,false};
 
     // Helper functions - used to create labels on atoms and bonds,
     // that will be used in Feature Calculations and can't be computed once

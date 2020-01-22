@@ -22,7 +22,8 @@ int main(int argc, char *argv[]);
 #include "MolData.h"
 #include "Identifier.h"
 #include "Comparators.h"
-#include "IPFP.h"
+#include "Inference.h"
+#include "Version.h"
 
 #include <iostream>
 #include <fstream>
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
 	if (argc < 3 || argc > 9 )
 	{
 		std::cout << std::endl << std::endl;
+        std::cout << "CFM-ID Version: "<< PROJECT_VER << std::endl;
 		std::cout << std::endl << "Usage: cfm-annotate.exe <smiles_or_inchi> <spectrum_file> <id> <ppm_mass_tol> <abs_mass_tol> <param_filename> <config_filename> <output_filename>" << std::endl << std::endl << std::endl;
 		std::cout << std::endl << "smiles_or_inchi: " << std::endl << "The smiles or Inchi string for the input molecule" << std::endl;  
 		std::cout << std::endl << "spectrum_file:" << std::endl << "The filename where the input spectra can be found as a list of peaks 'mass intensity' delimited by lines, with either 'low','med' and 'high' lines beginning spectra of different energy levels, or 'energy0', 'energy1', etc. ";
@@ -128,7 +130,7 @@ int main(int argc, char *argv[])
 
 	//Apply the peak evidence and compute the beliefs
 	beliefs_t beliefs;
-	if( cfg.use_single_energy_cfm ){
+
 		
 		//Concat single energy beliefs into one since subsequent
 		//functions just check for any beliefs above threshold
@@ -137,15 +139,10 @@ int main(int argc, char *argv[])
 			initSingleEnergyConfig(se_cfg, cfg, energy);
 			Inference infer( &moldata, &se_cfg );
 			beliefs_t sbeliefs;
-			infer.calculateBeliefs( sbeliefs );
+            infer.calculateBeliefs(sbeliefs, 0);
 			concatBeliefs(&beliefs, &sbeliefs);
 		}
-	}
-	else{
-		IPFP ipfp( &moldata, &cfg); 
-		beliefs_t *sbeliefs = ipfp.calculateBeliefs();
-		concatBeliefs(&beliefs, sbeliefs);
-	}
+
 
 	//Process the beliefs to extract the fragmentation tree that occurred
 	double log_belief_thresh = std::log(0.00001);

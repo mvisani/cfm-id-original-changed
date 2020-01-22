@@ -17,8 +17,8 @@
 #include "IonFunctionalGroupFeaturesD2.h"
 
 void
-IonFunctionalGroupFeaturesD2::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth)  const {
+IonFunctionalGroupFeaturesD2::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
-    addFunctionalGroupFeatures(fv, ion, 2, ring_break);
+    addFunctionalGroupFeatures(fv, ion, 2, false);
 }

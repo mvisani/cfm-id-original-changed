@@ -18,6 +18,8 @@
 #ifndef __COMMS_H__
 #define __COMMS_H__
 
+#include "mpi.h"
+
 #include "Param.h"
 #include "NNParam.h"
 #include <string>
@@ -32,7 +34,9 @@ public:
 
     virtual void setMasterUsedIdxs() = 0;
 
-    virtual void collectGradsInMaster(double *grads) = 0;
+    virtual void collectGradsInMaster(std::vector<float> &grads) = 0;
+
+    void collectGradsInMasterOrigMpi(std::vector<float> &grads);
 
     virtual void broadcastParamsWeights(Param *param) = 0;
 
@@ -44,7 +48,7 @@ public:
 
     void printWithWorkerId(const char *msg);
 
-    double collectQInMaster(double Q);
+    float collectQInMaster(float Q);
 
     bool isMaster() { return mpi_rank == MASTER; };
 
@@ -52,15 +56,18 @@ public:
 
     int broadcastNumUsed(int num_used);
 
-    bool broadcastBooleanFlag(bool flag);
-
     int collectSumInMaster(int partial);
 
-    double broadcastQ(double Q);
+    float broadcastQ(float Q);
+
+    float getTimeUsages(float time_used, MPI_Op op);
+
+    void gatherTimeUsages(float time_used, std::vector<float> &time_used_vector);
 
     std::set<unsigned int> used_idxs;
     unsigned int num_used;
 
+    int getNumProcesses() { return mpi_nump; };
     virtual ~Comms() = default;
 
 protected:
@@ -73,7 +80,7 @@ class WorkerComms : public Comms {
 public:
     void setMasterUsedIdxs() override;
 
-    void collectGradsInMaster(double *grads) override;
+    void collectGradsInMaster(std::vector<float> &grads) override;
 
     void broadcastParamsWeights(Param *param) override;
 
@@ -85,7 +92,7 @@ class MasterComms : public Comms {
 public:
     void setMasterUsedIdxs() override;
 
-    void collectGradsInMaster(double *grads) override;
+    void collectGradsInMaster(std::vector<float> &grads) override;
 
     void broadcastParamsWeights(Param *param) override;
 

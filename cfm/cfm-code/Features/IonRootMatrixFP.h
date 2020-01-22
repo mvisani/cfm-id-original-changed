@@ -20,44 +20,64 @@ param.cpp.
 
 // Features use fingerprint encode NL fragmentatNL
 
-//feature_size = num_atom * 11 + 5 * (num_atom) +   num_atom * (num_atom - 1) / 2 * 5;
+//feature_size = num_atom * 11 + 6 * (num_atom) +   num_atom * (num_atom - 1) / 2 * 6;
 // Features use fingerprint encode NL fragmentation
 class IonRootMatrixFPN6 : public FingerPrintFeature {
 public:
     IonRootMatrixFPN6() {
-        size = 282;
+        size = 156;
         name = "IonRootMatrixFPN6";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
+};
+
+class IonRootMatrixFPN6D2 : public FingerPrintFeature {
+public:
+    IonRootMatrixFPN6D2() {
+        size = 156;
+        name = "IonRootMatrixFPN6D2";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class IonRootMatrixFPN8 : public FingerPrintFeature {
 public:
     IonRootMatrixFPN8() {
-        size = 456;
+        size = 256;
         name = "IonRootMatrixFPN8";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
+};
+
+class IonRootMatrixFPN8D3 : public FingerPrintFeature {
+public:
+    IonRootMatrixFPN8D3() {
+        size = 256;
+        name = "IonRootMatrixFPN8D3";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class IonRootMatrixFPN10 : public FingerPrintFeature {
 public:
     IonRootMatrixFPN10() {
-        size = 670;
+        size = 380;
         name = "IonRootMatrixFPN10";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 class IonRootMatrixFPN16 : public FingerPrintFeature {
 public:
     IonRootMatrixFPN16() {
-        size = 1552;
+        size = 896;
         name = "IonRootMatrixFPN16";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };

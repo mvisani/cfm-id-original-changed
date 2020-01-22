@@ -18,7 +18,7 @@ param.cpp.
 #include "NeighbourMMFFFeature.h"
 
 void NeighbourMMFFFeature::addNeighbourAtomTypes(FeatureVector &fv,
-                                                 const RootedROMolPtr *mol,
+                                                 const RootedROMol *mol,
                                                  const RDKit::Atom *root,
                                                  int offset) const {
     // Iterate over the neighbours of the root atom

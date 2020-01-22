@@ -154,7 +154,7 @@ void InferenceTestSimpleDepth3::runTest(){
 	cfg.model_depth = 9;
 	int tmp_array[3] = {3,6,9};
 	cfg.spectrum_depths.assign(tmp_array, tmp_array+3);
-	cfg.use_single_energy_cfm = 1;
+
 	initDerivedConfig(cfg);
 
 	LibDaiTestMol moldata;
@@ -179,7 +179,7 @@ void InferenceTestComplexDepth3::runTest(){
 	cfg.model_depth = 9;
 	int tmp_array[3] = {3,6,9};
 	cfg.spectrum_depths.assign(tmp_array, tmp_array+3);
-	cfg.use_single_energy_cfm = 1;
+
 	initDerivedConfig(cfg);
 
 	LibDaiComplexTestMol moldata;
@@ -204,7 +204,7 @@ void InferenceTestvsIPFPDepth2::runTest(){
 	cfg.model_depth = 6;
 	int tmp_array[3] = {2,4,6};
 	cfg.spectrum_depths.assign(tmp_array, tmp_array+3);
-	cfg.use_single_energy_cfm = 1;
+
 	initDerivedConfig(cfg);
 
 	InferTestMol moldata;
@@ -229,7 +229,7 @@ void InferenceTestSimpleDepth2::runTest(){
 	cfg.model_depth = 6;
 	int tmp_array[3] = {2,4,6};
 	cfg.spectrum_depths.assign(tmp_array, tmp_array+3);
-	cfg.use_single_energy_cfm = 1;
+
 	initDerivedConfig(cfg);
 
 	LibDaiTestMol moldata;
@@ -254,7 +254,7 @@ void InferenceTestComplexDepth2::runTest(){
 	cfg.model_depth = 6;
 	int tmp_array[3] = {2,4,6};
 	cfg.spectrum_depths.assign(tmp_array, tmp_array+3);
-	cfg.use_single_energy_cfm = 1;
+
 	initDerivedConfig(cfg);
 
 	LibDaiComplexTestMol moldata;
@@ -279,7 +279,7 @@ void InferenceTestSimpleDepth1::runTest(){
 	cfg.model_depth = 3;
 	int tmp_array[3] = {1,2,3};
 	cfg.spectrum_depths.assign(tmp_array, tmp_array+3);
-	cfg.use_single_energy_cfm = 1;
+
 	initDerivedConfig(cfg);
 
 	LibDaiTestMol moldata;
@@ -304,7 +304,7 @@ void InferenceTestComplexDepth1::runTest(){
 	cfg.model_depth = 3;
 	int tmp_array[3] = {1,2,3};
 	cfg.spectrum_depths.assign(tmp_array, tmp_array+3);
-	cfg.use_single_energy_cfm = 1;
+
 	initDerivedConfig(cfg);
 
 	LibDaiComplexTestMol moldata;

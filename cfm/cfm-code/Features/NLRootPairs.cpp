@@ -17,12 +17,11 @@ param.cpp.
 #########################################################################*/
 #include "NLRootPairs.h"
 
-void NLRootPairs::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                          const RootedROMolPtr *nl, const int depth) const {
+void NLRootPairs::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
     std::vector<path_t> paths;
-    computeRootPaths(paths, nl, 2, ring_break, false);
+    computeRootPaths(paths, nl, 2, false);
     addRootPairFeatures(fv, paths, ring_break);
 }

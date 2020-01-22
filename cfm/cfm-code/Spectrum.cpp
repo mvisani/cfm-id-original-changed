@@ -86,13 +86,14 @@ void Spectrum::quantisePeaksByMass(int num_dec_places) {
     // Note: this is mostly used for extreme cases like the NIST data, where
     // masses are given only to integer precision.
     normalizeAndSort();
+
     long long prev_mass = 0;
     auto it = peaks.begin();
     for (; it != peaks.end(); ++it) {
         auto tmp_mass =
                 (long long) (it->mass * std::pow(10.0, num_dec_places) + 0.5);
         it->mass = tmp_mass * std::pow(10.0, -num_dec_places);
-        if (tmp_mass == prev_mass) {
+        if (tmp_mass == prev_mass && it != peaks.begin()) {
             it->intensity += (it - 1)->intensity;
             it->annotations.insert(it->annotations.end(),
                                    (it - 1)->annotations.begin(),
@@ -110,13 +111,14 @@ void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, dou
     double total = 0.0;
     auto it = peaks.begin();
     int count = 0;
-
+    // we need at least 1 peak
+    min_peaks = std::max(min_peaks,1);
     for (; it != peaks.end(); ++it) {
         total += it->intensity;
         count++;
         // e.g. Take the top 80% of energy (assuming at least 5 peaks),
         // or the highest 30 peaks (whichever comes first)
-        if ((total > perc_thresh && count > min_peaks) || count > max_peaks || it->intensity < min_intensity) {
+        if ((total > perc_thresh && count >= min_peaks) || count >= max_peaks || it->intensity < min_intensity) {
             break;
         }
     }
@@ -169,9 +171,17 @@ void Spectrum::clean(double abs_mass_tol, double ppm_mass_tol) {
             peak_flags[idx] = false;
 
         double mass_tol = getMassTol(abs_mass_tol, ppm_mass_tol, itp->mass);
-        if (fabs(itp->mass - prev_mass) < mass_tol &&
-            itp->intensity < prev_intensity)
+        while (fabs(itp->mass - prev_mass) < mass_tol &&
+            itp->intensity < prev_intensity){
             peak_flags[idx] = false;
+            if( idx < peaks.size() -1){
+                idx += 1;
+                itp += 1;
+            }
+        }
+        idx -= 1;
+        itp -= 1;
+
         prev_mass = itp->mass;
         prev_intensity = itp->intensity;
     }
@@ -182,9 +192,17 @@ void Spectrum::clean(double abs_mass_tol, double ppm_mass_tol) {
     auto ritp = peaks.rbegin();
     for (int idx = peaks.size() - 1; ritp != peaks.rend(); ++ritp, idx--) {
         double mass_tol = getMassTol(abs_mass_tol, ppm_mass_tol, ritp->mass);
-        if (fabs(ritp->mass - prev_mass) < mass_tol &&
-            ritp->intensity < prev_intensity)
+        while (fabs(ritp->mass - prev_mass) < mass_tol &&
+            ritp->intensity < prev_intensity){
             peak_flags[idx] = false;
+            if( idx > 0){
+                idx -= 1;
+                ritp += 1;
+            }
+        }
+        idx += 1;
+        ritp-= 1;
+
         prev_mass = ritp->mass;
         prev_intensity = ritp->intensity;
     }
@@ -222,8 +240,8 @@ void Spectrum::sortAndNormalizeAnnotations() {
     }
 }
 
-void Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
-                                         double abs_tol, double ppm_tol) {
+int Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
+                                        double abs_tol, double ppm_tol) {
 
     int removed_cout = 0;
     // Remove any peaks more than mass_tol away from any fragment
@@ -247,5 +265,7 @@ void Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
     // std::cout << "Number of Removed Peaks " << removed_cout <<  std::endl;
     // Renormalise
     normalizeAndSort();
+
+    return removed_cout;
 }
 

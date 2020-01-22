@@ -23,7 +23,7 @@
 
 #include <string>
 
-typedef std::vector<double> azd_vals_t;
+typedef std::vector<float> azd_vals_t;
 
 
 //Exception to throw when the activation function id is unknown
@@ -48,7 +48,7 @@ class NNParam : public Param {
 public:
     NNParam(std::vector<std::string> a_feature_list, int a_num_energy_levels,
                 std::vector<int> &a_hlayer_num_nodes, std::vector<int> &a_act_func_ids,
-                std::vector<double> &a_dropout_probs);
+                std::vector<float> &a_dropout_probs);
 
     //Constructor for loading parameters from file
     NNParam(std::string &filename);
@@ -59,7 +59,7 @@ public:
     //Compute the theta value for an input feature vector and energy
     //based on the current weight settings
     //is should only be used in prediction phase or compute loss
-    double computeTheta(const FeatureVector &fv, int energy);
+    float computeTheta(const FeatureVector &fv, int energy);
 
     // Compute the theta value for an input feature vector and energy in training time
     // this function is added to use drop out in nerual network
@@ -67,15 +67,15 @@ public:
     // this function also keeps a record of the z and a values along the way
     // (for forwards step in forwards-backwards algorithm)
     // use_dropout flag should set to false during used_idx collection
-    double computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_values, azd_vals_t &a_values,
+    float computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_values, azd_vals_t &a_values,
                         bool already_sized = false, bool use_dropout = false);
 
     void
     computeDeltas(std::vector<azd_vals_t> &deltasA, std::vector<azd_vals_t> &deltasB, std::vector<azd_vals_t> &z_values,
-                  std::vector<azd_vals_t> &a_values, double rho_denom, int energy);
+                  std::vector<azd_vals_t> &a_values, float rho_denom, int energy);
 
     void
-    computeUnweightedGradients(std::vector<std::vector<double> > &unweighted_grads, std::set<unsigned int> &used_idxs,
+    computeUnweightedGradients(std::vector<std::vector<float> > &unweighted_grads, std::set<unsigned int> &used_idxs,
                                std::vector<const FeatureVector *> &fvs, std::vector<azd_vals_t> &deltasA,
                                std::vector<azd_vals_t> &deltasB, std::vector<azd_vals_t> &a_values);
 
@@ -87,17 +87,15 @@ public:
     virtual void initWeights(int init_type) override;
 
     virtual boost::container::vector<bool> *getDropoutsPtr() override { return &is_dropped; } ;
-    virtual std::vector<double> *getDropoutsProbPtr() override { return &hlayer_dropout_probs; };
-
-    virtual void updateDropoutsRate(double delta, double lower_bound) {
-        for(auto & hlayer_dropout_prob : hlayer_dropout_probs){
-            if(hlayer_dropout_prob + delta > lower_bound){
-                hlayer_dropout_prob += delta;
-            }
-        }
-    };
+    virtual std::vector<float> *getDropoutsProbPtr() override { return &hlayer_dropout_probs; };;
     
     void rollDropouts() override;
+
+    void collectUsedIdx(std::set<unsigned int> &used_idxs, unsigned int feature_len, unsigned offset,
+            unsigned fv_idx, unsigned int energy) {
+        for (int hnode = 0; hnode < h_layer_num_nodes[0]; hnode++)
+            used_idxs.insert(offset + hnode * feature_len + fv_idx);
+    };
 
 protected:
     //Initialisation options
@@ -109,7 +107,7 @@ private:
     // hold num of node for each hlayer
     std::vector<int> h_layer_num_nodes;
     // hold drop out prob for each hlayer
-    std::vector<double> hlayer_dropout_probs;
+    std::vector<float> hlayer_dropout_probs;
     // addition paramenter for drop outs
     boost::container::vector<bool> is_dropped;
 
@@ -121,26 +119,26 @@ private:
 
     //Activation functions and their derivatives (kept general in case we want to try other activation functions...)
     std::vector<int> act_func_ids;
-    std::vector<double (*)(double)> act_funcs;
-    std::vector<double (*)(double)> deriv_funcs;
+    std::vector<float (*)(float)> act_funcs;
+    std::vector<float (*)(float)> deriv_funcs;
 
     //Linear Activation (usually used for the last layer)
-    static double linear_activation(double input) { return input; };
+    static float linear_activation(float input) { return input; };
 
-    static double linear_derivative(double input) { return 1; };
+    static float linear_derivative(float input) { return 1; };
 
     //ReLU Activation
-    static double relu_activation(double input) { if (input > 0) return input; else return 0; };
+    static float relu_activation(float input) { if (input > 0) return input; else return 0; };
 
-    static double relu_derivative(double input) { if (input > 0) return 1; else return 0; };
+    static float relu_derivative(float input) { if (input > 0) return 1; else return 0; };
 
-    static double leaky_relu_activation(double input) { if (input > 0) return input; else return input * 0.01; };
+    static float leaky_relu_activation(float input) { if (input > 0) return input; else return input * 0.01; };
 
-    static double leaky_relu_derivative(double input) { if (input > 0) return 1; else return 0.01; };
+    static float leaky_relu_derivative(float input) { if (input > 0) return 1; else return 0.01; };
 
-    static double neg_relu_activation(double input) { if (input < 0) return input; else return 0; };
+    static float neg_relu_activation(float input) { if (input < 0) return input; else return 0; };
 
-    static double neg_relu_derivative(double input) { if (input < 0) return 1; else return 0; };
+    static float neg_relu_derivative(float input) { if (input < 0) return 1; else return 0; };
 
     //Function to configure activation functions used in each layer
     void setActivationFunctionsFromIds();

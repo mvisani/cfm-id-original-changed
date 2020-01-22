@@ -40,10 +40,15 @@ struct factor_probs_t {
 class Inference {
 
 public:
-    Inference(const MolData *data, config_t *cfg) : moldata(data), config(cfg) {};
+    Inference(const MolData *data, config_t *cfg) : moldata(data), config(cfg) {
+        if(data->getFGHeight() <= config->model_depth)
+            mol_depth = config->model_depth;
+        else
+            mol_depth = data->getFGHeight();
+    };
 
-    void calculateBeliefs(beliefs_t &beliefs);    //Note: Only supports single energy mode
-    void runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth);
+    void calculateBeliefs(beliefs_t &beliefs, int current_energy);    //Note: Only supports single energy mode
+    void runInferenceDownwardPass(std::vector<Message> &down_msgs, int to_depth, int energy);
 
     void createSpectrumMessage(Message &msg, int energy, Message &down_msg);
 
@@ -51,18 +56,20 @@ private:
     const MolData *moldata;
     config_t *config;
     std::vector<Message> spec_messages;
+    int mol_depth;
 
     void initTmpFactorProbSizes(factor_probs_t &tmp_log_probs, unsigned int num_frag, unsigned int num_trans,
                                 unsigned int model_depth);
 
-    void runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &spec_msg);
+    void runInferenceUpwardPass(std::vector<Message> &up_msgs, Message &spec_msg, int current_energy);
 
     void createMessage(factor_probs_t &tmp_log_probs, Message &m, Message &prev_m, int direction, int depth);
 
     void passMessage(factor_probs_t &tmp_log_probs, int direction, int depth, Message &m, int energy);
 
     void
-    combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<Message> &down_msgs, std::vector<Message> &up_msgs);
+    combineMessagesToComputeBeliefs(beliefs_t &beliefs, std::vector<Message> &down_msgs,
+                                    std::vector<Message> &up_msgs, int current_energy);
 
     void createSpectrumMessageWithIsotopes(Message &msg, int energy, Message &down_msg);
 

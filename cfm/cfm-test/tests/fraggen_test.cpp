@@ -35,7 +35,7 @@ void FragGenTestPositiveESI::runTest(){
 	FragmentTreeNode *startNode = gg.createStartNode(smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE);
 	config_t cfg; initDefaultConfig(cfg); cfg.include_h_losses = true;  
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 2, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -94,7 +94,7 @@ void FragGenTestNegativeESI::runTest(){
 	config_t cfg; initDefaultConfig(cfg);  cfg.ionization_mode = NEGATIVE_ESI_IONIZATION_MODE;
 	cfg.include_h_losses = true; 
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 2, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -143,10 +143,11 @@ void FragGenTestPositiveEI::runTest(){
 	//Run the fragmentation procedure
 	FragmentGraphGenerator gg;
 	FragmentTreeNode *startNode = gg.createStartNode(smiles_or_inchi, POSITIVE_EI_IONIZATION_MODE);
-	config_t cfg; initDefaultConfig(cfg);  cfg.ionization_mode = POSITIVE_EI_IONIZATION_MODE;
+	config_t cfg; initDefaultConfig(cfg);
+	cfg.ionization_mode = POSITIVE_EI_IONIZATION_MODE;
 	cfg.include_h_losses = true; 
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 2, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -212,7 +213,7 @@ void FragGenTestPositiveEIMultibreak::runTest(){
 	config_t cfg; initDefaultConfig(cfg); cfg.ionization_mode = POSITIVE_EI_IONIZATION_MODE;
 	cfg.include_h_losses = true; 
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 2, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -279,7 +280,7 @@ void FragGenTestPositiveEIMultibreak::runTest(){
 			int num_rad = 0, num_nonrad = 0;
 			std::vector<int>::const_iterator itt = it->begin();
 			for( ; itt != it->end(); ++itt ){
-				const Transition *t = graph->getTransitionAtIdx(*itt);		
+				const TransitionPtr t = graph->getTransitionAtIdx(*itt);
 				int israd = moleculeHasSingleRadical( t->getIon()->mol.get() );
 				num_rad += israd;
 				num_nonrad += (1 - israd);
@@ -305,6 +306,7 @@ void FragGenTestPositiveEIMultibreak::runTest(){
 }
 
 FragGenTestPositiveEIOxygenAromatic::FragGenTestPositiveEIOxygenAromatic(){
+	name = "FragGenTestPositiveEIOxygenAromatic";
 	description = "Test generation of positive mode EI fragment tree for previous exception case NIST30539 C1=CC2OC=CC12 (aromatic oxygen)";
 }
 
@@ -321,7 +323,7 @@ void FragGenTestPositiveEIOxygenAromatic::runTest(){
 	config_t cfg; initDefaultConfig(cfg); cfg.ionization_mode = POSITIVE_EI_IONIZATION_MODE;
 	cfg.include_h_losses = true; 
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 3, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -417,7 +419,7 @@ void FragGenTestPositiveEITriple::runTest(){
 	config_t cfg; initDefaultConfig(cfg); cfg.ionization_mode = POSITIVE_EI_IONIZATION_MODE;
 	cfg.include_h_losses = true; 
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 2, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -482,7 +484,7 @@ void FragGenTestRingPositiveESI::runTest(){
 	FragmentTreeNode *startNode = gg.createStartNode(smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE);
 	config_t cfg; initDefaultConfig(cfg); cfg.include_h_losses = true; 
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 2, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -553,7 +555,7 @@ void FragGenTestRingNegativeESI::runTest(){
 	config_t cfg; initDefaultConfig(cfg); cfg.include_h_losses = true; 
 	cfg.ionization_mode = NEGATIVE_ESI_IONIZATION_MODE;
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 2, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -613,7 +615,7 @@ void FragGenTestRingPositiveEI::runTest(){
 	config_t cfg; initDefaultConfig(cfg); cfg.include_h_losses = true; 
 	cfg.ionization_mode = POSITIVE_EI_IONIZATION_MODE;
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 2, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -673,7 +675,7 @@ void FragGenTestPositiveEIAlkane::runTest(){
 	config_t cfg; initDefaultConfig(cfg); cfg.include_h_losses = true; 
 	cfg.ionization_mode = POSITIVE_EI_IONIZATION_MODE;
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 2, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -734,7 +736,7 @@ void FragGenTestPositiveESISplitCharge::runTest(){
 	FragmentTreeNode *startNode = gg.createStartNode(smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE);
 	config_t cfg; initDefaultConfig(cfg); cfg.include_h_losses = true; 
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 2, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -794,7 +796,7 @@ void FragGenTestPositiveEISplitCharge::runTest(){
 	config_t cfg; initDefaultConfig(cfg); cfg.include_h_losses = true; 
 	cfg.ionization_mode = POSITIVE_EI_IONIZATION_MODE;
 	FragmentGraph *graph = gg.createNewGraph(&cfg);
-    gg.compute(*startNode, 2, 0, -1, 2);
+	gg.compute(*startNode, 2, -1, 2);
 	delete startNode;
 
 	//Check the resulting graph
@@ -871,7 +873,7 @@ void FragGenTestPositiveEINistExceptions::runTest(){
 			FragmentTreeNode *startNode = gg.createStartNode(test_it->first, POSITIVE_ESI_IONIZATION_MODE);
 			config_t cfg; initDefaultConfig(cfg); cfg.include_h_losses = true; 
 			FragmentGraph *graph = gg.createNewGraph(&cfg);
-            gg.compute(*startNode, 2, 0, -1, 2);
+			gg.compute(*startNode, 2, -1, 2);
 			delete startNode;
 
 			//Check the resulting graph
@@ -935,7 +937,7 @@ void FragGenTestPositiveEIAndESIDegreeLpBonding::runTest(){
 		FragmentTreeNode *startNode = gg.createStartNode( boost::get<0>(*test_it), boost::get<1>(*test_it) );
 		config_t cfg; initDefaultConfig(cfg); cfg.include_h_losses = true;  cfg.ionization_mode = boost::get<1>(*test_it);
 		FragmentGraph *graph = gg.createNewGraph(&cfg);
-        gg.compute(*startNode, 2, 0, -1, 2);
+		gg.compute(*startNode, 2, -1, 2);
 		delete startNode;
 
 		//Check the resulting graph
@@ -988,7 +990,7 @@ void FragGenTestCasesFromGross::runTest(){
 		config_t cfg; initDefaultConfig(cfg); cfg.include_h_losses = true; 
 		cfg.ionization_mode = boost::get<1>(*test_it); 
 		FragmentGraph *graph = gg.createNewGraph(&cfg);
-        gg.compute(*startNode, 2, 0, -1, 2);
+		gg.compute(*startNode, 2, -1, 2);
 		delete startNode;
 
 		//Check the resulting graph
@@ -1028,7 +1030,7 @@ void FragGenTestMaxElectronMovement::runTest(){
 	
 	//Break just the one bond
 	std::vector<Break> breaks;
-	node->generateBreaks(breaks, false);
+    node->generateBreaks(breaks, false);
 	node->applyBreak(breaks[12], 0);	//Break Bond 11 (after the O)
 	node->generateChildrenOfBreak(breaks[12]);
 	
@@ -1051,7 +1053,7 @@ void FragGenTestMaxElectronMovement::runTest(){
 		//Now break one of the children (to check the second level works)
 		FragmentTreeNode *child = &node->children[6];
 		std::vector<Break> child_breaks;
-		child->generateBreaks(child_breaks, false);
+        child->generateBreaks(child_breaks, false);
 		child->applyBreak(breaks[5], 0);	//Break Bond 5
 		child->generateChildrenOfBreak(breaks[5]);
 		itt = child->children.begin();
@@ -1082,7 +1084,7 @@ bool checkChildFragmentDepths( int parent_id, FragmentGraph *graph, int depth ){
 	const tmap_t *from_map = graph->getFromIdTMap();
 	std::vector<int>::const_iterator it = (*from_map)[parent_id].begin();
 	for( ; it != (*from_map)[parent_id].end(); ++it ){
-		const Transition *t = graph->getTransitionAtIdx(*it);
+		const TransitionPtr t = graph->getTransitionAtIdx(*it);
 		pass = pass && checkChildFragmentDepths( t->getToId(), graph, depth+1 );
 	}
 	return pass;
@@ -1100,7 +1102,7 @@ void FragGenTestDisallowDetourTransitions::runTest(){
 	FragmentTreeNode *startNode1 = gg.createStartNode(smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE);
 	config_t cfg; initDefaultConfig(cfg); cfg.allow_frag_detours = true; cfg.include_h_losses = true; 
 	FragmentGraph *graph1 = gg.createNewGraph( &cfg );
-    gg.compute(*startNode1, 3, 0, -1, 3);
+	gg.compute(*startNode1, 3, -1, 3);
 	delete startNode1;
 
 	//Check the number of transitions allowing detours
@@ -1114,7 +1116,7 @@ void FragGenTestDisallowDetourTransitions::runTest(){
 	FragmentTreeNode *startNode = gg.createStartNode(smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE);
 	cfg.allow_frag_detours = false;
 	FragmentGraph *graph = gg.createNewGraph( &cfg );
-    gg.compute(*startNode, 3, 0, -1, 3);
+	gg.compute(*startNode, 3, -1, 3);
 
 	//Check the number of transitions before removing detours (some should have already been removed along the way)
 	if( graph->getNumTransitions() != 21 ){
@@ -1150,7 +1152,7 @@ void FragGenTestDisallowDetourTransitions::runTest(){
 		std::vector<int> produced_flags( graph->getNumFragments(), 0 );
 		produced_flags[0] = 1;
 		for( int i = 0; i < graph->getNumTransitions(); i++ ){
-			const Transition *t = graph->getTransitionAtIdx(i);
+			const TransitionPtr t = graph->getTransitionAtIdx(i);
 			if( !produced_flags[t->getFromId()] ){
 				std::cout << "Warning: Fragment " << t->getFromId() << " occurs as a parent before it is seen as a child" << std::endl;
 				//pass = false;
@@ -1177,7 +1179,7 @@ void FragGenTestMaxRingBreaks::runTest(){
 	FragmentTreeNode *startNode1 = gg.createStartNode(smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE);
 	config_t cfg; initDefaultConfig(cfg); cfg.allow_frag_detours = true; cfg.include_h_losses = true; 
 	FragmentGraph *graph1 = gg.createNewGraph( &cfg );
-    gg.compute(*startNode1, 3, 0, -1, 0);
+	gg.compute(*startNode1, 3, -1, 0);
 	delete startNode1;
 
 	//Check the number of transitions before removing detours (some should have already been removed along the way)
@@ -1192,7 +1194,7 @@ void FragGenTestMaxRingBreaks::runTest(){
 	FragmentGraphGenerator gg2;
 	FragmentTreeNode *startNode2 = gg2.createStartNode(smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE);
 	FragmentGraph *graph2 = gg2.createNewGraph( &cfg );
-    gg2.compute(*startNode2, 3, 0, -1, 1);
+	gg2.compute(*startNode2, 3, -1, 1);
 	delete startNode2;
 
 	//Check the number of transitions before removing detours (some should have already been removed along the way)
@@ -1220,7 +1222,7 @@ bool checkGraphConsistency( FragmentGraph *graph ){
 
 	//Check that all transitions have uncharged neutral losses
 	for( int i = 0; i < graph->getNumTransitions(); i++ ){
-		const Transition *trans = graph->getTransitionAtIdx(i);
+		const TransitionPtr trans = graph->getTransitionAtIdx(i);
 		RDKit::RWMol *rwmol = RDKit::SmilesToMol( *trans->getNLSmiles() );
 		if( RDKit::MolOps::getFormalCharge(*rwmol ) != 0 ){
 			std::cout << "Invalid charge on neutral loss: " << *trans->getNLSmiles() << std::endl;
@@ -1231,7 +1233,7 @@ bool checkGraphConsistency( FragmentGraph *graph ){
 	//Check that mass(ion) + mass(nl) = mass(parent)
 	double tol = 0.01;
 	for( int i = 0; i < graph->getNumTransitions(); i++ ){
-		const Transition *trans = graph->getTransitionAtIdx(i);
+		const TransitionPtr trans = graph->getTransitionAtIdx(i);
 		const Fragment *parent = graph->getFragmentAtIdx( trans->getFromId() );
 		const Fragment *ion = graph->getFragmentAtIdx( trans->getToId() );
 		double nl_mass = getMonoIsotopicMass( trans->getNeutralLoss()->mol );
@@ -1245,7 +1247,7 @@ bool checkGraphConsistency( FragmentGraph *graph ){
 	//Check that all transitions are unique
 	std::set< std::pair<int, int> > from_to_pairs;
 	for( int i = 0; i < graph->getNumTransitions(); i++ ){
-		const Transition *t = graph->getTransitionAtIdx(i);
+		const TransitionPtr t = graph->getTransitionAtIdx(i);
 		if( from_to_pairs.find( std::pair<int,int>(t->getFromId(), t->getToId()) ) != from_to_pairs.end() ){
 			std::cout << "Found duplicate transition" << t->getFromId() << "-" << t->getToId() << std::endl;
 			return false;
@@ -1257,7 +1259,7 @@ bool checkGraphConsistency( FragmentGraph *graph ){
 	const tmap_t *to_map = graph->getToIdTMap();
 	const tmap_t *from_map = graph->getFromIdTMap();
 	for( int i = 1; i < graph->getNumTransitions(); i++ ){
-		const Transition *t = graph->getTransitionAtIdx(i);
+		const TransitionPtr t = graph->getTransitionAtIdx(i);
 		if( std::count( (*to_map)[t->getToId()].begin(), (*to_map)[t->getToId()].end(), i ) != 1 ){
 			std::cout << "Could not find transition" << i << "in correct to map" << std::endl;
 			return false;
@@ -1311,7 +1313,8 @@ void FVFragGraphSaveAndLoadState::runTest(){
 		cfg.include_isotopes = include_isotopes;
 		MolData morig("Test ID", smiles_or_inchi.c_str(), &cfg );
 		std::vector<std::string> fnames;
-		fnames.push_back( "BreakAtomPair" ); fnames.push_back( "RingFeatures" );  fnames.push_back( "HydrogenRemoval" );
+		fnames.push_back( "BreakAtomPair" );
+		fnames.push_back( "HydrogenRemoval" );
 		FeatureCalculator fc( fnames );
 		morig.computeFragmentGraphAndReplaceMolsWithFVs(&fc, false);
 
@@ -1363,8 +1366,8 @@ void FVFragGraphSaveAndLoadState::runTest(){
 		}
 		if( !pass ) break;
 		for( int i = 0; i < morig.getNumTransitions(); i++ ){
-			const Transition *t1 = morig.getTransitionAtIdx(i);
-			const Transition *t2 = mload.getTransitionAtIdx(i);
+			const TransitionPtr t1 = morig.getTransitionAtIdx(i);
+			const TransitionPtr t2 = mload.getTransitionAtIdx(i);
 			if( t1->getFromId() != t2->getFromId() || t1->getToId() != t2->getToId() ){
 				std::cout << "Mismatch in transtions at idx: " << i << std::endl;
 				pass = false;

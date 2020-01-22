@@ -98,7 +98,8 @@ int main(int argc, char *argv[])
 	//If we're not writing output to stdout, report the statistics of the graph.
 	if(!to_stdout){
 		std::cout << std::endl << "Output written to " << output_filename << std::endl;
-		std::cout << "Depth " << max_depth << ": " << moldata.getOriginalNumFragments() << " Fragments, " << moldata.getOriginalNumTransitions() << " Transitions";
+		std::cout << "Depth " << max_depth << ": " << moldata.getNumFragments() << " Fragments, "
+			<< moldata.getNumTransitions() << " Transitions";
 		std::cout << ". Time Elaspsed = " << (after - before) << " Seconds" << std::endl;
 	}
 

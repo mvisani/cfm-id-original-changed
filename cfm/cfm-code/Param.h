@@ -56,18 +56,18 @@ public:
 
     //Compute the theta value for an input feature vector and energy based
     //on the current weight settings
-    virtual double computeTheta(const FeatureVector &fv, int energy);
+    virtual float computeTheta(const FeatureVector &fv, int energy);
 
     //Set the value of a weight
-    void setWeightAtIdx(double value, int index) { weights[index] = value; };
+    void setWeightAtIdx(float value, int index) { weights[index] = value; };
 
     //Save parameters to file
     virtual void saveToFile(std::string &filename);
 
     //Access functions
-    double getWeightAtIdx(int index) { return weights[index]; };
+    float getWeightAtIdx(int index) { return weights[index]; };
 
-    std::vector<double> *getWeightsPtr() { return &weights; };
+    std::vector<float> *getWeightsPtr() { return &weights; };
 
     //this will be changed once we add dropouts for linear model, for now
     //it only return nullptr
@@ -75,7 +75,7 @@ public:
     // because std vector can not return bool&
     virtual boost::container::vector<bool> *getDropoutsPtr() { return nullptr; };
 
-    virtual std::vector<double> *getDropoutsProbPtr() { return nullptr; };
+    virtual std::vector<float> *getDropoutsProbPtr() { return nullptr; };
 
     unsigned int getNumWeights() { return weights.size(); };
 
@@ -89,15 +89,19 @@ public:
 
     virtual void initWeights(int init_type);
 
-    // do nothing roolDropots function
-    // we may add Dropouts for linear model later
-    virtual void updateDropoutsRate(double delta, double lower_bound) {};
     virtual void rollDropouts() {};
 
     void readFromFile(const std::string &filename);
 
+    // Function To set weights from a vector
+    // Used for Unit tests
+    virtual void setWeights(std::vector<float> & values) {
+        weights.clear();
+        weights = values;
+    }
+
 protected:
-    std::vector<double> weights;
+    std::vector<float> weights;
 
     unsigned int num_energy_levels;
     std::vector<std::string> feature_list;
@@ -108,8 +112,6 @@ protected:
     virtual void randomNormalInit();
     void zeroInit();
     void fullZeroInit();
-
-
 };
 
 #endif // __PARAM_H__

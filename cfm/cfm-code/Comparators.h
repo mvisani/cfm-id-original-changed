@@ -130,6 +130,25 @@ public:
 private:
 };
 
+class Dice : public Comparator {
+public:
+    Dice(double a_ppm_tol, double a_abs_tol) : Comparator(a_ppm_tol, a_abs_tol) {};
+
+    double computeScore(const Spectrum *measured, const Spectrum *predicted) const;
+
+private:
+};
+
+
+class WeightedDice : public Comparator {
+public:
+    WeightedDice(double a_ppm_tol, double a_abs_tol) : Comparator(a_ppm_tol, a_abs_tol) {};
+
+    double computeScore(const Spectrum *measured, const Spectrum *predicted) const;
+
+private:
+};
+
 class Combined : public Comparator {
 public:
     Combined(double a_ppm_tol, double a_abs_tol) : Comparator(a_ppm_tol, a_abs_tol) {};

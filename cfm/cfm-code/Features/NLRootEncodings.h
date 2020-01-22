@@ -23,12 +23,12 @@ class NLRootEncodingD3 : public FingerPrintFeature {
 
 public:
     NLRootEncodingD3() {
-        size = 1024;
+        size = 512;
         name = "NLRootEncodingD3";
     };
 
     void
-    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 // Features use fingerprint encode ion fragmentation
@@ -40,28 +40,28 @@ public:
     };
 
     void
-    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 // Features use fingerprint encode NL fragmentatNL
 class NLRootEncodingMorganD3 : public FingerPrintFeature {
 public:
     NLRootEncodingMorganD3() {
-        size = 1024;
+        size = 512;
         name = "NLRootEncodingMorganD3";
     };
 
-    void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, const int depth) const override;
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
 
 // Features use fingerprint encode ion fragmentation
 class NLRootEncodingD4 : public FingerPrintFeature {
 public:
     NLRootEncodingD4() {
-        size = 1024;
+        size = 512;
         name = "NLRootEncodingD4";
     };
 
     void
-    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };

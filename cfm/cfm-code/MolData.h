@@ -56,7 +56,6 @@ public:
     // Access functions
     const FragmentGraph *getFragmentGraph() const { return fg; };
 
-
     bool hasComputedGraph() const { return graph_computed; };
 
     const EvidenceFragmentGraph *getEvidenceFragmentGraph() const {
@@ -81,7 +80,6 @@ public:
 
     const FeatureVector *getFeatureVectorForIdx(int index) const {
         return getTransitionAtIdx(index)->getFeatureVector();
-        //return fvs[index];
     };
 
     double getThetaForIdx(int energy, int index) const {
@@ -121,8 +119,6 @@ public:
     };
 
     // Spectrum Related Functions
-    void pruneGraphBySpectra(int energy_level, double abs_tol, double ppm_tol, bool aggressive);
-
     void removePeaksWithNoFragment(double abs_tol, double ppm_tol);
 
     bool hasEmptySpectrum(int energy_level = -1) const;
@@ -138,7 +134,7 @@ public:
     void writeFullEnumerationSpectrumToMspFileStream(std::ostream &out);
 
     void outputSpectra(std::ostream &out, const char *spec_type,
-                       bool do_annotate = false);
+                       bool do_annotate = false, bool add_version = true);
 
     // More memory efficient alternative to calling computeFragmentGraph and
     // then computeFeatureVectors with deleteMols = true
@@ -164,9 +160,6 @@ public:
     // Note that the following should be called in this order
     // since each one assumes all previous have already been called.E
     void computeFragmentGraph( FeatureCalculator *fc);
-
-    // Use this option if computing features next
-    //void computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols = false);
 
     void computeTransitionThetas(Param &param);
 
@@ -198,19 +191,13 @@ public:
     void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                    double explore_weight);
 
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_selection);
 
-    void getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<double> &selected_weights,
-                                            std::set<double> &all_weights);
+    void getSampledTransitionIdUsingDiffMapBFS(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
 
-    void getRandomSampledTransitions(std::set<int> &selected_ids, double ratio);
+    void getSampledTransitionIdUsingDiffMapCA(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
 
-    unsigned int getOriginalNumTransitions() const {
-        return fg->getOriginalNumTransitions();
-    };
-    unsigned int getOriginalNumFragments() const {
-        return fg->getOriginalNumFragments();
-    };
+    void getRandomSampledTransitions(std::set<int> &selected_ids, int max_selection);
 
     unsigned int getNumTransitions() const {
         return fg->getNumTransitions();
@@ -220,7 +207,7 @@ public:
         return fg->getNumFragments();
     };
 
-    const Transition *getTransitionAtIdx(int index) const {
+    const TransitionPtr getTransitionAtIdx(int index) const {
         return fg->getTransitionAtIdx(index);
     };
 
@@ -248,9 +235,11 @@ public:
         return fg->hasIsotopesIncluded();
     }
 
+    int getFGHeight() const { return fg->getHeight(); };
 
-    void getSelectedWeights(std::set<double> &selected_weights, std::set<double> &all_weights, int engery_level,
-                                bool peaknum_only = false);
+    // Return a listed of select weights in Fixed Point INT
+    // int_weight = std::round(weight * 1e-5)
+    void getSelectedWeights(std::set<unsigned int> &selected_weights, int energry_level);
 
     double getWeightedJaccardScore(int engery_level);
 
@@ -266,7 +255,7 @@ protected
     bool ev_graph_computed;
     // spectra , which will be pruned during traning
     std::vector<Spectrum> spectra;
-    // origonal copy of spectra;
+    // orig copy of spectra
     std::vector<Spectrum> orig_spectra;
     // predicted spectra
     std::vector<Spectrum> predicted_spectra;

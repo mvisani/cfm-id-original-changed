@@ -40,20 +40,19 @@ public:
     // not needed and takes more space.
     Fragment() {};
 
-    Fragment(std::string &a_ion_smiles,std::string &a_reduced_smiles, int an_id,
-             double a_mass)
+    Fragment(std::string &a_ion_smiles, std::string &a_reduced_smiles, int an_id, double a_mass, bool is_intermediate)
             : id(an_id), ion_smiles(a_ion_smiles), reduced_smiles(a_reduced_smiles),
-              mass(a_mass), depth(-1) {};
+              mass(a_mass), depth(-1), is_intermediate(is_intermediate) {};
 
-    Fragment(std::string &a_ion_smiles,std::string &a_reduced_smiles, int an_id,
-             double a_mass, Spectrum &a_isotope_spec)
+    Fragment(std::string &a_ion_smiles, std::string &a_reduced_smiles, int an_id, double a_mass,
+                 Spectrum &a_isotope_spec, bool is_intermediate)
             : id(an_id), ion_smiles(a_ion_smiles), reduced_smiles(a_reduced_smiles),
-              mass(a_mass), isotope_spectrum(a_isotope_spec), depth(-1) {};
+              mass(a_mass), isotope_spectrum(a_isotope_spec), depth(-1), is_intermediate(is_intermediate) {};
 
     Fragment(const Fragment &a_fragment, int an_id)
             : id(an_id), ion_smiles(*a_fragment.getIonSmiles()),
               reduced_smiles(*a_fragment.getReducedSmiles()),
-              mass(a_fragment.getMass()), depth(-1) {};
+              mass(a_fragment.getMass()), depth(-1), is_intermediate(false) {};
 
     // Access Functions
     double getMass() const { return mass; };
@@ -63,6 +62,10 @@ public:
     int getId() const { return id; };
 
     void setId(int an_id) { id = an_id; };
+
+    void setIntermediate(bool flag) { is_intermediate = flag; };
+
+    bool isIntermediate() const { return is_intermediate; };
 
     const std::string *getReducedSmiles() const { return &reduced_smiles; };
 
@@ -79,12 +82,12 @@ public:
 
 protected:
     int id;
-   std::string
-            reduced_smiles; // Reduced version of the smiles string (just backbone)
-   std::string ion_smiles; // Full ion smiles (for writing out if called for)
+    std::string reduced_smiles; // Reduced version of the smiles string (just backbone)
+    std::string ion_smiles; // Full ion smiles (for writing out if called for)
     double mass;
     Spectrum isotope_spectrum;
     int depth; // Depth -1 means hasn't been set yet.
+    bool is_intermediate = false;
 };
 
 class EvidenceFragment : public Fragment {
@@ -112,13 +115,11 @@ public:
     Transition() {};
 
     // Basic constructor
-    Transition(int a_from_id, int a_to_id, const RootedROMolPtr &a_nl,
-               const RootedROMolPtr &an_ion);
+    Transition(int a_from_id, int a_to_id, const RootedROMol &a_nl, const RootedROMol &an_ion);
 
     // Alternative constructor that finds the root atoms and sets the
     // root pointers appropriately
-    Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl,
-               const romol_ptr_t &an_ion);
+    Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, const romol_ptr_t &an_ion);
 
     // Direct constructor that bipasses the mols altogether and directly sets the
     // nl_smiles
@@ -140,19 +141,20 @@ public:
     void setToId(const int id) { to_id = id; };
 
     const std::string *getNLSmiles() const { return &nl_smiles; };
+    const std::string *getIonSmiles() const { return  &ion_smiles; };
 
-    const RootedROMolPtr *getNeutralLoss() const { return &nl; };
+    const RootedROMol *getNeutralLoss() const { return &nl; };
 
     void deleteNeutralLoss() {
         nl.mol.reset();
-        nl = RootedROMolPtr();
+        nl = RootedROMol();
     };
 
-    const RootedROMolPtr *getIon() const { return &ion; };
+    const RootedROMol *getIon() const { return &ion; };
 
     void deleteIon() {
         ion.mol.reset();
-        ion = RootedROMolPtr();
+        ion = RootedROMol();
     };
 
     FeatureVector *getFeatureVector() const { return feature_vector; };
@@ -165,12 +167,28 @@ public:
         tmp_thetas = *a_thetas;
     };
 
+    bool isDuplicate() { return is_duplicate; }
+
+    void createdDuplication( const Transition & old){
+        from_id = old.from_id;
+        to_id = old.to_id;
+        nl_smiles = old.nl_smiles;
+        ion_smiles = old.ion_smiles;
+        if(old.feature_vector != nullptr)
+            feature_vector = new FeatureVector(*old.feature_vector);
+        is_duplicate = true;
+        tmp_thetas = old.tmp_thetas;
+    };
+
 private:
     int from_id;
     int to_id;
     std::string nl_smiles;
-    RootedROMolPtr nl;
-    RootedROMolPtr ion; // We store the ion on the transition to
+    std::string ion_smiles;
+
+    RootedROMol nl;
+    RootedROMol ion;
+    // We store the ion on the transition to
     // allow for different roots - the fragment stores
     // only an unrooted shared pointer.
     FeatureVector *feature_vector = nullptr; //storage for the feature vector pointer
@@ -180,7 +198,11 @@ private:
     // Temporary storage for the theta values
     // while we compute the likely fragment graph
     //(as above, don't use directly, will be moved)
+
+    bool is_duplicate = false;
 };
+
+typedef std::shared_ptr<Transition> TransitionPtr;
 
 class FragmentGraph {
 public:
@@ -203,9 +225,6 @@ public:
         for (auto & fragment : fragments) {
             delete fragment;
         }
-        for (auto & transition : transitions) {
-            delete transition;
-        }
     };
 
     // Add a fragment node to the graph (should be the only way to modify the
@@ -220,13 +239,11 @@ public:
 
     // As for previous function, but delete the mols in the transition and compute
     // and store a feature vector instead
-    int addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid, FeatureCalculator *fc,
-                                      int depth);
+    int addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parent_frag_id, FeatureCalculator *fc);
 
     // As for previous function, but don't store the mols in the transition and
     // insert the pre-computed thetas instead
-    int addToGraphWithThetas(const FragmentTreeNode &node,
-                             const std::vector<double> *thetas, int parentid);
+    int addToGraphWithThetas(const FragmentTreeNode &node, const std::vector<double> *thetas, int parent_frag_id);
 
     // Write the Fragments only to file (formerly the backtrack output - without
     // extra details)
@@ -240,12 +257,7 @@ public:
     // vectors for the transitions.
     void writeFeatureVectorGraph(std::ostream &out, bool include_isotopes) const;
 
-    void readFeatureVectorGraph(std::istream &out);
-
-    // Access functions
-    unsigned int getOriginalNumTransitions() const { return transitions.size(); };
-
-    unsigned int getOriginalNumFragments() const { return fragments.size(); };
+    void readFeatureVectorGraph(std::istream &out);;;
 
     void addFeatureVectorAtIdx(int index, FeatureVector * feature_vector) const {
         transitions[index]->setFeatureVector(feature_vector);
@@ -263,8 +275,6 @@ public:
 
     void clearAllSmiles();
 
-    void computeFeatureVectors(FeatureCalculator *fc, int tree_depth, bool delete_mols);
-
     // For current graph in use
     virtual unsigned int getNumTransitions() const {
         return transitions.size();
@@ -274,7 +284,7 @@ public:
         return fragments.size();
     };
 
-    virtual const Transition *getTransitionAtIdx(int index) const {
+    virtual const TransitionPtr getTransitionAtIdx(int index) const {
         return transitions[index];
     };
 
@@ -300,39 +310,38 @@ public:
                                                    std::vector<double> &thetas, double explore_weight);
 
     // Get a list of transitions ids , with random walk
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio);
+    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_selection);
 
     // Get a list of transitions ids , with random walk
-    void getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids, std::set<double> &selected_weights,
-                                                   std::set<double> &all_weights);
+    void
+    getSampledTransitionIdsDiffMapChildOnly(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
 
-    void getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio);
+    void
+    getSampledTransitionIdsDiffMap(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
 
+    void getRandomSampledTransitions(std::set<int> &selected_trans_id, int max_selection);
 
+    int getHeight() { return depth; };
+
+    int setHeight(int d) { return depth = d; };
 
 protected:
     std::vector<Fragment*> fragments;
-    std::vector<Transition*> transitions;
+    std::vector<TransitionPtr> transitions;
+    int depth = 0;
 
     tmap_t from_id_tmap; // Mapping between from_id and transitions with that from_id
     tmap_t to_id_tmap; // Mapping between to_id and transitions with that to_id
 
 
-    void getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<double> &all_weights,
-                                                             std::set<int> &visited, int frag_id, std::vector<int> &path,
-                                                             std::set<int> &selected_ids);
+    void getSampledTransitionIdsWeightDiffChildOnly(std::set<unsigned int> &selected_weights, std::set<int> &visited,
+                                                    int frag_id, std::vector<int> &path, std::set<int> &selected_ids);
 
-    void getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
-                                        int frag_id, std::vector<std::pair<int, int>> &path,
-                                        std::map<int, std::vector<int>> &trans_to_interest_frags_map);
+    void getSampledTransitionIdsWeightDiffs(std::set<unsigned int> &selected_weights, std::set<int> &visited,
+                                            int frag_id, std::vector<std::pair<int, int>> &path,
+                                            std::map<int, std::vector<int>> &trans_to_interest_frags_map);
 
-    bool is_match(std::set<double> &weights, double mass) const;
-
-    // Function to remove give transitions and update id maps
-    void removeTransitions(std::vector<int> &input_ids);
-
-    // Function to remove give fragments and update id maps
-    void removeFragments(std::vector<int> &input_ids);
+    bool is_match(std::set<unsigned int> &weights, double mass) const;
 
     bool include_isotopes;
     IsotopeCalculator *isotope;
@@ -346,7 +355,7 @@ protected:
 
     // Find the id for an existing fragment that matches the input ion and mass
     // or create a new fragment in the case where no such fragment is found
-    int addFragmentOrFetchExistingId(romol_ptr_t ion, double mass);
+    int addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bool is_intermediate);
 
     // Determine if the two fragments match - assumes the masses have already
     // been checked to be roughly the same, now check reduced structure.
@@ -398,7 +407,7 @@ public:
         return fragments.size();
     };
 
-    const Transition *getTransitionAtIdx(int index) const override{
+    const TransitionPtr getTransitionAtIdx(int index) const override{
         return transitions[index];
     };
 

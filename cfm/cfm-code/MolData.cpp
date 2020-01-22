@@ -27,6 +27,7 @@ probabilities using those thetas.
 #include "Comparators.h"
 #include "MolData.h"
 #include "Inference.h"
+#include "Version.h"
 
 #include <GraphMol/Fingerprints/Fingerprints.h>
 #include <GraphMol/RDKitBase.h>
@@ -76,7 +77,8 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
 
-    fgen.compute(*startnode, cfg->fg_depth, 0, -1, cfg->max_ring_breaks);
+    const int root_id  = -1;
+    fgen.compute(*startnode, cfg->fg_depth, root_id, cfg->max_ring_breaks);
 
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
@@ -113,7 +115,7 @@ void MolData::computeLikelyFragmentGraphAndSetThetas(
     fg = fgen.createNewGraph(cfg);
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
-    fgen.compute(*startnode, cfg->fg_depth, 0, -1, 0.0, cfg->max_ring_breaks);
+    fgen.compute(*startnode, cfg->fg_depth, -1, 0.0, cfg->max_ring_breaks);
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
 
@@ -148,12 +150,12 @@ void MolData::computeEvidenceFragmentGraph(beliefs_t *beliefs,
     ev_fg = new EvidenceFragmentGraph(cfg);
 
     // Add the root fragment
-    Transition null_t;
+    Transition null_trans;
     std::vector<int> id_lookup(num_fragments, -1);
     std::vector<double> main_ev;
     computeFragmentEvidenceValues(main_ev, 0, beliefs);
     id_lookup[0] = ev_fg->addToGraphDirectNoCheck(
-            EvidenceFragment(*(fg->getFragmentAtIdx(0)), -1, main_ev), &null_t, -1);
+            EvidenceFragment(*(fg->getFragmentAtIdx(0)), -1, main_ev), &null_trans, -1);
 
     // Add the fragments and transitions if the beliefs are high enough
     std::vector<int> t_added_flags(num_transitions, 0);
@@ -164,14 +166,14 @@ void MolData::computeEvidenceFragmentGraph(beliefs_t *beliefs,
                 continue;
 
             if (beliefs->tn[i][depth] >= log_belief_thresh) {
-                const Transition *t = fg->getTransitionAtIdx(i);
+                const TransitionPtr t = fg->getTransitionAtIdx(i);
                 const Fragment *f = fg->getFragmentAtIdx(t->getToId());
                 int from_id = id_lookup[t->getFromId()];
                 if (id_lookup[t->getToId()] == -1) {
                     std::vector<double> evidence;
                     computeFragmentEvidenceValues(evidence, t->getToId(), beliefs);
                     int to_id = ev_fg->addToGraphDirectNoCheck(
-                            EvidenceFragment(*f, -1, evidence), t, from_id);
+                            EvidenceFragment(*f, -1, evidence), t.get(), from_id);
                     id_lookup[t->getToId()] = to_id;
                 } else if (id_lookup[t->getFromId()] != -1)
                     ev_fg->addTransition(from_id, id_lookup[t->getToId()],
@@ -194,9 +196,9 @@ void MolData::computeFragmentEvidenceValues(std::vector<double> &evidence,
 
         // Find out the depth of the spectrum of interest in the beliefs
         int depth = cfg->dv_spectrum_depths[energy] - 1;
-        if (cfg->use_single_energy_cfm)
-            for (int i = 0; i < energy; i++)
-                depth += cfg->dv_spectrum_depths[i];
+
+        for (int i = 0; i < energy; i++)
+            depth += cfg->dv_spectrum_depths[i];
 
         // Compute the accumulated belief for the fragment of interest at the depth
         // of interest
@@ -276,14 +278,14 @@ void MolData::annotatePeaks(double abs_tol, double ppm_tol,
     id_lookup[0] = new_ev_fg->addToGraphDirectNoCheck(*ev_fg->getFragmentAtIdx(0),
                                                       &null_t, -1);
     for (unsigned int i = 0; i < ev_fg->getNumTransitions(); i++) {
-        const Transition *t = ev_fg->getTransitionAtIdx(i);
+        const TransitionPtr t = ev_fg->getTransitionAtIdx(i);
         int fromid = t->getFromId();
         int toid = t->getToId();
         if (delete_flags[toid] || delete_flags[fromid])
             continue;
         if (id_lookup[toid] == -1)
             id_lookup[toid] = new_ev_fg->addToGraphDirectNoCheck(
-                    *ev_fg->getFragmentAtIdx(toid), t, id_lookup[fromid]);
+                    *ev_fg->getFragmentAtIdx(toid), t.get(), id_lookup[fromid]);
         else
             new_ev_fg->addTransition(id_lookup[fromid], id_lookup[toid],
                                      t->getNLSmiles());
@@ -327,24 +329,28 @@ void MolData::computeLogTransitionProbabilities() {
         std::vector<double> denom_cache(fg->getNumFragments());
         const tmap_t *from_id_map = fg->getFromIdTMap();
         for (unsigned int i = 0; i < fg->getNumFragments(); i++) {
-
-            double denom = 0.0;
-            std::vector<int>::const_iterator it = (*from_id_map)[i].begin();
-            for (; it != (*from_id_map)[i].end(); ++it)
-                denom = logAdd(denom, thetas[energy][*it]);
-            denom_cache[i] = denom;
+            double denom = 1.0;
+            for (auto trans_idx = (*from_id_map)[i].begin(); trans_idx != (*from_id_map)[i].end(); ++trans_idx){
+                denom += exp(thetas[energy][*trans_idx]);
+            }
+            denom_cache[i] = log(denom);
         }
 
         // Set the transition log probabilities
         for (unsigned int i = 0; i < fg->getNumTransitions(); i++) {
-            const Transition *t = fg->getTransitionAtIdx(i);
+            const TransitionPtr t = fg->getTransitionAtIdx(i);
+            // log(A/B) = log A - log B
             log_probs[energy][i] = thetas[energy][i] - denom_cache[t->getFromId()];
         }
 
         // Set the persistence log probabilities
         int offset = fg->getNumTransitions();
-        for (unsigned int i = 0; i < fg->getNumFragments(); i++)
-            log_probs[energy][offset + i] = -denom_cache[i];
+        for (unsigned int i = 0; i < fg->getNumFragments(); i++){
+            if(fg->getFragmentAtIdx(i)->isIntermediate())
+                log_probs[energy][offset + i] = -100000000;
+            else
+                log_probs[energy][offset + i] = -denom_cache[i];
+        }
     }
 }
 
@@ -369,6 +375,9 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
     while (ifs.good()) {
         getline(ifs, line);
         if (line.size() < 3)
+            continue;
+        // in case we are seen version string
+        if (line.substr(0, VERSION_STRING.size()) == VERSION_STRING)
             continue;
         // Check for the energy specifier - start a new spectrum if found
         // or start one anyway if there is no energy specifier
@@ -436,7 +445,6 @@ void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
 
 void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
 
-
     std::vector<double> all_masses;
     getEnumerationSpectraMasses(all_masses);
 
@@ -460,48 +468,8 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
 
 void MolData::computePredictedSpectra(Param &param, bool postprocess, bool use_existing_thetas, int energy_level) {
 
-    // Divert to other function if doing single energy CFM
-    if (cfg->use_single_energy_cfm) {
-        computePredictedSingleEnergySpectra(param, postprocess,
+    computePredictedSingleEnergySpectra(param, postprocess,
                                             use_existing_thetas, energy_level);
-        return;
-    }
-
-    // Compute the transition probabilities using this parameter set
-    if (!use_existing_thetas)
-        computeTransitionThetas(param);
-    computeLogTransitionProbabilities();
-
-    // Run forward inference
-    std::vector<Message> msgs;
-    Inference infer(this, cfg);
-    infer.runInferenceDownwardPass(msgs, cfg->model_depth);
-
-    // Generate and collect the peak results
-    predicted_spectra.resize(cfg->spectrum_depths.size());
-    for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
-         energy++) {
-        predicted_spectra[energy].clear();
-
-        // Extract the peaks from the relevant message
-        int msg_depth = cfg->spectrum_depths[energy] - 1;
-        Message *msg = &(msgs[msg_depth]);
-        if (cfg->include_isotopes)
-            translatePeaksFromMsgToSpectraWithIsotopes(predicted_spectra[energy],
-                                                       msg);
-        else
-            translatePeaksFromMsgToSpectra(predicted_spectra[energy], msg);
-    }
-
-    if (postprocess)
-        postprocessPredictedSpectra();
-    else {
-        for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
-             energy++) {
-            predicted_spectra[energy].normalizeAndSort();
-            predicted_spectra[energy].quantisePeaksByMass(10);
-        }
-    }
 }
 
 void MolData::computePredictedSingleEnergySpectra(Param &param,
@@ -527,10 +495,15 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
     if (postprocess)
         postprocessPredictedSpectra();
     else {
-        for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
-             energy++) {
-            predicted_spectra[energy].normalizeAndSort();
-            predicted_spectra[energy].quantisePeaksByMass(10);
+        if(energy_level != -1){
+            predicted_spectra[energy_level].normalizeAndSort();
+            predicted_spectra[energy_level].quantisePeaksByMass(10);
+        }else {
+            for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
+                 energy++) {
+                predicted_spectra[energy].normalizeAndSort();
+                predicted_spectra[energy].quantisePeaksByMass(10);
+            }
         }
     }
 }
@@ -541,17 +514,18 @@ void MolData::createSpeactraSingleEnergry(unsigned int energy_level) {
     config_t se_cfg;
     initSingleEnergyConfig(se_cfg, *cfg, energy_level);
 
+    int depth = getFGHeight() > se_cfg.spectrum_depths[0]  ? getFGHeight() : se_cfg.spectrum_depths[0];
+
     // Run forward inference
     std::vector<Message> msgs;
     Inference infer(this, &se_cfg);
-    infer.runInferenceDownwardPass(msgs, se_cfg.model_depth);
+    infer.runInferenceDownwardPass(msgs, depth, energy_level);
 
     // Extract the peaks from the relevant message
-    int msg_depth = se_cfg.spectrum_depths[0] - 1;
+    int msg_depth = depth - 1;//se_cfg.spectrum_depths[0] - 1;
     Message *msg = &(msgs[msg_depth]);
     if (cfg->include_isotopes)
-            translatePeaksFromMsgToSpectraWithIsotopes(predicted_spectra[energy_level],
-                                                       msg);
+            translatePeaksFromMsgToSpectraWithIsotopes(predicted_spectra[energy_level], msg);
         else
             translatePeaksFromMsgToSpectra(predicted_spectra[energy_level], msg);
 }
@@ -687,17 +661,21 @@ void MolData::getEnumerationSpectraMasses(std::vector<double> &output_masses) {
     std::vector<double> all_masses;
     if (fg->hasIsotopesIncluded()) {
         for (unsigned int i = 0; i < numf; i++) {
-            const Fragment *f = fg->getFragmentAtIdx(i);
-            const Spectrum *isotope_spec = f->getIsotopeSpectrum();
-            Spectrum::const_iterator itp = isotope_spec->begin();
-            for (; itp != isotope_spec->end(); ++itp)
-                all_masses.push_back(itp->mass);
+            //if(!fg->getFragmentAtIdx(i)->isIntermediate()) {
+                const Fragment *f = fg->getFragmentAtIdx(i);
+                const Spectrum *isotope_spec = f->getIsotopeSpectrum();
+                Spectrum::const_iterator itp = isotope_spec->begin();
+                for (; itp != isotope_spec->end(); ++itp)
+                    all_masses.push_back(itp->mass);
+            //}
         }
     } else {
         all_masses.resize(numf);
         for (unsigned int i = 0; i < numf; i++) {
-            const Fragment *f = fg->getFragmentAtIdx(i);
-            all_masses[i] = f->getMass();
+            //if(!fg->getFragmentAtIdx(i)->isIntermediate()){
+                const Fragment *f = fg->getFragmentAtIdx(i);
+                all_masses[i] = f->getMass();
+           // }
         }
     }
     std::sort(all_masses.begin(), all_masses.end());
@@ -717,7 +695,7 @@ void MolData::getEnumerationSpectraMasses(std::vector<double> &output_masses) {
 }
 
 void MolData::outputSpectra(std::ostream &out, const char *spec_type,
-                            bool do_annotate) {
+                            bool do_annotate, bool add_version) {
 
     std::vector<Spectrum> *spectra_to_output;
     if (std::string(spec_type) == "Predicted")
@@ -726,6 +704,10 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
         spectra_to_output = &spectra;
     else
         std::cout << "Unknown spectrum type to output: " << spec_type << std::endl;
+
+    if ((std::string(spec_type) == "Predicted") && add_version){
+            out << VERSION_STRING << PROJECT_VER << std::endl;
+    }
 
     std::vector<Spectrum>::iterator it = spectra_to_output->begin();
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
@@ -762,26 +744,29 @@ void MolData::quantiseMeasuredSpectra(int num_dec_places) {
 
 void MolData::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
                                                         double explore_weight) {
-
     if(!hasEmptySpectrum(0) && hasComputedGraph())
         fg->getSampledTransitionIdsWeightedRandomWalk(selected_ids, max_num_iter, thetas[energy], explore_weight);
 }
 
-void MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio) {
+void MolData::getRandomSampledTransitions(std::set<int> &selected_ids, int max_selection){
+    if (!hasEmptySpectrum(0) && hasComputedGraph())
+        fg->getRandomSampledTransitions(selected_ids, max_selection);
+}
 
+void MolData::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_selection) {
     if(!hasEmptySpectrum(0) && hasComputedGraph())
-        fg->getSampledTransitionIdsRandomWalk(selected_ids, ratio);
+        fg->getSampledTransitionIdsRandomWalk(selected_ids, max_selection);
 }
 
-void MolData::getSampledTransitionIdUsingDiffMap(std::set<int> &selected_ids, std::set<double> &selected_weights,
-                                                 std::set<double> &all_weights) {
+void
+MolData::getSampledTransitionIdUsingDiffMapBFS(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights) {
     if (!hasEmptySpectrum(0) && hasComputedGraph())
-        fg->getSampledTransitionIdsDifferenceWeighted(selected_ids, selected_weights, all_weights);
+        fg->getSampledTransitionIdsDiffMapChildOnly(selected_ids, selected_weights);
 }
 
-void MolData::getRandomSampledTransitions(std::set<int> &selected_ids, double ratio){
+void MolData::getSampledTransitionIdUsingDiffMapCA(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights){
     if (!hasEmptySpectrum(0) && hasComputedGraph())
-        fg->getRandomSampledTransitions(selected_ids, ratio);
+        fg->getSampledTransitionIdsDiffMap(selected_ids, selected_weights);
 }
 
 double MolData::getWeightedJaccardScore(int engery_level){
@@ -792,42 +777,28 @@ double MolData::getWeightedJaccardScore(int engery_level){
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::getSelectedWeights(std::set<double> &selected_weights, std::set<double> &all_weights, int engery_level,
-                                 bool peaknum_only) {
+void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int energry_level) {
 
     Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
-    cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[engery_level], &predicted_spectra[engery_level]);
+    cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[energry_level], &predicted_spectra[energry_level]);
 
-    double intensity_sum = 0.0;
     std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
-        double intensity_difference = std::fabs(std::log(peak_pair.first.intensity) - std::log(peak_pair.second.intensity));
-        if(intensity_difference > 0.1){
-            difference.insert(std::pair<double,double>(intensity_difference, peak_pair.second.mass));
-            all_weights.insert(peak_pair.second.mass);
-            intensity_sum += intensity_difference;
+        double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
+
+        if(intensity_difference > cfg->ga_diff_sampling_difference){
+            double peak_mass = peak_pair.second.mass;
+            difference.insert(std::pair<double,double>(intensity_difference, peak_mass));
         }
     }
     delete(cmp);
 
-    double select_intensity_sum = 0.0;
-    if(peaknum_only){
-        for(const auto & diff:  difference){
-            if(selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
-                break;
-            selected_weights.insert(diff.second);
-            select_intensity_sum += diff.first;
-        }
-    }
-    else {
-        for(const auto & diff:  difference){
-            if((selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
-                && (select_intensity_sum > intensity_sum * cfg->ga_select_intensity_sum_ratio))
-                break;
-            selected_weights.insert(diff.second);
-            select_intensity_sum += diff.first;
-        }
+    for(const auto & diff:  difference){
+        if(selected_weights.size() >= cfg->ga_diff_sampling_peak_num)
+            break;
+        // we only need 5 digitals after decimal
+        selected_weights.insert((unsigned int)std::round(diff.second * WEIGHT_SELECTION_SCALER));
     }
 }
 
@@ -837,5 +808,4 @@ MolData::~MolData() {
         delete fg;
     if (ev_graph_computed)
         delete ev_fg;
-
 }

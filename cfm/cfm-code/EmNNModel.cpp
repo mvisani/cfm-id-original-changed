@@ -55,11 +55,9 @@ void EmNNModel::writeParamsToFile(std::string &filename) {
 }
 
 //Gradient Computation using Backpropagation
-void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
-                                             bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                             int sampling_method) {
+int EmNNModel::computeAndAccumulateGradient(float *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
+                                            int sampling_method, unsigned int energy) {
 
-    //const FragmentGraph *fg = moldata.getFragmentGraph();
     unsigned int num_transitions = mol_data.getNumTransitions();
     unsigned int num_fragments = mol_data.getNumFragments();
 
@@ -67,193 +65,178 @@ void EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx, MolData
     unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();
     int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
 
+    int num_used_transitions = 0;
     if (!mol_data.hasComputedGraph())
-        return;
+        return num_used_transitions;
 
     suft_t *suft_values = &(suft.values[mol_idx]);
 
-    //Collect energies to compute
-    std::vector<unsigned int> energies;
-    unsigned int energy;
-    int prev_energy = -1;
-    for (unsigned int d = 0; d < cfg->model_depth; d++) {
-        energy = cfg->map_d_to_energy[d];
-        if (energy != prev_energy) energies.push_back(energy);
-        prev_energy = energy;
+    unsigned int grad_offset = energy * nn_param->getNumWeightsPerEnergyLevel();
+    unsigned int suft_offset = energy * (num_transitions + num_fragments);
+
+    std::set<int> selected_trans_id;
+    if (sampling_method != USE_NO_SAMPLING){
+        getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
+        num_used_transitions = selected_trans_id.size();
     }
 
-    //Compute the gradients
-    std::vector<unsigned int>::iterator eit = energies.begin();
-    for (; eit != energies.end(); ++eit) {
-        energy = *eit;
+    //Iterate over from_id (i)
+    const tmap_t *from_map = mol_data.getFromIdTMap();
+    for (int from_idx = 0; from_idx < num_fragments; from_idx++) {
 
-        unsigned int grad_offset = energy * nn_param->getNumWeightsPerEnergyLevel();
-        unsigned int suft_offset = energy * (num_transitions + num_fragments);
+        const std::vector<int> *from_id_map = &(*from_map)[from_idx];
+        std::vector<int> sampled_trans_id;
 
-        std::set<int> selected_trans_id;
-        if (!record_used_idxs_only && sampling_method != USE_NO_SAMPLING)
-            getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
-
-        //Iterate over from_id (i)
-        const tmap_t *from_map = mol_data.getFromIdTMap();
-        for (int from_idx = 0; from_idx < num_fragments; from_idx++) {
-
-            const std::vector<int> *from_id_map = &(*from_map)[from_idx];
-            std::vector<int> sampled_trans_id;
-
-            if (sampling_method != USE_NO_SAMPLING && !record_used_idxs_only) {
-                for (const auto &trans_id : (*from_map)[from_idx])
-                    if (selected_trans_id.find(trans_id) != selected_trans_id.end())
-                        sampled_trans_id.push_back(trans_id);
-                from_id_map = &sampled_trans_id;
-            }
-
-            if (from_id_map->empty())
-                continue;
-
-            unsigned int num_trans_from_id = from_id_map->size();
-            std::vector<azd_vals_t> a_values(num_trans_from_id);
-            std::vector<azd_vals_t> z_values(num_trans_from_id);
-
-            //Compute the forward values, storing intermediate a and z values, and the combined denom of the rho term, and Q
-            double denom = 1.0;
-            std::vector<int>::const_iterator it = from_id_map->begin();
-            std::vector<const FeatureVector *> fvs(num_trans_from_id);
-            std::vector<double> nu_terms(num_trans_from_id + 1);
-            for (int idx = 0; it != from_id_map->end(); ++it, idx++) {
-                fvs[idx] = mol_data.getFeatureVectorForIdx(*it);
-                // use nn_param->compute theta in forward pass mode
-                // which uses Inverted Dropout
-                // do not use drop outs during used idxs collection
-                // Otherwise this will cause segfault
-                // You have been warned
-                double theta = nn_param->computeTheta(*fvs[idx], energy,
-                                                      z_values[idx], a_values[idx], false, true);
-                denom += exp(theta);
-                nu_terms[idx] = (*suft_values)[*it + suft_offset];
-            }
-            nu_terms[num_trans_from_id] = (*suft_values)[offset + from_idx + suft_offset];
-
-            //Compute the deltas
-            std::vector<azd_vals_t> deltasA, deltasB;
-            nn_param->computeDeltas(deltasA, deltasB, z_values, a_values, denom, energy);
-
-            //Compute the unweighted gradients
-            std::vector<std::vector<double> > unweighted_grads;
-            std::set<unsigned int> from_id_used_idxs;
-            nn_param->computeUnweightedGradients(unweighted_grads, from_id_used_idxs, fvs, deltasA, deltasB, a_values);
-
-            //Accumulate the weighted gradients
-            std::set<unsigned int>::iterator sit;
-            it = from_id_map->begin();
-            for (int idx = 0; idx <= num_trans_from_id; idx++) {
-                //First layer
-                double nu = nu_terms[idx];
-                for (sit = from_id_used_idxs.begin(); sit != from_id_used_idxs.end(); ++sit)
-                    *(grads + grad_offset + *sit) += nu * unweighted_grads[idx][*sit];
-                //Remaining layers
-                for (int i = layer2_offset; i < weights_per_energy; i++)
-                    *(grads + grad_offset + i) += nu * unweighted_grads[idx][i];
-            }
-
-            if (record_used_idxs_only) {
-                //Combine the used indexes for the first layer
-                for (sit = from_id_used_idxs.begin(); sit != from_id_used_idxs.end(); ++sit)
-                    used_idxs.insert(grad_offset + *sit);
-            }
+        if (sampling_method != USE_NO_SAMPLING) {
+            for (const auto &trans_id : (*from_map)[from_idx])
+                if (selected_trans_id.find(trans_id) != selected_trans_id.end())
+                    sampled_trans_id.push_back(trans_id);
+            from_id_map = &sampled_trans_id;
         }
 
-        if (record_used_idxs_only) {
-            //Add used indexes for the subsequent layers (all of them)
+        if (from_id_map->empty())
+            continue;
+
+        unsigned int num_trans_from_id = from_id_map->size();
+        std::vector<azd_vals_t> a_values(num_trans_from_id);
+        std::vector<azd_vals_t> z_values(num_trans_from_id);
+
+        //Compute the forward values, storing intermediate a and z values, and the combined denom of the rho term, and Q
+        double denom = 1.0;
+        std::vector<int>::const_iterator it = from_id_map->begin();
+        std::vector<const FeatureVector *> fvs(num_trans_from_id);
+        std::vector<double> nu_terms(num_trans_from_id + 1);
+        for (int idx = 0; it != from_id_map->end(); ++it, idx++) {
+            fvs[idx] = mol_data.getFeatureVectorForIdx(*it);
+            // use nn_param->compute theta in forward pass mode
+            // which uses Inverted Dropout
+            // do not use drop outs during used idxs collection
+            // Otherwise this will cause segfault
+            // You have been warned
+            double theta = nn_param->computeTheta(*fvs[idx], energy,
+                                                  z_values[idx], a_values[idx], false, true);
+            denom += exp(theta);
+            nu_terms[idx] = (*suft_values)[*it + suft_offset];
+        }
+        nu_terms[num_trans_from_id] = (*suft_values)[offset + from_idx + suft_offset];
+
+        //Compute the deltas
+        std::vector<azd_vals_t> deltasA, deltasB;
+        nn_param->computeDeltas(deltasA, deltasB, z_values, a_values, denom, energy);
+
+        //Compute the unweighted gradients
+        std::vector<std::vector<float> > unweighted_grads;
+        std::set<unsigned int> from_id_used_idxs;
+        nn_param->computeUnweightedGradients(unweighted_grads, from_id_used_idxs, fvs, deltasA, deltasB, a_values);
+
+        //Accumulate the weighted gradients
+        std::set<unsigned int>::iterator sit;
+        it = from_id_map->begin();
+        for (int idx = 0; idx <= num_trans_from_id; idx++) {
+            //First layer
+            double nu = nu_terms[idx];
+            for (sit = from_id_used_idxs.begin(); sit != from_id_used_idxs.end(); ++sit)
+                *(grads + grad_offset + *sit) += nu * unweighted_grads[idx][*sit];
+            //Remaining layers
             for (int i = layer2_offset; i < weights_per_energy; i++)
-                used_idxs.insert(grad_offset + i);
+                *(grads + grad_offset + i) += nu * unweighted_grads[idx][i];
         }
+
     }
+    return num_used_transitions;
 }
 
-double EmNNModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft) {
+void EmNNModel::collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_idxs, unsigned int energy){
+
+
+    if (!mol_data.hasComputedGraph())
+        return;
+
+    unsigned int num_fragments = mol_data.getNumFragments();
+    unsigned int grad_offset = energy * nn_param->getNumWeightsPerEnergyLevel();
+
+
+    // Iterate over from_id (i)
+    for (auto frag_trans_map = mol_data.getFromIdTMap()->begin(); frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map) {
+        for (auto trans_id : *frag_trans_map) {
+            const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
+            unsigned int feature_len = fv->getTotalLength();
+            for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
+                nn_param->collectUsedIdx(used_idxs, feature_len,  grad_offset, *fv_it, energy);
+        }
+    }
+
+
+    int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
+    unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();
+
+    //Add used indexes for the subsequent layers (all of them)
+    for (int i = layer2_offset; i < weights_per_energy; i++)
+        used_idxs.insert(grad_offset + i);
+}
+
+double EmNNModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft, unsigned int energy) {
 
     double Q = 0.0;
     unsigned int num_transitions = moldata.getNumTransitions();
     unsigned int num_fragments = moldata.getNumFragments();
 
     int offset = num_transitions;
-    unsigned int layer2_offset = nn_param->getSecondLayerWeightOffset();
-    int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
 
-    if (!moldata.hasComputedGraph()) return Q;
+    if (!moldata.hasComputedGraph())
+        return Q;
 
     suft_t *suft_values = &(suft.values[molidx]);
 
-    //Collect energies to compute
-    std::vector<unsigned int> energies;
-    unsigned int energy;
-    int prev_energy = -1;
-    for (unsigned int d = 0; d < cfg->model_depth; d++) {
-        energy = cfg->map_d_to_energy[d];
-        if (energy != prev_energy) energies.push_back(energy);
-        prev_energy = energy;
-    }
+    unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
-    //Compute Q
-    std::vector<unsigned int>::iterator eit = energies.begin();
-    for (; eit != energies.end(); ++eit) {
-        energy = *eit;
+    //Iterate over from_id (i)
+    const tmap_t *from_map = moldata.getFromIdTMap();
+    for (int from_idx = 0; from_idx < num_fragments; from_idx++) {
 
-        unsigned int suft_offset = energy * (num_transitions + num_fragments);
+        const std::vector<int> *from_id_map = &(*from_map)[from_idx];
+        unsigned int num_trans_from_id = from_id_map->size();
 
-        //Iterate over from_id (i)
-        const tmap_t *from_map = moldata.getFromIdTMap();
-        for (int from_idx = 0; from_idx < num_fragments; from_idx++) {
-
-            const std::vector<int> *from_id_map = &(*from_map)[from_idx];
-            unsigned int num_trans_from_id = from_id_map->size();
-
-            //Compute the forward values, and the combined denom of the rho term, and Q
-            double denom = 1.0, nu_sum = 0.0;
-            std::vector<int>::const_iterator it = from_id_map->begin();
-            std::vector<const FeatureVector *> fvs(num_trans_from_id);
-            std::vector<double> nu_terms(num_trans_from_id + 1);
-            for (int idx = 0; it != from_id_map->end(); ++it, idx++) {
-                fvs[idx] = moldata.getFeatureVectorForIdx(*it);
-                double theta = nn_param->computeTheta(*fvs[idx], energy);
-                denom += exp(theta);
-                nu_terms[idx] = (*suft_values)[*it + suft_offset];
-                nu_sum += nu_terms[idx];
-                Q += nu_terms[idx] * theta;
-            }
-            nu_terms[num_trans_from_id] = (*suft_values)[offset + from_idx + suft_offset];
-            nu_sum += nu_terms[num_trans_from_id];
-            Q -= log(denom) * nu_sum;
+        //Compute the forward values, and the combined denom of the rho term, and Q
+        double denom = 1.0, nu_sum = 0.0;
+        std::vector<int>::const_iterator it = from_id_map->begin();
+        std::vector<const FeatureVector *> fvs(num_trans_from_id);
+        std::vector<double> nu_terms(num_trans_from_id + 1);
+        for (int idx = 0; it != from_id_map->end(); ++it, idx++) {
+            fvs[idx] = moldata.getFeatureVectorForIdx(*it);
+            double theta = nn_param->computeTheta(*fvs[idx], energy);
+            denom += exp(theta);
+            nu_terms[idx] = (*suft_values)[*it + suft_offset];
+            nu_sum += nu_terms[idx];
+            Q += nu_terms[idx] * theta;
         }
+        nu_terms[num_trans_from_id] = (*suft_values)[offset + from_idx + suft_offset];
+        nu_sum += nu_terms[num_trans_from_id];
+        Q -= log(denom) * nu_sum;
     }
     return Q;
 }
 
-void EmNNModel::updateGradientForRegularizationTerm(double *grads) {
-
+void EmNNModel::updateGradientForRegularizationTerm(float *grads, unsigned int energy) {
+    
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
         double weight = nn_param->getWeightAtIdx(*it);
-        if (grads != nullptr)
-            *(grads + *it) -= cfg->lambda * weight;
+        *(grads + *it) -= cfg->lambda * weight;
     }
 
     //Remove part of the Bias terms (regularize the bias terms 100 times less than the other weights!)
     unsigned int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
     std::vector<unsigned int> bias_indexes;
     nn_param->getBiasIndexes(bias_indexes);
-    for (unsigned int energy = 0; energy < nn_param->getNumEnergyLevels(); energy++) {
-        auto it = bias_indexes.begin();
-        int offset = energy * weights_per_energy;
-        for (; it != bias_indexes.end(); ++it) {
-            double bias = nn_param->getWeightAtIdx(offset + *it);
-            *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
-        }
+    int offset = energy * weights_per_energy;
+    for (auto it = bias_indexes.begin(); it != bias_indexes.end(); ++it) {
+        double bias = nn_param->getWeightAtIdx(offset + *it);
+        *(grads + offset + *it) += 0.99 * cfg->lambda * bias;
     }
 }
 
-double EmNNModel::getRegularizationTerm() {
+double EmNNModel::getRegularizationTerm(unsigned int energy) {
 
     double req_term = 0.0;
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
@@ -266,13 +249,10 @@ double EmNNModel::getRegularizationTerm() {
     unsigned int weights_per_energy = nn_param->getNumWeightsPerEnergyLevel();
     std::vector<unsigned int> bias_indexes;
     nn_param->getBiasIndexes(bias_indexes);
-    for (unsigned int energy = 0; energy < nn_param->getNumEnergyLevels(); energy++) {
-        auto it = bias_indexes.begin();
-        int offset = energy * weights_per_energy;
-        for (; it != bias_indexes.end(); ++it) {
-            double bias = nn_param->getWeightAtIdx(offset + *it);
-            req_term += 0.99 * 0.5 * cfg->lambda * bias * bias;
-        }
+    int offset = energy * weights_per_energy;
+    for (auto it = bias_indexes.begin();it != bias_indexes.end(); ++it) {
+        double bias = nn_param->getWeightAtIdx(offset + *it);
+        req_term += 0.99 * 0.5 * cfg->lambda * bias * bias;
     }
     return req_term;
 }

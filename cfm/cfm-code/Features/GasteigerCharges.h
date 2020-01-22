@@ -22,12 +22,12 @@ param.cpp.
 class GasteigerCharges : public RootPathFeature {
 public:
     GasteigerCharges() {
-        size = 72;
+        size = 36;
         name = "GasteigerCharges";
     };
 
     void
-    compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const override;
+    compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 
 private:
     int discretizeGasteigerCharge(double gc) const;

@@ -28,3 +28,5 @@ cfm/\.vs/
 cfm/CMakeSettings\.json
 
 \.vs/
+
+cfm/cmake-build-debug-remote/

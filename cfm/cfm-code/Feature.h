@@ -51,7 +51,7 @@ protected:
 
 class BreakFeature: public Feature{
 public:
-    virtual void compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const = 0;
+    virtual void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const = 0;
 
 protected:
 

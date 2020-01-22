@@ -31,11 +31,33 @@ void Comms::printWithWorkerId(const char *msg) {
     std::cout << mpi_rank << ": " << msg << std::endl;
 }
 
+void Comms::collectGradsInMasterOrigMpi(std::vector<float> &grads){
+    std::vector<float> global_grads(grads.size(),0.0f);
+    MPI_Reduce(&grads[0], &global_grads[0], grads.size(), MPI::FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
+    grads = global_grads;
+    for(auto & grad : grads)
+        grad /= float(mpi_nump);
+}
+
 int Comms::collectSumInMaster(int partial) {
     int tmp = partial;
     int total;
     MPI_Reduce(&tmp, &total, 1, MPI_INT, MPI_SUM, MASTER, MPI_COMM_WORLD);
     return total;
+}
+
+float Comms::getTimeUsages(float time_used, MPI_Op op){
+    float rev = 0.0;
+    MPI_Reduce(&time_used, &rev, 1, MPI_FLOAT, op, MASTER, MPI_COMM_WORLD);
+    return rev;
+}
+
+void Comms::gatherTimeUsages(float time_used, std::vector<float> &time_used_vector) {
+    time_used_vector.resize(mpi_nump);
+    std::vector<float> local_time_used(mpi_nump, 0.0f);
+    local_time_used[mpi_rank] = time_used;
+    MPI_Gather(&time_used_vector[0], time_used_vector.size(),
+            MPI_FLOAT, &time_used_vector[0], 1, MPI_FLOAT, MASTER, MPI_COMM_WORLD);
 }
 
 void WorkerComms::setMasterUsedIdxs() {
@@ -110,17 +132,17 @@ void MasterComms::setMasterUsedIdxs() {
     }
 }
 
-double Comms::collectQInMaster(double Q) {
+float Comms::collectQInMaster(float Q) {
 
-    double Qsum;
+    float Qsum;
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
-    MPI_Reduce(&Q, &Qsum, 1, MPI::DOUBLE, MPI_SUM, MASTER, MPI_COMM_WORLD);
+    MPI_Reduce(&Q, &Qsum, 1, MPI::FLOAT, MPI_SUM, MASTER, MPI_COMM_WORLD);
     return Qsum;    //Note: Only the master has the real Qsum.
 }
 
 void Comms::broadcastParamsWeightsOrigMpi(Param *param) {
-    std::vector<double> *weights = param->getWeightsPtr();
-    MPI_Bcast(&((*weights)[0]), weights->size(), MPI::DOUBLE, MASTER, MPI_COMM_WORLD);
+    std::vector<float> *weights = param->getWeightsPtr();
+    MPI_Bcast(&((*weights)[0]), weights->size(), MPI::FLOAT, MASTER, MPI_COMM_WORLD);
 }
 
 
@@ -131,36 +153,39 @@ void Comms::broadcastDropouts(Param *param) {
         MPI_Bcast(&((*dropouts)[0]), dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
 }
 
-void WorkerComms::collectGradsInMaster(double *grads) {
+void WorkerComms::collectGradsInMaster(std::vector<float> &grads) {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
     if (num_used == 0) return;
 
-    std::vector<double> used_grads(num_used);
+    std::vector<float> used_grads(num_used);
     std::set<unsigned int>::iterator it = used_idxs.begin();
     for (int i = 0; it != used_idxs.end(); ++it, i++)
-        used_grads[i] = *(grads + *it);
-    MPI_Send(&(used_grads[0]), num_used, MPI::DOUBLE, MASTER, 0, MPI_COMM_WORLD);
+        used_grads[i] = grads[*it];
+    MPI_Send(&(used_grads[0]), num_used, MPI::FLOAT, MASTER, 0, MPI_COMM_WORLD);
 }
 
-void MasterComms::collectGradsInMaster(double *grads) {
+void MasterComms::collectGradsInMaster(std::vector<float> &grads) {
 
     MPI_Status status;
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
 
     //Receive and accumulate Gradients
-    std::vector<double> used_grads;
+    std::vector<float> used_grads;
     for (int i = 1; i < mpi_nump; i++) {
 
         if (worker_num_used[i] > 0) {
             used_grads.resize(worker_num_used[i]);
-            MPI_Recv(&(used_grads[0]), worker_num_used[i], MPI::DOUBLE, i, 0, MPI_COMM_WORLD, &status);
+            MPI_Recv(&(used_grads[0]), worker_num_used[i], MPI::FLOAT, i, 0, MPI_COMM_WORLD, &status);
 
             std::set<unsigned int>::iterator it = worker_used_idxs[i].begin();
             for (int j = 0; it != worker_used_idxs[i].end(); ++it, j++)
-                *(grads + *it) += used_grads[j];
+                grads[*it] += used_grads[j];
         }
     }
+    // Normarlized By  number of processes
+    for(auto & grad :grads)
+        grad /= float(mpi_nump);
 }
 
 
@@ -170,8 +195,8 @@ void WorkerComms::broadcastParamsWeights(Param *param) {
     MPI_Status status;
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
     if (num_used == 0) return;
-    std::vector<double> used_params(num_used);
-    MPI_Recv(&(used_params[0]), num_used, MPI::DOUBLE, MASTER, 0, MPI_COMM_WORLD, &status);
+    std::vector<float> used_params(num_used);
+    MPI_Recv(&(used_params[0]), num_used, MPI::FLOAT, MASTER, 0, MPI_COMM_WORLD, &status);
 
     //Update the params
     std::set<unsigned int>::iterator it = used_idxs.begin();
@@ -187,7 +212,7 @@ void MasterComms::broadcastParamsWeights(Param *param) {
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
 
     //Send each processor the changes of interest to them
-    std::vector<double> used_params;
+    std::vector<float> used_params;
     for (int i = 0; i < mpi_nump; i++) {
 
         if (worker_num_used[i] == 0) continue;
@@ -197,12 +222,8 @@ void MasterComms::broadcastParamsWeights(Param *param) {
         for (int j = 0; it != worker_used_idxs[i].end(); ++it, j++)
             used_params[j] = param->getWeightAtIdx(*it);
 
-        MPI_Send(&(used_params[0]), worker_num_used[i], MPI::DOUBLE, i, 0, MPI_COMM_WORLD);
+        MPI_Send(&(used_params[0]), worker_num_used[i], MPI::FLOAT, i, 0, MPI_COMM_WORLD);
     }
-
-    //auto dropouts = param->getDropoutsPtr();
-    //if(nullptr != dropouts)
-    //    MPI_Bcast(&((*dropouts)[0]), dropouts->size(), MPI::BOOL, MASTER, MPI_COMM_WORLD);
 }
 
 int Comms::broadcastConverged(int converged) {
@@ -221,13 +242,7 @@ int Comms::broadcastNumUsed(int num_used) {
 
 }
 
-bool Comms::broadcastBooleanFlag(bool flag) {
-    MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
-    MPI_Bcast(&flag, 1, MPI_CXX_BOOL, MASTER, MPI_COMM_WORLD);
-    return flag;
-}
-
-double Comms::broadcastQ(double Q) {
+float Comms::broadcastQ(float Q) {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
     MPI_Bcast(&Q, 1, MPI::DOUBLE, MASTER, MPI_COMM_WORLD);

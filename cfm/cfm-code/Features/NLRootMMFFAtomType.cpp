@@ -17,8 +17,7 @@ param.cpp.
 #########################################################################*/
 #include "NLRootMMFFAtomType.h"
 
-void NLRootMMFFAtomType::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,
-                                 int depth) const {
+void NLRootMMFFAtomType::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
     int offset = fv.getTotalLength() - 1;
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
@@ -27,10 +26,7 @@ void NLRootMMFFAtomType::compute(FeatureVector &fv, const RootedROMolPtr *ion, c
     int atomtype, otheratomtype = 0;
     nl->root->getProp<int>("MMFFAtomType", atomtype);
     fv.addFeatureAtIdx(1.0, offset + atomtype);
-    if (ring_break) {
-        nl->other_root->getProp<int>("MMFFAtomType", otheratomtype);
-        fv.addFeatureAtIdx(1.0, offset + otheratomtype);
-    }
+
     // 100 Features in total - last features indicates out-of-range
     if (atomtype < 1 || atomtype > 99)
         fv.addFeatureAtIdx(1.0, offset + 100);

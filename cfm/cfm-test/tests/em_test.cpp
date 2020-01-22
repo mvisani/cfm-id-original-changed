@@ -156,7 +156,6 @@ void EMTestSingleEnergySelfProduction::runTest() {
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
     initConfig(orig_cfg, param_cfg_file);
     orig_cfg.lambda = 0.0000001;
-    orig_cfg.use_single_energy_cfm = 1;
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;
     orig_cfg.include_h_losses = true;
@@ -232,7 +231,6 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
     initConfig(orig_cfg, param_cfg_file);
     orig_cfg.lambda = 0.0000001;
-    orig_cfg.use_single_energy_cfm = 1;
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;
     orig_cfg.include_h_losses = true;
@@ -244,7 +242,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     act_ids[0] = RELU_NN_ACTIVATION_FUNCTION;
     act_ids[1] = RELU_NN_ACTIVATION_FUNCTION;
     act_ids[2] = LINEAR_NN_ACTIVATION_FUNCTION;    //Final theta should be linear
-    std::vector<double> dropout_probs(2,0);
+    std::vector<float> dropout_probs(2,0);
     orig_cfg.theta_nn_hlayer_num_nodes = hlayer_numnodes;
     orig_cfg.theta_nn_layer_act_func_ids = act_ids;
     orig_cfg.nn_layer_dropout_probs = dropout_probs;
@@ -273,7 +271,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
 
         //Run EM (multiple times, and take best Q)
         double best_Q = -1000000.0;
-        const int trials_max = 3;
+        const int trials_max = 1;
         std::vector<double> Qs;
         for (int trial = 0; trial < trials_max; trial++) {
             std::string status_file = "tmp_status_file.log";
@@ -291,7 +289,8 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
         for (; it != Qs.end(); ++it) std::cout << *it << " ";
         std::cout << " Best=" << best_Q << std::endl;
 
-        if (energy == 0) final_params = new NNParam(param_filename);
+        if (energy == 0)
+            final_params = new NNParam(param_filename);
         else {
             NNParam eparam(param_filename);
             final_params->appendNextEnergyParams(eparam, energy);
@@ -307,8 +306,8 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     for (unsigned int energy = 0; energy < data[0].getNumSpectra(); energy++) {
         const Spectrum *orig_spec = data[0].getSpectrum(energy);
         const Spectrum *predicted_spec = data[0].getPredictedSpectrum(energy);
+        std::cout << energy << " ";
         pass &= compareSpectra(orig_spec, predicted_spec, orig_cfg.abs_mass_tol, orig_cfg.ppm_mass_tol, intensity_tol);
-
     }
     passed = pass;
 }
@@ -353,7 +352,6 @@ void EMTestSingleEnergyIsotopeSelfProduction::runTest() {
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
     initConfig(orig_cfg, param_cfg_file);
     orig_cfg.lambda = 0.0000001;
-    orig_cfg.use_single_energy_cfm = 1;
     orig_cfg.spectrum_depths.resize(1);
     orig_cfg.spectrum_weights.resize(1);
     orig_cfg.include_isotopes = 1;
@@ -548,7 +546,6 @@ void EMTestBiasPreLearning::runTest() {
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
     initConfig(orig_cfg, param_cfg_file);
     orig_cfg.lambda = 0.0000001;
-    orig_cfg.use_single_energy_cfm = 1;
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;
 

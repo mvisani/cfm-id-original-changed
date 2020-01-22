@@ -17,6 +17,7 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 
 // Structure to hold a sparse computed feature vector
 typedef unsigned int feature_t;
@@ -24,6 +25,12 @@ typedef unsigned int feature_t;
 class FeatureVector {
 public:
     FeatureVector() { fv_idx = 0; };
+
+    FeatureVector(const FeatureVector &old) {
+        fv_idx = old.fv_idx;
+        fv = old.fv;
+        //std::copy(old.fv.begin(), old.fv.end(), fv.begin());
+    };
 
     void addFeature(double value);
 
@@ -47,7 +54,7 @@ public:
 
     unsigned int getNumSetFeatures() const { return fv.size(); };
 
-    void printDebugInfo() const;
+    void writeDebugInfo(std::ostream &out) const;
 
 private:
     std::vector<feature_t> fv;

@@ -11,12 +11,21 @@
 # License, which is included in the file license.txt, found at the root
 # of the cfm source tree.
 #########################################################################*/
-cmake_minimum_required(VERSION 2.6)
+# We may need higher verison cmake
+cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 11)
 
-project(cfm)
+# Set a default build type if none was specified
+set(default_build_type "RelWithDebInfo")
+if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+    set(default_build_type "Debug")
+endif()
+
+project(cfm VERSION 4.0.0)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/cfm-code/Version.h)
 
 set(CFM_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin CACHE STRING "Where do you want the output binaries to install to?")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #It is recommended, but not strictly necessary, to build and run the tests
 set(INCLUDE_TESTS OFF CACHE BOOL "Do you want to build the tests?")
@@ -25,22 +34,32 @@ set(INCLUDE_TESTS OFF CACHE BOOL "Do you want to build the tests?")
 set(INCLUDE_TRAIN OFF CACHE BOOL "Do you want to build the training code?")
 
 # BOOST
-set(Boost_ADDITIONAL_VERSIONS "1.51" "1.51.0" "1.47" "1.47.0")
 set(Boost_USE_STATIC_LIBS ON)
 include(FindBoost)
 
-# For some reason msvc with give LNK2019 if not include thread
+set(Boost_componets filesystem system serialization program_options)
+# For some reason msvc will give LNK2019 if not include thread
 if (MSVC)
-    find_package(Boost 1.47 COMPONENTS filesystem system serialization thread REQUIRED)
-else ()
-    find_package(Boost 1.47 COMPONENTS filesystem system serialization REQUIRED)
-endif ()
+    list(APPEND Boost_componets thread)
+endif()
+
+if (INCLUDE_TESTS)
+    list(APPEND Boost_componets unit_test_framework)
+endif()
+
+# we need 1.62 or higher for unit testing
+# on paper 1.59 + should work, seems 1.60 has building problem
+find_package(Boost 1.62 REQUIRED COMPONENTS ${Boost_componets})
 
 include_directories(${Boost_INCLUDE_DIRS})
+
+#include cmake finds
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # RDKit
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR})
 include(FindRDKit)
+
 if (RDKIT_FOUND)
     include_directories(${RDKIT_INCLUDE_DIR} ${RDKIT_INCLUDE_EXT_DIR})
     link_directories(${RDKIT_LIBRARY_DIR})
@@ -82,6 +101,8 @@ add_subdirectory(fraggraph-gen)
 #Executable for running tests
 if (INCLUDE_TESTS)
     add_subdirectory(cfm-test)
+    enable_testing()
+    add_subdirectory(cfm-boost-test)
 endif ()
 
 if (INCLUDE_TRAIN)

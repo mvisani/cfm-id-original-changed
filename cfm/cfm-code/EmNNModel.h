@@ -33,19 +33,18 @@ public:
               std::string initial_params_filename = "");
 
     //This is public so the test can access it....there must be a better way?
-    void computeAndAccumulateGradient(double *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
-                                      bool record_used_idxs_only, std::set<unsigned int> &used_idxs,
-                                      int sampling_method) override;
+    int computeAndAccumulateGradient(float *grads, int mol_idx, MolData &mol_data, suft_counts_t &suft,
+                                     int sampling_method, unsigned int energy) override;
 
-    double computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft) override;
+    void collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_idxs, unsigned int energy) override;
 
-    double getRegularizationTerm() override;
+    double computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_counts_t &suft, unsigned int energy) override;
 
-    void updateGradientForRegularizationTerm(double *grads) override;
+    double getRegularizationTerm(unsigned int energy) override;
+
+    void updateGradientForRegularizationTerm(float *grads, unsigned int energy) override;
 
     void writeParamsToFile(std::string &filename) override;
-
-    void rollDropOuts();
 
 private:
     //The current parameters

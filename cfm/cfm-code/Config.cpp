@@ -21,31 +21,24 @@
 #include <sstream>
 #include <fstream>
 
+
 void initDefaultConfig(config_t &cfg) {
 
     cfg.lambda = DEFAULT_LAMBDA;
     cfg.ga_method = DEFAULT_USE_ADAM_FOR_GA;
-    //cfg.converge_count_thresh = DEFAULT_CONVERGE_COUNT_THRESH;
     cfg.em_converge_thresh = DEFAULT_EM_CONVERGE_THRESH;
     cfg.ga_converge_thresh = DEFAULT_GA_CONVERGE_THRESH;
     cfg.model_depth = DEFAULT_MODEL_DEPTH;
     cfg.abs_mass_tol = DEFAULT_ABS_MASS_TOL;
     cfg.ppm_mass_tol = DEFAULT_PPM_MASS_TOL;
     cfg.num_em_restarts = DEFAULT_NUM_EM_RESTARTS;
-    //cfg.line_search_alpha = DEFAULT_LINE_SEARCH_ALPHA;
-    //cfg.line_search_beta = DEFAULT_LINE_SEARCH_BETA;
     cfg.starting_step_size = DEFAULT_LEARNING_RATE;
+    cfg.ending_step_size = -DEFAULT_LEARNING_RATE;
     cfg.decay_rate = DEFAULT_DECAY_RATE;
-    //cfg.max_search_count = DEFAULT_MAX_SEARCH_COUNT;
     cfg.spectrum_depths.clear();
     cfg.spectrum_weights.clear();
     cfg.dv_spectrum_indexes.clear();
-    cfg.intermediate_weights = 0.0;
     cfg.fg_depth = DEFAULT_FRAGGRAPH_DEPTH;
-    cfg.ipfp_algorithm = DEFAULT_IPFP_ALGORITHM;
-    cfg.ipfp_converge_thresh = DEFAULT_IPFP_CONVERGE_THRESH;
-    cfg.osc_ipfp_converge_thresh = DEFAULT_IPFP_OSC_CONVERGE_THRESH;
-    cfg.use_single_energy_cfm = 0;
     cfg.ionization_mode = DEFAULT_IONIZATION_MODE;
     cfg.update_bias_first = 0;
     cfg.param_init_type = PARAM_DEFAULT_INIT;
@@ -53,7 +46,6 @@ void initDefaultConfig(config_t &cfg) {
     cfg.include_isotopes = DEFAULT_INCLUDE_ISOTOPES;
     cfg.isotope_thresh = DEFAULT_ISOTOPE_THRESH;
     cfg.allow_frag_detours = DEFAULT_ALLOW_FRAG_DETOURS;
-    cfg.do_prelim_bfs = DEFAULT_DO_PRELIM_BFS;
     cfg.max_ring_breaks = DEFAULT_MAX_RING_BREAKS;
     cfg.theta_function = DEFAULT_THETA_FUNCTION;
     cfg.ga_minibatch_nth_size = DEFAULT_GA_MINIBATCH_NTH_SIZE;
@@ -72,20 +64,21 @@ void initDefaultConfig(config_t &cfg) {
     cfg.include_h_losses = DEFAULT_INCLUDE_H_LOSSES;
     cfg.include_precursor_h_losses_only = DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY;
     cfg.fragraph_compute_timeout_in_secs = DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS;
-    cfg.use_graph_pruning = DEFAULT_NOT_USE_GRAPH_PRUNING;
     cfg.ga_use_best_q = DEFAULT_USE_BEST_Q_IN_GA;
     cfg.ga_sampling_method = USE_NO_SAMPLING;
-    cfg.ga_graph_sampling_k = DEFAULT_GRAPH_SAMPLING_K;
-    cfg.reset_sampling = false;
-    cfg.reset_sampling_lr_ratio = 1.0;
-    cfg.em_use_weighted_jaccard = false;
-    cfg.em_wjaccard_swicth_threshold = -2.5;
-    cfg.ga_diff_sampling_peak_num = 10;
-    cfg.ga_select_intensity_sum_ratio = 0.25;
-    cfg.ga_dropout_delta = -0.05;
-    cfg.ga_dropout_lowerbond = 0.01;
+    cfg.ga_sampling_method2 = USE_NO_SAMPLING;
+    cfg.ga_reset_sampling = false;
+    cfg.ga_sampling_max_selection = 100;
+    cfg.ga_diff_sampling_peak_num = 20;
+    cfg.ga_diff_sampling_difference = 0.05;
+    cfg.disable_cross_val_metrics = false;
+    cfg.disable_training_metrics = false;
+    cfg.disable_cpu_usage_metrics = true;
+    cfg.em_no_progress_count = 2;
+    cfg.ga_no_progress_count = 3;
+    cfg.collected_all_used_idx = false;
+    cfg.em_max_iterations = DEFAULT_EM_MAX_ITERATIONS;
 }
-
 
 void initConfig(config_t &cfg, std::string &filename, bool report_all) {
 
@@ -117,16 +110,12 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "abs_mass_tol") cfg.abs_mass_tol = (double) value;
         else if (name == "ppm_mass_tol") cfg.ppm_mass_tol = (double) value;
         else if (name == "num_em_restarts") cfg.num_em_restarts = (int) value;
-        else if (name == "starting_step_size") cfg.starting_step_size = (double) value;
+        else if (name == "starting_step_size") cfg.starting_step_size = (float) value;
+        else if (name == "ending_step_size") cfg.ending_step_size = (float) value;
         else if (name == "decay_rate") cfg.decay_rate = (double) value;
         else if (name == "fg_depth") cfg.fg_depth = (int) value;
         else if (name == "allow_frag_detours") cfg.allow_frag_detours = (int) value;
-        else if (name == "do_prelim_bfs") cfg.do_prelim_bfs = (int) value;
         else if (name == "max_ring_breaks") cfg.max_ring_breaks = (int) value;
-        else if (name == "ipfp_algorithm") cfg.ipfp_algorithm = (int) value;
-        else if (name == "ipfp_converge_thresh") cfg.ipfp_converge_thresh = (double) value;
-        else if (name == "osc_ipfp_converge_thresh") cfg.osc_ipfp_converge_thresh = (double) value;
-        else if (name == "use_single_energy_cfm") cfg.use_single_energy_cfm = (int) value;
         else if (name == "include_isotopes") cfg.include_isotopes = (int) value;
         else if (name == "isotope_thresh") cfg.isotope_thresh = (double) value;
         else if (name == "ga_method") cfg.ga_method = (int) value;
@@ -135,7 +124,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "theta_function") cfg.theta_function = (int) value;
         else if (name == "theta_nn_hlayer_num_nodes") cfg.theta_nn_hlayer_num_nodes.push_back((int) value);
         else if (name == "theta_nn_layer_act_func_ids") cfg.theta_nn_layer_act_func_ids.push_back((int) value);
-        else if (name == "nn_layer_dropout_probs") cfg.nn_layer_dropout_probs.push_back((double) value);
+        else if (name == "nn_layer_dropout_probs") cfg.nn_layer_dropout_probs.push_back((float) value);
         else if (name == "ga_minibatch_nth_size") cfg.ga_minibatch_nth_size = (int) value;
         else if (name == "ga_max_iterations") cfg.ga_max_iterations = (int) value;
         else if (name == "ga_momentum") cfg.ga_momentum = (double) value;
@@ -152,23 +141,20 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "include_h_losses") cfg.include_h_losses = (int) value;
         else if (name == "include_precursor_h_losses_only") cfg.include_precursor_h_losses_only = (int) value;
         else if (name == "fragraph_compute_timeout_in_secs") cfg.fragraph_compute_timeout_in_secs = (int) value;
-        else if (name == "use_graph_pruning") cfg.use_graph_pruning = (int) value;
         else if (name == "ga_use_best_q") cfg.ga_use_best_q = (int) value;
         else if (name == "ga_sampling_method") cfg.ga_sampling_method = (int) value;
-        else if (name == "ga_graph_sampling_k") cfg.ga_graph_sampling_k = (double) value;
-        else if (name == "aggressive_graph_pruning");
-        else if (name == "reset_sampling") cfg.reset_sampling = (bool) value;
-        else if (name == "reset_sampling_lr_ratio") cfg.reset_sampling_lr_ratio = (double) value;
-        else if (name == "add_noise");
-        else if (name == "noise_max");
-        else if (name == "noise_sum");
-        else if (name == "ga_sampling_explore_weight") cfg.ga_sampling_explore_weight = (double) value;
-        else if (name == "em_use_weighted_jaccard") cfg.em_use_weighted_jaccard = (bool) value;
-        else if (name == "em_wjaccard_swicth_threshold") cfg.em_wjaccard_swicth_threshold = (double)value;
+        else if (name == "ga_sampling_method2") cfg.ga_sampling_method2 = (int) value;
+        else if (name == "ga_reset_sampling") cfg.ga_reset_sampling = (bool) value;
+        else if (name == "ga_sampling_max_selection") cfg.ga_sampling_max_selection = (int) value;
         else if (name == "ga_diff_sampling_peak_num") cfg.ga_diff_sampling_peak_num = (int) value;
-        else if (name == "ga_select_intensity_sum_ratio") cfg.ga_select_intensity_sum_ratio = (double) value;
-        else if (name == "ga_dropout_delta") cfg.ga_dropout_delta = (double) value;
-        else if (name == "ga_dropout_lowerbond") cfg.ga_dropout_lowerbond = (double) value;
+        else if (name == "ga_diff_sampling_difference") cfg.ga_diff_sampling_difference = (double) value;
+        else if (name == "disable_cross_val_metrics") cfg.disable_cross_val_metrics = (int) value;
+        else if (name == "disable_training_metrics") cfg.disable_training_metrics = (int) value;
+        else if (name == "disable_cpu_usage_metrics") cfg.disable_cpu_usage_metrics = (bool) value;
+        else if (name == "em_no_progress_count") cfg.em_no_progress_count = (int) value;
+        else if (name == "ga_no_progress_count") cfg.ga_no_progress_count = (int) value;
+        else if (name == "collected_all_used_idx") cfg.collected_all_used_idx = (bool) value;
+        else if (name == "em_max_iterations") cfg.em_max_iterations = (int) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -198,13 +184,14 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         }
         cfg.theta_nn_hlayer_num_nodes.push_back(1);    //Last layer has one node
     }
+    // set default  ending_step_size
+    if ( cfg.ending_step_size < 0)
+        cfg.ending_step_size = cfg.starting_step_size * 0.25f;
 
     initDerivedConfig(cfg);
 
     //Report config parameters
     if (report_all) {
-        if (cfg.use_single_energy_cfm) std::cout << "Using Single Energy CFM" << std::endl;
-        else std::cout << "Using Combined Energy CFM" << std::endl;
         if (cfg.ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
             std::cout << "Positive ESI Ionization Mode" << std::endl;
         else if (cfg.ionization_mode == NEGATIVE_ESI_IONIZATION_MODE)
@@ -239,12 +226,12 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (USE_MOMENTUM_FOR_GA == cfg.ga_method) {
             std::cout << "Using simple gradient ascent implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " momentum " << cfg.ga_momentum
-                      << " decay rate " << cfg.decay_rate
+                      << " decay rate " << cfg.decay_rate << " Ending Step Size " << cfg.ending_step_size
                       << std::endl;
         } else if (USE_ADADELTA_FOR_GA == cfg.ga_method) {
             std::cout << "Using AdaDelta implementation" << std::endl;
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " decay rate " << cfg.decay_rate
-                      << " eps " << cfg.ga_adam_eps
+                      << " eps " << cfg.ga_adam_eps << " Ending Step Size " << cfg.ending_step_size
                       << std::endl;
         } else if (USE_ADAM_FOR_GA == cfg.ga_method
                    || USE_AMSGRAD_FOR_GA == cfg.ga_method
@@ -261,7 +248,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                 }
             }
             std::cout << "Using Starting Step Size " << cfg.starting_step_size << " beta1  " << cfg.ga_adam_beta_1
-                      << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_adam_eps;
+                      << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_adam_eps
+                      << " Ending Step Size " << cfg.ending_step_size;
             if (USE_ADAMW_FOR_GA == cfg.ga_method)
                 std::cout << " ga_adamw_w " << cfg.ga_adamw_w;
             std::cout << std::endl;
@@ -289,32 +277,18 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (cfg.ga_use_best_q)
             std::cout << "Using Best Q instead of Prev Q in GA" << std::endl;
         std::cout << "Using Fragmentation Graph Depth " << cfg.fg_depth << std::endl;
-        if (cfg.use_graph_pruning != DEFAULT_NOT_USE_GRAPH_PRUNING) {
-            std::cout << "Using graph pruning" << std::endl;
-            std::cout << "Reset_sampling: " << cfg.reset_sampling << std::endl;
-            std::cout << "reset_sampling_lr_rati: " << cfg.reset_sampling_lr_ratio << std::endl;
+
+        std::cout << "Using ";
+        printSamplingConfig(cfg.ga_sampling_method, cfg);
+        if (cfg.ga_reset_sampling) {
+            std::cout << "Reset Sampling Enabled , Reset to ";
+            printSamplingConfig(cfg.ga_sampling_method2, cfg);
         }
 
-        switch (cfg.ga_sampling_method) {
-            case USE_GRAPH_RANDOM_WALK_SAMPLING:
-                std::cout << "Using Graph Random Walk Sampling on transitions with K="
-                             << cfg.ga_graph_sampling_k << std::endl;
-                break;
-            case USE_GRAPH_WEIGHTED_RANDOM_WALK_SAMPLING:
-                std::cout << "Using Graph Weighted Random Walk Sampling on transitions with K="
-                             << cfg.ga_graph_sampling_k << " explore weight=" << cfg.ga_sampling_explore_weight
-                          << std::endl;
-                break;
-            case USE_NO_SAMPLING:
-            default:
-                std::cout << "NOT Using Sampling Method" << std::endl;
-        }
         if (cfg.allow_frag_detours) {
             std::cout << "Allowing fragmentation detours " << std::endl;
         } else {
             std::cout << "Disallowing fragmentation detours ";
-            if (cfg.do_prelim_bfs) std::cout << "with preliminary breadth-first search" << std::endl;
-            else std::cout << "without preliminary breadth-first search" << std::endl;
         }
         std::cout << "Maximum Ring Breaks " << cfg.max_ring_breaks << std::endl;
         std::cout << "Using Model Depth " << cfg.model_depth << std::endl;
@@ -324,14 +298,6 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         std::cout << std::endl;
         std::cout << "Using Absolute mass tolerance " << cfg.abs_mass_tol << std::endl;
         std::cout << "Using PPM mass tolerance " << cfg.ppm_mass_tol << std::endl;
-        if (!cfg.use_single_energy_cfm) {
-            if (cfg.ipfp_algorithm == 0) std::cout << "Using standard IPFP" << std::endl;
-            else if (cfg.ipfp_algorithm == 1) std::cout << "Using GEMA" << std::endl;
-            else if (cfg.ipfp_algorithm == 2) std::cout << "Using IPFP with Oscillatory Adjustment" << std::endl;
-            else std::cout << "Warning: Unknown IPFP algorithm id" << std::endl;
-            std::cout << "Using IPFP Converge Thresh " << cfg.ipfp_converge_thresh << std::endl;
-            std::cout << "Using IPFP Oscillatory Converge Thresh " << cfg.osc_ipfp_converge_thresh << std::endl;
-        }
         if (cfg.use_lower_energy_params_for_init)
             std::cout << "Initialising higher energy params with those of one level lower" << std::endl;
         if (cfg.theta_function == LINEAR_THETA_FUNCTION) std::cout << "Using linear function for theta" << std::endl;
@@ -377,11 +343,31 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
     }
 }
 
-void initDerivedConfig(config_t &cfg, int se_energy) {
+void printSamplingConfig(const int sampling_method, config_t &cfg) {
+    switch (sampling_method) {
+        case USE_RANDOM_SAMPLING:
+            std::cout << "Random Sampling on transitions  with max selection cut off at "
+                      << cfg.ga_sampling_max_selection << std::endl;
+            break;
+        case USE_GRAPH_RANDOM_WALK_SAMPLING:
+            std::cout << "Graph Random Walk Sampling with "
+                      << cfg.ga_sampling_max_selection << " iterations" << std::endl;
+            break;
+        case USE_DIFFERENCE_SAMPLING_BFS_CO:
+            std::cout << "Difference sampling BFS Child Only with max selected peak count at "
+                      << cfg.ga_diff_sampling_peak_num << std::endl;
+            break;
+        case USE_DIFFERENCE_SAMPLING_BFS:
+            std::cout << "Difference sampling BFS with max selected peak count at "
+                      << cfg.ga_diff_sampling_peak_num << std::endl;
+            break;
+        case USE_NO_SAMPLING:
+        default:
+            std::cout << "NO Sampling Method" << std::endl;
+    }
+}
 
-    //Force single energy where only one spectrum level
-    if (cfg.spectrum_depths.size() == 1)
-        cfg.use_single_energy_cfm = 1;
+void initDerivedConfig(config_t &cfg, int se_energy) {
 
     //Derived Parameters
     cfg.map_d_to_energy.resize(cfg.model_depth);
@@ -428,5 +414,4 @@ void initSingleEnergyConfig(config_t &se_cfg, config_t &cfg, int energy) {
 
     //Re-derive the derived parameters
     initDerivedConfig(se_cfg, energy);
-
 }

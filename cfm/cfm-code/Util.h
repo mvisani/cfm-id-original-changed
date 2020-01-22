@@ -37,14 +37,13 @@ double getMassTol(double abs_tol, double ppm_tol, double mass);
 
 //Structure for storing a shared pointer to a molecule, as well as atom pointers
 //to the root atoms (i.e. the atoms that were at either end of a broken bond)
-class RootedROMolPtr {
+class RootedROMol {
 public:
-    RootedROMolPtr() = default;;    //Default Constructor
-    RootedROMolPtr(romol_ptr_t a_mol, RDKit::Atom *a_root, RDKit::Atom *an_other_root) :
-            mol(a_mol), root(a_root), other_root(an_other_root) {};
+    RootedROMol() = default;;    //Default Constructor
+    RootedROMol(romol_ptr_t a_mol, RDKit::Atom *a_root) :
+            mol(a_mol), root(a_root) {};
     romol_ptr_t mol;
-    RDKit::Atom *root;
-    RDKit::Atom *other_root;    //Optional - for rings only
+    RDKit::Atom *root = nullptr;
 };
 
 //Helper function to compute the monoisotopic mass of a molecule
@@ -91,4 +90,7 @@ void softmax(std::vector<double> &weight, std::vector<double> &prob);
 static std::random_device util_rd;
 static std::mt19937 util_rng(util_rd());
 
+// A Big DBL number
+static const double A_BIG_DBL = 1000000000.0;
+static const double WEIGHT_SELECTION_SCALER = 10000.0;
 #endif // __UTIL_H__

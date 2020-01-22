@@ -16,7 +16,6 @@
 #########################################################################*/
 
 #include "FragmentGraph.h"
-#include "Util.h"
 
 #include <GraphMol/RWMol.h>
 #include <GraphMol/Substruct/SubstructMatch.h>
@@ -30,31 +29,35 @@
 
 Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, const romol_ptr_t &an_ion) {
 
-    RDKit::Atom *root = nullptr, *other_root = nullptr;
+    RDKit::Atom *root = nullptr;
     RDKit::Atom *first_atom = an_ion.get()->getAtomWithIdx(0);
-    if (first_atom->hasProp("Root") && first_atom->hasProp("OtherRoot")) {
+    if (first_atom->hasProp("Root"))
         root = getLabeledAtom(an_ion, "Root");
-        other_root = getLabeledAtom(an_ion, "OtherRoot");
-    } else std::cout << "Warning: Ion Root atoms not defined" << std::endl;
-    ion = RootedROMolPtr(an_ion, root, other_root);
+    if (root == nullptr)
+       std::cerr << "Warning: Ion Root atoms not defined" << std::endl;
+    ion = RootedROMol(an_ion, root);
 
     root = nullptr;
-    other_root = nullptr;
     first_atom = a_nl.get()->getAtomWithIdx(0);
-    if (first_atom->hasProp("Root") && first_atom->hasProp("OtherRoot")) {
+    if (first_atom->hasProp("Root"))
         root = getLabeledAtom(a_nl, "Root");
-        other_root = getLabeledAtom(a_nl, "OtherRoot");
-    } else std::cout << "Warning: NL Root atoms not defined" << std::endl;
-    nl = RootedROMolPtr(a_nl, root, other_root);
+    if (root == nullptr)
+       std::cerr << "Warning: NL Root atoms not defined" << std::endl;
+    nl = RootedROMol(a_nl, root);
 
     to_id = a_to_id;
     from_id = a_from_id;
     nl_smiles = RDKit::MolToSmiles(*(nl.mol.get()));
+    ion_smiles = RDKit::MolToSmiles(*(ion.mol.get()));
+
 }
 
-Transition::Transition(int a_from_id, int a_to_id, const RootedROMolPtr &a_nl, const RootedROMolPtr &an_ion) :
+Transition::Transition(int a_from_id, int a_to_id, const RootedROMol &a_nl, const RootedROMol &an_ion)
+        :
         to_id(a_to_id), from_id(a_from_id), nl(a_nl), ion(an_ion) {
     nl_smiles = RDKit::MolToSmiles(*(nl.mol.get()));
+    ion_smiles = RDKit::MolToSmiles(*(ion.mol.get()));
+
 }
 
 //Add a fragment node to the graph (should be the only way to modify the graph)
@@ -66,7 +69,7 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int id = addFragmentOrFetchExistingId(node.ion, mass);
+    int id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
 
     if (parentid < 0 || fragments[id]->getDepth() == -1)
         fragments[id]->setDepth(node.depth);    //Set start fragment depth
@@ -82,7 +85,7 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
             fragments[id]->setDepth(node.depth);    //Update the depth of the fragment
 
         int idx = (int) transitions.size();
-        transitions.push_back(new Transition(parentid, id, node.nl, node.ion));
+        transitions.push_back(std::make_shared<Transition>(parentid, id, node.nl, node.ion));
 
         //Update the tmaps
         from_id_tmap[parentid].push_back(idx);
@@ -90,45 +93,45 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
     }
 
     return id;
-
 }
 
 //As for previous function, but delete the mols in the transition and compute and store a feature vector instead
-int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parentid, FeatureCalculator *fc,
-                                                 int depth) {
+int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, int parent_frag_id, FeatureCalculator *fc) {
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int id = addFragmentOrFetchExistingId(node.ion, mass);
+    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
 
-    if (parentid < 0 || fragments[id]->getDepth() == -1)
-        fragments[id]->setDepth(node.depth);    //Set start fragment depth
+    if (fragments[frag_id]->getDepth() == -1 || node.depth < fragments[frag_id]->getDepth())
+        fragments[frag_id]->setDepth(node.depth);    //Set start fragment depth
+
+    // find if this trans does exist
+    int existing_trans_id = -1;
+    if (parent_frag_id >= 0)
+        existing_trans_id = findMatchingTransition(parent_frag_id, frag_id);
 
     //Add a transition, if one does not exist
-    if (parentid >= 0 && findMatchingTransition(parentid, id) < 0 &&
-        (allow_frag_detours || node.depth <= fragments[id]->getDepth())) {
-
-        if (node.depth < fragments[id]->getDepth())
-            fragments[id]->setDepth(node.depth);    //Update the depth of the fragment
+    if (parent_frag_id >= 0 && existing_trans_id < 0 &&
+        (allow_frag_detours || node.depth <= fragments[frag_id]->getDepth())) {
 
         int idx = transitions.size();
-        transitions.push_back(new Transition(parentid, id, node.nl, node.ion));
+        transitions.push_back(std::make_shared<Transition>(parent_frag_id, frag_id, node.nl, node.ion));
 
         //Update the tmaps
-        from_id_tmap[parentid].push_back(idx);
-        to_id_tmap[id].push_back(idx);
+        from_id_tmap[parent_frag_id].push_back(idx);
+        to_id_tmap[frag_id].push_back(idx);
 
         //Compute a feature vector
-        Transition *t = transitions.back();
+        auto t = transitions.back();
         FeatureVector *fv;
-        std::string frag_smiles = *fragments[parentid]->getIonSmiles();
+        std::string frag_smiles = *fragments[parent_frag_id]->getIonSmiles();
         auto frag_ptr = createMolPtr(frag_smiles.c_str());
 
         try {
-            fv = fc->computeFeatureVector(t->getIon(), t->getNeutralLoss(), depth, frag_ptr);
+            fv = fc->computeFeatureVector(t->getIon(), t->getNeutralLoss(), frag_ptr);
             t->setFeatureVector(fv);
         }
-        catch (FeatureCalculationException & e) {
+        catch (FeatureCalculationException &e) {
             //If we couldn't compute the feature vector, set a dummy feature vector with bias only.
             fv = new FeatureVector();
             fv->addFeatureAtIdx(1.0, idx);
@@ -138,44 +141,70 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
         //Delete the mols
         t->deleteIon();
         t->deleteNeutralLoss();
-
+    } else if (parent_frag_id >= 0 && existing_trans_id >= 0 &&
+               (node.depth == fragments[frag_id]->getDepth())) {
+        // if those transitions does exists, create a duplication
+        int trans_idx = transitions.size();
+        transitions.push_back(std::make_shared<Transition>());
+        auto trans = transitions.back();
+        trans->createdDuplication(*transitions[existing_trans_id]);
+        //Update the tmaps
+        from_id_tmap[parent_frag_id].push_back(trans_idx);
+        to_id_tmap[frag_id].push_back(trans_idx);
     }
 
-    return id;
+    return frag_id;
 }
 
-int FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std::vector<double> *thetas, int parentid) {
+int
+FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std::vector<double> *thetas,
+                                    int parent_frag_id) {
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int id = addFragmentOrFetchExistingId(node.ion, mass);
+    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
 
-    if (parentid < 0 || fragments[id]->getDepth() == -1)
-        fragments[id]->setDepth(node.depth);    //Set start fragment depth
+    if (parent_frag_id < 0 || fragments[frag_id]->getDepth() == -1)
+        fragments[frag_id]->setDepth(node.depth);    //Set start fragment depth
 
     //Add a transition, if one does not exist
-    if (parentid >= 0 && findMatchingTransition(parentid, id) < 0 &&
-        (allow_frag_detours || node.depth <= fragments[id]->getDepth())) {
+    int existing_trans_id = -1;
+    if (parent_frag_id >= 0)
+        existing_trans_id = findMatchingTransition(parent_frag_id, frag_id);
+
+    if (parent_frag_id >= 0 && existing_trans_id < 0 &&
+        (allow_frag_detours || node.depth <= fragments[frag_id]->getDepth())) {
 
         int idx = transitions.size();
-        transitions.push_back(new Transition(parentid, id, node.nl, node.ion));
+        transitions.push_back(std::make_shared<Transition>(parent_frag_id, frag_id, node.nl, node.ion));
 
         //Update the tmaps
-        from_id_tmap[parentid].push_back(idx);
-        to_id_tmap[id].push_back(idx);
+        from_id_tmap[parent_frag_id].push_back(idx);
+        to_id_tmap[frag_id].push_back(idx);
 
         //Set the theta values and delete the mols
-        Transition *t = transitions.back();
+        auto t = transitions.back();
         t->setTmpThetas(thetas);
         t->deleteIon();
         t->deleteNeutralLoss();
+
+    } else if (parent_frag_id >= 0 && existing_trans_id >= 0 &&
+               (node.depth == fragments[frag_id]->getDepth())) {
+        // if those transitions does exists, create a duplication
+        int trans_idx = transitions.size();
+        transitions.push_back(std::make_shared<Transition>());
+        auto trans = transitions.back();
+        trans->createdDuplication(*transitions[existing_trans_id]);
+        //Update the tmaps
+        from_id_tmap[parent_frag_id].push_back(trans_idx);
+        to_id_tmap[frag_id].push_back(trans_idx);
     }
 
-    return id;
+    return frag_id;
 }
 
 
-int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass) {
+int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bool is_intermediate) {
 
     std::string reduced_smiles;
 
@@ -206,7 +235,8 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass) {
             }
         }
         reduced_smiles = RDKit::MolToSmiles(f1_copy);
-    } else frag_mass_lookup[rounded_mass];
+    } else
+        frag_mass_lookup[rounded_mass];
 
     //No match found, create the fragment
     if (reduced_smiles.size() == 0) {
@@ -220,8 +250,10 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass) {
         Spectrum isotope_spectrum;
         long charge = RDKit::MolOps::getFormalCharge(*ion.get());
         isotope->computeIsotopeSpectrum(isotope_spectrum, ion, charge);
-        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, isotope_spectrum));
-    } else fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass));
+        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, isotope_spectrum, is_intermediate));
+    } else
+        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, is_intermediate));
+
     frag_mass_lookup[rounded_mass].push_back(newid);
     from_id_tmap.resize(newid + 1);
     to_id_tmap.resize(newid + 1);
@@ -285,10 +317,13 @@ void FragmentGraph::reduceMol(RDKit::RWMol &rwmol) {
 //Find the id for an existing transition that matches the input ids
 //or -1 in the case where no such transition is found
 int FragmentGraph::findMatchingTransition(int from_id, int to_id) {
-    std::vector<int>::iterator it;
-    it = from_id_tmap[from_id].begin();
-    for (; it != from_id_tmap[from_id].end(); ++it)
-        if (transitions[*it]->getToId() == to_id) return *it;
+    std::vector<int>::iterator it = from_id_tmap[from_id].begin();
+    for (; it != from_id_tmap[from_id].end(); ++it) {
+        if (*it >= transitions.size())
+            continue;
+        if (transitions[*it]->getToId() == to_id)
+            return *it;
+    }
     return -1;
 }
 
@@ -298,7 +333,11 @@ void FragmentGraph::writeFragmentsOnly(std::ostream &out) const {
     for (auto &it : fragments) {
         out << it->getId() << " ";
         out << std::setprecision(10) << it->getMass() << " ";
-        out << *(it->getIonSmiles()) << std::endl;
+        out << *(it->getIonSmiles());
+
+        if (it->isIntermediate())
+            out << " Intermediate Fragment ";
+        out << std::endl;
     }
 }
 
@@ -311,15 +350,21 @@ void FragmentGraph::writeFullGraph(std::ostream &out) const {
     out << std::endl;
 
     //Transitions
-    for(const auto & transition : transitions){
-        out << transition->getFromId() << " ";
-        out << transition->getToId() << " ";
-        out << *(transition->getNLSmiles()) << std::endl;
+    for (const auto &transition : transitions) {
+        if (!transition->isDuplicate()) {
+            out << transition->getFromId() << " ";
+            out << transition->getToId() << " ";
+            out << *(transition->getNLSmiles()) << " ";
+            out << *(transition->getIonSmiles()) << " ";
+            out << std::endl;
+        }
     }
 }
 
 void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isotopes) const {
 
+    // Write Depth of Graph
+    out.write(reinterpret_cast<const char *>(&depth), sizeof(depth));
     //Fragments
     unsigned int inlcis = include_isotopes;
     out.write(reinterpret_cast<const char *>(&inlcis), sizeof(inlcis));
@@ -327,10 +372,17 @@ void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isot
     out.write(reinterpret_cast<const char *>(&numf), sizeof(numf));
     auto it = fragments.begin();
     for (; it != fragments.end(); ++it) {
+        // write id
         int id = (*it)->getId();
         out.write(reinterpret_cast<const char *>(&id), sizeof(id));
+        // write mass
         double mass = (*it)->getMass();
         out.write(reinterpret_cast<const char *>(&mass), sizeof(mass));
+
+        // write flag
+        bool is_intermediate = (*it)->isIntermediate();
+        out.write(reinterpret_cast<const char *>(&is_intermediate), sizeof(is_intermediate));
+
         if (include_isotopes) {
             const Spectrum *isospec = (*it)->getIsotopeSpectrum();
             unsigned int iso_size = isospec->size();
@@ -342,6 +394,7 @@ void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isot
             }
         }
     }
+
     //Transitions
     unsigned int numt = transitions.size();
     out.write(reinterpret_cast<const char *>(&numt), sizeof(numt));
@@ -357,7 +410,6 @@ void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isot
         out.write(reinterpret_cast<const char *>(&num_set), sizeof(num_set));
         out.write(reinterpret_cast<const char *>(&fv_len), sizeof(fv_len));
 
-        // TODO: Need add support for none binary feature vector
         for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
             unsigned int fv_idx = *fv_it;
             out.write(reinterpret_cast<const char *>(&fv_idx), sizeof(fv_idx));
@@ -368,15 +420,24 @@ void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isot
 void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
 
     std::string null = "";
+    // Set Depth of Graph
+    ifs.read(reinterpret_cast<char *>(&depth), sizeof(depth));
+    // Include Isotope Flag
     unsigned int include_isotopes;
     ifs.read(reinterpret_cast<char *>(&include_isotopes), sizeof(include_isotopes));
+    // Fragaments
     unsigned int numf;
     ifs.read(reinterpret_cast<char *>(&numf), sizeof(numf));
     for (int i = 0; i < numf; i++) {
+
         int id;
         ifs.read(reinterpret_cast<char *>(&id), sizeof(id));
         double mass;
         ifs.read(reinterpret_cast<char *>(&mass), sizeof(mass));
+
+        bool is_intermediate;
+        ifs.read(reinterpret_cast<char *>(&is_intermediate), sizeof(is_intermediate));
+
         if (include_isotopes) {
             Spectrum isospec;
             unsigned int iso_size;
@@ -388,17 +449,21 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
                 ifs.read(reinterpret_cast<char *>(&pintensity), sizeof(pintensity));
                 isospec.push_back(Peak(pmass, pintensity));
             }
-            fragments.push_back(new Fragment(null, null, id, mass, isospec));
-        } else fragments.push_back(new Fragment(null, null, id, mass));
+            fragments.push_back(new Fragment(null, null, id, mass, isospec, is_intermediate));
+        } else
+            fragments.push_back(new Fragment(null, null, id, mass, is_intermediate));
     }
+
     //Transitions
     unsigned int numt;
     ifs.read(reinterpret_cast<char *>(&numt), sizeof(numt));
     for (int i = 0; i < numt; i++) {
+
         int fromid;
         ifs.read(reinterpret_cast<char *>(&fromid), sizeof(fromid));
         int toid;
         ifs.read(reinterpret_cast<char *>(&toid), sizeof(toid));
+
         FeatureVector *fv = new FeatureVector();
         unsigned int num_set;
         ifs.read(reinterpret_cast<char *>(&num_set), sizeof(num_set));
@@ -411,7 +476,8 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
         }
         if (fv->getTotalLength() != fv_len)
             fv->addFeatureAtIdx(0.0, fv_len - 1);
-        transitions.push_back(new Transition(fromid, toid, &null));
+
+        transitions.push_back(std::make_shared<Transition>(fromid, toid, &null));
         transitions[i]->setFeatureVector(fv);
     }
 
@@ -481,36 +547,41 @@ void FragmentGraph::removeDetours() {
 }
 
 void
-FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, double ratio) {
+FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_selection) {
 
-    int limited = (int)std::ceil((double)transitions.size() * ratio);
+    // use ceil so we are at least get one
+
     std::vector<std::uniform_int_distribution<int>> uniform_int_distributions;
-
     // add to discrete_distributions
     for (auto &frag_trans_ids: from_id_tmap)
-        uniform_int_distributions.emplace_back(std::uniform_int_distribution<> (0, (int) frag_trans_ids.size() - 1));
+        uniform_int_distributions.emplace_back(std::uniform_int_distribution<>(0, (int) frag_trans_ids.size() - 1));
 
-    //std::cerr << (double)transitions.size() * ratio<< " " << limited << std::endl;
-    while (selected_ids.size() < limited) {
+    for(int i = 0; i < max_selection; ++i) {
         // init queue and add root
         std::queue<int> fgs;
-
+        std::set<int> visited_fgs;
         fgs.push(0);
+
         while (!fgs.empty()) {
             // get current id
             int frag_id = fgs.front();
+            visited_fgs.insert(frag_id);
             fgs.pop();
 
             // if there is somewhere to go
             if (!from_id_tmap[frag_id].empty()) {
                 // add a uct style random select
-                ;
                 int selected_idx = uniform_int_distributions[frag_id](util_rng);
                 if (selected_idx < from_id_tmap[frag_id].size()) {
                     // go to child
                     int selected_trans_id = from_id_tmap[frag_id][selected_idx];
-                    fgs.push(transitions[selected_trans_id]->getToId());
-                    selected_ids.insert(selected_trans_id);
+                    int next_fg_id = transitions[selected_trans_id]->getToId();
+                    //make sure we are not visit the same place twice
+                    //without this check this may ends in endless loop
+                    if (visited_fgs.count(next_fg_id) == 0) {
+                        fgs.push(next_fg_id);
+                        selected_ids.insert(selected_trans_id);
+                    }
                 }
             }
         }
@@ -518,13 +589,13 @@ FragmentGraph::getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, do
 }
 
 void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids,
-                                                                                         int max_num_iter,
-                                                                                         std::vector<double> &thetas,
-                                                                                         double explore_weight) {
+                                                              int max_num_iter,
+                                                              std::vector<double> &thetas,
+                                                              double explore_weight) {
 
     std::vector<std::uniform_int_distribution<int>> uniform_int_distributions;
     for (auto &frag_trans_ids: from_id_tmap)
-        uniform_int_distributions.emplace_back(std::uniform_int_distribution<> (0, (int) frag_trans_ids.size() - 1));
+        uniform_int_distributions.emplace_back(std::uniform_int_distribution<>(0, (int) frag_trans_ids.size() - 1));
 
 
     std::vector<std::discrete_distribution<int>> discrete_distributions;
@@ -551,14 +622,13 @@ void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &sel
     }
 
     int num_iter = 0;
-    std::discrete_distribution<int> explore_coin({1.0-explore_weight, explore_weight});
+    std::discrete_distribution<int> explore_coin({1.0 - explore_weight, explore_weight});
 
     while (num_iter <= max_num_iter) {
         // init queue and add root
         std::queue<int> fgs;
-        // a coin , one out 3 chance we just go explore
-
         fgs.push(0);
+
         while (!fgs.empty()) {
 
             // get current id
@@ -587,81 +657,77 @@ void FragmentGraph::getSampledTransitionIdsWeightedRandomWalk(std::set<int> &sel
     }
 }
 
-void
-FragmentGraph::getSampledTransitionIdsDifferenceWeighted(std::set<int> &selected_ids,
-                                                                                    std::set<double> &selected_weights,
-                                                                                    std::set<double> &all_weights) {
-
+void FragmentGraph::
+getSampledTransitionIdsDiffMapChildOnly(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights){
     std::set<int> visited;
     std::vector<int> path;
-    getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, all_weights, visited, 0, path,
-                                                 selected_ids);
+    getSampledTransitionIdsWeightDiffChildOnly(selected_weights, visited, 0, path,
+                                               selected_ids);
 }
 
 void FragmentGraph::
-getCommonAncestors(std::set<double> &selected_weights, std::set<int> &visited,
-                   int frag_id, std::vector<std::pair<int, int>> &path,
-                   std::map<int, std::vector<int>> &frag_trans_map) {
+getSampledTransitionIdsDiffMap(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights){
+    std::set<int> visited;
+    std::map<double, std::set<int>> selected_trans_map;
+
+    std::map<int, std::vector<int>> frag_trans_map;
+    std::vector<std::pair<int,int>> frag_trans_pair_path;
+    getSampledTransitionIdsWeightDiffs(selected_weights, visited, 0, frag_trans_pair_path, frag_trans_map);
+
+    for(const auto & record : frag_trans_map){
+        if(record.second.size() > 1)
+            for(const auto & trans_id :record.second)
+                selected_ids.insert(trans_id);
+    }
+}
+
+void FragmentGraph::
+getSampledTransitionIdsWeightDiffs(std::set<unsigned int> &selected_weights, std::set<int> &visited,
+                                   int frag_id, std::vector<std::pair<int, int>> &path,
+                                   std::map<int, std::vector<int>> &trans_to_interest_frags_map) {
 
     double frag_mass = fragments[frag_id]->getMass();
 
-    /*if(frag_mass < stop_mass)
-        return;*/
-
-    auto lower_bound = selected_weights.lower_bound(frag_mass);
-    auto upper_bound = selected_weights.upper_bound(frag_mass);
-
-    bool save = false;
-    if(selected_weights.find(frag_mass) != selected_weights.end()){
-        save = true;
-    }
-    else if(lower_bound != selected_weights.end()){
-        save = (std::fabs(*lower_bound - frag_mass) <= 0.00001);
-    }
-    else if(upper_bound != selected_weights.end()){
-        save = (std::fabs(*upper_bound - frag_mass) <= 0.00001);
-    }
-
-    if(save){
+    if (is_match(selected_weights, frag_mass)) {
         // record troubled frag_id to each transition
-        for(const auto & frag_trans_pair : path){
-            if(frag_trans_map.find(frag_trans_pair.first) == frag_trans_map.end())
-                frag_trans_map[frag_trans_pair.first];
-            frag_trans_map[frag_trans_pair.first].push_back(frag_trans_pair.second);
+        for (const auto &frag_trans_pair : path) {
+            if (trans_to_interest_frags_map.find(frag_trans_pair.first) == trans_to_interest_frags_map.end())
+                trans_to_interest_frags_map[frag_trans_pair.first];
+            trans_to_interest_frags_map[frag_trans_pair.first].push_back(frag_trans_pair.second);
         }
     }
 
     // if we have see this before
-    if(visited.find(frag_id) != visited.end())
+    if (visited.find(frag_id) != visited.end())
         return;
 
     visited.insert(frag_id);
-    for(const auto & trans_id : from_id_tmap[frag_id]){
+    for (const auto &trans_id : from_id_tmap[frag_id]) {
         auto current_path = path;
-        current_path.push_back(std::pair<int,int>(frag_id,trans_id));
-        getCommonAncestors(selected_weights, visited, transitions[trans_id]->getToId(), current_path, frag_trans_map);
+        current_path.push_back(std::pair<int, int>(frag_id, trans_id));
+        getSampledTransitionIdsWeightDiffs(selected_weights, visited, transitions[trans_id]->getToId(),
+                                           current_path, trans_to_interest_frags_map);
     }
 
 }
 
 void FragmentGraph::
-getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights, std::set<double> &all_weights,
-                                             std::set<int> &visited, int frag_id, std::vector<int> &path,
-                                             std::set<int> &selected_ids) {
+getSampledTransitionIdsWeightDiffChildOnly(std::set<unsigned int> &selected_weights, std::set<int> &visited,
+                                           int frag_id, std::vector<int> &path, std::set<int> &selected_ids) {
     // Note since we always start from root
     // and there is no arc lead to root ( or we does not care )
     // we should check all the child fragments
 
     // if we have see this before
-    if(visited.find(frag_id) != visited.end())
+    if (visited.find(frag_id) != visited.end())
         return;
 
     visited.insert(frag_id);
     // matched ids in childs
     std::vector<int> matched_selected_ids;
-    std::vector<int> matched_ids;
+    std::vector<int> trans_ids;
 
-    for(const auto & trans_id : from_id_tmap[frag_id]){
+    for (const auto &trans_id : from_id_tmap[frag_id]) {
         std::vector<int> path_to_current_child = path;
         path_to_current_child.push_back(trans_id);
         auto child_frag_id = transitions[trans_id]->getToId();
@@ -669,137 +735,45 @@ getSampledTransitionIdsDifferenceWeightedBFS(std::set<double> &selected_weights,
         double child_frag_mass = fragments[child_frag_id]->getMass();
 
         // check if child mass matches what we are looking for
-        if(is_match(selected_weights,child_frag_mass))
+        if (is_match(selected_weights, child_frag_mass))
             matched_selected_ids.push_back(trans_id);
 
-        if(is_match(all_weights, child_frag_mass))
-            matched_ids.push_back(trans_id);
-
-        getSampledTransitionIdsDifferenceWeightedBFS(selected_weights, all_weights, visited, child_frag_id,
-                                                     path_to_current_child,
-                                                     selected_ids);
+        getSampledTransitionIdsWeightDiffChildOnly(selected_weights, visited, child_frag_id,
+                                                   path_to_current_child,
+                                                   selected_ids);
     }
 
-    if(!matched_selected_ids.empty()) {
-        for ( const auto & trans_id : path )
+    if (!matched_selected_ids.empty()) {
+
+        // add all trans lead to this node
+        for (const auto &trans_id : path)
             selected_ids.insert(trans_id);
 
-        for (const auto &trans_id : matched_ids)
-            selected_ids.insert(trans_id);
-
-        //for (const auto &trans_id : matched_selected_ids)
-        //    selected_ids.insert(trans_id);
+        //add all trans in this node
+        for (const auto &trans_id : matched_selected_ids)
+           selected_ids.insert(trans_id);
     }
 }
 
-bool FragmentGraph::is_match(std::set<double> &weights, double mass) const {
-    auto lower_bound = weights.lower_bound(mass);
-    auto upper_bound = weights.upper_bound(mass);
+bool FragmentGraph::is_match(std::set<unsigned int> &weights, double mass) const {
 
-    bool is_match = false;
-    if(weights.find(mass) != weights.end())
-        is_match = true;
-    else if(lower_bound != weights.end())
-        is_match = (fabs(*lower_bound - mass) <= 0.00001);
-    else if(upper_bound != weights.end())
-        is_match = (fabs(*upper_bound - mass) <= 0.00001);
-
-    return is_match;
+    unsigned int fixed_mass = (unsigned int) std::round(mass * WEIGHT_SELECTION_SCALER);
+    return (weights.find(fixed_mass) != weights.end());
 }
 
-void FragmentGraph::getRandomSampledTransitions(std::set<int> &selected_trans_id, double ratio) {
-    int limited = (int)std::ceil((double)transitions.size() * ratio);
+void FragmentGraph::getRandomSampledTransitions(std::set<int> &selected_trans_id, int max_selection) {
 
     std::vector<int> ids(transitions.size());
-    std::iota(ids.begin(),ids.end(), 0);
-    std::shuffle(ids.begin(),ids.end(), util_rng);
+    std::iota(ids.begin(), ids.end(), 0);
+    std::shuffle(ids.begin(), ids.end(), util_rng);
 
-    for(int i = 0; i < limited; ++i)
+    max_selection = std::min(max_selection, (int)transitions.size());
+    for (int i = 0; i < max_selection; ++i)
         selected_trans_id.insert(ids[i]);
-
-}
-
-void FragmentGraph::removeFragments(std::vector<int> &input_ids) {
-
-    std::vector<int> id_map(fragments.size());;    //Map old id to new id (or -1 if deleting)
-    //Remove fragments, and record a mapping of old->new transition ids
-    unsigned int next_id = 0;
-    unsigned int id_idx = 0;
-    for (int orig_idx = 0; orig_idx < fragments.size(); orig_idx++) {
-        bool need_remove = (id_idx < input_ids.size());
-        if (need_remove)
-            need_remove = (need_remove && (input_ids[id_idx] == orig_idx));
-        // if deleting
-        if (need_remove) {
-            ++id_idx;
-        } else {
-            fragments[next_id] = fragments[orig_idx];
-            from_id_tmap[next_id] = from_id_tmap[orig_idx];
-            to_id_tmap[next_id] = to_id_tmap[orig_idx];
-
-            for (auto &trans: transitions) {
-                if (trans->getToId() == orig_idx) {
-                    trans->setToId(next_id);
-                }
-                if (trans->getFromId() == orig_idx) {
-                    trans->setFromId(next_id);
-                }
-            }
-            next_id++;
-        }
-    }
-    fragments.resize(next_id);
-    to_id_tmap.resize(next_id);
-    from_id_tmap.resize(next_id);
-}
-
-//Function to remove given transitions from the graph
-void FragmentGraph::removeTransitions(std::vector<int> &input_ids) {
-
-    std::sort(input_ids.begin(), input_ids.end());
-    //std::cout << transitions.size() << std::endl;
-    std::vector<int> id_map(transitions.size());    //Map old id to new id (or -1 if deleting)
-    //Remove transitions, and record a mapping of old->new transition ids
-    unsigned int next_id = 0;
-    unsigned int id_idx = 0;
-    for (int i = 0; i < transitions.size(); i++) {
-        bool need_remove = (id_idx < input_ids.size());
-        if (need_remove)
-            need_remove = (need_remove && (input_ids[id_idx] == i));
-        // if deleting
-        if (need_remove) {
-            id_map[i] = -1;
-            ++id_idx;
-        } else {
-            transitions[next_id] = transitions[i];
-            id_map[i] = next_id++;
-        }
-    }
-    transitions.resize(next_id);
-
-    //Update the id maps
-    for (int i = 0; i < fragments.size(); i++) {
-
-        //Update the To Id Tmap
-        unsigned int count = 0;
-        for (int j = 0; j < to_id_tmap[i].size(); j++) {
-            if (id_map[to_id_tmap[i][j]] >= 0)
-                to_id_tmap[i][count++] = id_map[to_id_tmap[i][j]];
-        }
-        to_id_tmap[i].resize(count);
-
-        //Update the From Id Tmap
-        count = 0;
-        for (int j = 0; j < from_id_tmap[i].size(); j++) {
-            if (id_map[from_id_tmap[i][j]] >= 0)
-                from_id_tmap[i][count++] = id_map[from_id_tmap[i][j]];
-        }
-        from_id_tmap[i].resize(count);
-    }
 }
 
 void FragmentGraph::clearAllSmiles() {
-    for (auto & fragment: fragments) {
+    for (auto &fragment: fragments) {
         fragment->clearSmiles();
     }
 };
@@ -819,7 +793,7 @@ int EvidenceFragmentGraph::addToGraphDirectNoCheck(const EvidenceFragment &fragm
 
 void EvidenceFragmentGraph::addTransition(int from_id, int to_id, const std::string *nl_smiles) {
     auto idx = transitions.size();
-    transitions.push_back(new Transition(from_id, to_id, nl_smiles));
+    transitions.push_back(std::make_shared<Transition>(from_id, to_id, nl_smiles));
     from_id_tmap[from_id].push_back(idx);
     to_id_tmap[to_id].push_back(idx);
 }

@@ -20,17 +20,11 @@ param.cpp.
 #include <GraphMol/MolOps.h>
 
 
-void RootPathFeature::computeRootPaths(std::vector<path_t> &paths,
-                                       const RootedROMolPtr *mol, int len,
-                                       bool ring_break,
+void RootPathFeature::computeRootPaths(std::vector<path_t> &paths, const RootedROMol *mol, int len,
                                        bool with_bond = false) const {
     path_t path_so_far;
     addPathsFromAtom(paths, mol->root, mol->mol, mol->root, path_so_far, len,
                      with_bond);
-    if (ring_break) {
-        addPathsFromAtom(paths, mol->other_root, mol->mol, mol->other_root,
-                         path_so_far, len, with_bond);
-    }
 }
 
 void RootPathFeature::addPathsFromAtom(std::vector<path_t> &paths,
@@ -51,9 +45,7 @@ void RootPathFeature::addPathsFromAtom(std::vector<path_t> &paths,
             RDKit::Atom *nbr_atom = mol.get()->getAtomWithIdx(*itp.first);
             if (with_bond == true) {
                 int bond_type = 0;
-                mol.get()
-                        ->getBondBetweenAtoms(atom->getIdx(), nbr_atom->getIdx())
-                        ->getProp("OrigBondType", bond_type);
+                mol.get()->getBondBetweenAtoms(atom->getIdx(), nbr_atom->getIdx())->getProp("OrigBondType", bond_type);
                 path_so_far.push_back(boost::lexical_cast<std::string>(bond_type));
             }
             if (nbr_atom != prev_atom) {

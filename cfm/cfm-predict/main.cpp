@@ -18,6 +18,7 @@
 #include "Config.h"
 #include "Param.h"
 #include "MolData.h"
+#include "Version.h"
 
 #include <GraphMol/SanitException.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
@@ -69,6 +70,7 @@ int main(int argc, char *argv[]) {
     if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
+                  << "CFM-ID Version: "<< PROJECT_VER << std::endl
                   << "Usage: cfm-predict.exe <input_smiles_or_inchi> <prob_thresh_for_prune> <param_filename> <config_filename> <include_annotations> <output_filename> <apply_post_processing>"
                   << std::endl << std::endl << std::endl;
         std::cout << std::endl << "input_smiles_or_inchi_or_file:" << std::endl
@@ -206,33 +208,40 @@ int main(int argc, char *argv[]) {
                 fgen = new LikelyFragmentGraphGenerator(nn_param, &cfg, prob_thresh_for_prune);
             else
                 fgen = new LikelyFragmentGraphGenerator(param, &cfg, prob_thresh_for_prune);
-            it->computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
 
+            it->computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
+            it->computePredictedSpectra(*nn_param, apply_postprocessing, true);
             //Predict the spectra (and post-process, use existing thetas)
-            it->computePredictedSpectra(*param, apply_postprocessing, true);
         }
-        catch (RDKit::MolSanitizeException e) {
+        catch (RDKit::MolSanitizeException & e) {
             std::cout << "Could not sanitize input: " << it->getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions)
                 throw SpectrumPredictionException("RDKit could not sanitize input: " + it->getSmilesOrInchi());
             continue;
         }
-        catch (RDKit::SmilesParseException pe) {
+        catch (RDKit::SmilesParseException & pe) {
             std::cout << "Could not parse input: " << it->getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions)
                 throw SpectrumPredictionException("RDKit could not parse input: " + it->getSmilesOrInchi());
             continue;
         }
-        catch (FragmentGraphGenerationException ge) {
+        catch (FragmentGraphGenerationException & ge) {
             std::cout << "Could not compute fragmentation graph for input: " << it->getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions)
                 throw SpectrumPredictionException(
                         "Could not compute fragmentation graph for input: " + it->getSmilesOrInchi());
             continue;
         }
-        catch (IonizationException ie) {
+        catch (IonizationException & ie) {
             std::cout << "Could not ionize: " << it->getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions) throw IonizationException();
+            continue;
+        }
+        catch (std::runtime_error & e) {
+            // whatever else can go wrong
+            std::cout << e.what()<< std::endl;
+            if (!batch_run && !suppress_exceptions)
+                throw std::runtime_error(e.what());
             continue;
         }
 

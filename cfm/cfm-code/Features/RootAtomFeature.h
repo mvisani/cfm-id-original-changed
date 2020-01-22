@@ -21,6 +21,6 @@ param.cpp.
 
 class RootAtomFeature : public BreakFeature {
 protected:
-    void computeRootAtomFeature(FeatureVector &fv, const RootedROMolPtr *mol,
+    void computeRootAtomFeature(FeatureVector &fv, const RootedROMol *mol,
                                 bool ring_break) const;
 };

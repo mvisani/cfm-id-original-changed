@@ -40,52 +40,82 @@ protected:
     void removeAtomInTheList(RDKit::RWMol &mol,
                              std::vector<unsigned int> &remove_atom_ids) const;
 
-    void addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
-                                     unsigned int finger_print_size, unsigned int limitation_param,
-                                     int ring_break, bool limited_by_distance,
-                                     unsigned int finger_print_min_path,
-                                     unsigned int finger_print_max_path) const;
+    void addRDKitFingerPrintFeatures(FeatureVector &fv, const RootedROMol *mol, unsigned int finger_print_size,
+                                         unsigned int limitation_param, bool limited_by_distance,
+                                         unsigned int finger_print_min_path, unsigned int finger_print_max_path) const;
 
-    void addMorganFingerPrintFeatures(FeatureVector &fv,
-                                      const RootedROMolPtr *mol,
-                                      unsigned int finger_print_size,
-                                      unsigned int path_range,
-                                      int ring_break,
-                                      int radius) const;
+    void addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMol *mol, unsigned int finger_print_size,
+                                          unsigned int path_range, int radius) const;
 
-    void addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMolPtr *mol,
-                                                unsigned int num_atom, int ring_break,
+    void addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMol *mol,
+                                                unsigned int num_atom, unsigned int max_distance,
                                                 bool include_adjacency_matrix) const;
 
-    void addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMolPtr *mol,
+    void addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMol *mol,
                                       unsigned int finger_print_size, int radius) const;
+
+    void addGenernalizedRepresentationFeature(FeatureVector &fv, const RootedROMol *mol,
+                                                  unsigned int num_atom, unsigned int max_distance) const;
 
 private:
 
-    void getAtomVisitOrderBFS(const romol_ptr_t mol, const RDKit::Atom *root,
-                              std::vector<unsigned int> &visit_order, int num_atoms,
-                              std::map<int, int> &path_record) const;
+    void getAtomVisitOrderBFS(const RootedROMol *roMolPtr, std::vector<unsigned int> &visit_order,
+                                  std::vector<unsigned int> &visit_atom_distance, int num_atoms, int depth) const;
 
     std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
-                                const RDKit::Atom *parent_atom, int depth) const;
+                                    std::map<unsigned int, unsigned int> &distances,
+                                    std::map<unsigned int, std::string> &labels) const;
 
+    void getAtomDistanceToRoot(const RootedROMol *roMolPtr, std::map<unsigned int, unsigned int> &distances) const;
 
-    void addMorganFingerPrint(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
+    void addMorganFingerPrint(std::vector<int> &tmp_fv, const RootedROMol *mol,
                               const RDKit::Atom *root,
                               const unsigned int max_nbr_distance,
                               const unsigned int finger_print_size,
                               const int radius) const;
 
-    void addRDKitFingerPrint(std::vector<int> &tmp_fv, const RootedROMolPtr *mol, const RDKit::Atom *root,
+    void addRDKitFingerPrint(std::vector<int> &tmp_fv, const RootedROMol *mol, const RDKit::Atom *root,
                              unsigned int finger_print_size, unsigned int limitation_param,
                              unsigned int finger_print_min_path, unsigned int finger_print_max_path,
                              bool limited_by_distance) const;
 
-    void addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMolPtr *mol,
-                                         const RDKit::Atom *root, unsigned int num_atom,
-                                         bool include_con_matrix) const;
+    void addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMol *roMolPtr,
+                                         unsigned int num_atom,
+                                         unsigned int depth, bool include_con_matrix) const;
 
-    void addFingerPrintsToFeatureVector(FeatureVector &fv,
-                                        std::vector<int> &root_tmp_fv,
-                                        std::vector<int> &other_root_tmp_fv) const;
+    void addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMol *roMolPtr,
+                                           unsigned int num_atom, unsigned int max_distance) const;
+
+    void addDegreeFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol, unsigned int num_atom,
+                           const std::vector<unsigned int> &visit_order) const;
+
+    void addAtomTypeSeqFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol, unsigned int num_atom,
+                                const std::vector<unsigned int> &visit_order, std::vector<unsigned int> &distance,
+                                int min_distance, int max_distance) const;
+
+    void addAtomTypeFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol, unsigned int num_atom,
+                                 const std::vector<unsigned int> &visit_order,
+                                 const std::vector<unsigned int> &distance) const;
+
+    void addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol, unsigned int num_atom,
+                              std::vector<unsigned int> &visit_order, std::vector<unsigned int> &distance,
+                              int min_distance, int max_distance, bool no_bond_type) const;
+
+    void addDistanceFeature(std::vector<int> &tmp_fv, unsigned int num_atom, const std::vector<unsigned int> &distance) const;
+
+    void addBondAtomPairToFeatures(std::vector<int> &tmp_fv, std::map<std::string, int> &dict,
+                                       bool no_count) const;
+
+    void updateBondAtomPairDict(const RootedROMol *rootedMol,
+                                const RDKit::Atom *root,
+                                std::map<std::string, int>&dict) const;
+
+    void
+    getAdjMatrix(const RootedROMol *mol, unsigned int num_atom,
+                 const std::vector<unsigned int> &visit_order,
+                 std::vector<std::vector<int>> &adjacency_matrix, std::vector<unsigned int> &distance,
+                 int min_distance, int max_distance) const;
+
+    void getBondAtomPairAtEachDistance(const RootedROMol *roMolPtr,
+                                       std::vector<std::map<std::string, int>> &dict) const;
 };

@@ -70,10 +70,16 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
         cmps.push_back(new WeightedRecall(ppm_mass_tol, abs_mass_tol));
         cmps.push_back(new WeightedPrecision(ppm_mass_tol, abs_mass_tol));
         cmps.push_back(new Jaccard(ppm_mass_tol, abs_mass_tol));
-        cmps.push_back(new WeightedJaccard(ppm_mass_tol, abs_mass_tol));
+        //cmps.push_back(new WeightedJaccard(ppm_mass_tol, abs_mass_tol));
         cmps.push_back(new DotProduct(ppm_mass_tol, abs_mass_tol));
         cmps.push_back(new OrigSteinDotProduct(ppm_mass_tol, abs_mass_tol));
     }
+
+    // get list of energies in target
+    std::vector<int> used_engeries;
+    for(auto idx = 0; idx < target_spectra->size(); ++ idx)
+        if(target_spectra->at(idx).size() > 0)
+            used_engeries.push_back(idx);
 
     //Compute the scores for each candidate
     std::vector<Candidate>::iterator it = candidates.begin();
@@ -95,13 +101,17 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
             double precursor_mass = moldata.getFragmentAtIdx(0)->getMass();
 
             //Predict the spectra (and post-process, use existing thetas)
-            moldata.computePredictedSpectra(*param, false, true);
-            if (output_all_scores) std::cout << *it->getId() << ":";
+            for(auto & energy_level: used_engeries)
+                moldata.computePredictedSpectra(*param, false, true, energy_level);
+            
+            if (output_all_scores)
+                std::cout << *it->getId() << ":";
 
             score = 0.0;
             for (int postprocess = 0; postprocess <= 1; postprocess++) {
 
-                if (postprocess) moldata.postprocessPredictedSpectra();
+                if (postprocess)
+                    moldata.postprocessPredictedSpectra();
                 if (abs_mass_tol == 0.5 && !postprocess)
                     moldata.quantisePredictedSpectra(0);    //Integer precision data, combine integer masses.
 
@@ -113,12 +123,15 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
 
                     //Compute the score for the current candidate:
                     // - The score is the sum of the comparison scores between all the target and predicted spectra
-                    for (unsigned int energy = 0; energy < target_spectra->size(); energy++) {
-                        score += cmp->computeScore(&((*target_spectra)[energy]), moldata.getPredictedSpectrum(energy));
-                    }
+                    // for (unsigned int energy = 0; energy < target_spectra->size(); energy++)
+                    for(auto & energy_level: used_engeries)
+                        score += cmp->computeScore(&((*target_spectra)[energy_level]),
+                                moldata.getPredictedSpectrum(energy_level));
                 }
 
-                //Compute and report all comparator scores: (hack to save computation during testing - enabled by output_all_scores flag (disabled by default))
+                //Compute and report all comparator scores:
+                // (hack to save computation during testing -
+                // enabled by output_all_scores flag (disabled by default))
                 boost::ptr_vector<Comparator>::iterator itc = cmps.begin();
                 for (; itc != cmps.end(); ++itc) {
                     double tmp_score = 0.0;

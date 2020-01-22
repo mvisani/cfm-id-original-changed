@@ -28,8 +28,7 @@ protected:
     typedef std::vector<std::string> path_t;
 
     // function to compute path with given length from a root
-    void computeRootPaths(std::vector<path_t> &paths, const RootedROMolPtr *mol,
-                          int len, bool ring_break, bool with_bond) const;
+    void computeRootPaths(std::vector<path_t> &paths, const RootedROMol *mol, int len, bool with_bond) const;
 
     // function to add features with a length of two
     void addRootPairFeatures(FeatureVector &fv, std::vector<path_t> &paths,

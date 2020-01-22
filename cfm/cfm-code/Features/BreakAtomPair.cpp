@@ -17,34 +17,23 @@
 #include "BreakAtomPair.h"
 
 void
-BreakAtomPair::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl, int depth) const {
+
+
+BreakAtomPair::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);
-    std::vector<symbol_pair_t> pairs;
 
-    //Ion Symbol(s)
-    std::string irootsymbol, iotherrootsymbol;
-    irootsymbol = ion->root->getSymbol();
-    replaceUncommonWithX(irootsymbol);
-    if (ring_break) {
-        iotherrootsymbol = ion->other_root->getSymbol();
-        replaceUncommonWithX(iotherrootsymbol);
-    }
+    //Ion Symbol
+    std::string ion_root_symbol = ion->root->getSymbol();
+    replaceUncommonWithX(ion_root_symbol);
 
-    //Neutral Loss Symbol(s)
-    std::string nlrootsymbol, nlotherrootsymbol;
-    nlrootsymbol = nl->root->getSymbol();
-    replaceUncommonWithX(nlrootsymbol);
-    if (ring_break) {
-        nlotherrootsymbol = nl->other_root->getSymbol();
-        replaceUncommonWithX(nlotherrootsymbol);
-    }
+    //Neutral Loss Symbol
+    std::string nl_root_symbol = nl->root->getSymbol();
+    replaceUncommonWithX(nl_root_symbol);
 
     //Pairs
-    pairs.push_back(symbol_pair_t(irootsymbol, nlrootsymbol));
-    if (ring_break)
-        pairs.push_back(symbol_pair_t(iotherrootsymbol, nlotherrootsymbol));
+    symbol_pair_t pair(ion_root_symbol, nl_root_symbol);
 
     //Iterate through all combinations of atom pairs, appending
     //a feature for each; 1 if it matches, 0 otherwise.
@@ -54,15 +43,15 @@ BreakAtomPair::compute(FeatureVector &fv, const RootedROMolPtr *ion, const Roote
     for (it1 = ok_symbols->begin(); it1 != ok_symbols->end(); ++it1) {
         for (it2 = ok_symbols->begin(); it2 != ok_symbols->end(); ++it2) {
             symbol_pair_t sp = symbol_pair_t(*it1, *it2);
-            double nonringf = 0.0, ringf = 0.0;
-            if (sp == *pairs.begin()) {
-                nonringf = !ring_break;
-                ringf = ring_break;
-            }
-            if (sp == *pairs.rbegin()) ringf = ring_break;
-            fv.addFeature(nonringf);
-            fv.addFeature(ringf);
+            double feature = 0.0;
+            if (sp == pair)
+                feature = 1.0;
+            fv.addFeature(feature);
         }
     }
 
+    if(ring_break)
+        fv.addFeature(1);
+    else
+        fv.addFeature(0);
 }

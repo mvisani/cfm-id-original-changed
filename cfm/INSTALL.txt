@@ -63,7 +63,7 @@ bash download-inchi.sh
 cd ../..
 mkdir build
 cd build
-cmake .. -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DBOOST_ROOT=~/boost_1_55_0
+cmake .. -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DCXX_STANDARD=11
 make install
 export RDBASE=~/RDKit_2013_09_1
 
@@ -75,20 +75,11 @@ tar -zxvf lp_solve_5.5.2.0_source.tar.gz
 cd lp_solve_5.5/lpsolve55
 ./ccc
 (should create libs in e.g. lp_solve_5.5/lpsolve55/bin/ux64)
-If ccc does not work on newer linux use ccc file in lp_solve_patch to replace exsiting ccc file
 
 5. (optional - if compiling the cfm-train and cfm-test executables)
   Install a version of MPI.
 
-6. (optional - if compiling the cfm-train and cfm-test executables)
- Download liblbfgs-1.10.tar.gz from https://github.com/downloads/chokkan/liblbfgs/liblbfgs-1.10.tar.gz
-> tar -zxvf liblbfgs-1.10.tar.gz
-> cd liblbfgs-1.10
-> ./configure
-> make
-> make install
-
-7. Download or check out the cfm code and create a new directory
+6. Download or check out the cfm code and create a new directory
 where you want the build files to appear and move to that directory.
 
 e.g.
@@ -102,7 +93,7 @@ e.g. if you are in cfm/build, you can use cmake .. , setting the LPSOLVE_INCLUDE
 cmake .. -DLPSOLVE_INCLUDE_DIR=~/lp_solve_5.5 -DLPSOLVE_LIBRARY_DIR=~/lp_solve_5.5/lpsolve55/bin/ux64
 
 9. (optional - if compiling the cfm-train and cfm-test executables), Use e.g.
-> cmake .. -D INCLUDE_TESTS=ON -D INCLUDE_TRAIN=ON -DLPSOLVE_INCLUDE_DIR=~/lp_solve_5.5 -DLPSOLVE_LIBRARY_DIR=~/lp_solve_5.5/lpsolve55/bin/ux64 -DLBFGS_INCLUDE_DIR=~/liblbfgs-1.10/bin/include -DLBFGS_LIBRARY_DIR=~/liblbfgs-1.10/bin/lib
+> cmake .. -DINCLUDE_TESTS=ON -DINCLUDE_TRAIN=ON -DLPSOLVE_INCLUDE_DIR=~/lp_solve_5.5 -DLPSOLVE_LIBRARY_DIR=~/lp_solve_5.5/lpsolve55/bin/ux64
 
 10. make install
 

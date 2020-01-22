@@ -79,7 +79,7 @@ void Param::appendNextEnergyParams(Param &next_param, int energy) {
     }
 
     weights.resize(num_energy_levels * num_per_e_level);
-    std::vector<double> *new_weights = next_param.getWeightsPtr();
+    std::vector<float> *new_weights = next_param.getWeightsPtr();
     for (unsigned int i = 0; i < num_new_weights; i++)
         weights[start_offset + i] = (*new_weights)[i + new_start_offset];
 }
@@ -103,26 +103,26 @@ void Param::appendRepeatedPrevEnergyParams() {
 //Randomly initialise all weights
 void Param::randomUniformInit() {
 
-    double min = -0.5 , max = 0.5;
-    std::uniform_real_distribution<double> distribution(min,max);
+    float min = -0.5 , max = 0.5;
+    std::uniform_real_distribution<float> distribution(min,max);
     // Non-Bias Terms: to uniform values between -0.5 and 0.5
     for (unsigned int i = 1; i < weights.size(); i++)
-        weights[i] = distribution(util_rng); //(double(std::rand()) / double(RAND_MAX) - 0.5);
+        weights[i] = distribution(util_rng); //(float(std::rand()) / float(RAND_MAX) - 0.5);
 
     // Bias Terms: to uniform values between -3 and 0
-    std::uniform_real_distribution<double> bais_distribution(-3, 0);
+    std::uniform_real_distribution<float> bais_distribution(-3, 0);
     unsigned int len = getNumWeightsPerEnergyLevel();
     for (unsigned int i = 0; i < num_energy_levels; i++)
-        weights[i * len] = bais_distribution(util_rng);//(double(std::rand()) / double(RAND_MAX) - 1.0) * 3;
+        weights[i * len] = bais_distribution(util_rng);//(float(std::rand()) / float(RAND_MAX) - 1.0) * 3;
 
 }
 
 void Param::randomNormalInit() {
     // All Terms: to normal values in mean and std
-    double mean=0.0, std_dev=0.25, min = -0.5 , max = 0.5;
-    std::normal_distribution<double> distribution(mean,std_dev);
+    float mean=0.0, std_dev=0.25, min = -0.5 , max = 0.5;
+    std::normal_distribution<float> distribution(mean,std_dev);
     for (unsigned int i = 0; i < weights.size(); i++){
-        double weight = 0;
+        float weight = 0;
         do{
             weight =  distribution(util_rng);
         }while(weight < min || weight > max);
@@ -138,10 +138,10 @@ void Param::zeroInit() {
         weights[i] = 0.0;
 
     // Bias Terms: to uniform values between -3 and 0
-    std::uniform_real_distribution<double> bais_distribution(-3, 0);
+    std::uniform_real_distribution<float> bais_distribution(-3, 0);
     unsigned int len = getNumWeightsPerEnergyLevel();
     for (unsigned int i = 0; i < num_energy_levels; i++)
-        weights[i * len] = bais_distribution(util_rng);//(double(std::rand()) / double(RAND_MAX) - 1.0) * 3;
+        weights[i * len] = bais_distribution(util_rng);//(float(std::rand()) / float(RAND_MAX) - 1.0) * 3;
 }
 
 //Set all weights to zero
@@ -153,9 +153,9 @@ void Param::fullZeroInit() {
 
 }
 
-double Param::computeTheta(const FeatureVector &fv, int energy) {
+float Param::computeTheta(const FeatureVector &fv, int energy) {
 
-    double theta = 0.0;
+    float theta = 0.0;
     //Check Feature Length
     int len = fv.getTotalLength();
     if (len != expected_num_input_features) {
@@ -180,14 +180,14 @@ void Param::saveToFile(std::string &filename) {
     } else {
 
         //Check the number of non-zero weights
-        std::vector<double>::iterator itt = weights.begin();
+        std::vector<float>::iterator itt = weights.begin();
         int num_used = 0;
         for (; itt != weights.end(); ++itt)
             num_used += (*itt != 0);
 
         //Determine whether or not to use the sparse format
         bool use_sparse = false;
-        if ((double) num_used / weights.size() < 0.25) use_sparse = true;
+        if ((float) num_used / weights.size() < 0.25) use_sparse = true;
 
         //Use sparse format
         if (use_sparse) out << "SPARSE" << std::endl;
@@ -243,9 +243,10 @@ Param::Param(std::string &filename) {
 void Param::readFromFile(const std::string &filename) {
 
     std::string line;
-    std::ifstream ifs(filename.c_str(), std::ifstream::in);
+    std::ifstream ifs(filename.c_str(), std::ios_base::in);
 
-    if (!ifs) std::cout << "Could not open file " << filename << std::endl;
+    if (!ifs)
+        std::cout << "Could not open file " << filename << std::endl;
 
     //Check for sparse representation
     getline(ifs, line);
@@ -288,7 +289,7 @@ void Param::readFromFile(const std::string &filename) {
         int num_used_weights = atoi(line.c_str());
 
         //Get the weights
-        double weight;
+        float weight;
         int count = 0, idx = -1;
         while (count < num_used_weights) {
             getline(ifs, line);
@@ -303,7 +304,7 @@ void Param::readFromFile(const std::string &filename) {
     } else {    //NON-SPARSE FORMAT
 
         //Get the weights
-        double weight;
+        float weight;
         int count = 0;
         while (count < num_weights) {
             getline(ifs, line);

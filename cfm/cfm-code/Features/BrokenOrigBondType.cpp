@@ -16,8 +16,7 @@
 #########################################################################*/
 #include "BrokenOrigBondType.h"
 
-void BrokenOrigBondType::compute(FeatureVector &fv, const RootedROMolPtr *ion, const RootedROMolPtr *nl,
-                                 int depth) const {
+void BrokenOrigBondType::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
     int bondtype;
     nl->mol.get()->getProp("BrokenOrigBondType", bondtype);
     fv.addFeature(bondtype == 1); //SINGLE

@@ -1,0 +1,12 @@
+lambda 0.001
+em_converge_thresh 0.001
+ga_converge_thresh 0.0001
+model_depth 2
+spectrum_depth 2
+spectrum_depth 2
+spectrum_depth 2
+spectrum_weight 1
+spectrum_weight 1
+spectrum_weight 1
+fg_depth 2
+

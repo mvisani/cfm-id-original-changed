@@ -44,14 +44,12 @@
 #include "Features/NLRootTriples.h"
 #include "Features/QuadraticFeatures.h"
 #include "Features/RadicalFeatures.h"
-#include "Features/RingFeatures.h"
 #include "Features/IonRootEncodings.h"
 #include "Features/NLRootEncodings.h"
 #include "Features/IonRootMatrixFP.h"
 #include "Features/NLRootMatrixFP.h"
 #include "Features/IonRootMatrixSimpleFP.h"
 #include "Features/NLRootMatrixSimpleFP.h"
-#include "Features/GraphDepthFeature.h"
 #include "Features/FragmentFingerPrintFeature.h"
 #include "Features/FragmentFunctionalGroupFeature.h"
 #include "Features/NLFingerPrintFeature.h"
@@ -88,7 +86,6 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new NLRootPairs());
         cogs.push_back(new NLRootTriples());
         cogs.push_back(new RadicalFeatures());
-        cogs.push_back(new RingFeatures());
         cogs.push_back(new ExtraRingFeatures());
         cogs.push_back(new IonRootMMFFAtomType());
         cogs.push_back(new NLRootMMFFAtomType());
@@ -103,17 +100,32 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new NLRootEncodingN10());
         cogs.push_back(new IonRootMatrixFPN6());
         cogs.push_back(new NLRootMatrixFPN6());
+        cogs.push_back(new IonRootMatrixFPN6D2());
+        cogs.push_back(new NLRootMatrixFPN6D2());
         cogs.push_back(new IonRootMatrixFPN8());
         cogs.push_back(new NLRootMatrixFPN8());
         cogs.push_back(new IonRootMatrixFPN10());
         cogs.push_back(new NLRootMatrixFPN10());
         cogs.push_back(new IonRootMatrixFPN16());
         cogs.push_back(new NLRootMatrixFPN16());
-        cogs.push_back(new IonRootMatrixSimpleFP());
-        cogs.push_back(new NLRootMatrixSimpleFP());
-        cogs.push_back(new GraphDepthFeature());
+        cogs.push_back(new IonRootMatrixFPN8D3());
+        cogs.push_back(new NLRootMatrixFPN8D3());
+        cogs.push_back(new IonRootMatrixSimpleFPN10());
+        cogs.push_back(new NLRootMatrixSimpleFPN10());
+        cogs.push_back(new IonRootMatrixSimpleFPN16());
+        cogs.push_back(new NLRootMatrixSimpleFPN16());
+        cogs.push_back(new IonRootMatrixSimpleFPN32());
+        cogs.push_back(new NLRootMatrixSimpleFPN32());
+        cogs.push_back(new IonRootMatrixSimpleFPN8D3());
+        cogs.push_back(new NLRootMatrixSimpleFPN8D3());
+        cogs.push_back(new IonRootGeneralizedMatrixFPN8());
+        cogs.push_back(new NLRootGeneralizedMatrixFPN8());
+        cogs.push_back(new IonRootGeneralizedMatrixFPN10());
+        cogs.push_back(new NLRootGeneralizedMatrixFPN10());
         cogs.push_back(new NLFingerPrintFeature());
         cogs.push_back(new IonFingerPrintFeature());
+        //cogs.push_back(new NLRootEncodingMorganD3());
+        //cogs.push_back(new IonRootEncodingMorganD3());
         initialised = true;
     }
     return cogs;
@@ -124,8 +136,9 @@ const boost::ptr_vector<FragmentFeature> &FeatureCalculator::fragmentFeatureCogs
     static bool initialised = false;
 
     if (!initialised) {
-        cogs.push_back(new FragmentFingerPrintFeature());
-        cogs.push_back(new FragmentFunctionalGroupFeature());
+        // Disabled for now
+        //cogs.push_back(new FragmentFingerPrintFeature());
+        //cogs.push_back(new FragmentFunctionalGroupFeature());
         initialised = true;
     }
     return cogs;
@@ -247,7 +260,7 @@ unsigned int FeatureCalculator::getNumFeatures() {
 }
 
 FeatureVector *
-FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedROMolPtr *nl, int tree_depth,
+FeatureCalculator::computeFeatureVector(const RootedROMol *ion, const RootedROMol *nl,
                                         const romol_ptr_t precursor_ion) {
 
     FeatureVector *fv = new FeatureVector();
@@ -259,7 +272,7 @@ FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedR
     for (const auto &feature_idx : used_break_feature_idxs) {
         auto feature = &breakFeatureCogs()[feature_idx];
         try {
-            feature->compute(*fv, ion, nl, tree_depth);
+            feature->compute(*fv, ion, nl);
         } catch (std::exception &e) {
             std::cout << "Could not compute " << feature->getName()
                       << std::endl;
@@ -282,7 +295,7 @@ FeatureCalculator::computeFeatureVector(const RootedROMolPtr *ion, const RootedR
         }
     }
     else {
-        std::cout << "Warning, None precursor ion" << std::endl;
+        //std::cout << "Warning, None precursor ion" << std::endl;
         for (const auto &feature_idx : used_fragement_feature_idxs) {
             auto feature = &fragmentFeatureCogs()[feature_idx];
             fv->addFeatures(std::vector<int>(feature->getSize(),0));

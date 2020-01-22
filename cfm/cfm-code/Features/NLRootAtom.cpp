@@ -17,8 +17,7 @@ param.cpp.
 #########################################################################*/
 #include "NLRootAtom.h"
 
-void NLRootAtom::compute(FeatureVector &fv, const RootedROMolPtr *ion,
-                         const RootedROMolPtr *nl, const int depth) const {
+void NLRootAtom::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     int ring_break;
     nl->mol.get()->getProp("IsRingBreak", ring_break);

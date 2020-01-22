@@ -5,11 +5,11 @@
 #include "Solver.h"
 
 
-Sgd::Sgd(double learning_rate){
+Sgd::Sgd(float learning_rate){
     this->learning_rate = learning_rate;
 }
 
-void Sgd::adjustWeights(std::vector<double> &grads,
+void Sgd::adjustWeights(std::vector<float> &grads,
                         std::set<unsigned int> &used_idxs,
                         boost::shared_ptr<Param> param) {
 
@@ -17,31 +17,31 @@ void Sgd::adjustWeights(std::vector<double> &grads,
         (*(param->getWeightsPtr()))[used_idx] += learning_rate * grads[used_idx];
 }
 
-Momentum::Momentum(unsigned int length, double learning_rate, double momentum) {
-    prev_v = std::vector<double>(length, 0.0);
+Momentum::Momentum(unsigned int length, float learning_rate, float momentum) {
+    prev_v = std::vector<float>(length, 0.0);
     this->learning_rate = learning_rate;
     this->momentum = momentum;
 }
 
-void Momentum::adjustWeights(std::vector<double> &grads,
+void Momentum::adjustWeights(std::vector<float> &grads,
                              std::set<unsigned int> &used_idxs,
                              boost::shared_ptr<Param> param) {
 
     for (auto &used_idx: used_idxs) {
-        double v = momentum * prev_v[used_idx] + learning_rate * grads[used_idx];
+        float v = momentum * prev_v[used_idx] + learning_rate * grads[used_idx];
         (*(param->getWeightsPtr()))[used_idx] += v;
         prev_v[used_idx] = v;
     }
 }
 
 Adam::Adam(unsigned int length,
-           double learning_rate,
-           double beta_1,
-           double beta_2,
-           double eps) {
+           float learning_rate,
+           float beta_1,
+           float beta_2,
+           float eps) {
 
-    first_moment_vector = std::vector<double>(length, 0.0);
-    second_moment_vector = std::vector<double>(length, 0.0);
+    first_moment_vector = std::vector<float>(length, 0.0);
+    second_moment_vector = std::vector<float>(length, 0.0);
     this->learning_rate = learning_rate;
     this->beta_1 = beta_1;
     this->beta_2 = beta_2;
@@ -50,7 +50,7 @@ Adam::Adam(unsigned int length,
 }
 
 
-void Adam::adjustWeights(std::vector<double> &grads,
+void Adam::adjustWeights(std::vector<float> &grads,
                          std::set<unsigned int> &used_idxs,
                          boost::shared_ptr<Param> param) {
 
@@ -59,21 +59,21 @@ void Adam::adjustWeights(std::vector<double> &grads,
     for (auto &used_idx: used_idxs) {
         // Update biased first moment estimate
         // m_t = beta_1 * m_{t-1} + ( 1 - beta_1 ) * g_t
-        double m_t = first_moment_vector[used_idx] * beta_1 + (1.0 - beta_1) * grads[used_idx];
+        float m_t = first_moment_vector[used_idx] * beta_1 + (1.0 - beta_1) * grads[used_idx];
         first_moment_vector[used_idx] = m_t;
 
         // Update biased second raw moment estimate
         // v_t = beta_2 * v_{t-1} + ( 1 - beta_2 ) * g_t^2
-        double v_t = beta_2 * second_moment_vector[used_idx]
+        float v_t = beta_2 * second_moment_vector[used_idx]
                      + (1.0 - beta_2) * std::pow(grads[used_idx], 2);
         second_moment_vector[used_idx] = v_t;
 
         // Compute bias-corrected first moment estimate
         // hat_m_t = m_t / ( 1 - beta_1 ^ t)
-        double m_hat = m_t / (1.0 - std::pow(beta_1, iteration_count));
+        float m_hat = m_t / (1.0 - std::pow(beta_1, iteration_count));
         // Compute bias-corrected second raw moment estimate
         // hat_v_t = v_t / ( 1 - beta_2 ^ t)
-        double v_hat = v_t / (1.0 - std::pow(beta_2, iteration_count));
+        float v_hat = v_t / (1.0 - std::pow(beta_2, iteration_count));
 
         // Update parameters
         // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
@@ -81,7 +81,7 @@ void Adam::adjustWeights(std::vector<double> &grads,
     }
 }
 
-void AdamW::adjustWeights(std::vector<double> &grads,
+void AdamW::adjustWeights(std::vector<float> &grads,
                           std::set<unsigned int> &used_idxs,
                           boost::shared_ptr<Param> param) {
 
@@ -92,21 +92,21 @@ void AdamW::adjustWeights(std::vector<double> &grads,
     for (auto &used_idx: used_idxs) {
         // Update biased first moment estimate
         // m_t = beta_1 * m_{t-1} + ( 1 - beta_1 ) * g_t
-        double m_t = first_moment_vector[used_idx] * beta_1 + (1.0 - beta_1) * grads[used_idx];
+        float m_t = first_moment_vector[used_idx] * beta_1 + (1.0 - beta_1) * grads[used_idx];
         first_moment_vector[used_idx] = m_t;
 
         // Update biased second raw moment estimate
         // v_t = beta_2 * v_{t-1} + ( 1 - beta_2 ) * g_t^2
-        double v_t = beta_2 * second_moment_vector[used_idx]
+        float v_t = beta_2 * second_moment_vector[used_idx]
                      + (1.0 - beta_2) * std::pow(grads[used_idx], 2);
         second_moment_vector[used_idx] = v_t;
 
         // Compute bias-corrected first moment estimate
         // hat_m_t = m_t / ( 1 - beta_1 ^ t)
-        double m_hat = m_t / (1.0 - std::pow(beta_1, iteration_count));
+        float m_hat = m_t / (1.0 - std::pow(beta_1, iteration_count));
         // Compute bias-corrected second raw moment estimate
         // hat_v_t = v_t / ( 1 - beta_2 ^ t)
-        double v_hat = v_t / (1.0 - std::pow(beta_2, iteration_count));
+        float v_hat = v_t / (1.0 - std::pow(beta_2, iteration_count));
 
         // Update parameters
         // theta_t = theta_{t-1} - alpha * m_hat / ( sqrt(v_hat) + eps)
@@ -120,14 +120,14 @@ void AdamW::adjustWeights(std::vector<double> &grads,
 
 // AMSgrad sucks
 AMSgrad::AMSgrad(unsigned int length,
-                 double learning_rate,
-                 double beta_1,
-                 double beta_2,
-                 double eps) {
+                 float learning_rate,
+                 float beta_1,
+                 float beta_2,
+                 float eps) {
 
-    first_moment_vector = std::vector<double>(length, 0.0);
-    second_moment_vector = std::vector<double>(length, 0.0);
-    second_moment_max_vector = std::vector<double>(length, 0.0);
+    first_moment_vector = std::vector<float>(length, 0.0);
+    second_moment_vector = std::vector<float>(length, 0.0);
+    second_moment_max_vector = std::vector<float>(length, 0.0);
     this->learning_rate = learning_rate;
     this->beta_1 = beta_1;
     this->beta_2 = beta_2;
@@ -136,7 +136,7 @@ AMSgrad::AMSgrad(unsigned int length,
 }
 
 
-void AMSgrad::adjustWeights(std::vector<double> &grads,
+void AMSgrad::adjustWeights(std::vector<float> &grads,
                             std::set<unsigned int> &used_idxs,
                             boost::shared_ptr<Param> param) {
 
@@ -146,22 +146,22 @@ void AMSgrad::adjustWeights(std::vector<double> &grads,
     for (auto &used_idx: used_idxs) {
         // Update biased first moment estimate
         // m_t = beta_1 * m_{t-1} + ( 1 - beta_1 ) * g_t
-        double m_t = first_moment_vector[used_idx] * beta_1 + (1.0 - beta_1) * grads[used_idx];
+        float m_t = first_moment_vector[used_idx] * beta_1 + (1.0 - beta_1) * grads[used_idx];
         first_moment_vector[used_idx] = m_t;
 
         // Update biased second raw moment estimate
         // v_t = beta_2 * v_{t-1} + ( 1 - beta_2 ) * g_t^2
-        double v_t = beta_2 * second_moment_vector[used_idx]
+        float v_t = beta_2 * second_moment_vector[used_idx]
                      + (1.0 - beta_2) * std::pow(grads[used_idx], 2);
         second_moment_vector[used_idx] = v_t;
 
-        double v_hat = std::max(v_t, second_moment_max_vector[used_idx]);
+        float v_hat = std::max(v_t, second_moment_max_vector[used_idx]);
         // keep track of v_hat which is the max of v_t some far
         second_moment_max_vector[used_idx] = v_hat;
 
         // Compute bias-corrected first moment estimate
         // hat_m_t = m_t / ( 1 - beta_1 ^ t)
-        double m_hat = m_t / (1.0 - std::pow(beta_1, iteration_count));
+        float m_hat = m_t / (1.0 - std::pow(beta_1, iteration_count));
         // Compute bias-corrected second raw moment estimate
         // hat_v_t = v_t / ( 1 - beta_2 ^ t)
         v_hat = v_t / (1.0 - std::pow(beta_2, iteration_count));
@@ -173,12 +173,12 @@ void AMSgrad::adjustWeights(std::vector<double> &grads,
 }
 
 Adadelta::Adadelta(unsigned int length,
-                   double learning_rate,
-                   double decay_rate,
-                   double eps) {
+                   float learning_rate,
+                   float decay_rate,
+                   float eps) {
 
-    mean_squared_delta_x = std::vector<double>(length, 0.0);
-    mean_squared_gradients = std::vector<double>(length, 0.0);
+    mean_squared_delta_x = std::vector<float>(length, 0.0);
+    mean_squared_gradients = std::vector<float>(length, 0.0);
     this->learning_rate = learning_rate;
     this->decay_rate = decay_rate;
     this->eps = eps;
@@ -186,7 +186,7 @@ Adadelta::Adadelta(unsigned int length,
 }
 
 
-void Adadelta::adjustWeights(std::vector<double> &grads,
+void Adadelta::adjustWeights(std::vector<float> &grads,
                              std::set<unsigned int> &used_idxs,
                              boost::shared_ptr<Param> param) {
     
@@ -200,11 +200,11 @@ void Adadelta::adjustWeights(std::vector<double> &grads,
         // Compute Update
         // RMS[Delta_x]_{t-1} = sqrt(E[Delta_x^2]_{t-1} + eps)
         // NOTE mean_squared_delta_x has not update yet
-        double rms_delta_x = sqrt(mean_squared_delta_x[used_idx] + eps);
+        float rms_delta_x = sqrt(mean_squared_delta_x[used_idx] + eps);
         // RMS[g]_t = sqrt(E[g^2]_t + eps)
-        double rms_gradients = sqrt(mean_squared_gradients[used_idx] + eps);
+        float rms_gradients = sqrt(mean_squared_gradients[used_idx] + eps);
         // -RMS[Delta_x]_{t-1}/ RMS[g]_t * g_t
-        double detla_x = -rms_delta_x / rms_gradients * grads[used_idx];
+        float detla_x = -rms_delta_x / rms_gradients * grads[used_idx];
         // Accumulate Updates
         // E[Delta_x^2]_t  = decay_rate * E[Delta_x^2]_{t-1} + ( 1 - decay_rate ) * Delta_x_t^2
         mean_squared_delta_x[used_idx] =

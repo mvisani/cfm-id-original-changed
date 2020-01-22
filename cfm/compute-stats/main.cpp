@@ -20,6 +20,11 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+
 void reportMeanStd(std::ostream &out, std::vector<double> &scores);
 
 void parseInputFile(std::vector<MolData> &data, std::string &input_filename);
@@ -91,9 +96,10 @@ int main(int argc, char *argv[]) {
                   << "Filter out any peaks below this intensity (default = 0 (off))"
                   << std::endl;
         std::cout << std::endl
-                  << "apply_cutoffs (opt):" << std::endl
-                  << "Whether to apply minimum and maximum peak cutoffs of 5 and "
-                     "30 respectively (default = 0(off))"
+                  << "minimum peak cutoffs (opt) (default = 1))" << std::endl
+                  << std::endl;
+        std::cout << std::endl
+                  << "maximum peak cutoffs (opt) (default = 1000000):"
                   << std::endl;
         std::cout << std::endl
                   << "clean_target_spectra (opt):" << std::endl
@@ -186,7 +192,9 @@ int main(int argc, char *argv[]) {
 
     double cumulative_intensity_thresh = 100;
     double min_intensity = 0.0;
-    int apply_cutoffs = 0, clean_target_spectra = 0;
+    int min_peak_cutoffs = 1, clean_target_spectra = 0;
+    int max_peak_cutoffs = 1000000;
+
     int quantise_spectra_dec_pl = -1;
     if (argc >= 9) {
         try {
@@ -206,30 +214,40 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
     }
+
     if (argc >= 11) {
         try {
-            apply_cutoffs = boost::lexical_cast<bool>(argv[10]);
+            min_peak_cutoffs = boost::lexical_cast<int>(argv[10]);
         } catch (boost::bad_lexical_cast e) {
-            std::cout << "Invalid apply_cutoffs (Expecting 0 or 1): " << argv[10]
+            std::cout << "Invalid min_peak_cutoffs (Expecting int) " << argv[10]
                       << std::endl;
             exit(1);
         }
     }
     if (argc >= 12) {
         try {
-            clean_target_spectra = boost::lexical_cast<bool>(argv[11]);
+            max_peak_cutoffs = boost::lexical_cast<int>(argv[11]);
         } catch (boost::bad_lexical_cast e) {
-            std::cout << "Invalid apply_cutoffs (Expecting 0 or 1): " << argv[11]
+            std::cout << "Invalid max_peak_cutoffs (Expecting int) " << argv[11]
                       << std::endl;
             exit(1);
         }
     }
     if (argc >= 13) {
         try {
-            quantise_spectra_dec_pl = boost::lexical_cast<int>(argv[12]);
+            clean_target_spectra = boost::lexical_cast<bool>(argv[12]);
+        } catch (boost::bad_lexical_cast e) {
+            std::cout << "Invalid apply_cutoffs (Expecting 0 or 1): " << argv[12]
+                      << std::endl;
+            exit(1);
+        }
+    }
+    if (argc >= 14) {
+        try {
+            quantise_spectra_dec_pl = boost::lexical_cast<int>(argv[13]);
         } catch (boost::bad_lexical_cast e) {
             std::cout << "Invalid quantise_spectra_dec_pl (Expecting integer): "
-                      << argv[12] << std::endl;
+                      << argv[13] << std::endl;
             exit(1);
         }
     }
@@ -245,6 +263,8 @@ int main(int argc, char *argv[]) {
     WeightedPrecision wpcmp(ppm_mass_tol, abs_mass_tol);
     Jaccard jcmp(ppm_mass_tol, abs_mass_tol);
     WeightedJaccard wjcmp(ppm_mass_tol, abs_mass_tol);
+    Dice dcmp(ppm_mass_tol, abs_mass_tol);
+    WeightedDice wdcmp(ppm_mass_tol, abs_mass_tol);
     DotProduct dot(ppm_mass_tol, abs_mass_tol);
     OrigSteinDotProduct odot(ppm_mass_tol, abs_mass_tol);
     ScatterOutput shout(ppm_mass_tol, abs_mass_tol);
@@ -263,7 +283,7 @@ int main(int argc, char *argv[]) {
     out << "Config: "  << std::endl;
     out << "cumulative_intensity_thresh " << cumulative_intensity_thresh << std::endl;
     out << "min_intensity " << min_intensity << std::endl;
-    out << "apply_cutoffs " << apply_cutoffs << std::endl;
+    out << "peak_cutoffs(min, max) " << min_peak_cutoffs << " " << max_peak_cutoffs << std::endl;
     out << "clean_target_spectra " << clean_target_spectra << std::endl;
     out << "quantise_spectra_dec_pl " << quantise_spectra_dec_pl << std::endl << std::endl;
 
@@ -271,16 +291,23 @@ int main(int argc, char *argv[]) {
     // Compute the scores (per energy level and average scores across energy
     // levels)
     std::vector<double> rscores(data.size(), 0.0), pscores(data.size(), 0.0),
-            jscores(data.size(), 0.0), wjscores(data.size(), 0.0);
+            jscores(data.size(), 0.0), wjscores(data.size(), 0.0),
+            dscores(data.size(),0.0), wdscores(data.size());
+
     std::vector<double> wrscores(data.size(), 0.0), wpscores(data.size(), 0.0),
             adscores(data.size(), 0.0);
+
     std::vector<double> dpscores(data.size(), 0.0), odpscores(data.size(), 0.0);
+
     std::vector<double> energy_rscores(data.size()), energy_pscores(data.size()),
-            energy_jscores(data.size()), energy_wjscores(data.size());
+            energy_jscores(data.size()), energy_dscores(data.size()),
+            energy_wjscores(data.size()), energy_wdscores(data.size());
+
     std::vector<double> energy_wrscores(data.size()),
             energy_wpscores(data.size()), energy_adscores(data.size());
     std::vector<double> energy_dpscores(data.size()),
             energy_odpscores(data.size());
+
     double norm = 1.0 / (double) num_spectra;
     for (unsigned int i = 0; i < num_spectra; i++) {
 
@@ -324,10 +351,10 @@ int main(int argc, char *argv[]) {
                 mit->quantisePredictedSpectra(quantise_spectra_dec_pl);
                 mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
             }
-            if (apply_cutoffs)
-                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
-            else
-                mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 0, 1000000, min_intensity);
+            //if (apply_cutoffs)
+            // mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
+            //else
+            mit->postprocessPredictedSpectra(cumulative_intensity_thresh, min_peak_cutoffs, max_peak_cutoffs, min_intensity);
 
             //num_spectra = mit->GetNumSpectra();
             if (clean_target_spectra)
@@ -347,12 +374,23 @@ int main(int argc, char *argv[]) {
             energy_wpscores[idx] =
                     wpcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             wpscores[idx] += norm * energy_wpscores[idx];
+            // jaccard Score
             energy_jscores[idx] =
                     jcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             jscores[idx] += norm * energy_jscores[idx];
+            // weighted jaccard score
             energy_wjscores[idx] =
                     wjcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             wjscores[idx] += norm * energy_wjscores[idx];
+            // dice coef
+            energy_dscores[idx] =
+                    dcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
+            dscores[idx] += norm * energy_dscores[idx];
+            // weighted dice coef
+            energy_wdscores[idx] =
+                    wdcmp.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
+            wdscores[idx] += norm * energy_wdscores[idx];
+            // dot product
             energy_dpscores[idx] =
                     dot.computeScore(mit->getSpectrum(i), mit->getPredictedSpectrum(i));
             dpscores[idx] += norm * energy_dpscores[idx];
@@ -361,9 +399,9 @@ int main(int argc, char *argv[]) {
             odpscores[idx] += norm * energy_odpscores[idx];
             out << mit->getId() << "\t" << energy_rscores[idx] << "\t"
                 << energy_pscores[idx] << "\t" << energy_wrscores[idx] << "\t"
-                << energy_wpscores[idx] << "\t" << energy_jscores[idx] << "\t" << energy_wjscores[idx] << "\t"
+                << energy_wpscores[idx] << "\t" << energy_jscores[idx] << "\t" <<  energy_wjscores[idx]  <<  "\t"
+                << energy_dscores[idx] << "\t" << energy_wdscores[idx] << "\t"
                 << energy_dpscores[idx] << "\t" << energy_odpscores[idx] << std::endl;
-
             idx++;
         }
 
@@ -371,6 +409,8 @@ int main(int argc, char *argv[]) {
         energy_wpscores.resize(idx);
         energy_jscores.resize(idx);
         energy_wjscores.resize(idx);
+        energy_dscores.resize(idx);
+        energy_wdscores.resize(idx);
         energy_wrscores.resize(idx);
         energy_rscores.resize(idx);
         energy_pscores.resize(idx);
@@ -379,6 +419,8 @@ int main(int argc, char *argv[]) {
         wpscores.resize(idx);
         jscores.resize(idx);
         wjscores.resize(idx);
+        dscores.resize(idx);
+        wdscores.resize(idx);
         wrscores.resize(idx);
         rscores.resize(idx);
         pscores.resize(idx);
@@ -401,6 +443,10 @@ int main(int argc, char *argv[]) {
         reportMeanStd(out, energy_jscores);
         out << std::endl << "Weighted Jaccard (mean, std err): ";
         reportMeanStd(out, energy_wjscores);
+        out << std::endl << "Dice (mean, std err): ";
+        reportMeanStd(out, energy_dscores);
+        out << std::endl << "Weighted Dice (mean, std err): ";
+        reportMeanStd(out, energy_wdscores);
         out << std::endl << "Dot Product (mean, std err): ";
         reportMeanStd(out, energy_dpscores);
         out << std::endl << "Original Stein Dot Product (mean, std err): ";
@@ -426,6 +472,10 @@ int main(int argc, char *argv[]) {
     reportMeanStd(out, jscores);
     out << std::endl << "Weighted Jaccard (mean, std err): ";
     reportMeanStd(out, wjscores);
+    out << std::endl << "Dice (mean, std err): ";
+    reportMeanStd(out, dscores);
+    out << std::endl << "Weighted Dice (mean, std err): ";
+    reportMeanStd(out, wdscores);
     out << std::endl << "Altered Dot Product (mean, std err): ";
     reportMeanStd(out, adscores);
     out << std::endl << "Dot Product (mean, std err): ";
@@ -446,12 +496,18 @@ double addSq(double x, double y) { return x + y * y; }
 
 void reportMeanStd(std::ostream &out, std::vector<double> &scores) {
 
-    double mean =
+    /*double mean =
             std::accumulate(scores.begin(), scores.end(), 0.0) / scores.size();
     double sq_mean =
             std::accumulate(scores.begin(), scores.end(), 0.0, addSq) / scores.size();
-    double stddev = std::sqrt(sq_mean - mean * mean) / scores.size();
-    out << mean << " " << stddev << std::endl;
+    double stddev = std::sqrt(sq_mean - mean * mean) / scores.size();*/
+
+    using namespace boost::accumulators;
+    accumulator_set<double, stats<tag::variance> > acc;
+    for(auto & score : scores)
+        acc(score);
+
+    out << mean(acc) << " " << sqrt(variance(acc)) << std::endl;
 }
 
 void parseInputFile(std::vector<MolData> &data, std::string &input_filename) {

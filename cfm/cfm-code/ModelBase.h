@@ -20,10 +20,9 @@
 
 #include "Comms.h"
 #include "Config.h"
-#include "IPFP.h"
 #include "MolData.h"
 #include "Solver.h"
-
+#include "Inference.h"
 #include "mpi.h"
 
 class ModelBase {
