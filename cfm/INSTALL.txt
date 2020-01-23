@@ -46,12 +46,13 @@ COMPILING FOR LINUX
 2. Install Boost (see www.boost.org). At minimum, include the filesystem, system and serialization modules. Set an environment variable BOOST_ROOT to the Boost install location.
 
 e.g:
-Download boost_1_55_0.tar.gz from http://www.boost.org/users/history/version_1_55_0.html
-tar -zxvf boost_1_55_0.tar.gz
-cd boost_1_55_0
-./bootstrap.sh --prefix=. --with-libraries=regex,serialization,filesystem,system
+Download boost_1_64_0.tar.gz from http://www.boost.org/users/history/version_1_55_0.html
+tar -zxvf boost_1_64_0.tar.gz
+cd boost_1_64_0
+./bootstrap.sh --prefix=. --with-libraries=regex,serialization,filesystem,system,thread,program_options
+
 ./b2 address-model=64 cflags=-fPIC cxxflags=-fPIC install
-export BOOST_ROOT=~/boost_1_55_0
+export BOOST_ROOT=~/boost_1_64_0
 
 3. Install RDKit (see http://rdkit.org/), including the InChI Extensions (python extensions are not required). Set the environment variable RDBASE to the RDKit install location (the directory with Code, lib etc..).
 
@@ -101,12 +102,12 @@ cmake .. -DLPSOLVE_INCLUDE_DIR=~/lp_solve_5.5 -DLPSOLVE_LIBRARY_DIR=~/lp_solve_5
 
 12. Set LD_LIBRARY_PATH to include Boost, RDKit and LPSolve library locations
 e.g.
-> export LD_LIBRARY_PATH = $LD_LIBRARY_PATH:~/boost_1_55_0/lib:~/RDKit_2013_09_1/lib:~/lp_solve_5.5/lpsolve55/bin/ux64
+> export LD_LIBRARY_PATH = $LD_LIBRARY_PATH:~/boost_1_64_0/lib:~/RDKit_2013_09_1/lib:~/lp_solve_5.5/lpsolve55/bin/ux64
 
 Or go to /etc/ld.so.conf.d add *.conf for each library Boost, RDKit and LPSolve library locations
 e.g.
 > boost.conf
-  ~/boost_1_55_0/lib
+  ~/boost_1_64_0/lib
   rdkit.conf
   ~/RDKit_2013_09_1/lib
   lp_solve.conf
@@ -129,12 +130,12 @@ COMPILING FOR MAC
 2. Install Boost (see www.boost.org). At minimum, include the filesystem, system and serialization modules. Set an environment variable BOOST_ROOT to the Boost install location.
 
 e.g:
-Download boost_1_55_0.tar.gz from http://www.boost.org/users/history/version_1_55_0.html
-tar -zxvf boost_1_55_0.tar.gz
-cd boost_1_55_0
+Download boost_1_64_0.tar.gz from http://www.boost.org/users/history/version_1_64_0.html
+tar -zxvf boost_1_64_0.tar.gz
+cd boost_1_64_0
 ./bootstrap.sh --prefix=. --with-libraries=regex,serialization,filesystem,system
 ./b2 address-model=64 cflags=-fPIC cxxflags=-fPIC install
-export BOOST_ROOT=~/boost_1_55_0
+export BOOST_ROOT=~/boost_1_64_0
 
 3. Install RDKit (see http://rdkit.org/), including the InChI Extensions (python extensions are not required). Set the environment variable RDBASE to the RDKit install location (the directory with Code, lib etc..).
 
@@ -146,7 +147,7 @@ bash download-inchi.sh
 cd ../..
 mkdir build
 cd build
-cmake .. -DRDK_BUILD_INCHI_SUPPORT=ON -DBOOST_ROOT=~/boost_1_55_0
+cmake .. -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DBOOST_ROOT=~/boost_1_64_0 
 make install
 export RDBASE=~/RDKit_2013_09_1
 
@@ -192,7 +193,7 @@ e.g.
 
 12. Set DYLD_LIBRARY_PATH to include Boost, RDKit and LPSolve library locations
 e.g.
-> export DYLD_LIBRARY_PATH = $DYLD_LIBRARY_PATH:~/boost_1_55_0/lib:~/RDKit_2013_09_1/lib:~/lp_solve_5.5/lpsolve55/bin/osx64
+> export DYLD_LIBRARY_PATH = $DYLD_LIBRARY_PATH:~/boost_1_64_0/lib:~/RDKit_2013_09_1/lib:~/lp_solve_5.5/lpsolve55/bin/osx64
 
 13. (optional - if compiling the cfm-train and cfm-test executables) Also add the libLBFGS location.
 > export DYLD_LIBRARY_PATH = $DYLD_LIBRARY_PATH:~/liblbfgs-1.10/bin/lib
