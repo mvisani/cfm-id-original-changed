@@ -431,25 +431,25 @@ int main(int argc, char *argv[]) {
         // Report the mean and std of each energy
         out << "Energy " << i << std::endl;
         out << std::endl;
-        out << "Recall (mean, std err): ";
+        out << "Recall (mean, std): ";
         reportMeanStd(out, energy_rscores);
-        out << std::endl << "Precision (mean, std err): ";
+        out << std::endl << "Precision (mean, std): ";
         reportMeanStd(out, energy_pscores);
-        out << std::endl << "Weighted Recall (mean, std err): ";
+        out << std::endl << "Weighted Recall (mean, std): ";
         reportMeanStd(out, energy_wrscores);
-        out << std::endl << "Weighted Precision (mean, std err): ";
+        out << std::endl << "Weighted Precision (mean, std): ";
         reportMeanStd(out, energy_wpscores);
-        out << std::endl << "Jaccard (mean, std err): ";
+        out << std::endl << "Jaccard (mean, std): ";
         reportMeanStd(out, energy_jscores);
-        out << std::endl << "Weighted Jaccard (mean, std err): ";
+        out << std::endl << "Weighted Jaccard (mean, std): ";
         reportMeanStd(out, energy_wjscores);
-        out << std::endl << "Dice (mean, std err): ";
+        out << std::endl << "Dice (mean, std): ";
         reportMeanStd(out, energy_dscores);
-        out << std::endl << "Weighted Dice (mean, std err): ";
+        out << std::endl << "Weighted Dice (mean, std): ";
         reportMeanStd(out, energy_wdscores);
-        out << std::endl << "Dot Product (mean, std err): ";
+        out << std::endl << "Dot Product (mean, std): ";
         reportMeanStd(out, energy_dpscores);
-        out << std::endl << "Original Stein Dot Product (mean, std err): ";
+        out << std::endl << "Original Stein Dot Product (mean, std): ";
         reportMeanStd(out, energy_odpscores);
         out << std::endl;
     }
@@ -460,27 +460,27 @@ int main(int argc, char *argv[]) {
 
     // Report the mean and std of each
     out << std::endl;
-    out << "Recall (mean, std err): ";
+    out << "Recall (mean, std): ";
     reportMeanStd(out, rscores);
-    out << std::endl << "Precision (mean, std err): ";
+    out << std::endl << "Precision (mean, std): ";
     reportMeanStd(out, pscores);
-    out << std::endl << "Weighted Recall (mean, std err): ";
+    out << std::endl << "Weighted Recall (mean, std): ";
     reportMeanStd(out, wrscores);
-    out << std::endl << "Weighted Precision (mean, std err): ";
+    out << std::endl << "Weighted Precision (mean, std): ";
     reportMeanStd(out, wpscores);
-    out << std::endl << "Jaccard (mean, std err): ";
+    out << std::endl << "Jaccard (mean, std): ";
     reportMeanStd(out, jscores);
-    out << std::endl << "Weighted Jaccard (mean, std err): ";
+    out << std::endl << "Weighted Jaccard (mean, std): ";
     reportMeanStd(out, wjscores);
-    out << std::endl << "Dice (mean, std err): ";
+    out << std::endl << "Dice (mean, std): ";
     reportMeanStd(out, dscores);
-    out << std::endl << "Weighted Dice (mean, std err): ";
+    out << std::endl << "Weighted Dice (mean, std): ";
     reportMeanStd(out, wdscores);
-    out << std::endl << "Altered Dot Product (mean, std err): ";
+    out << std::endl << "Altered Dot Product (mean, std): ";
     reportMeanStd(out, adscores);
-    out << std::endl << "Dot Product (mean, std err): ";
+    out << std::endl << "Dot Product (mean, std): ";
     reportMeanStd(out, dpscores);
-    out << std::endl << "Original Stein Dot Product (mean, std err): ";
+    out << std::endl << "Original Stein Dot Product (mean, std): ";
     reportMeanStd(out, odpscores);
     out << std::endl;
 
