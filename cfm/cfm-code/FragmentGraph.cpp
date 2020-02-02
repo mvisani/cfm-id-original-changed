@@ -778,7 +778,6 @@ void FragmentGraph::clearAllSmiles() {
     }
 };
 
-
 //Direct constructor that bipasses the mols altogether and directly sets the nl_smiles
 int EvidenceFragmentGraph::addToGraphDirectNoCheck(const EvidenceFragment &fragment, const Transition *transition,
                                                    int parentid) {
@@ -840,7 +839,12 @@ bool EvidenceFragmentGraph::fragmentIsRedundant(unsigned int fidx, std::vector<i
 void EvidenceFragmentGraph::setFlagsForDirectPaths(std::vector<int> &direct_flags, unsigned int fidx,
                                                    std::vector<int> &annotated_flags) const {
 
-    if (!annotated_flags[fidx]) return;
+    if (!annotated_flags[fidx])
+        return;
+
+    if (direct_flags[fidx])
+        return;
+
     direct_flags[fidx] = 1;
     auto it = from_id_tmap[fidx].begin();
     for (; it != from_id_tmap[fidx].end(); ++it) {
