@@ -393,7 +393,7 @@ public:
 
     // Utility functions used in annotation
     bool fragmentIsRedundant(unsigned int fidx, std::vector<int> &annotated_flags,
-                             std::vector<int> &direct_flags) const;
+                             std::vector<int> &direct_flags, std::vector<bool> &visited) const;
 
     void setFlagsForDirectPaths(std::vector<int> &direct_flags, unsigned int fidx,
                                 std::vector<int> &annotated_flags) const;

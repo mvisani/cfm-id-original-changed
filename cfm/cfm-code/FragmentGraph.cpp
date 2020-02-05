@@ -824,14 +824,20 @@ void EvidenceFragmentGraph::writeFullGraph(std::ostream &out) const {
 }
 
 bool EvidenceFragmentGraph::fragmentIsRedundant(unsigned int fidx, std::vector<int> &annotated_flags,
-                                                std::vector<int> &direct_flags) const {
+                                                std::vector<int> &direct_flags, std::vector<bool> &visited) const {
 
-    if (annotated_flags[fidx]) return false;
+    if (annotated_flags[fidx])
+        return false;
+
+    visited[fidx] = true;
 
     auto it = from_id_tmap[fidx].begin();
     for (; it != from_id_tmap[fidx].end(); ++it) {
         int cidx = transitions[*it]->getToId();
-        if (!fragmentIsRedundant(cidx, annotated_flags, direct_flags) && !direct_flags[cidx]) return false;
+        if(visited[cidx])
+            continue;
+        if (!fragmentIsRedundant(cidx, annotated_flags, direct_flags, visited) && !direct_flags[cidx])
+            return false;
     }
     return true;
 }
