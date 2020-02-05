@@ -5,9 +5,9 @@
 #define INCLUDE_VERSION
 
 #define PROJECT_NAME "cfm"
-#define PROJECT_VER  "4.0.0"
+#define PROJECT_VER  "4.0.1"
 #define PROJECT_VER_MAJOR "4"
 #define PROJECT_VER_MINOR "0"
-#define PTOJECT_VER_PATCH "0"
+#define PTOJECT_VER_PATCH "1"
 
 #endif // INCLUDE_VERSION
