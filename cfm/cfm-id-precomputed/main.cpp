@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     double abs_mass_tol = 0.01, ppm_mass_tol = 10.0;
     std::string score_type = "Dice";
 
-    if (argc < 4 || argc > 9) {
+    if (argc < 4 || argc > 10) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
                   << "Usage: cfm-id.exe <spectrum_file> <id> <candidate_file> <num_highest> <ppm_mass_tol> <abs_mass_tol> <score_type> <output_filename>"
