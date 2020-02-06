@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
         to_stdout = false;
     }
     if (argc > 9)
-        preprocessing_candidates_spectra =  boost::lexical_cast<bool>(argv[10]);
+        preprocessing_candidates_spectra =  boost::lexical_cast<bool>(argv[9]);
 
 
         //Dummy param and config (since the spectra are already computed)
