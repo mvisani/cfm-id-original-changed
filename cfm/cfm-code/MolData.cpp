@@ -264,8 +264,9 @@ void MolData::annotatePeaks(double abs_tol, double ppm_tol,
         // If there is no peak for this fragment, check there is
         // an annotated descendent, else flag for deletion
         std::vector<int> direct_flags(num_fragments);
+        std::vector<bool> visited(num_fragments);
         ev_fg->setFlagsForDirectPaths(direct_flags, 0, frag_flags);
-        if (ev_fg->fragmentIsRedundant(i, frag_flags, direct_flags))
+        if (ev_fg->fragmentIsRedundant(i, frag_flags, direct_flags, visited))
             delete_flags[i] = 1;
         else
             delete_flags[i] = 0;
