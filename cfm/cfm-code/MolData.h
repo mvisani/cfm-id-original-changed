@@ -68,6 +68,7 @@ public:
 
     const std::vector<Spectrum> *getSpectra() const { return &spectra; };
 
+
     const Spectrum *getPredictedSpectrum(int energy) const {
         return &(predicted_spectra[energy]);
     };
