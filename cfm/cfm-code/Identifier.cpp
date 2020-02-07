@@ -177,7 +177,7 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
 //Ranks the list of candidates according to the match between their predicted spectra and the target
 void Identifier::rankPrecomputedCandidatesForSpecMatch(std::vector<PrecomputedCandidate> &candidates,
                                                        const std::vector<Spectrum> *target_spectra,
-                                                       bool preprocess_candidates) {
+                                                       bool preprocess_candidates, bool merge_candidate_spectra) {
 
 
     //Compute the scores for each candidate
@@ -190,10 +190,19 @@ void Identifier::rankPrecomputedCandidatesForSpecMatch(std::vector<PrecomputedCa
         if (!it->hasSpectra()) {
             MolData moldata(it->getId()->c_str(), it->getSmilesOrInchi()->c_str(), cfg);
             moldata.readInSpectraFromFile(it->getSpectrumFilename()->c_str(), true);
+            
             if(preprocess_candidates)
                 moldata.postprocessPredictedSpectra();
-            for (unsigned int energy = 0; energy < target_spectra->size(); energy++)
-                score += cmp->computeScore(&((*target_spectra)[energy]), moldata.getPredictedSpectrum(energy));
+            if(!merge_candidate_spectra){
+                for (unsigned int energy = 0; energy < target_spectra->size(); energy++)
+                    score += cmp->computeScore(&((*target_spectra)[energy]), moldata.getPredictedSpectrum(energy));
+            }
+            else{
+                moldata.computeMergedPrediction();
+                for (unsigned int energy = 0; energy < target_spectra->size(); energy++)
+                    score += cmp->computeScore(&((*target_spectra)[energy]), moldata.getMergedPrediction());
+            }
+            
         } else {
             for (unsigned int energy = 0; energy < target_spectra->size(); energy++)
                 score += cmp->computeScore(&((*target_spectra)[energy]), &(*it->getSpectra())[energy]);

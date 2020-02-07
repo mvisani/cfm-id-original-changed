@@ -244,6 +244,12 @@ public:
 
     double getWeightedJaccardScore(int engery_level);
 
+    void computeMergedPrediction();
+
+    const Spectrum* getMergedPrediction(){
+        return m_merged_predicted_spectra;
+    };
+
     ~MolData();
 protected
     : // These items are protected rather than private for access during tests.
@@ -260,6 +266,11 @@ protected
     std::vector<Spectrum> orig_spectra;
     // predicted spectra
     std::vector<Spectrum> predicted_spectra;
+
+    // merged predicted spectra
+    // used in casmi 
+    Spectrum *m_merged_predicted_spectra = nullptr;
+    
     //std::vector<FeatureVector *> fvs;
     std::vector<std::vector<double>> thetas;
     std::vector<std::vector<double>> log_probs;

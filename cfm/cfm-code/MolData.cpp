@@ -803,10 +803,28 @@ void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int e
     }
 }
 
+void MolData::computeMergedPrediction(){
+    std::map<double,double> peaks_map;
+    for(auto & spectrum: predicted_spectra){
+        for(auto & peak : *spectrum.getPeaks()){
+            if(peaks_map.find(peak.mass) == peaks_map.end())
+                peaks_map[peak.mass] = 0.0;
+            peaks_map[peak.mass] += peak.intensity;
+        }
+    }
+    for (const auto& peak_data : peaks_map){
+        Peak peak(peak_data.first,peak_data.second);
+        m_merged_predicted_spectra->push_back(peak);
+    }
+    m_merged_predicted_spectra->normalizeAndSort();
+}
+
 MolData::~MolData() {
 
     if (graph_computed)
         delete fg;
     if (ev_graph_computed)
         delete ev_fg;
+    if (m_merged_predicted_spectra != nullptr)
+        delete m_merged_predicted_spectra;
 }
