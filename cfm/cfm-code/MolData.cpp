@@ -804,6 +804,9 @@ void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int e
 }
 
 void MolData::computeMergedPrediction(){
+    if (m_merged_predicted_spectra == nullptr)
+        m_merged_predicted_spectra = new Spectrum();
+
     std::map<double,double> peaks_map;
     for(auto & spectrum: predicted_spectra){
         for(auto & peak : *spectrum.getPeaks()){
