@@ -7,6 +7,7 @@
 #				the fragment generation process.
 #
 # Copyright (c) 2013, Felicity Allen
+# Modified 2016，2019， Fei Wang
 # All rights reserved.
 
 # This file is part of the cfm-id project.

@@ -778,7 +778,6 @@ void FragmentGraph::clearAllSmiles() {
     }
 };
 
-
 //Direct constructor that bipasses the mols altogether and directly sets the nl_smiles
 int EvidenceFragmentGraph::addToGraphDirectNoCheck(const EvidenceFragment &fragment, const Transition *transition,
                                                    int parentid) {
@@ -825,14 +824,20 @@ void EvidenceFragmentGraph::writeFullGraph(std::ostream &out) const {
 }
 
 bool EvidenceFragmentGraph::fragmentIsRedundant(unsigned int fidx, std::vector<int> &annotated_flags,
-                                                std::vector<int> &direct_flags) const {
+                                                std::vector<int> &direct_flags, std::vector<bool> &visited) const {
 
-    if (annotated_flags[fidx]) return false;
+    if (annotated_flags[fidx])
+        return false;
+
+    visited[fidx] = true;
 
     auto it = from_id_tmap[fidx].begin();
     for (; it != from_id_tmap[fidx].end(); ++it) {
         int cidx = transitions[*it]->getToId();
-        if (!fragmentIsRedundant(cidx, annotated_flags, direct_flags) && !direct_flags[cidx]) return false;
+        if(visited[cidx])
+            continue;
+        if (!fragmentIsRedundant(cidx, annotated_flags, direct_flags, visited) && !direct_flags[cidx])
+            return false;
     }
     return true;
 }
@@ -840,7 +845,12 @@ bool EvidenceFragmentGraph::fragmentIsRedundant(unsigned int fidx, std::vector<i
 void EvidenceFragmentGraph::setFlagsForDirectPaths(std::vector<int> &direct_flags, unsigned int fidx,
                                                    std::vector<int> &annotated_flags) const {
 
-    if (!annotated_flags[fidx]) return;
+    if (!annotated_flags[fidx])
+        return;
+
+    if (direct_flags[fidx])
+        return;
+
     direct_flags[fidx] = 1;
     auto it = from_id_tmap[fidx].begin();
     for (; it != from_id_tmap[fidx].end(); ++it) {
