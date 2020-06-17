@@ -467,14 +467,14 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
     return result;
 }
 
-void MolData::computePredictedSpectra(Param &param, bool postprocess, bool use_existing_thetas, int energy_level) {
+void MolData::computePredictedSpectra(Param &param, int postprocess_method, bool use_existing_thetas, int energy_level) {
 
-    computePredictedSingleEnergySpectra(param, postprocess,
-                                            use_existing_thetas, energy_level);
+    computePredictedSingleEnergySpectra(param, postprocess_method,
+                                        use_existing_thetas, energy_level);
 }
 
 void MolData::computePredictedSingleEnergySpectra(Param &param,
-                                                  bool postprocess,
+                                                  int postprocess_method,
                                                   bool use_existing_thetas,
                                                   int energy_level) {
 
@@ -493,8 +493,17 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
     } else
         createSpeactraSingleEnergry(energy_level);
 
-    if (postprocess)
+    if (1 == postprocess_method)
         postprocessPredictedSpectra();
+    else if(2 == postprocess_method)
+    {
+        double perc_thresh = 80.0;
+        int min_peaks = 1;
+        int max_peaks = 30;
+        double min_intensity = 0.0;
+        postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_intensity);
+    }
+
     else {
         if(energy_level != -1){
             predicted_spectra[energy_level].normalizeAndSort();
