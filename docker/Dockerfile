@@ -6,7 +6,7 @@ ENV CFM_ROOT /opt/cfm
 ENV LD_LIBRARY_PATH /opt/rdkit-Release_2017_09_3/lib:/opt/lp_solve/lpsolve55/bin/ux64:/usr/lib64:$LD_LIBRARY_PATH
 ENV PATH /opt/cfm/bin:/opt/miniconda/bin:$PATH
 
-RUN apt-get update && apt-get install -y wget tar build-essential mpich libboost-all-dev 
+RUN apt-get update && apt-get install -y wget tar build-essential mpich libboost-all-dev cmake
 
 # Installs an LP Solver
 RUN mkdir /usr/lib64;\
