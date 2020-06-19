@@ -29,16 +29,17 @@ RUN cd /opt/rdkit-Release_2017_09_3;\
 
 # build and install cfm
 RUN cd /opt;\
-	wget -O cfmid.tar.gz https://bitbucket.org/7FeiW/cfm-id-code/get/CFM-ID_4.0.1.tar.gz;\
+	wget -O cfmid.tar.gz https://bitbucket.org/7FeiW/cfm-id-code/get/CFM-ID_4.0.3.tar.gz;\
 	mkdir cfmid;\
 	tar xf cfmid.tar.gz -C cfmid;\
 	mv cfmid/7FeiW* cfmid/fei;\
 	mv cfmid/fei/cfm cfm;\
+	mv cfmid/fei/cfm-pretrained-models /trained_models_cfmid4.0;\
 	rm -rf cfmid;\
 	cd cfm;\
 	mkdir build;\
 	cd build;\
-	cmake .. -DINCLUDE_TESTS=OFF -DINCLUDE_TRAIN=ON -DLPSOLVE_INCLUDE_DIR=/usr/lib64 -DLPSOLVE_LIBRARY_DIR=/usr/lib64 \
+	cmake .. -DINCLUDE_TESTS=OFF -DINCLUDE_TRAIN=OFF -DLPSOLVE_INCLUDE_DIR=/usr/lib64 -DLPSOLVE_LIBRARY_DIR=/usr/lib64 \
 	-DCMAKE_CXX_STANDARD=11;\
 	make install -j4
 
