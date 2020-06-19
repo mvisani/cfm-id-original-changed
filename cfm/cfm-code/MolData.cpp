@@ -394,6 +394,9 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
         }
         first = 0;
 
+        // empty line separates peaks and annotations
+        if (line.empty())
+            break;
         // Otherwise allocate peak to the current spectrum
         std::stringstream ss(line);
         double mass, intensity;
