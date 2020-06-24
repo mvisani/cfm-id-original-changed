@@ -717,10 +717,27 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
     else
         std::cout << "Unknown spectrum type to output: " << spec_type << std::endl;
 
+    static const int POSITIVE_ESI_IONIZATION_MODE = 1;
+    static const int NEGATIVE_ESI_IONIZATION_MODE = 2;
+    static const int POSITIVE_EI_IONIZATION_MODE = 3;
     if ((std::string(spec_type) == "Predicted") && add_version){
-            out << VERSION_STRING << PROJECT_VER << std::endl;
-    }
+        std::string spectra_str;
+        switch (cfg->ionization_mode){
+            case (POSITIVE_ESI_IONIZATION_MODE):
+                spectra_str = "ESI-MS/MS [M+H]+ Spectra";
+                break;
 
+            case (NEGATIVE_ESI_IONIZATION_MODE):
+                spectra_str = "ESI-MS/MS [M-H]- Spectra";
+                break;
+            case (POSITIVE_EI_IONIZATION_MODE):
+                spectra_str = "EI-MS Spectra";
+                break;
+            default:
+                break;
+        }
+        out << "#" << spectra_str << " PREDICTED BY " << VERSION_STRING << PROJECT_VER << std::endl;
+    }
     std::vector<Spectrum>::iterator it = spectra_to_output->begin();
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
         out << "energy" << energy << std::endl;
