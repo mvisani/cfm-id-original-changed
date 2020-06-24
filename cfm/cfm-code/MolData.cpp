@@ -380,7 +380,7 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
         if (line.size() <= 3)
             break;
         // in case we are seen version string
-        if (line.substr(0, VERSION_STRING.size()) == VERSION_STRING)
+        if (line[0] == '#')
             continue;
         // Check for the energy specifier - start a new spectrum if found
         // or start one anyway if there is no energy specifier
@@ -736,7 +736,7 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
             default:
                 break;
         }
-        out << "#" << spectra_str << " PREDICTED BY " << VERSION_STRING << PROJECT_VER << std::endl;
+        out << "#" << spectra_str << " PREDICTED BY " << APP_STRING << " " << PROJECT_VER << std::endl;
     }
     std::vector<Spectrum>::iterator it = spectra_to_output->begin();
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
