@@ -736,7 +736,7 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
             default:
                 break;
         }
-        out << "#" << spectra_str << " PREDICTED BY " << APP_STRING << " " << PROJECT_VER << std::endl;
+        out << "#" << spectra_str << std::endl << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER << std::endl;
     }
     std::vector<Spectrum>::iterator it = spectra_to_output->begin();
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
