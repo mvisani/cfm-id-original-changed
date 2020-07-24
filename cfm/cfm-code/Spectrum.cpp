@@ -31,7 +31,7 @@ void Spectrum::outputToStream(std::ostream &out,bool do_annotate , bool normaliz
 
     for (auto itp = peaks.begin(); itp != peaks.end(); ++itp) {
         double display_intensity = normalize_to_max ? itp->intensity / max_intensity * 100.0 : itp->intensity;
-        out << std::setprecision(10) << itp->mass << " " << itp->intensity/ max_intensity;
+        out << std::setprecision(10) << itp->mass << " " << display_intensity;
         if (do_annotate) {
             std::stringstream ss_values;
             ss_values << std::setprecision(5) << "(";
