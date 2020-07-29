@@ -15,8 +15,7 @@ CFM-ID provides a method for accurately and efficiently identifying metabolites 
 * Original source code from CFM-ID 2.0 Can be found at (https://sourceforge.net/p/cfm-id/wiki/Home/)
 
 ### How do I get set up? ###
-#### Used Docker ####
-* Working in progress
+
 #### Install from source code ####
 * Please check INSTALL FILE
 * Note Only Insatll on linux and Mac has been verified, while install on Windows from source code is possible 
@@ -32,3 +31,6 @@ Build or obtain your CFM-ID Docker image, and convert it to a Singularity image 
 
 Run the Singularity container from the SIF file:
 ``` singularity exec --bind output:/out cfmid_2.0.0.1.sif cfm-predict \''CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1'\' 0.001 /out/param_output0.log /out/param_config.txt 1 /out/positive/myout.txt ```
+
+### Usage ###
+For now ,please refer to https://sourceforge.net/p/cfm-id/wiki/Home/
