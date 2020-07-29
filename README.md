@@ -22,7 +22,6 @@ CFM-ID provides a method for accurately and efficiently identifying metabolites 
 * Note Only Insatll on linux and Mac has been verified, while install on Windows from source code is possible 
 
 #### Running cfm-predict in a docker container ####
-==Running cfm-predict in Docker container directly==
 
 Assuming your home directory is ```/home/ubuntu/```,
 ``` sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /root/param_output0.log /root/param_config.txt 1 /root/positive/myout"```
