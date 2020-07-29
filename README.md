@@ -21,3 +21,15 @@ CFM-ID provides a method for accurately and efficiently identifying metabolites 
 * Please check INSTALL FILE
 * Note Only Insatll on linux and Mac has been verified, while install on Windows from source code is possible 
 
+#### Running cfm-predict in a docker container ####
+==Running cfm-predict in Docker container directly==
+
+Assuming your home directory is ```/home/ubuntu/```,
+``` sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /root/param_output0.log /root/param_config.txt 1 /root/positive/myout"```
+
+#### Running cfm-predict in a Singularity container ####
+
+Build or obtain your CFM-ID Docker image, and convert it to a Singularity image using instructions as given [[Compute_Canada_High-Performance_Computing#Converting_Docker_images_to_Singularity_images|here]].
+
+Run the Singularity container from the SIF file:
+``` singularity exec --bind output:/out cfmid_2.0.0.1.sif cfm-predict \''CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1'\' 0.001 /out/param_output0.log /out/param_config.txt 1 /out/positive/myout.txt ```
