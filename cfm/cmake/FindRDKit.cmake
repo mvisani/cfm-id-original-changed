@@ -95,6 +95,7 @@ else ()
                     $ENV{RDKIT_BASE}/lib
                     $ENV{RDBASE}/lib
                     /usr/local/rdkit/lib
+                    /usr/local/include/rdkit/
                     ~/rdkit/lib
                     /opt/rdkit/lib
                     $ENV{LD_LIBRARY_PATH}
