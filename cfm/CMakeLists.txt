@@ -34,7 +34,7 @@ set(INCLUDE_TESTS OFF CACHE BOOL "Do you want to build the tests?")
 set(INCLUDE_TRAIN OFF CACHE BOOL "Do you want to build the training code?")
 
 # BOOST
-set(Boost_USE_STATIC_LIBS ON CACHE BOOL "use static libraries from Boost")
+set(Boost_USE_STATIC_LIBS OFF CACHE BOOL "use static libraries from Boost")
 include(FindBoost)
 
 set(Boost_componets filesystem system serialization program_options)
