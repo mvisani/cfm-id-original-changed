@@ -69,24 +69,27 @@ RUN cd /opt;\
 	wget -O cfmid.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/CFM-ID_4.0.5.tar.gz;\
 	mkdir cfmid;\
 	tar xf cfmid.tar.gz -C cfmid;\
+	rm cfmid.tar.gz;\
 	mv cfmid/wishartlab* cfmid/v4;\
 	mv cfmid/v4/cfm cfm;\
-	mv cfmid/v4/cfm-pretrained-models /trained_models_cfmid4.0;\
-	rm -rf cfmid;\
-	cd cfm;\
+	mv cfmid/v4/cfm-pretrained-models /cfmid_trained_models;\
+	rm -rf cfmid;
+	
+RUN cd /opt/cfm;\
 	mkdir build;\
 	cd build;\
 	cmake .. -DINCLUDE_TESTS=${BUILD_CFM_TEST}\
 			 -DINCLUDE_TRAIN=${BUILD_CFM_TRAIN}\
 			 -DLPSOLVE_INCLUDE_DIR=/usr/lib64 -DLPSOLVE_LIBRARY_DIR=/usr/lib64 \
 			 -DCMAKE_CXX_STANDARD=11;\
-	make install -j 4
+	make install -j 4 && make clean;
 
 ############################################################################################
 # Clean Up
 ############################################################################################
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN  mkdir /root/output;\
-     mkdir -p /cfmid/public/system
-
+############################################################################################
+# output folder
+############################################################################################
+RUN  mkdir /root/output;
