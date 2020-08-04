@@ -66,7 +66,7 @@ ARG BUILD_CFM_TEST="OFF"
 
 # build and install cfm
 RUN cd /opt;\
-	wget -O cfmid.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/CFM-ID_4.0.5.tar.gz;\
+	wget -O cfmid.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/CFM-ID_4.0.6.tar.gz;\
 	mkdir cfmid;\
 	tar xf cfmid.tar.gz -C cfmid;\
 	rm cfmid.tar.gz;\
