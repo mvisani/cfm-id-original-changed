@@ -1,6 +1,14 @@
 FROM ubuntu:18.04
 LABEL author="Fei Wang" 
+LABEL name="CFM-ID 3 Docker Image"
+LABEL image_version = "3.0.0.0"
+LABEL cfm_msml_version="2.4"
+LABEL msrb_version="1.0.6"
+LABEL org.label-schema.build-date=$BUILD_DATE
 
+###########################################################################################
+# INSTALL CFM-ID 2 MSML
+###########################################################################################
 ENV CFM_ROOT /opt/cfm
 ENV RDBASE /opt/rdkit-Release_2017_09_3
 ENV LD_LIBRARY_PATH /opt/rdkit-Release_2017_09_3/lib:/opt/lp_solve/lpsolve55/bin/ux64:/usr/lib64:$LD_LIBRARY_PATH
@@ -13,7 +21,6 @@ RUN apt-get update;\
 	apt-get install -y wget tar g++ gcc mpich cmake;\
 	apt-get install -y 	libboost-dev\
 						libboost-filesystem-dev \
-						libboost-graph-dev\
 						libboost-regex-dev\
 						libboost-serialization-dev\
 						libboost-system-dev\
@@ -54,25 +61,20 @@ RUN cd /opt/rdkit-Release_2017_09_3;\
 			  -DCMAKE_CXX_STANDARD=11;\
 	make install -j 4
 
-# clean up rdkit install
-# RUN cd /opt;\
-#	rm -rf rdkit-Release_2017_09_3;
-
 ############################################################################################
-# Build CFM-ID 4 MSML
+# Build CFM-ID 3 MSML
 ############################################################################################
 ARG BUILD_CFM_TRAIN="OFF"
 ARG BUILD_CFM_TEST="OFF"
 
 # build and install cfm
 RUN cd /opt;\
-	wget -O cfmid.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/CFM-ID_4.0.5.tar.gz;\
+	wget -O cfmid.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/CFM-ID_2.4.tar.gz;\
 	mkdir cfmid;\
 	tar xf cfmid.tar.gz -C cfmid;\
 	rm cfmid.tar.gz;\
-	mv cfmid/wishartlab* cfmid/v4;\
-	mv cfmid/v4/cfm cfm;\
-	mv cfmid/v4/cfm-pretrained-models /cfmid_trained_models;\
+	mv cfmid/wishartlab* cfmid/v2;\
+	mv cfmid/v2/cfm cfm;\
 	rm -rf cfmid;
 	
 RUN cd /opt/cfm;\
@@ -84,10 +86,25 @@ RUN cd /opt/cfm;\
 			 -DCMAKE_CXX_STANDARD=11;\
 	make install -j 4 && make clean;
 
+RUN cd /;\
+	wget -O cfmid2_trained_models.tar.gz  https://bitbucket.org/wishartlab/cfm-id-code/downloads/cfmid2_trained_models.tar.gz;\
+	tar xf cfmid2_trained_models.tar.gz;
+
 ############################################################################################
-# Clean Up
+# Build CFM-ID 3 MSRB
 ############################################################################################
-RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+ENV PATH /opt/msrb/bin:$PATH
+RUN  apt-get update;\
+     apt-get install -y openjdk-11-jre-headless;\
+     mkdir /opt/msrb;\
+     cd /opt/msrb;\
+	 wget -O msrb.tar.gz https://bitbucket.org/wishartlab/msrb-fragmenter/downloads/msrb-fragmenter-1.0.8.jar;
+
+########################################################################
+# clean Up
+########################################################################
+RUN rm -rf /var/lib/apt/lists/*
+RUN rm -rf /tmp/* /var/tmp/*
 
 ############################################################################################
 # output folder
