@@ -24,9 +24,9 @@ CFM-ID provides a method for accurately and efficiently identifying metabolites 
 
 Assuming your home directory is ```/home/ubuntu/```,     
 To predict [M+H]+ spectra  
-``` sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /cfmid_trained_models/[M+H]+/param_output.log /cfmid_trained_models/[M+H]+/param_config.txt 1 /root/[M+H]+/myout"```  
+``` sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 //trained_models_cfmid4.0/[M+H]+/param_output.log /cfmid_trained_models/[M+H]+/param_config.txt 1 /root/[M+H]+/myout"```  
 To predict [M-H]- spectra  
-``` sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /cfmid_trained_models/[M-H]-/param_output.log /cfmid_trained_models/[M-H]-/param_config.txt 1 /root/[M-H]-/myout"```  
+``` sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 //trained_models_cfmid4.0/[M-H]-/param_output.log /cfmid_trained_models/[M-H]-/param_config.txt 1 /root/[M-H]-/myout"```  
 
 #### Running cfm-predict in a Singularity container ####
 
