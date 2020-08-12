@@ -68,7 +68,7 @@ else ()
                     ~/rdkit/Code
                     /usr/include/rdkit/External
                     /usr/local/include/rdkit/External
-                    /usr/local/rdkit//External
+                    /usr/local/rdkit/External
                     /usr/local/rdkit/External
                     ~/rdkit/External
                     /opt/rdkit/External/

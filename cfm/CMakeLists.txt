@@ -93,12 +93,14 @@ endif (NOT LPSOLVE_LIBRARY_HEADERS)
 
  find_library(LPSOLVE_LIBRARY lpsolve55 PATHS
                          ${LPSOLVE_LIBRARY_DIR}
-                        /usr/include/lpsolve
-                        /usr/local/include/lpsolve
+                        /usr/lib
+                        /usr/lib/lpsolve
+                        /usr/local/lib/
+                        /usr/local/lib/lpsolve
                         /opt/lpsolve
                         ~/lpsolve
-                        /usr/include/lp_solve
-                        /usr/local/include/lp_solve
+                        /usr/lib/lp_solve
+                        /usr/local/lib/lp_solve
                         /opt/lp_solve
                         ~/lp_solve)
 
