@@ -303,13 +303,36 @@ To annotate ESI-MS/MS [M-H]- spectra
 
     sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" /root/<spectrum_file> <id> 10 0.001 /cfmid_trained_models/[M-H]-/param_config.txt /root/myout"
 
-#### Running cfm-predict in a Singularity container ####
+
+## cfm-train ##
+
+ **cfm-train** trains the parameters for a CFM model using a list of input molecules and their corresponding spectra
+
+### cfm-train usage ###
+
+Detailed Instruction for 4.0 : TBD.
+
+For mow, please check: 
+
+    cfm-train --help
+
+And <https://sourceforge.net/p/cfm-id/code/HEAD/tree/supplementary_material/cfm-train_example/>. 
+
+### Run cfm-train in a docker container ###
+
+For now, training via docker is not recommended
+
+
+### Others ###
+
+### Running cfm-predict in a Singularity container ###
 
 Build or obtain your CFM-ID Docker image, and convert it to a Singularity image using instructions as given [[Compute_Canada_High-Performance_Computing#Converting_Docker_images_to_Singularity_images|here]].
 
 Run the Singularity container from the SIF file:
 
-    singularity exec --bind output:/out cfmid_2.0.0.1.sif cfm-predict \''CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1'\' 0.001 /out/param_output0.log /out/param_config.txt 1 /out/positive/myout.txt
+  singularity exec --bind output:/out cfmid_2.0.0.1.sif cfm-predict \''CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1'\' 0.001 /out/param_output0.log /out/param_config.txt 1 /out/positive/myout.txt 
 
-### Usage ###
+### CFM-ID 2 Wiki ###
+
 For now ,please refer to https://sourceforge.net/p/cfm-id/wiki/Home/
