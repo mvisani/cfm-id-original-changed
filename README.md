@@ -30,6 +30,29 @@ To predict [M+H]+ spectra
 To predict [M-H]- spectra  
 ``` sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 //trained_models_cfmid4.0/[M-H]-/param_output.log /cfmid_trained_models/[M-H]-/param_config.txt 1 /root/[M-H]-/myout"```  
 
+#### cfm-predict usage: ####
+
+``` cfm-predict <smiles_or_inchi_or_file> <prob_thresh> <param_file> <config_file> <annotate_fragments> <output_file_or_dir> <apply_postproc> <suppress_exceptions>```
+
+* smiles_or_inchi_or_file: The smiles or inchi string of the structure whose spectra you want to predict. Or alternatively a .txt file containing a list of space-separated (id, smiles_or_inchi) pairs one per line. e.g.
+
+  > Molecule1 CCCNNNC(O)O  
+  > Molecule2 InChI=1S/C8H10N4O2/c1-10-4-9-6-5(10)7(13)12(3)8(14)11(6)2/h4H,1-3H3  
+   
+* prob_thresh: (optional) The probability below which to prune unlikely fragmentations during fragmentation graph generation (default 0.001).
+
+* param_file: (optional) The filename where the parameters of a trained cfm model can be found (if not given, assumes param_output.log in current directory). This file is the output of cfm-train. Pre-trained models as used in the above publication can be found in the supplementary data for that paper stored within the source tree of this project. Please see Which model should I use? in the FAQ at the bottom of this page.
+
+* config_file: (optional) The filename where the configuration parameters of the cfm model can be found (if not given, assumes param_config.txt in current directory). This needs to match the file passed to cfm-train during training. See cfm-train documentation below for further details. Please see Which model should I use? in the FAQ at the bottom of this page.
+
+* annotate_fragments:(optional) Whether to include fragment information in the output spectra (0 = NO (DEFAULT), 1 = YES). Note: ignored for msp/mfg output.
+
+* output_file_or_dir: (optional) The filename of the output spectra file to write to (if not given, prints to stdout). In case of batch mode using file input above, this is used to specify the name of a directory where the output files (<id>.log) will be written (if not given, uses current directory), OR an msp or mgf file.</id>
+
+* apply_postproc: (optional) Whether or not to post-process predicted spectra to take the top 80% of energy (at least 5 peaks), or the highest 30 peaks (whichever comes first) (0 = OFF, 1 = ON (default)). If turned off, will output a peak for every possible fragment of the input molecule, as long as the prob_thresh argument above is set to 0.0.
+
+* suppress_exceptions: (optional) Suppress most exceptions so that the program returns normally even when it fails to produce a result (0 = OFF (default), 1 = ON).
+
 #### Running cfm-predict in a Singularity container ####
 
 Build or obtain your CFM-ID Docker image, and convert it to a Singularity image using instructions as given [[Compute_Canada_High-Performance_Computing#Converting_Docker_images_to_Singularity_images|here]].
