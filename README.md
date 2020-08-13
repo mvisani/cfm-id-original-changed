@@ -303,16 +303,6 @@ To annotate ESI-MS/MS [M-H]- spectra
 
     sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" /root/<spectrum_file> <id> 10 0.001 /cfmid_trained_models/[M-H]-/param_config.txt /root/myout"
 
-## MSRB-Fragmenter ##
-
-### Run MSRB-Fragmenter for all adduct types ###
-
-    docker run --rm=true -v /full/path/to/output:/root/output -i tmic/cfmid sh -c "java -jar /msrb-fragmenter.jar -ismi 'CCCCCCCCCCCCCCCC(=O)OCC(COP(O)(=O)OC[C@H](N)C(O)=O)OC(=O)CCCCCCCCCCCCCCC' -o /root/output/output.txt"
-
-## Other Reference ##
-
-For now ,please refer to <https://sourceforge.net/p/cfm-id/wiki/Home/>
-
 #### Running cfm-predict in a Singularity container ####
 
 Build or obtain your CFM-ID Docker image, and convert it to a Singularity image using instructions as given [[Compute_Canada_High-Performance_Computing#Converting_Docker_images_to_Singularity_images|here]].
