@@ -10,27 +10,32 @@ CFM-ID provides a method for accurately and efficiently identifying metabolites 
 * **Peak Assignment**: Annotating the peaks in set of spectra given a known chemical structure. This task takes a set of three input spectra (for ESI spectra, low/10V, medium/20V, and high/40V energy levels) in peak list format and a chemical structure in SMILES or InChI format, then assigns a putative fragment annotation to the peaks in each spectrum.
 * **Compound Identification**: Predicted ranking of possible candidate structures for a target spectrum. This task takes a set of three input spectra (for ESI spectra, low/10V, medium/20V, and high/40V energy levels) in peak list format, and ranks a list of candidate structures according to how well they match the input spectra. This candidate list need to be provided by the user. Chemical classes are predicted for each candidate molecule. The original similarity score used in the ranking was computed (Dice or DotProduct) by comparing the predicted spectra of a candidate compound with the input spectra.
 
-## What include in the image ##
+## What is this repository for? ##
 
-* **CFM-ID MSML** (mass spectrum machine learning), source code can be fount at <https://bitbucket.org/wishartlab/cfm-id-code/src/master/>. This toolsets consists of following tools:
-  * cfm-predict
-  * cfm-id
-  * cfm-id-precomputed
-  * cfm-annotate
-  * cfm-train
-  * fraggraph-gen
+* This is a repository for CFM-ID 4 MSML (mass spectrum machine learning)
+* CFM-ID MSRB (mass spectrum rule based) can be found at (<https://bitbucket.org/wishartlab/msrb-fragmenter/src/master/>)
+* Original source code from CFM-ID 2.0 Can be found at (<https://sourceforge.net/p/cfm-id/wiki/Home/>)
 
-* **CFM-ID MSRB** (mass spectrum rule based), source code can be found at <https://bitbucket.org/wishartlab/msrb-fragmenter/src/master/>.
+## What include in this tool set for? ##
 
-* **CFM-ID MSML** Pre Trained Models, version 4.0 and version 3.0 has has **non-exchangable** machine leanring models. As for 2020-08-12, version 4.0 does **NOT** have a **EI-MS** model, we may provided such model in the near future.
-  * For version 4.0, this image include:
-    * Model for **ESI-MS/MS [M+H]+**
-    * Model for **ESI-MS/MS [M-H]-**
+* cfm-predict
+* cfm-id
+* cfm-id-precomputed
+* cfm-annotate
+* cfm-train
+* fraggraph-gen
+  
+## How do I get set up? ##
 
-  * For version 3.0, this image include:
-    * Model for **ESI-MS/MS [M+H]+**
-    * Model for **ESI-MS/MS [M-H]-**
-    * Model for **EI-MS**
+### Install from source code ###
+
+* Please check INSTALL FILE
+* Note Only Insatll on linux and Mac has been verified, while install on Windows from source code is possible 
+
+### Use Pre Build Docker ###
+
+    docker push wishartlab/cfmid:latest
+
 
 ## cfm-predict ##
 
@@ -312,6 +317,10 @@ For mow, please check:
 
 And <https://sourceforge.net/p/cfm-id/code/HEAD/tree/supplementary_material/cfm-train_example/>. 
 
+### Run cfm-train in a docker container ###
+
+For now, training via docker is not recommended
+
 ## fraggraph-gen ##
 
  **fraggraph-gen** produces a complete fragmentation graph or list of feasible fragments for an input molecule. It systematically breaks bonds within the molecule and checks for valid resulting fragments.
@@ -358,12 +367,16 @@ Assuming your home directory is `/home/ubuntu/`：
 
     sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; fraggraph-gen "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1"  2 + fullgraph /root/myout"
 
-## MSRB-Fragmenter ##
+### Others ###
 
-### Run MSRB-Fragmenter for all adduct types ###
+### Running cfm-predict in a Singularity container ###
 
-    docker run --rm=true -v /full/path/to/output:/root/output -i tmic/cfmid sh -c "java -jar /msrb-fragmenter.jar -ismi 'CCCCCCCCCCCCCCCC(=O)OCC(COP(O)(=O)OC[C@H](N)C(O)=O)OC(=O)CCCCCCCCCCCCCCC' -o /root/output/output.txt"
+Build or obtain your CFM-ID Docker image, and convert it to a Singularity image using instructions as given [[Compute_Canada_High-Performance_Computing#Converting_Docker_images_to_Singularity_images|here]].
 
-## Other Reference ##
+Run the Singularity container from the SIF file:
 
-For now ,please refer to <https://sourceforge.net/p/cfm-id/wiki/Home/>
+  singularity exec --bind output:/out cfmid_2.0.0.1.sif cfm-predict \''CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1'\' 0.001 /out/param_output0.log /out/param_config.txt 1 /out/positive/myout.txt 
+
+### CFM-ID 2 Wiki ###
+
+For now ,please refer to https://sourceforge.net/p/cfm-id/wiki/Home/
