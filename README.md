@@ -10,32 +10,27 @@ CFM-ID provides a method for accurately and efficiently identifying metabolites 
 * **Peak Assignment**: Annotating the peaks in set of spectra given a known chemical structure. This task takes a set of three input spectra (for ESI spectra, low/10V, medium/20V, and high/40V energy levels) in peak list format and a chemical structure in SMILES or InChI format, then assigns a putative fragment annotation to the peaks in each spectrum.
 * **Compound Identification**: Predicted ranking of possible candidate structures for a target spectrum. This task takes a set of three input spectra (for ESI spectra, low/10V, medium/20V, and high/40V energy levels) in peak list format, and ranks a list of candidate structures according to how well they match the input spectra. This candidate list need to be provided by the user. Chemical classes are predicted for each candidate molecule. The original similarity score used in the ranking was computed (Dice or DotProduct) by comparing the predicted spectra of a candidate compound with the input spectra.
 
-## What is this repository for? ##
+## What include in the image ##
 
-* This is a repository for CFM-ID 4 MSML (mass spectrum machine learning)
-* CFM-ID MSRB (mass spectrum rule based) can be found at (<https://bitbucket.org/wishartlab/msrb-fragmenter/src/master/>)
-* Original source code from CFM-ID 2.0 Can be found at (<https://sourceforge.net/p/cfm-id/wiki/Home/>)
+* **CFM-ID MSML** (mass spectrum machine learning), source code can be fount at <https://bitbucket.org/wishartlab/cfm-id-code/src/master/>. This toolsets consists of following tools:
+  * cfm-predict
+  * cfm-id
+  * cfm-id-precomputed
+  * cfm-annotate
+  * cfm-train
+  * fraggraph-gen
 
-## What include in this tool set for? ##
+* **CFM-ID MSRB** (mass spectrum rule based), source code can be found at <https://bitbucket.org/wishartlab/msrb-fragmenter/src/master/>.
 
-* cfm-predict
-* cfm-id
-* cfm-id-precomputed
-* cfm-annotate
-* cfm-train
-* fraggraph-gen
-  
-## How do I get set up? ##
+* **CFM-ID MSML** Pre Trained Models, version 4.0 and version 3.0 has has **non-exchangable** machine leanring models. As for 2020-08-12, version 4.0 does **NOT** have a **EI-MS** model, we may provided such model in the near future.
+  * For version 4.0, this image include:
+    * Model for **ESI-MS/MS [M+H]+**
+    * Model for **ESI-MS/MS [M-H]-**
 
-### Install from source code ###
-
-* Please check INSTALL FILE
-* Note Only Insatll on linux and Mac has been verified, while install on Windows from source code is possible 
-
-### Use Pre Build Docker ###
-
-    docker push wishartlab/cfmid:latest
-
+  * For version 3.0, this image include:
+    * Model for **ESI-MS/MS [M+H]+**
+    * Model for **ESI-MS/MS [M-H]-**
+    * Model for **EI-MS**
 
 ## cfm-predict ##
 
@@ -303,7 +298,6 @@ To annotate ESI-MS/MS [M-H]- spectra
 
     sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" /root/<spectrum_file> <id> 10 0.001 /cfmid_trained_models/[M-H]-/param_config.txt /root/myout"
 
-
 ## cfm-train ##
 
  **cfm-train** trains the parameters for a CFM model using a list of input molecules and their corresponding spectra
@@ -318,21 +312,58 @@ For mow, please check:
 
 And <https://sourceforge.net/p/cfm-id/code/HEAD/tree/supplementary_material/cfm-train_example/>. 
 
-### Run cfm-train in a docker container ###
+## fraggraph-gen ##
 
-For now, training via docker is not recommended
+ **fraggraph-gen** produces a complete fragmentation graph or list of feasible fragments for an input molecule. It systematically breaks bonds within the molecule and checks for valid resulting fragments.
 
+### fraggraph-gen Usage ###
 
-### Others ###
+    fraggraph-gen <smiles or inchi> <max depth> <ionization mode> <fullgraph or fragonly> <output file>
 
-### Running cfm-predict in a Singularity container ###
+* **smiles_or_inchi**: The smiles or Inchi string for the input molecule
 
-Build or obtain your CFM-ID Docker image, and convert it to a Singularity image using instructions as given [[Compute_Canada_High-Performance_Computing#Converting_Docker_images_to_Singularity_images|here]].
+* **ionization mode**: Whether to generate fragments using positive ESI or EI, or negative ESI ionization. **+** for positive mode **ESI [M+H]+**, **-** for negative mode **ESI [M-H]-**, **\*** for positive mode **EI [M+]**.
 
-Run the Singularity container from the SIF file:
+* **fullgraph or fragonly**: (optional) This specifies the type of output. fragonly will return a list of unique feasible fragments with their masses. fullgraph (default) will also return a list of the connections between fragments and their corresponding neutral losses.
 
-  singularity exec --bind output:/out cfmid_2.0.0.1.sif cfm-predict \''CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1'\' 0.001 /out/param_output0.log /out/param_config.txt 1 /out/positive/myout.txt 
+* **output_file**: (optional) The filename of the output spectra file to write to (if not given, prints to stdout)
 
-### CFM-ID 2 Wiki ###
+### Expected fraggraph-gen output ###
 
-For now ,please refer to https://sourceforge.net/p/cfm-id/wiki/Home/
+    fraggraph-gen CC 2 + fullgraph
+
+    4                            //The number of fragments
+    0 31.05422664 C[CH4+]        //id mass smiles  - the fragments
+    1 15.02292652 [CH3+]         //id mass smiles
+    2 29.03912516 C=[CH3+]       //id mass smiles
+    3 27.02292652 C#[CH2+]       //id mass smiles
+
+    0 1 C                        //from to neutral_loss - the transitions
+    0 2 [HH]                     //from to neutral_loss
+    2 3 [HH]                     //from to neutral_loss
+    
+
+    fraggraph-gen.exe CC 2 * fragonly
+
+    0 30.04640161 C[CH3+]        //id mass smiles  - the fragments
+    1 15.02292652 [CH3+]         //id mass smiles
+    2 28.03075155 [CH2][CH2+]    //...etc
+    3 26.01510148 [CH]=[CH+]
+    4 27.02292652 C#[CH2+]
+    5 29.03857658 C=[CH3+]
+
+### Run fraggraph-gen in a docker container ###
+
+Assuming your home directory is `/home/ubuntu/`：
+
+    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; fraggraph-gen "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1"  2 + fullgraph /root/myout"
+
+## MSRB-Fragmenter ##
+
+### Run MSRB-Fragmenter for all adduct types ###
+
+    docker run --rm=true -v /full/path/to/output:/root/output -i tmic/cfmid sh -c "java -jar /msrb-fragmenter.jar -ismi 'CCCCCCCCCCCCCCCC(=O)OCC(COP(O)(=O)OC[C@H](N)C(O)=O)OC(=O)CCCCCCCCCCCCCCC' -o /root/output/output.txt"
+
+## Other Reference ##
+
+For now ,please refer to <https://sourceforge.net/p/cfm-id/wiki/Home/>
