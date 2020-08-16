@@ -95,11 +95,11 @@ CFM-ID provides a method for accurately and efficiently identifying metabolites 
 Assuming your home directory is `/home/ubuntu/`：
 To predict ESI-MS/MS [M+H]+ spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /cfmid_trained_models/[M+H]+/param_config.txt 1 /root/[M+H]+/myout"
+    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 /root/[M+H]+/myout"
 
 To predict ESI-MS/MS [M-H]- spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /cfmid_trained_models/[M-H]-/param_config.txt 1 /root/[M-H]-/myout"
+    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt 1 /root/[M-H]-/myout"
 
 ## cfm-id ##
 
@@ -156,11 +156,11 @@ Given an input spectrum and a list of candidate smiles (or inchi) strings, **cfm
 Assuming your home directory is `/home/ubuntu/`：
 To identify ESI-MS/MS [M+H]+ spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-id /root/<spectrum_file> <id> root/<candidate_file>  10 0.001 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /cfmid_trained_models/[M+H]+/param_config.txt Dice 1 /root/myout"
+    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-id /root/<spectrum_file> <id> root/<candidate_file>  10 0.001 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt Dice 1 /root/myout"
 
 To identify ESI-MS/MS [M-H]- spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-id /root/<spectrum_file> <id> root/<candidate_file>  10 0.001 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /cfmid_trained_models/[M-H]-/param_config.txt Dice 1 /root/myout"
+    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-id /root/<spectrum_file> <id> root/<candidate_file>  10 0.001 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt Dice 1 /root/myout"
 
 
 ## cfm-id-precomputed ##
@@ -297,11 +297,11 @@ The output contains the original spectra in the input format, but with fragment 
 Assuming your home directory is `/home/ubuntu/`：
 To annotate ESI-MS/MS [M+H]+ spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" /root/<spectrum_file> <id> 10 0.001 /cfmid_trained_models/[M+H]+/param_config.txt /root/myout"
+    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" /root/<spectrum_file> <id> 10 0.001 /trained_models_cfmid4.0/[M+H]+/param_config.txt /root/myout"
 
 To annotate ESI-MS/MS [M-H]- spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" /root/<spectrum_file> <id> 10 0.001 /cfmid_trained_models/[M-H]-/param_config.txt /root/myout"
+    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" /root/<spectrum_file> <id> 10 0.001 /trained_models_cfmid4.0/[M-H]-/param_config.txt /root/myout"
 
 ## cfm-train ##
 
