@@ -46,7 +46,7 @@ public:
     //Function to fetch a spectrum with a given id from the msp library
     const std::vector<Spectrum> *fetchSpectrumForId(const char *id);
 
-    void writeLibraryToMspFile(const char *filename, int ionization_mode = DEFAULT_IONIZATION_MODE) const;
+    void writeLibraryToMspFile(const char *filename, std::string & smiles_or_inchi, int ionization_mode = DEFAULT_IONIZATION_MODE) const;
 
 private:
     void readInMspFile(const char *filename, const char *pre_id, bool normalize_and_sort, int quantise_dec_pl);

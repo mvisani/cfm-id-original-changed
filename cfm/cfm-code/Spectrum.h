@@ -105,9 +105,9 @@ public:
 
     void outputToStream(std::ostream &out, bool do_annotate, bool normalize_to_max = true) const;
 
-    void outputToMspStream(std::ostream &out, std::string id, int ionization_mode, int energy) const;
+    void outputToMspStream(std::ostream &out, std::string id, int ionization_mode, int energy, std::string&  smiles_or_inchi) const;
 
-    void outputToMgfStream(std::ostream &out, std::string id, int ionization_mode, int energy, double mw) const;
+    void outputToMgfStream(std::ostream &out, std::string id, int ionization_mode, int energy, double mw, std::string & smiles_or_inchi) const;
 
     int removePeaksWithNoFragment(std::vector<double> &frag_masses, double abs_tol, double ppm_tol);
 

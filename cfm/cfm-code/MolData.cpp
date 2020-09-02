@@ -612,7 +612,7 @@ void MolData::writePredictedSpectraToFile(std::string &filename) {
 void MolData::writePredictedSpectraToMspFileStream(std::ostream &out) {
     for (unsigned int energy = 0; energy < getNumPredictedSpectra(); energy++) {
         const Spectrum *spec = getPredictedSpectrum(energy);
-        spec->outputToMspStream(out, id, cfg->ionization_mode, energy);
+        spec->outputToMspStream(out, id, cfg->ionization_mode, energy, smiles_or_inchi);
     }
 }
 
@@ -620,7 +620,7 @@ void MolData::writePredictedSpectraToMgfFileStream(std::ostream &out) {
     double mw = getMolecularWeight();
     for (unsigned int energy = 0; energy < getNumPredictedSpectra(); energy++) {
         const Spectrum *spec = getPredictedSpectrum(energy);
-        spec->outputToMgfStream(out, id, cfg->ionization_mode, energy, mw);
+        spec->outputToMgfStream(out, id, cfg->ionization_mode, energy, mw, smiles_or_inchi);
     }
 }
 
