@@ -18,12 +18,25 @@
 #include "Util.h"
 
 #include <fstream>
+#include <algorithm>
 
-void Spectrum::outputToStream(std::ostream &out, bool do_annotate) const {
+void Spectrum::outputToStream(std::ostream &out,bool do_annotate , bool normalize_to_max) const {
 
-    auto itp = peaks.begin();
-    for (; itp != peaks.end(); ++itp) {
-        out << std::setprecision(10) << itp->mass << " " << itp->intensity;
+    double max_intensity = 0.0;
+    if (normalize_to_max) {
+        for (auto& peak : peaks) {
+            max_intensity = std::max(max_intensity, peak.intensity);
+        }
+    }
+
+    for (auto itp = peaks.begin(); itp != peaks.end(); ++itp) {
+        double display_intensity = normalize_to_max ? itp->intensity / max_intensity * 100.0 : itp->intensity;
+        out << std::setprecision(5) << itp->mass << " ";
+        if (normalize_to_max)
+            out << std::fixed << std::setprecision(1) << display_intensity;
+        else
+            out << display_intensity;
+
         if (do_annotate) {
             std::stringstream ss_values;
             ss_values << std::setprecision(5) << "(";

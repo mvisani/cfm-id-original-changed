@@ -60,7 +60,7 @@ void parseInputFile(std::vector<MolData> &data, std::string &input_filename, con
 int main(int argc, char *argv[]) {
     bool to_stdout = true;
     int do_annotate = 0;
-    int apply_postprocessing = 1;
+    int postprocessing_method = 2;
     int suppress_exceptions = 0;
     std::string output_filename;
     std::string param_filename = "param_output.log";
@@ -90,8 +90,9 @@ int main(int argc, char *argv[]) {
         std::cout << std::endl << "output_filename_or_dir (opt):" << std::endl
                   << "The filename of the output spectra file to write to (if not given, prints to stdout), OR directory if multiple smiles inputs are given (else current directory) OR msp or mgf file."
                   << std::endl;
-        std::cout << std::endl << "apply_postprocessing (opt):" << std::endl
-                  << "Whether or not to post-process predicted spectra to take the top 80% of energy (at least 5 peaks), or the highest 30 peaks (whichever comes first) (0 = OFF, 1 = ON (default) )."
+        std::cout << std::endl << "postprocessing method (opt):" << std::endl
+                  << "Post-process predicted spectra with 1.take the top 80% of energy (at least 5 peaks), or the highest 30 peaks (whichever comes first) \n "
+                     "2.take the top 80% of energy, or the highest 30 peaks (whichever comes first) (0 = OFF, 1 = OPT#1, 2 = OPT#2 (default) )."
                   << std::endl;
         std::cout << std::endl << "suppress_exception (opt):" << std::endl
                   << "Suppress exceptions so that the program returns normally even when it fails to produce a result (0 = OFF (default), 1 = ON)."
@@ -123,9 +124,9 @@ int main(int argc, char *argv[]) {
         to_stdout = false;
     }
     if (argc >= 8) {
-        try { apply_postprocessing = boost::lexical_cast<bool>(argv[7]); }
+        try { postprocessing_method = boost::lexical_cast<int>(argv[7]); }
         catch (boost::bad_lexical_cast e) {
-            std::cout << "Invalid apply_postprocessing (Must be 0 or 1): " << argv[7] << std::endl;
+            std::cout << "Invalid postprocessing_method (Must be 0, 1 or 2): " << argv[7] << std::endl;
             exit(1);
         }
     }
@@ -210,7 +211,7 @@ int main(int argc, char *argv[]) {
                 fgen = new LikelyFragmentGraphGenerator(param, &cfg, prob_thresh_for_prune);
 
             it->computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
-            it->computePredictedSpectra(*nn_param, apply_postprocessing, true);
+            it->computePredictedSpectra(*nn_param, postprocessing_method, true);
             //Predict the spectra (and post-process, use existing thetas)
         }
         catch (RDKit::MolSanitizeException & e) {
