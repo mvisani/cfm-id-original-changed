@@ -476,8 +476,8 @@ int main(int argc, char *argv[]) {
     reportMeanStd(out, dscores);
     out << std::endl << "Weighted Dice (mean, std): ";
     reportMeanStd(out, wdscores);
-    //out << std::endl << "Altered Dot Product (mean, std): ";
-    //reportMeanStd(out, adscores);
+    out << std::endl << "Altered Dot Product (mean, std): ";
+    reportMeanStd(out, adscores);
     out << std::endl << "Dot Product (mean, std): ";
     reportMeanStd(out, dpscores);
     out << std::endl << "Original Stein Dot Product (mean, std): ";

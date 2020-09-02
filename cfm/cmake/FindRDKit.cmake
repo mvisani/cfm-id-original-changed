@@ -47,9 +47,11 @@ else ()
                     $ENV{RDKIT_BASE}/Code
                     $ENV{RDBASE}/Code
                     /usr/include/rdkit
-                    /usr/local/include/rdkit
+                    /usr/local/rdkit/include/Code
                     /usr/local/rdkit/include
                     /usr/local/rdkit/Code
+                    /opt/rdkit/include/Code
+                    /opt/rdkit/include
                     /opt/rdkit/Code
                     ~/rdkit/Code
                     )
@@ -60,18 +62,14 @@ else ()
                     $ENV{RDKIT_INCLUDE_EXT_PATH}
                     $ENV{RDKIT_BASE}/External
                     $ENV{RDBASE}/External
-                    /usr/include/rdkit
-                    /usr/local/include/rdkit
-                    /usr/local/rdkit/include
-                    /usr/local/rdkit/Code
-                    /opt/rdkit/Code
-                    ~/rdkit/Code
                     /usr/include/rdkit/External
-                    /usr/local/include/rdkit/External
-                    /usr/local/rdkit/External
+                    /usr/local/rdkit/include/External
+                    /usr/local/rdkit/include
                     /usr/local/rdkit/External
                     ~/rdkit/External
-                    /opt/rdkit/External/
+                    /opt/rdkit/include/External
+                    /opt/rdkit/include
+                    /opt/rdkit/External
                     )
         endif ()
         if (RDKIT_INCLUDE_DIR)

@@ -22,7 +22,7 @@
 #include <string>
 
 //Default Values
-static const std::string APP_STRING = "CFM-ID";
+static const std::string VERSION_STRING = "#PREDICTED BY CFM-ID ";
 
 //Fragmentation depth in the initial fragmentation graph
 static const int DEFAULT_FRAGGRAPH_DEPTH = 2;

@@ -98,8 +98,7 @@ public:
                                     bool output_all_scores = false);
 
     void rankPrecomputedCandidatesForSpecMatch(std::vector<PrecomputedCandidate> &candidates,
-                                               const std::vector<Spectrum> *target_spectra,
-                                               bool preprocess_candidates=false, bool merge_candidate_spectra = false); 
+                                               const std::vector<Spectrum> *target_spectra);
 
 private:
 

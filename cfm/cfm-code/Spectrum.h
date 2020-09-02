@@ -103,7 +103,7 @@ public:
 
     void sortAndNormalizeAnnotations();
 
-    void outputToStream(std::ostream &out, bool do_annotate, bool normalize_to_max = true) const;
+    void outputToStream(std::ostream &out, bool do_annotate) const;
 
     void outputToMspStream(std::ostream &out, std::string id, int ionization_mode, int energy) const;
 

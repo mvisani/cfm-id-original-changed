@@ -14,3 +14,6 @@ target_link_libraries ( cfm-train cfm-code ${REQUIRED_LIBS} )
 
 install ( TARGETS cfm-train 
           DESTINATION ${CFM_OUTPUT_DIR} )
+          
+          
+          

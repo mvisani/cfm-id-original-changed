@@ -375,12 +375,10 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
     int first = 1;
     while (ifs.good()) {
         getline(ifs, line);
-        // 1.empty line separates peaks and annotations
-        // 2. we need at least 4 char for peak: n space n newline
-        if (line.size() <= 3)
-            break;
+        if (line.size() < 3)
+            continue;
         // in case we are seen version string
-        if (line[0] == '#')
+        if (line.substr(0, VERSION_STRING.size()) == VERSION_STRING)
             continue;
         // Check for the energy specifier - start a new spectrum if found
         // or start one anyway if there is no energy specifier
@@ -469,14 +467,14 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
     return result;
 }
 
-void MolData::computePredictedSpectra(Param &param, int postprocess_method, bool use_existing_thetas, int energy_level) {
+void MolData::computePredictedSpectra(Param &param, bool postprocess, bool use_existing_thetas, int energy_level) {
 
-    computePredictedSingleEnergySpectra(param, postprocess_method,
-                                        use_existing_thetas, energy_level);
+    computePredictedSingleEnergySpectra(param, postprocess,
+                                            use_existing_thetas, energy_level);
 }
 
 void MolData::computePredictedSingleEnergySpectra(Param &param,
-                                                  int postprocess_method,
+                                                  bool postprocess,
                                                   bool use_existing_thetas,
                                                   int energy_level) {
 
@@ -495,17 +493,8 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
     } else
         createSpeactraSingleEnergry(energy_level);
 
-    if (1 == postprocess_method)
+    if (postprocess)
         postprocessPredictedSpectra();
-    else if(2 == postprocess_method)
-    {
-        double perc_thresh = 80.0;
-        int min_peaks = 1;
-        int max_peaks = 30;
-        double min_intensity = 0.0;
-        postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_intensity);
-    }
-
     else {
         if(energy_level != -1){
             predicted_spectra[energy_level].normalizeAndSort();
@@ -717,30 +706,10 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
     else
         std::cout << "Unknown spectrum type to output: " << spec_type << std::endl;
 
-    static const int POSITIVE_ESI_IONIZATION_MODE = 1;
-    static const int NEGATIVE_ESI_IONIZATION_MODE = 2;
-    static const int POSITIVE_EI_IONIZATION_MODE = 3;
     if ((std::string(spec_type) == "Predicted") && add_version){
-        std::string spectra_str;
-        switch (cfg->ionization_mode){
-            case (POSITIVE_ESI_IONIZATION_MODE):
-                spectra_str = "ESI-MS/MS [M+H]+ Spectra";
-                break;
-
-            case (NEGATIVE_ESI_IONIZATION_MODE):
-                spectra_str = "ESI-MS/MS [M-H]- Spectra";
-                break;
-            case (POSITIVE_EI_IONIZATION_MODE):
-                spectra_str = "EI-MS Spectra";
-                break;
-            default:
-                break;
-        }
-        out << "#" << spectra_str << std::endl 
-            << "#" << smiles_or_inchi << std::endl
-            << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER 
-            << std::endl;
+            out << VERSION_STRING << PROJECT_VER << std::endl;
     }
+
     std::vector<Spectrum>::iterator it = spectra_to_output->begin();
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
         out << "energy" << energy << std::endl;
@@ -834,31 +803,10 @@ void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int e
     }
 }
 
-void MolData::computeMergedPrediction(){
-    if (m_merged_predicted_spectra == nullptr)
-        m_merged_predicted_spectra = new Spectrum();
-
-    std::map<double,double> peaks_map;
-    for(auto & spectrum: predicted_spectra){
-        for(auto & peak : *spectrum.getPeaks()){
-            if(peaks_map.find(peak.mass) == peaks_map.end())
-                peaks_map[peak.mass] = 0.0;
-            peaks_map[peak.mass] += peak.intensity;
-        }
-    }
-    for (const auto& peak_data : peaks_map){
-        Peak peak(peak_data.first,peak_data.second);
-        m_merged_predicted_spectra->push_back(peak);
-    }
-    m_merged_predicted_spectra->normalizeAndSort();
-}
-
 MolData::~MolData() {
 
     if (graph_computed)
         delete fg;
     if (ev_graph_computed)
         delete ev_fg;
-    if (m_merged_predicted_spectra != nullptr)
-        delete m_merged_predicted_spectra;
 }
