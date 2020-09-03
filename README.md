@@ -32,7 +32,8 @@ CFM-ID provides a method for accurately and efficiently identifying metabolites 
 * Please check INSTALL FILE
 * Note Only Insatll on linux and Mac has been verified, while install on Windows from source code is possible 
 
-### Use Pre Build Docker ###
+### Use Pre Build Docker Image ###
+Docker Image can be found at <https://hub.docker.com/repository/docker/wishartlab/cfmid>
 
     docker push wishartlab/cfmid:latest
 
