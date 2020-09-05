@@ -737,9 +737,8 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
                 break;
         }
         out << "#In-silico" << spectra_str << std::endl 
-            << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER 
-            << "#" << smiles_or_inchi << std::endl
-            << std::endl;
+            << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER << std::endl
+            << "#" << smiles_or_inchi << std::endl;
     }
     std::vector<Spectrum>::iterator it = spectra_to_output->begin();
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
