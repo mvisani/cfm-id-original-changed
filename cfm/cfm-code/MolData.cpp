@@ -736,7 +736,7 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
             default:
                 break;
         }
-        out << "#In-silico" << spectra_str << std::endl 
+        out << "#In-silico " << spectra_str << std::endl 
             << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER << std::endl
             << "#" << smiles_or_inchi << std::endl;
     }
