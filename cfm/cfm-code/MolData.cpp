@@ -31,6 +31,9 @@ probabilities using those thetas.
 
 #include <GraphMol/Fingerprints/Fingerprints.h>
 #include <GraphMol/RDKitBase.h>
+#include <GraphMol/RWMol.h>
+#include <GraphMol/SmilesParse/SmilesParse.h>
+#include <INCHI-API/inchi.h>
 
 double MolData::getMolecularWeight() const {
     romol_ptr_t mol = createMolPtr(smiles_or_inchi.c_str());
@@ -736,9 +739,21 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
             default:
                 break;
         }
-        out << "#In-silico " << spectra_str << std::endl 
-            << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER << std::endl
-            << "#" << smiles_or_inchi << std::endl;
+        out << "#In-silico " << spectra_str << std::endl
+            << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER << std::endl;
+
+        RDKit::RWMol* rwmol;
+        if (smiles_or_inchi.substr(0, 6) == "InChI=") {
+            out << "#" << smiles_or_inchi << std::endl;
+            out << "#" <<  RDKit::InchiToInchiKey(smiles_or_inchi) << std::endl;
+        }
+        else {
+            out << "#SMILES=" << smiles_or_inchi << std::endl;
+            rwmol = RDKit::SmilesToMol(smiles_or_inchi);
+            RDKit::ExtraInchiReturnValues rv;
+            out << "#" << RDKit::InchiToInchiKey(RDKit::MolToInchi(*rwmol, rv)) << std::endl;
+        }
+        delete rwmol;
     }
     std::vector<Spectrum>::iterator it = spectra_to_output->begin();
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
