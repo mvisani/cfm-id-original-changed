@@ -742,18 +742,19 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
         out << "#In-silico " << spectra_str << std::endl
             << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER << std::endl;
 
-        RDKit::RWMol* rwmol;
         if (smiles_or_inchi.substr(0, 6) == "InChI=") {
             out << "#" << smiles_or_inchi << std::endl;
-            out << "#" <<  RDKit::InchiToInchiKey(smiles_or_inchi) << std::endl;
+            out << "#InChiKey=" <<  RDKit::InchiToInchiKey(smiles_or_inchi) << std::endl;
         }
         else {
+            RDKit::RWMol* rwmol;
             out << "#SMILES=" << smiles_or_inchi << std::endl;
             rwmol = RDKit::SmilesToMol(smiles_or_inchi);
             RDKit::ExtraInchiReturnValues rv;
-            out << "#" << RDKit::InchiToInchiKey(RDKit::MolToInchi(*rwmol, rv)) << std::endl;
+            out << "#InChiKey=" << RDKit::InchiToInchiKey(RDKit::MolToInchi(*rwmol, rv)) << std::endl;
+            delete rwmol;
         }
-        delete rwmol;
+
     }
     std::vector<Spectrum>::iterator it = spectra_to_output->begin();
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
