@@ -1,7 +1,7 @@
 FROM alpine:3.11
 LABEL author="Fei Wang" 
-LABEL name="CFM-ID 4 Docker MSML Image"
-LABEL cfmid.msml.version="4.0.5"
+LABEL name="Latest CFM-ID 4 Docker MSML Image"
+LABEL cfmid.msml.version="latest"
 
 ###########################################################################################
 # Set ENV
@@ -51,7 +51,7 @@ RUN rm -rf /tmp/lp_solve_5.5
 # download rdkit
 
 RUN cd /tmp;\
-	wget -O rdkit.tar.gz https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;\
+	wget -O rdkit.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/master.tar.gz\
 	tar xvzf rdkit.tar.gz;\
 	rm rdkit.tar.gz
 

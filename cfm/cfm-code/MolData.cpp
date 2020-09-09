@@ -31,6 +31,9 @@ probabilities using those thetas.
 
 #include <GraphMol/Fingerprints/Fingerprints.h>
 #include <GraphMol/RDKitBase.h>
+#include <GraphMol/RWMol.h>
+#include <GraphMol/SmilesParse/SmilesParse.h>
+#include <INCHI-API/inchi.h>
 
 double MolData::getMolecularWeight() const {
     romol_ptr_t mol = createMolPtr(smiles_or_inchi.c_str());
@@ -612,7 +615,7 @@ void MolData::writePredictedSpectraToFile(std::string &filename) {
 void MolData::writePredictedSpectraToMspFileStream(std::ostream &out) {
     for (unsigned int energy = 0; energy < getNumPredictedSpectra(); energy++) {
         const Spectrum *spec = getPredictedSpectrum(energy);
-        spec->outputToMspStream(out, id, cfg->ionization_mode, energy);
+        spec->outputToMspStream(out, id, cfg->ionization_mode, energy, smiles_or_inchi);
     }
 }
 
@@ -620,7 +623,7 @@ void MolData::writePredictedSpectraToMgfFileStream(std::ostream &out) {
     double mw = getMolecularWeight();
     for (unsigned int energy = 0; energy < getNumPredictedSpectra(); energy++) {
         const Spectrum *spec = getPredictedSpectrum(energy);
-        spec->outputToMgfStream(out, id, cfg->ionization_mode, energy, mw);
+        spec->outputToMgfStream(out, id, cfg->ionization_mode, energy, mw, smiles_or_inchi);
     }
 }
 
@@ -736,10 +739,22 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
             default:
                 break;
         }
-        out << "#" << spectra_str << std::endl 
-            << "#" << smiles_or_inchi << std::endl
-            << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER 
-            << std::endl;
+        out << "#In-silico " << spectra_str << std::endl
+            << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER << std::endl;
+
+        if (smiles_or_inchi.substr(0, 6) == "InChI=") {
+            out << "#" << smiles_or_inchi << std::endl;
+            out << "#InChiKey=" <<  RDKit::InchiToInchiKey(smiles_or_inchi) << std::endl;
+        }
+        else {
+            RDKit::RWMol* rwmol;
+            out << "#SMILES=" << smiles_or_inchi << std::endl;
+            rwmol = RDKit::SmilesToMol(smiles_or_inchi);
+            RDKit::ExtraInchiReturnValues rv;
+            out << "#InChiKey=" << RDKit::InchiToInchiKey(RDKit::MolToInchi(*rwmol, rv)) << std::endl;
+            delete rwmol;
+        }
+
     }
     std::vector<Spectrum>::iterator it = spectra_to_output->begin();
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {

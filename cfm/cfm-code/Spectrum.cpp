@@ -16,6 +16,7 @@
 
 #include "Spectrum.h"
 #include "Util.h"
+#include "Version.h"
 
 #include <fstream>
 #include <algorithm>
@@ -56,15 +57,17 @@ void Spectrum::outputToStream(std::ostream &out,bool do_annotate , bool normaliz
 }
 
 void Spectrum::outputToMspStream(std::ostream &out, std::string id,
-                                 int ionization_mode, int energy) const {
+                                 int ionization_mode, int energy, std::string&  smiles_or_inchi) const {
 
     if (ionization_mode == POSITIVE_EI_IONIZATION_MODE)
-        out << "Name: +ve in-silico MS by CFM-ID for " << id << std::endl;
+        out << "Name: +ve in-silico MS by ";
     else if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
-        out << "Name: +ve in-silico MS/MS by CFM-ID for " << id << std::endl;
+        out << "Name: +ve in-silico MS/MS by ";
     else
-        out << "Name: -ve in-silico MS/MS by CFM-ID for " << id << std::endl;
+        out << "Name: -ve in-silico MS/MS by ";
+    out << APP_STRING << " " << PROJECT_VER << " for " << id << std::endl;
     out << "ID: " << id << std::endl;
+    out << "Smiles/Inchi:" << smiles_or_inchi << std::endl;
     out << "Comment: Energy" << energy << std::endl;
     out << "Num peaks: " << peaks.size() << std::endl;
     outputToStream(out, false);
@@ -72,8 +75,13 @@ void Spectrum::outputToMspStream(std::ostream &out, std::string id,
 }
 
 void Spectrum::outputToMgfStream(std::ostream &out, std::string id,
-                                 int ionization_mode, int energy,
-                                 double mw) const {
+
+
+                                 int ionization_mode,
+
+
+ int energy,
+                                 double mw, std::string & smiles_or_inchi) const {
 
     out << "BEGIN IONS" << std::endl;
     out << "PEPMASS=" << std::setprecision(10) << mw << std::endl;
@@ -83,12 +91,14 @@ void Spectrum::outputToMgfStream(std::ostream &out, std::string id,
     else if (ionization_mode == NEGATIVE_ESI_IONIZATION_MODE)
         out << "CHARGE=1-" << std::endl;
     out << "TITLE=" << id << ";Energy" << energy << ";";
-    if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
-        out << "[M+H]+;In-silico MS/MS by CFM-ID;" << std::endl;
-        /*else if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
-            out << "[M]+;In-silico MS by CFM-ID;" << std::endl;*/
+    if (ionization_mode == POSITIVE_EI_IONIZATION_MODE)
+        out << "[M+H]+;In-silico MS by ";
+    else if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
+            out << "[M]+;In-silico MS/MS by ";
     else if (ionization_mode == NEGATIVE_ESI_IONIZATION_MODE)
-        out << "[M-H]+;In-silico MS/MS by CFM-ID;" << std::endl;
+        out << "[M-H]+;In-silico MS/MS by ";
+    out << APP_STRING << " " << PROJECT_VER << ";"
+        << smiles_or_inchi << ";" << std::endl;
     outputToStream(out, false);
     out << "END IONS" << std::endl;
 }
