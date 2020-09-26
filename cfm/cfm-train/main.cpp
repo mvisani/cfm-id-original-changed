@@ -173,7 +173,8 @@ int main(int argc, char *argv[]) {
         std::cout << "Computing fragmentation graphs and features..";
 
     int success_count = 0, except_count = 0;
-    for (auto mit = data.begin(); mit != data.end(); ++mit) {
+    auto mit = data.begin();
+    while (mit != data.end()) {
         try {
             //If we're not training, only load the ones we'll be testing
             if (!no_train) {
@@ -224,6 +225,7 @@ int main(int argc, char *argv[]) {
 
                 }
                 success_count++;
+                mit++;
             }
         }
         catch (std::exception &e) {
@@ -235,6 +237,8 @@ int main(int argc, char *argv[]) {
             except_count++;
             eout << except_count << " exceptions, from " << except_count + success_count << " total" << std::endl;
             eout.close();
+            // in case current data is not valid, remove it from the list
+            mit = data.erase(mit);
         }
     }
 
