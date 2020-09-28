@@ -277,6 +277,7 @@ int main(int argc, char *argv[]) {
     //Create the MSP lookup
     if (spectra_in_msp)
         msp = new MspReader(peakfile_dir_or_msp.c_str(), "");
+    
     for (auto mit = data.begin(); mit != data.end(); ++mit) {
         if (!no_train) {
             if (spectra_in_msp)

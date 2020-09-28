@@ -466,9 +466,11 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
         for (auto &spectrum : spectra) {
             result = (result || (spectrum.size() == 0));
         }
-    } else
+    } else if (spectra.size() > energy_level){
         result = spectra[energy_level].size() == 0;
-
+    } else {
+        result =true;
+    }
     return result;
 }
 
