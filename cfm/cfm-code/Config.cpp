@@ -132,6 +132,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_adam_beta_2") cfg.ga_adam_beta_2 = (double) value;
         else if (name == "ga_adam_eps") cfg.ga_adam_eps = (double) value;
         else if (name == "ga_adamw_w") cfg.ga_adamw_w = (double) value;
+        else if (name == "ga_adam_ga_adam_use_amsgrad") cfg.ga_adam_use_amsgrad = (bool) value;
         else if (name == "ga_adadelta_rho") cfg.ga_adadelta_rho = (double) value;
         else if (name == "ga_decay_method") cfg.ga_decay_method = (int) value;
         else if (name == "exp_decay_k") cfg.exp_decay_k = (double) value;
@@ -234,12 +235,12 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                       << " eps " << cfg.ga_adam_eps << " Ending Step Size " << cfg.ending_step_size
                       << std::endl;
         } else if (USE_ADAM_FOR_GA == cfg.ga_method
-                   || USE_AMSGRAD_FOR_GA == cfg.ga_method
+                   || USE_ADABELIEF_FOR_GA == cfg.ga_method
                    || USE_ADAMW_FOR_GA == cfg.ga_method) {
             if (USE_ADAM_FOR_GA == cfg.ga_method)
                 std::cout << "Using Adam implementation" << std::endl;
-            else if (USE_AMSGRAD_FOR_GA == cfg.ga_method)
-                std::cout << "Using AMSgrad implementation" << std::endl;
+            else if (USE_ADABELIEF_FOR_GA == cfg.ga_method)
+                std::cout << "Using AdaBelief implementation" << std::endl;
             else if (USE_ADAMW_FOR_GA == cfg.ga_method){
                 std::cout << "Using AdamW implementation" << std::endl;
                 if(cfg.lambda != 0.0){
@@ -247,9 +248,9 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                     std::cout << "Set lambda to " << cfg.lambda << ", adamW use Weight Decay not L2" << std::endl;
                 }
             }
-            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " beta1  " << cfg.ga_adam_beta_1
-                      << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_adam_eps
-                      << " Ending Step Size " << cfg.ending_step_size;
+            std::cout << "Using starting step size " << cfg.starting_step_size  << " ending step size " << cfg.ending_step_size
+                     << " beta1  " << cfg.ga_adam_beta_1 << " beta2 " << cfg.ga_adam_beta_2 
+                     << " eps " << cfg.ga_adam_eps << " amsgrad " << cfg.ga_adam_use_amsgrad;
             if (USE_ADAMW_FOR_GA == cfg.ga_method)
                 std::cout << " ga_adamw_w " << cfg.ga_adamw_w;
             std::cout << std::endl;

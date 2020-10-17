@@ -52,7 +52,8 @@ public:
          float learning_rate,
          float beta_1,
          float beta_2,
-         float eps);
+         float eps,
+         bool use_amsgrad);
 
     void adjustWeights(std::vector<float> &grads,
                        std::set<unsigned int> &used_idxs,
@@ -63,9 +64,10 @@ protected:
     float beta_2;
     float eps;
     int iteration_count;
+    bool use_amsgrad;
     std::vector<float> first_moment_vector;
     std::vector<float> second_moment_vector;
-
+    std::vector<float> second_moment_max_vector;
 };
 
 // simple version of Adam W
@@ -77,7 +79,9 @@ public:
          float beta_1,
          float beta_2,
          float eps,
-          float w) : Adam(length, learning_rate, beta_1, beta_2, eps) {
+         bool use_amsgrad,
+         float w
+         ) : Adam(length, learning_rate, beta_1, beta_2, eps, use_amsgrad) {
         this->w = w;
     };
 
@@ -89,9 +93,25 @@ private:
     float w;
 };
 
-class Adadelta : public Solver {
+// Ada Belief 
+// https://arxiv.org/abs/2010.07468
+class AdaBelief : public Adam {
 public:
-    Adadelta(unsigned int length,
+    AdaBelief(unsigned int length,
+         float learning_rate,
+         float beta_1,
+         float beta_2,
+         float eps,
+         bool use_amsgrad) : Adam(length, learning_rate, beta_1, beta_2, eps, use_amsgrad) {};
+
+    void adjustWeights(std::vector<float> &grads,
+                       std::set<unsigned int> &used_idxs,
+                       boost::shared_ptr<Param> param) override;
+};
+
+class AdaDelta : public Solver {
+public:
+    AdaDelta(unsigned int length,
              float learning_rate,
              float decay_rate,
              float eps);
@@ -106,29 +126,6 @@ private:
     int iteration_count;
     std::vector<float> mean_squared_delta_x;
     std::vector<float> mean_squared_gradients;
-};
-
-
-class AMSgrad : public Solver {
-public:
-    AMSgrad(unsigned int length,
-            float learning_rate,
-            float beta_1,
-            float beta_2,
-            float eps);
-
-    void adjustWeights(std::vector<float> &grads,
-                       std::set<unsigned int> &used_idxs,
-                       boost::shared_ptr<Param> param) override;
-
-private:
-    float beta_1;
-    float beta_2;
-    float eps;
-    int iteration_count;
-    std::vector<float> first_moment_vector;
-    std::vector<float> second_moment_vector;
-    std::vector<float> second_moment_max_vector;
 };
 
 
