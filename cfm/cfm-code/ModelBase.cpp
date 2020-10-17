@@ -85,7 +85,8 @@ Solver *ModelBase::getSolver(int ga_method, double learning_rate) const {
                               learning_rate,
                               cfg->ga_adam_beta_1,
                               cfg->ga_adam_beta_2,
-                              cfg->ga_adam_eps);
+                              cfg->ga_adam_eps,
+                              cfg->ga_adam_use_amsgrad);
 
             break;
         case USE_ADAMW_FOR_GA:
@@ -94,18 +95,20 @@ Solver *ModelBase::getSolver(int ga_method, double learning_rate) const {
                               cfg->ga_adam_beta_1,
                               cfg->ga_adam_beta_2,
                               cfg->ga_adam_eps,
+                               cfg->ga_adam_use_amsgrad,
                               cfg->ga_adamw_w);
             break;
-        case USE_AMSGRAD_FOR_GA:
-            solver = new AMSgrad(param->getNumWeights(),
+        case USE_ADABELIEF_FOR_GA:
+            solver = new AdaBelief(param->getNumWeights(),
                                  learning_rate,
                                  cfg->ga_adam_beta_1,
                                  cfg->ga_adam_beta_2,
-                                 cfg->ga_adam_eps);
+                                 cfg->ga_adam_eps,
+                                cfg->ga_adam_use_amsgrad);
 
             break;
         case USE_ADADELTA_FOR_GA:
-            solver = new Adadelta(param->getNumWeights(),
+            solver = new AdaDelta(param->getNumWeights(),
                                   learning_rate,
                                   cfg->ga_adadelta_rho,
                                   cfg->ga_adam_eps);

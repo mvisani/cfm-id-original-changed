@@ -47,7 +47,7 @@ static const int USE_MOMENTUM_FOR_GA = 1;
 static const int USE_ADAM_FOR_GA = 2;
 static const int USE_ADAMW_FOR_GA = 3;
 static const int USE_ADADELTA_FOR_GA = 4;
-static const int USE_AMSGRAD_FOR_GA = 5;
+static const int USE_ADABELIEF_FOR_GA = 5;
 
 //Use ADAM to do gradient ascent
 static const int DEFAULT_USE_ADAM_FOR_GA = USE_ADAM_FOR_GA;
@@ -223,6 +223,7 @@ struct config_t {
     double ga_adam_beta_1;
     double ga_adam_beta_2;
     double ga_adam_eps;
+    bool ga_adam_use_amsgrad = false;
     // For ADAMW
     double ga_adamw_w;
 
