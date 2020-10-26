@@ -29,7 +29,7 @@ CFM-ID provides a method for accurately and efficiently identifying metabolites 
 
 ### Install from source code ###
 
-* Please check INSTALL FILE
+* Please check cfm/INSTALL.md
 * Note Only Insatll on linux and Mac has been verified, while install on Windows from source code is possible 
 
 ### Use Pre Build Docker Image ###
