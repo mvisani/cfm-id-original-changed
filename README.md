@@ -69,27 +69,32 @@ Docker Image can be found at <https://hub.docker.com/repository/docker/wishartla
 
     cfm-predict CCCC 0.001 metab_ce_cfm/param_output0.log metab_ce_cfm/param_config.txt
 
+    #ESI-MS/MS [M+H]+ Spectra
+    #PREDICTED BY CFM-ID 4.0.4
     energy0
-    15.02292652 0.03877135094
-    27.02292652 0.0004516638069
-    29.03857658 0.1823948415
-    31.05422664 0.1285812238
-    43.05422664 0.54978044
-    59.08552677 99.10002048
+    41.00219107 0.6506146774 3 (0.36197)
+    43.01784114 100 2 (55.635)
+    44.99710569 0.1661752377 1 (0.092452)
+    59.01275576 1.510217985 4 (0.84021)
+    61.02840582 77.41540439 0 (43.07)
     energy1
-    15.02292652 0.2014284022
-    27.02292652 0.006349994177
-    29.03857658 0.9254281728
-    31.05422664 0.3201026529
-    43.05422664 1.755347781
-    59.08552677 96.791343
+    41.00219107 0.5370744473 3 (0.41541)
+    43.01784114 100 2 (77.347)
+    44.99710569 2.439734481 1 (1.8871)
+    59.01275576 0.6513231026 4 (0.50378)
+    61.02840582 25.65990247 0 (19.847)
     energy2
-    15.02292652 0.6774027078
-    27.02292652 0.2170199999
-    29.03857658 2.333980325
-    31.05422664 0.9058884643
-    43.05422664 27.56483288
-    59.08552677 68.30087562
+    41.00219107 2.298055961 3 (1.631)
+    43.01784114 100 2 (70.973)
+    44.99710569 16.85736078 1 (11.964)
+    59.01275576 1.810322795 4 (1.2848)
+    61.02840582 19.93368222 0 (14.147)
+
+    0 61.02840582 CC(O)=[OH+]
+    1 44.99710569 O=C=[OH+]
+    2 43.01784114 C#C[OH2+]
+    3 41.00219107 [C+]#CO
+    4 59.01275576 [CH+]=C(O)O
 
 ### Run cfm-predict in a docker container ###
 
@@ -112,6 +117,7 @@ Given an input spectrum and a list of candidate smiles (or inchi) strings, **cfm
 
 * **spectrum_file**: The filename where the input spectra can be found. This can be a .msp file in which the desired spectrum is listed under a corresponding id (next arg). Or it could be a single file with a list of peaks 'mass intensity' delimited by lines, with either 'low','med' and 'high' lines beginning spectra of different energy levels, or 'energy0', 'energy1', etc. e.g.
 
+    energy0
     65.02 40.0
     86.11 60.0
     energy1
