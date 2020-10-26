@@ -93,14 +93,14 @@ Docker Image can be found at <https://hub.docker.com/repository/docker/wishartla
 
 ### Run cfm-predict in a docker container ###
 
-Assuming your home directory is `/home/ubuntu/`：
+Assuming your current directory is in the working directory.
 To predict ESI-MS/MS [M+H]+ spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 /root/[M+H]+/myout"
+    sudo docker run --rm=true -v $(pwd):/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 /cfmid/public/[M+H]+/myout"
 
 To predict ESI-MS/MS [M-H]- spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt 1 /root/[M-H]-/myout"
+    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt 1 /cfmid/public/[M-H]-/myout"
 
 ## cfm-id ##
 
@@ -149,19 +149,18 @@ Given an input spectrum and a list of candidate smiles (or inchi) strings, **cfm
     1 0.38798085 18232127 NC(Cc1ccc(O)cc1)C(=O)NC(CO)C(=O)NC(CC(=O)O)C(=O)O    //Rank, Score, Id, Smiles
     2 0.37921759 18224136 NC(CO)C(=O)NC(Cc1ccc(O)cc1)C(=O)NC(CC(=O)O)C(=O)O
     3 0.20393876 18231916 NC(Cc1ccc(O)cc1)C(=O)NC(CC(=O)O)C(=O)NC(CO)C(=O)O
-    4 0.16378009 59444507 Cc1cc(CN(CC(=O)O)CC(=O)O)nc(CN(CC(=O)O)CC(=O)O)c1
-    5 0.13664102 18219720 NC(CC(=O)O)C(=O)NC(Cc1ccc(O)cc1)C(=O)NC(CO)C(=O)O
+    ...
 
 ### Run cfm-id in a docker container ###
 
-Assuming your home directory is `/home/ubuntu/`：
+Assuming your current directory is in the working directory.
 To identify ESI-MS/MS [M+H]+ spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-id /root/<spectrum_file> <id> root/<candidate_file>  10 0.001 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt Dice 1 /root/myout"
+    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-id ./<spectrum_file> <id> root/<candidate_file>  10 0.001 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt Dice 1 output"
 
 To identify ESI-MS/MS [M-H]- spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-id /root/<spectrum_file> <id> root/<candidate_file>  10 0.001 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt Dice 1 /root/myout"
+    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-id ./<spectrum_file> <id> root/<candidate_file>  10 0.001 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt Dice 1 output"
 
 
 ## cfm-id-precomputed ##
@@ -193,9 +192,9 @@ Given an input spectrum and a set of candidate spectra, **cfm-id-precomputed** c
 
 ### Run cfm-id-precomputed in a docker container ###
 
-Assuming your home directory is `/home/ubuntu/`：
+Assuming your current directory is in the working directory.
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-id-precomputed /root/<spectrum_file> <id> root/<candidate_file>  10 0.001 /root/myout"
+    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-id-precomputed <spectrum_file> <id> <candidate_file>  10 0.001 ./output"
 
 ## cfm-annotate ##
 
@@ -234,75 +233,39 @@ The output contains the original spectra in the input format, but with fragment 
     105.069174 0.9636028163 9 (0.9636) //Peak at 105.07 mass, explained by Fragment of id 9
     136.07616 7.037977857 86 (7.038)
     160.076289 1.197298221 80 (1.1973)
-    178.084616 2.861739768
-    223.106608 53.80100032 32 93 92 (36.58 9.2055 8.0159)
-    251.10173 21.90932756 38 87 88 91 (9.7098 5.3256 5.1959 1.678)
-    297.107567 2.122976713 16 90 (1.2417 0.88124)  
-    384.140384 6.034804405 0 (6.0348)
+    178.084616 2.86173976
     ...
     energy2
     42.033909 1.244230912 89 (1.2442)
     60.043746 10.82864669 20 (10.829)
     70.027268 1.291256596 85 (1.2913)
-    87.056272 7.489320919 81 82 (3.7496 3.7398)
-    91.054494 9.60202642 79 (9.602)
-    119.04828 6.415043123 83 (6.415)
-    121.063402 2.97004533 84 (2.97)
-    133.06551 2.057893243
-    135.066238 1.480563861
-    136.074907 40.8315392 86 (40.832)
-    160.074409 10.80320864 80 (10.803)
-    178.085454 4.986225072
+    ...
 
     94
     0 384.1401411 NC(CO)C(=O)[NH2+]C(Cc1ccc(O)cc1)C(=O)NC(CC(=O)O)C(=O)O
     1 366.1295764 N=C(C=O)C(O)=[NH+]C(=CC1=CC=CCC1)C(=O)N=C(CC(O)O)C(O)O
     2 290.0982763 C=C([NH+]=C(O)C(=N)C=O)C(=O)NC(CC(O)O)C(O)O
-    3 288.0826262 C=C([NH+]=C(O)C(=N)C=O)C(=O)N=C(CC(O)O)C(O)O
-    4 278.0982763 N=C(C=O)C(=O)[NH+]=CC(O)NC(CC(O)O)C(O)O
-    5 276.0826262 N=C(C=O)C(=O)[NH+]=C=C(O)NC(CC(O)O)C(O)O
-    6 274.0669761 N=C(C=O)C(=O)[NH+]=C=C(O)N=C(CC(O)O)C(O)O
-    7 272.0513261 N=C(C=O)C(=O)[NH+]=C=C(O)N=C(C=C(O)O)C(O)O
+    ...
     8 109.0647913 C=C1C=CC(=[OH+])CC1
     9 105.0658539 NC(CO)C(=[NH2+])O     //i.e. This fragment
     ...
-    89 42.03382555 CC#[NH+]
-    90 297.1081127 C#CC(=C=C([NH+]=C=O)C(=O)NC(CC(O)O)C(O)O)CC
-    91 251.1026334 NC(O)C(=C=C1C=CC(=O)CC1)[NH+]=C(O)C=CO
-    92 223.1077188 NCC(O)=[NH+]C(=C=C1C=CC(=O)CC1)CO
     93 223.1077188 C#CC(=C=C(CO)[NH+]=C(O)C(=N)CO)CC
 
     0 1 O                                        //These transitions explain how each fragment fits
     0 2 O=C1C=CC=CC1                             //in to the overall graph.
-    0 3 O=C1C=CCCC1
-    0 4 C=C1C=CC(=O)C=C1
-    0 5 C=C1C=CC(=O)CC1
-    0 6 CC1C=CC(=O)CC1
-    0 7 CC1CCC(=O)CC1
-    0 8 N=C(C=O)C(=O)N=C=C(O)NC(CC(O)O)C(O)O
-    0 9 O=C1C=CC(=C=C=C(O)N=C(C=C(O)O)C(O)O)CC1   
-    0 2 C=C1C=CC(=O)CC1                        
-    0 3 CC1C=CC(=O)CC1
-    ...
-    78 2 C=CC
-    78 3 CCC
-    78 4 C#CCC
-    78 5 C=CCC
-    78 6 CCCC
-    78 9 C#CC#CC=C(O)NC(CC(O)O)C(O)O
-    78 13 C#CC#CC(N)C(O)NC(CC(O)O)C(O)O
+       ...
     78 20 C#CC#CC(=NCO)C(O)NC(CC(O)O)C(O)O
 
 ### Run cfm-annotate in a docker container ###
 
-Assuming your home directory is `/home/ubuntu/`：
+Assuming your current directory is in the working directory.
 To annotate ESI-MS/MS [M+H]+ spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" /root/<spectrum_file> <id> 10 0.001 /trained_models_cfmid4.0/[M+H]+/param_config.txt /root/myout"
+    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" <spectrum_file> <id> 10 0.001 /trained_models_cfmid4.0/[M+H]+/param_config.txt output"
 
 To annotate ESI-MS/MS [M-H]- spectra  
 
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" /root/<spectrum_file> <id> 10 0.001 /trained_models_cfmid4.0/[M-H]-/param_config.txt /root/myout"
+    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" <spectrum_file> <id> 10 0.001 /trained_models_cfmid4.0/[M-H]-/param_config.txt output"
 
 ## cfm-train ##
 
@@ -317,10 +280,6 @@ For mow, please check:
     cfm-train --help
 
 And <https://sourceforge.net/p/cfm-id/code/HEAD/tree/supplementary_material/cfm-train_example/>. 
-
-### Run cfm-train in a docker container ###
-
-For now, training via docker is not recommended
 
 ## fraggraph-gen ##
 
@@ -345,8 +304,7 @@ For now, training via docker is not recommended
     4                            //The number of fragments
     0 31.05422664 C[CH4+]        //id mass smiles  - the fragments
     1 15.02292652 [CH3+]         //id mass smiles
-    2 29.03912516 C=[CH3+]       //id mass smiles
-    3 27.02292652 C#[CH2+]       //id mass smiles
+    ...
 
     0 1 C                        //from to neutral_loss - the transitions
     0 2 [HH]                     //from to neutral_loss
@@ -358,15 +316,12 @@ For now, training via docker is not recommended
     0 30.04640161 C[CH3+]        //id mass smiles  - the fragments
     1 15.02292652 [CH3+]         //id mass smiles
     2 28.03075155 [CH2][CH2+]    //...etc
-    3 26.01510148 [CH]=[CH+]
-    4 27.02292652 C#[CH2+]
-    5 29.03857658 C=[CH3+]
+   ...
 
 ### Run fraggraph-gen in a docker container ###
+Assuming your current directory is in the working directory.
 
-Assuming your home directory is `/home/ubuntu/`：
-
-    sudo docker run --rm=true -v /home/ubuntu/cfm_id/cfmid/output:/root -i cfmid:latest sh -c "cd /root/; fraggraph-gen "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1"  2 + fullgraph /root/myout"
+    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; fraggraph-gen "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1"  2 + fullgraph output"
 
 ### Others ###
 
