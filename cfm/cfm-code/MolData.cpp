@@ -474,16 +474,17 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
     return result;
 }
 
-void MolData::computePredictedSpectra(Param &param, int postprocess_method, bool use_existing_thetas, int energy_level) {
+void MolData::computePredictedSpectra(Param &param, int postprocess_method, bool use_existing_thetas, int energy_level, double perc_thresh) {
 
     computePredictedSingleEnergySpectra(param, postprocess_method,
-                                        use_existing_thetas, energy_level);
+                                        use_existing_thetas, energy_level, perc_thresh);
 }
 
 void MolData::computePredictedSingleEnergySpectra(Param &param,
                                                   int postprocess_method,
                                                   bool use_existing_thetas,
-                                                  int energy_level) {
+                                                  int energy_level,
+                                                  double perc_thresh) {
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
@@ -500,17 +501,14 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
     } else
         createSpeactraSingleEnergry(energy_level);
 
-    if (1 == postprocess_method)
-        postprocessPredictedSpectra();
-    else if(2 == postprocess_method)
-    {
-        double perc_thresh = 80.0;
-        int min_peaks = 1;
+    if (postprocess_method > 0){
+        int min_peaks = (1 == postprocess_method) ? 1 : 5;
         int max_peaks = 30;
         double min_intensity = 0.0;
         postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_intensity);
     }
-
+    
+    //TODO: This should not be a default, fix this when we doing EI model
     else {
         if(energy_level != -1){
             predicted_spectra[energy_level].normalizeAndSort();

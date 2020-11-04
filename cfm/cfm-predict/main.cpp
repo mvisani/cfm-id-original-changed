@@ -66,6 +66,7 @@ int main(int argc, char *argv[]) {
     std::string param_filename = "param_output.log";
     std::string config_filename = "param_config.txt";
     double prob_thresh_for_prune = 0.001;
+    double postprocessing_energy = 80;
 
     if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9) {
         std::cout << std::endl << std::endl;
@@ -96,6 +97,9 @@ int main(int argc, char *argv[]) {
                   << std::endl;
         std::cout << std::endl << "suppress_exception (opt):" << std::endl
                   << "Suppress exceptions so that the program returns normally even when it fails to produce a result (0 = OFF (default), 1 = ON)."
+                  << std::endl;
+        std::cout << std::endl << "postprocessing_energy (opt):" << std::endl
+                  << "postprocessing energy out of 100% (default 80%)"
                   << std::endl;
         exit(1);
     }
@@ -134,6 +138,13 @@ int main(int argc, char *argv[]) {
         try { suppress_exceptions = boost::lexical_cast<bool>(argv[8]); }
         catch (boost::bad_lexical_cast e) {
             std::cout << "Invalid suppress_exceptions (Must be 0 or 1): " << argv[8] << std::endl;
+            exit(1);
+        }
+    }
+    if (argc == 10) {
+        try { postprocessing_energy = boost::lexical_cast<float>(argv[9]); }
+        catch (boost::bad_lexical_cast e) {
+            std::cout << "Invalid postprocessing_energy: " << argv[8] << std::endl;
             exit(1);
         }
     }
@@ -211,7 +222,7 @@ int main(int argc, char *argv[]) {
                 fgen = new LikelyFragmentGraphGenerator(param, &cfg, prob_thresh_for_prune);
 
             it->computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
-            it->computePredictedSpectra(*nn_param, postprocessing_method, true);
+            it->computePredictedSpectra(*nn_param, postprocessing_method, true, -1 ,postprocessing_energy);
             //Predict the spectra (and post-process, use existing thetas)
         }
         catch (RDKit::MolSanitizeException & e) {

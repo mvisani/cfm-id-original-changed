@@ -168,8 +168,8 @@ public:
 
     // compute predicted Spectra
     // if engry < -1 , compute all  Spectra
-    void computePredictedSpectra(Param &param, int postprocess_method = false, bool use_existing_thetas = false,
-                                 int energy_level = -1);
+    void computePredictedSpectra(Param &param, int postprocess_method = 0, bool use_existing_thetas = false,
+                                 int energy_level = -1, double perc_thresh = 80.0);
 
     void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 5, int max_peaks = 30,
                                      double min_intensity = 0.0);
@@ -282,7 +282,7 @@ protected
     void getEnumerationSpectraMasses(std::vector<double> &output_masses);
 
     void computePredictedSingleEnergySpectra(Param &param, int postprocess_method,
-                                             bool use_existing_thetas, int energy_level);
+                                             bool use_existing_thetas, int energy_level, double perc_thresh);
 
     void translatePeaksFromMsgToSpectra(Spectrum &out_spec, Message *msg);
 
