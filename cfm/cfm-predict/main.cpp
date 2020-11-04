@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     double prob_thresh_for_prune = 0.001;
     double postprocessing_energy = 80;
 
-    if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9) {
+    if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9 && argc != 10) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
                   << "CFM-ID Version: "<< PROJECT_VER << std::endl
