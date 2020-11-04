@@ -502,7 +502,7 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
         createSpeactraSingleEnergry(energy_level);
 
     if (postprocess_method > 0){
-        int min_peaks = (1 == postprocess_method) ? 1 : 5;
+        int min_peaks = (2 == postprocess_method) ? 1 : 5;
         int max_peaks = 30;
         double min_intensity = 0.0;
         postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_intensity);
