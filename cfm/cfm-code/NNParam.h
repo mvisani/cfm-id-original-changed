@@ -48,7 +48,7 @@ class NNParam : public Param {
 public:
     NNParam(std::vector<std::string> a_feature_list, int a_num_energy_levels,
                 std::vector<int> &a_hlayer_num_nodes, std::vector<int> &a_act_func_ids,
-                std::vector<float> &a_dropout_probs);
+                std::vector<float> &a_dropout_probs,  boost::container::vector<bool> & a_is_frozen);
 
     //Constructor for loading parameters from file
     NNParam(std::string &filename);
@@ -86,7 +86,7 @@ public:
 
     virtual void initWeights(int init_type) override;
 
-    virtual boost::container::vector<bool> *getDropoutsPtr() override { return &is_dropped; } ;
+    virtual boost::container::vector<bool> *getDropoutsPtr() override { return &hlayer_is_dropped; } ;
     virtual std::vector<float> *getDropoutsProbPtr() override { return &hlayer_dropout_probs; };;
     
     void rollDropouts() override;
@@ -104,12 +104,15 @@ protected:
     void varianceScalingInit();
 
 private:
+    // TODO: I should  refactor this class at some point
     // hold num of node for each hlayer
     std::vector<int> h_layer_num_nodes;
     // hold drop out prob for each hlayer
     std::vector<float> hlayer_dropout_probs;
     // addition paramenter for drop outs
-    boost::container::vector<bool> is_dropped;
+    boost::container::vector<bool> hlayer_is_dropped;
+    // addition paramenter for frozen layer
+    boost::container::vector<bool> hlayer_is_frozen;
 
     // tmp value for  varianceScalingInit
     std::vector<int> num_weights_per_layer;

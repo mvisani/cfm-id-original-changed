@@ -125,6 +125,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "theta_nn_hlayer_num_nodes") cfg.theta_nn_hlayer_num_nodes.push_back((int) value);
         else if (name == "theta_nn_layer_act_func_ids") cfg.theta_nn_layer_act_func_ids.push_back((int) value);
         else if (name == "nn_layer_dropout_probs") cfg.nn_layer_dropout_probs.push_back((float) value);
+        else if (name == "nn_layer_is_frozen_flags") cfg.nn_layer_is_frozen_flags.push_back((bool) value);
         else if (name == "ga_minibatch_nth_size") cfg.ga_minibatch_nth_size = (int) value;
         else if (name == "ga_max_iterations") cfg.ga_max_iterations = (int) value;
         else if (name == "ga_momentum") cfg.ga_momentum = (double) value;

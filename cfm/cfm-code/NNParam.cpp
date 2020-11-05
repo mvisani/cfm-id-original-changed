@@ -7,6 +7,7 @@
 #				within the bayesian network fragmentation trees.
 #
 # Copyright (c) 2013, Felicity Allen
+# Copyright (c) 2016, Fei Wang
 # All rights reserved.
 
 # This file is part of the cfm-id project.
@@ -20,9 +21,9 @@
 
 NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_levels,
                  std::vector<int> &a_hlayer_num_nodes, std::vector<int> &a_act_func_ids,
-                 std::vector<float> &a_dropout_probs) :
+                 std::vector<float> &a_dropout_probs, boost::container::vector<bool> & a_is_frozen):
         h_layer_num_nodes(a_hlayer_num_nodes), act_func_ids(a_act_func_ids),
-        hlayer_dropout_probs(a_dropout_probs),
+        hlayer_dropout_probs(a_dropout_probs), hlayer_is_frozen(a_is_frozen),
         Param(a_feature_list, a_num_energy_levels) {
 
     //The weight length was set in the Param constructor, now alter it to match the neural net layout
@@ -65,6 +66,10 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
     while (hlayer_dropout_probs.size() < h_layer_num_nodes.size())
         hlayer_dropout_probs.push_back(0);
     rollDropouts();
+
+    //fill frozen flags if not provided
+    while (hlayer_is_frozen.size() < h_layer_num_nodes.size())
+        hlayer_dropout_probs.push_back(false);
 }
 
 void NNParam::initWeights(int init_type) {
@@ -177,7 +182,7 @@ float NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_v
     auto layer_it = h_layer_num_nodes.begin();
 
     for (int h_node = 0; h_node < (*layer_it); h_node++) {
-        if (!use_dropout || !is_dropped[neuron_idx]) {
+        if (!use_dropout || !hlayer_is_dropped[neuron_idx]) {
             float z_val = 0.0f;
             // for each feature, note feature_it is the index of feature
             // since we are using a sparse binary feature vector
@@ -192,7 +197,7 @@ float NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_v
             if (use_dropout)
                 a_values[neuron_idx] = a_values[neuron_idx]/(1.0 - hlayer_dropout_probs[0]);
 
-        } else if (is_dropped[neuron_idx]){
+        } else if (hlayer_is_dropped[neuron_idx]){
             // if we are using drop out
             // and current node is dropped
             weights_it += fv_length;
@@ -207,7 +212,7 @@ float NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_v
     int input_layer_node_idx_start = 0;
     for (int h_layer_idx = 1; h_layer_idx < h_layer_num_nodes.size(); ++h_layer_idx) {
         for (int h_node_idx = 0; h_node_idx < h_layer_num_nodes[h_layer_idx]; ++h_node_idx) {
-            if (!use_dropout || !is_dropped[neuron_idx]) {
+            if (!use_dropout || !hlayer_is_dropped[neuron_idx]) {
                 float z_val = *weights_it++; //Bias
 
                 // sum up and record z_val
@@ -222,7 +227,7 @@ float NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_v
                 if (use_dropout)
                     a_values[neuron_idx] = a_values[neuron_idx]/(1.0 - hlayer_dropout_probs[h_layer_idx]);
 
-            } else if (is_dropped[neuron_idx]){
+            } else if (hlayer_is_dropped[neuron_idx]){
                 // if dropped out move by num_input + 1
                 // 1 for bais num_input weights
                 weights_it += 1 + num_input;
@@ -258,12 +263,19 @@ void NNParam::saveToFile(std::string &filename) {
         out << std::endl;
         out << act_func_ids.size() << std::endl;
         iit = act_func_ids.begin();
+        // output activation function for each layer
         for (; iit != act_func_ids.end(); ++iit)
             out << *iit << " ";
         out << std::endl;
+        // output dropout probs for each layer
         for (const auto &prob : hlayer_dropout_probs)
             out << prob << " ";
         out << std::endl;
+        // output frozen flag for each layer
+        for (const auto &is_frozen : hlayer_is_frozen)
+            out << is_frozen << " ";
+        out << std::endl;
+
         out.close();
     }
 }
@@ -300,13 +312,26 @@ NNParam::NNParam(std::string &filename) : Param(filename) {
                 ss2 >> act_func_ids[i];
             setActivationFunctionsFromIds();
 
-            getline(ifs, line);
-            std::stringstream ss3(line);
+            // Get the dropout probs for each layer
             hlayer_dropout_probs.resize(act_func_size);
-            // get  and roll drop outs
-            for (int i = 0; i < num_layers; i++)
-                ss3 >> hlayer_dropout_probs[i];
+            getline(ifs, line);
+            if(!ifs.eof()){
+                std::stringstream ss3(line);
+                // get  and roll drop outs
+                for (int i = 0; i < num_layers; i++)
+                    ss3 >> hlayer_dropout_probs[i];
+            }
             rollDropouts();
+
+            // Get the frozen flag for each layer
+            hlayer_is_frozen.resize(act_func_size);
+            getline(ifs, line);
+            if(!ifs.eof()){
+                std::stringstream ss4(line);
+                // get  and roll drop outs
+                for (int i = 0; i < num_layers; ++i)
+                    ss4 >> hlayer_is_frozen[i];
+            }
 
             tmp_z_values.resize(total_nodes);
             tmp_a_values.resize(total_nodes);
@@ -439,6 +464,7 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<float> > &unwei
         itAs[idx] = deltasA[idx].begin();
         itBs[idx] = deltasB[idx].begin();
     }
+
     //Persistence (and normalization) terms
     unweighted_grads[num_trans_from_id].clear();
     unweighted_grads[num_trans_from_id].resize(getNumWeightsPerEnergyLevel(), 0.0f);
@@ -450,73 +476,86 @@ void NNParam::computeUnweightedGradients(std::vector<std::vector<float> > &unwei
     unsigned int feature_len = fvs[0]->getTotalLength();
 
     //Collect the used feature idxs (we'll need these for the first layer normalization)
+    int frozen_layer_idx = 0;
+    bool froze_layer = hlayer_is_frozen[frozen_layer_idx];
     std::set<unsigned int> tmp_used_idxs;
     std::vector<unsigned int> tmp_used_idxs_vect(feature_len);
-    for (int idx = 0; idx < num_trans_from_id; idx++) {
-        for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
-            //tmp_used_idxs.insert(*fit);
-            tmp_used_idxs_vect[*fit] ++;
-            for (int hnode = 0; hnode < h_layer_num_nodes[0]; hnode++)
-                used_idxs.insert(hnode * feature_len + *fit);
+    if (!froze_layer){
+        for (int idx = 0; idx < num_trans_from_id; idx++) {
+            for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
+                //tmp_used_idxs.insert(*fit);
+                tmp_used_idxs_vect[*fit] ++;
+                for (int hnode = 0; hnode < h_layer_num_nodes[0]; hnode++)
+                    used_idxs.insert(hnode * feature_len + *fit);
+            }
         }
     }
 
     //First layer (only compute gradients for indices relevant to used features)
     std::vector<int>::iterator itlayer = h_layer_num_nodes.begin();
-    for (int hnode = 0; hnode < *itlayer; hnode++) {
 
+    for (int hnode = 0; hnode < *itlayer; hnode++) {
         //Compute the unnormalized terms, tracking the normalizers (persistence terms) as we go
-        for (int idx = 0; idx < num_trans_from_id; idx++) {
-            float deltaA = *itAs[idx]++;
-            float deltaB = *itBs[idx]++;
-            for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
-                *(itgrads[idx] + *fit) = deltaA;
-                *(normit + *fit) -= deltaB;
+        if (!froze_layer){
+            for (int idx = 0; idx < num_trans_from_id; idx++) {
+                float deltaA = *itAs[idx]++;
+                float deltaB = *itBs[idx]++;
+                for (auto fit = fvs[idx]->getFeatureBegin(); fit != fvs[idx]->getFeatureEnd(); ++fit) {
+                    *(itgrads[idx] + *fit) = deltaA;
+                    *(normit + *fit) -= deltaB;
+                }
+            }
+            // Apply the normalizers
+            // (Note: we need to normalize for all transitions if any transition used that feature)
+            for (int idx = 0; idx < num_trans_from_id; idx++) {
+                /*std::set<unsigned int>::iterator sit = tmp_used_idxs.begin();
+                for (; sit != tmp_used_idxs.end(); ++sit)
+                    *(itgrads[idx] + *sit) += *(normit + *sit);*/
+                for(int fv_idx = 0; fv_idx < tmp_used_idxs_vect.size(); ++fv_idx)
+                    if(tmp_used_idxs_vect[fv_idx] > 0 )
+                        *(itgrads[idx] + fv_idx) += *(normit + fv_idx);
+                itgrads[idx] += feature_len;
             }
         }
-
-        //Apply the normalizers
-        //(Note: we need to normalize for all transitions if any transition used that feature)
-        for (int idx = 0; idx < num_trans_from_id; idx++) {
-            /*std::set<unsigned int>::iterator sit = tmp_used_idxs.begin();
-            for (; sit != tmp_used_idxs.end(); ++sit)
-                *(itgrads[idx] + *sit) += *(normit + *sit);*/
-            for(int fv_idx = 0; fv_idx < tmp_used_idxs_vect.size(); ++fv_idx)
-                if(tmp_used_idxs_vect[fv_idx] > 0 )
-                    *(itgrads[idx] + fv_idx) += *(normit + fv_idx);
-            itgrads[idx] += feature_len;
-        }
+        // keep update normit regard if we update or not
         normit += feature_len;
     }
 
     //Subsequent layers
     int num_input = *itlayer++;
     for (; itlayer != h_layer_num_nodes.end(); ++itlayer) {
+        frozen_layer_idx += 1;
+        froze_layer = hlayer_is_frozen[frozen_layer_idx];
+        
         for (int hnode = 0; hnode < *itlayer; hnode++) {
+            if (!froze_layer) {
+                //Compute the unnormalized terms, tracking the normalizers (persistence terms) as we go
+                for (int idx = 0; idx < num_trans_from_id; idx++) {
+                    float deltaA = *itAs[idx]++;
+                    float deltaB = *itBs[idx]++;
+                    *itgrads[idx] = deltaA; //Bias term
+                    *normit -= deltaB;
+                    for (int input_node = 0; input_node < num_input; ++input_node) {
+                        float a_val = *(aits[idx] + input_node);
+                        *(itgrads[idx] + input_node + 1) = deltaA * a_val;
+                        *(normit + input_node + 1) -= deltaB * a_val;
+                    }
+                }
 
-            //Compute the unnormalized terms, tracking the normalizers (persistence terms) as we go
-            for (int idx = 0; idx < num_trans_from_id; idx++) {
-                float deltaA = *itAs[idx]++;
-                float deltaB = *itBs[idx]++;
-                *itgrads[idx] = deltaA; //Bias term
-                *normit -= deltaB;
-                for (int input_node = 0; input_node < num_input; ++input_node) {
-                    float a_val = *(aits[idx] + input_node);
-                    *(itgrads[idx] + input_node + 1) = deltaA * a_val;
-                    *(normit + input_node + 1) -= deltaB * a_val;
+                //Apply the normalizers
+                for (int idx = 0; idx < num_trans_from_id; idx++) {
+                    *itgrads[idx] += *normit; //Bias term
+                    for (int input_node = 0; input_node < num_input; ++input_node)
+                        *(itgrads[idx] + input_node + 1) += *(normit + input_node + 1);
+                    itgrads[idx] += (num_input + 1);
                 }
             }
 
-            //Apply the normalizers
-            for (int idx = 0; idx < num_trans_from_id; idx++) {
-                *itgrads[idx] += *normit; //Bias term
-                for (int input_node = 0; input_node < num_input; ++input_node)
-                    *(itgrads[idx] + input_node + 1) += *(normit + input_node + 1);
-                itgrads[idx] += (num_input + 1);
-            }
             normit += (num_input + 1);
         }
-        for (int idx = 0; idx < num_trans_from_id; idx++) aits[idx] += num_input;
+
+        for (int idx = 0; idx < num_trans_from_id; idx++) 
+            aits[idx] += num_input;
         num_input = *itlayer;
     }
 
@@ -544,10 +583,10 @@ void NNParam::getBiasIndexes(std::vector<unsigned int> &bias_indexes) {
 }
 
 void NNParam::rollDropouts() {
-    if (is_dropped.empty())
-        is_dropped.resize(total_nodes);
+    if (hlayer_is_dropped.empty())
+        hlayer_is_dropped.resize(total_nodes);
     // set everything to false
-    std::fill(is_dropped.begin(),is_dropped.end(), false);
+    std::fill(hlayer_is_dropped.begin(),hlayer_is_dropped.end(), false);
 
     //adding dropouts in the all layer with the same prob
     int neuron_idx = 0;
@@ -567,6 +606,6 @@ void NNParam::rollDropouts() {
         indice.resize(expected_deactive_count);
 
         for (const auto & idx: indice)
-            is_dropped[idx] = true;
+            hlayer_is_dropped[idx] = true;
     }
 }
