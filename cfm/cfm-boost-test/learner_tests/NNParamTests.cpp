@@ -35,7 +35,8 @@ struct NNParamTestFixture {
                                  LINEAR_NN_ACTIVATION_FUNCTION};
 
         std::vector<float> dropout_probs(2, 0.0);
-        param = new NNParam(fnames, 3, hlayer_numnodes, act_ids, dropout_probs);
+        boost::container::vector<bool>is_frozen(3, false);
+        param = new NNParam(fnames, 3, hlayer_numnodes, act_ids, dropout_probs, is_frozen);
 
         param->initWeights(PARAM_RANDOM_INIT);
 
