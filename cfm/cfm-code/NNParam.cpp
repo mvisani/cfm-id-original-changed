@@ -69,7 +69,7 @@ NNParam::NNParam(std::vector<std::string> a_feature_list, int a_num_energy_level
 
     //fill frozen flags if not provided
     while (hlayer_is_frozen.size() < h_layer_num_nodes.size())
-        hlayer_dropout_probs.push_back(false);
+        hlayer_is_frozen.push_back(false);
 }
 
 void NNParam::initWeights(int init_type) {
