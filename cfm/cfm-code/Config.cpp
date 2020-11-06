@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <iomanip> 
 
 
 void initDefaultConfig(config_t &cfg) {
@@ -305,29 +306,42 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (cfg.theta_function == LINEAR_THETA_FUNCTION) std::cout << "Using linear function for theta" << std::endl;
         else if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION) {
             std::cout << "Using neural net for theta with " << cfg.theta_nn_hlayer_num_nodes.size()
-                      << " hidden layers: ";
+                      << " hidden layers: " << std::endl;
+
+            std::cout << "Hidden layer nodes:   ";        
             for (int i = 0; i < cfg.theta_nn_hlayer_num_nodes.size(); i++)
-                std::cout << cfg.theta_nn_hlayer_num_nodes[i] << " ";
-            std::cout << "and activation functions: " << std::endl;
+                std::cout << std::setw(10) <<  cfg.theta_nn_hlayer_num_nodes[i];
+            std::cout << std::endl;
+            std::cout << "Activation functions: ";
             for (int i = 0; i < cfg.theta_nn_layer_act_func_ids.size(); i++){
                 switch (cfg.theta_nn_layer_act_func_ids[i]){
                     case RELU_NN_ACTIVATION_FUNCTION:
-                        std::cout << "Relu " << std::endl;
+                        std::cout << std::setw(10) << "Relu";
                         break;
                     case LEAKY_RELU_NN_ACTIVATION_FUNCTION:
-                        std::cout << "Leaky Relu " << std::endl;
+                        std::cout << std::setw(10) << "Leaky Relu";
                         break;
                     case RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION: {
                         if (i % 2 == 0)
-                            std::cout << "Neg Relu " << std::endl;
+                            std::cout << std::setw(10) << "Neg Relu";
                         else
-                            std::cout << "Relu " << std::endl;
+                            std::cout << std::setw(10) << "Relu ";
                         break;
                     }
                     default:
-                        std::cout << "Linear Function" << std::endl;
+                        std::cout << std::setw(10) << "Linear";
                 }
             }
+            std::cout << std::endl;
+
+            std::cout << "Hidden layer dropout: ";         
+            for (int i = 0; i < cfg.nn_layer_dropout_probs.size(); i++)
+                std::cout << std::setw(10) <<  cfg.nn_layer_dropout_probs[i];
+            std::cout << std::endl;
+
+            std::cout << "Hidden layer freeze:  ";         
+            for (int i = 0; i < cfg.nn_layer_is_frozen_flags.size(); i++)
+                std::cout << std::setw(10) <<  cfg.nn_layer_is_frozen_flags[i];
             std::cout << std::endl;
         }
         if (cfg.obs_function == NORMAL_OBS_FUNCTION)
