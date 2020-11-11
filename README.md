@@ -276,16 +276,80 @@ To annotate ESI-MS/MS [M-H]- spectra
 ## cfm-train ##
 
  **cfm-train** trains the parameters for a CFM model using a list of input molecules and their corresponding spectra
+ 
+ Note that if there is a lot of input data, it can take a long time to run. For this reason, it has been implemented so that it can exploit parallel processors using the MPI framework. To run on multiple processors, a version of MPI must be installed (e.g. mpich2) and the cfm-train executable should be called via mpirun or equivalent. It can also be run on a single processor, without MPI, directly from the command line, but MPI is required for compilation of the source code.
+ 
 
 ### cfm-train usage ###
 
-Detailed Instruction for 4.0 : TBD.
+Detailed Instruction for 4.0 : 
 
-For mow, please check: 
+    cfm-train -i <input_filename> -f <feature_filename> -c <config_filename> -p <spec_dir> -g <group> -l <status_filename> 
 
-    cfm-train --help
+**input_filename** Text file with number of mols on first line, then id smiles_or_inchi cross_validation_group on each line after that.
 
-And <https://sourceforge.net/p/cfm-id/code/HEAD/tree/supplementary_material/cfm-train_example/>. 
+    3
+    YMHOBZXQZVXHBM-UHFFFAOYSA-N BrC1=CC(=C(C=C1OC)CCN)OC
+    PHFAGYYTDLITTB-UHFFFAOYSA-N O=C1C(NC)(C2=CC=CC=C2F)CCCC1
+    ORWQBKPSGDRPPA-UHFFFAOYSA-N OC1=CC=CC2=C1C(CCN(CC)C)=CN2
+
+**feature_filename** Text file with list of feature names to include, line separated. List of options is contained in Features.cpp. e.g.
+
+    BreakAtomPair
+    BrokenOrigBondType
+    GasteigerCharges
+    HydrogenMovement
+    NLRootMatrixFPN10
+    IonRootMatrixFPN10
+
+**config_filename** Text file listing configuration parameters. Line separated 'name value'. Options are listed in Config.cpp. At a minimum, this file must list the weight and depth of the spectrum configuration (note that the weights are not used, but need to be there anyway so set them to 1)
+    
+    lambda 0.0
+    em_converge_thresh 0.01
+    ga_converge_thresh 0.001
+    model_depth 2
+    spectrum_depth 2
+    spectrum_weight 1
+    spectrum_depth 2
+    spectrum_weight 1
+    spectrum_depth 2
+    spectrum_weight 1
+    allow_frag_detours 1
+    num_em_restarts 3
+    em_no_progress_count 2
+    em_max_iterations 100
+    #####config for adam#######
+    ga_method 2
+    starting_step_size 0.001
+    ending_step_size 0.00025
+    ga_adam_beta_1 0.9
+    ga_adam_beta_2 0.999
+    ###########################
+    ga_max_iterations 10
+    ionization_mode 1
+    ga_sampling_method 2
+    ga_minibatch_nth_size 3
+    collected_all_used_idx 1
+    ########NNConfig###########
+    theta_function 2
+    theta_nn_hlayer_num_nodes 128
+    theta_nn_hlayer_num_nodes 128
+    theta_nn_layer_act_func_ids 2
+    theta_nn_layer_act_func_ids 2
+    theta_nn_layer_act_func_ids 0
+    nn_layer_dropout_probs 0.1
+    nn_layer_dropout_probs 0.1
+    nn_layer_dropout_probs 0
+    
+**peakfile_dir_or_msp** Input MSP file, with ID fields corresponding to id fields in input_file OR Directory containing files with spectra. Each file should be called <id>.txt, where <id> is the id specified in the input file, and contains a list of peaks 'mass intensity' on each line, with either 'low','med' and 'high' lines beginning spectra of different energy levels, or 'energy0', 'energy1', etc. e.g.</id></id>
+  
+    energy0
+    65.02 40.0
+    86.11 60.0
+    energy1
+    65.02 100.0 ... etc
+
+**group** Cross validation group to run. Otherwise will assume 10 groups and run all of them.
 
 ## fraggraph-gen ##
 
