@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <string>
+#include <boost/container/vector.hpp>
 
 //Default Values
 static const std::string APP_STRING = "CFM-ID";
@@ -193,6 +194,7 @@ struct config_t {
     std::vector<int> theta_nn_hlayer_num_nodes;
     std::vector<int> theta_nn_layer_act_func_ids;
     std::vector<float> nn_layer_dropout_probs;
+    boost::container::vector<bool> nn_layer_is_frozen_flags;
 
     //EM Configuration
     double em_converge_thresh;
