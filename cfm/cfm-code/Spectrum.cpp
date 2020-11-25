@@ -31,28 +31,29 @@ void Spectrum::outputToStream(std::ostream &out,bool do_annotate , bool normaliz
     }
 
     for (auto itp = peaks.begin(); itp != peaks.end(); ++itp) {
-        double display_intensity = normalize_to_max ? itp->intensity / max_intensity * 100.0 : itp->intensity;
-        out << std::setprecision(5) << itp->mass << " ";
-        //if (normalize_to_max)
-            out << std::fixed << std::setprecision(5) << display_intensity;
-        //else
-        //out << display_intensity;
 
-        if (do_annotate) {
-            std::stringstream ss_values;
-            ss_values << std::setprecision(5) << "(";
-            auto ita = itp->annotations.begin();
-            for (; ita != itp->annotations.end(); ++ita) {
-                out << " " << ita->first;
-                if (ita != itp->annotations.begin())
-                    ss_values << " ";
-                ss_values << ita->second * 100.0;
+        // compute display_intensity , and display if intensity is large enough
+        double display_intensity = normalize_to_max ? itp->intensity / max_intensity * 100.0 : itp->intensity;
+        if (display_intensity > 0.001){
+            out << std::fixed << std::setprecision(5) << itp->mass << " " << std::setprecision(3) << display_intensity;
+
+            if (do_annotate) {
+                std::stringstream ss_values;
+                ss_values << std::setprecision(5) << "(";
+                auto ita = itp->annotations.begin();
+                for (; ita != itp->annotations.end(); ++ita) {
+                    out << " " << ita->first;
+                    if (ita != itp->annotations.begin())
+                        ss_values << " ";
+                    ss_values << ita->second * 100.0;
+                }
+                ss_values << ")";
+                if (!itp->annotations.empty())
+                    out << " " << ss_values.str();
             }
-            ss_values << ")";
-            if (!itp->annotations.empty())
-                out << " " << ss_values.str();
+            
+            out << std::endl;
         }
-        out << std::endl;
     }
 }
 
