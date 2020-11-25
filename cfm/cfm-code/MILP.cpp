@@ -190,15 +190,19 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             if (fragidx != fragmentidx) continue;
 
             //Base valence constraints
-            RDKit::ROMol::OBOND_ITER_PAIR ip = mol->getAtomBonds(atom);
-            RDKit::ROMol::OEDGE_ITER it = ip.first;
+            RDKit::ROMol::OEDGE_ITER cbond_beg,cbond_end;
+		    boost::tie(cbond_beg, cbond_end) = mol->getAtomBonds( atom );
+            //RDKit::ROMol::OEDGE_ITER it = ip.first;
             int j = 0;
             if (hloss_allowed) j = 1;
-            for (; it != ip.second; ++it) {
-                auto cbond = (*mol)[*it];
+
+            for ( ; cbond_beg != cbond_end; ++ cbond_beg ){
+            //for (; it != ip.second; ++it) {
+                RDKit::Bond *cbond = (*mol)[*cbond_beg].get();
                 int cbond_broken;
                 cbond->getProp("Broken", cbond_broken);
-                if (cbond_broken) continue;
+                if(cbond_broken) 
+                    continue;
 
                 colno[j] = cbond->getIdx() + 1; //variable idx i.e. bond
                 row[j++] = 1;          //multiplier
@@ -306,14 +310,14 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 //Helper function - allows traversal of a ring one bond at a time
 RDKit::Bond *MILP::getNextBondInRing(RDKit::Bond *bond, RDKit::Atom *atom, std::vector<int> &ring_bond_flags) {
 
-    //RDKit::ROMol::OBOND_ITER_PAIR ip;
-    auto ip = atom->getOwningMol().getAtomBonds(atom);
-    for (auto it = ip.first; it != ip.second; ++it) {
-        int idx = (*mol)[*it]->getIdx();    //There must be a better way...
-        if (ring_bond_flags[idx] && idx != bond->getIdx())
-            return atom->getOwningMol().getBondWithIdx(idx);
-    }
-    return nullptr;    //Error@!
+	RDKit::ROMol::OEDGE_ITER beg_abond, end_abond;
+	boost::tie(beg_abond, end_abond)= atom->getOwningMol().getAtomBonds( atom );
+	for( ; beg_abond != end_abond; ++beg_abond ){
+		int idx = (*mol)[*beg_abond]->getIdx();
+		if( ring_bond_flags[idx] && idx != bond->getIdx() )
+			return atom->getOwningMol().getBondWithIdx(idx);
+	}
+	return nullptr;	//Error@!
 }
 
 void MILP::printConstraint(int num_terms, int *colno, bool ge, int val) {
