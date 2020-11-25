@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <iomanip> 
 
 
 void initDefaultConfig(config_t &cfg) {
@@ -125,6 +126,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "theta_nn_hlayer_num_nodes") cfg.theta_nn_hlayer_num_nodes.push_back((int) value);
         else if (name == "theta_nn_layer_act_func_ids") cfg.theta_nn_layer_act_func_ids.push_back((int) value);
         else if (name == "nn_layer_dropout_probs") cfg.nn_layer_dropout_probs.push_back((float) value);
+        else if (name == "nn_layer_freeze") cfg.nn_layer_is_frozen_flags.push_back((bool) value);
         else if (name == "ga_minibatch_nth_size") cfg.ga_minibatch_nth_size = (int) value;
         else if (name == "ga_max_iterations") cfg.ga_max_iterations = (int) value;
         else if (name == "ga_momentum") cfg.ga_momentum = (double) value;
@@ -132,6 +134,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_adam_beta_2") cfg.ga_adam_beta_2 = (double) value;
         else if (name == "ga_adam_eps") cfg.ga_adam_eps = (double) value;
         else if (name == "ga_adamw_w") cfg.ga_adamw_w = (double) value;
+        else if (name == "ga_adam_ga_adam_use_amsgrad") cfg.ga_adam_use_amsgrad = (bool) value;
         else if (name == "ga_adadelta_rho") cfg.ga_adadelta_rho = (double) value;
         else if (name == "ga_decay_method") cfg.ga_decay_method = (int) value;
         else if (name == "exp_decay_k") cfg.exp_decay_k = (double) value;
@@ -234,12 +237,12 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                       << " eps " << cfg.ga_adam_eps << " Ending Step Size " << cfg.ending_step_size
                       << std::endl;
         } else if (USE_ADAM_FOR_GA == cfg.ga_method
-                   || USE_AMSGRAD_FOR_GA == cfg.ga_method
+                   || USE_ADABELIEF_FOR_GA == cfg.ga_method
                    || USE_ADAMW_FOR_GA == cfg.ga_method) {
             if (USE_ADAM_FOR_GA == cfg.ga_method)
                 std::cout << "Using Adam implementation" << std::endl;
-            else if (USE_AMSGRAD_FOR_GA == cfg.ga_method)
-                std::cout << "Using AMSgrad implementation" << std::endl;
+            else if (USE_ADABELIEF_FOR_GA == cfg.ga_method)
+                std::cout << "Using AdaBelief implementation" << std::endl;
             else if (USE_ADAMW_FOR_GA == cfg.ga_method){
                 std::cout << "Using AdamW implementation" << std::endl;
                 if(cfg.lambda != 0.0){
@@ -247,9 +250,9 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
                     std::cout << "Set lambda to " << cfg.lambda << ", adamW use Weight Decay not L2" << std::endl;
                 }
             }
-            std::cout << "Using Starting Step Size " << cfg.starting_step_size << " beta1  " << cfg.ga_adam_beta_1
-                      << " beta2 " << cfg.ga_adam_beta_2 << " eps " << cfg.ga_adam_eps
-                      << " Ending Step Size " << cfg.ending_step_size;
+            std::cout << "Using starting step size " << cfg.starting_step_size  << " ending step size " << cfg.ending_step_size
+                     << " beta1  " << cfg.ga_adam_beta_1 << " beta2 " << cfg.ga_adam_beta_2 
+                     << " eps " << cfg.ga_adam_eps << " amsgrad " << cfg.ga_adam_use_amsgrad;
             if (USE_ADAMW_FOR_GA == cfg.ga_method)
                 std::cout << " ga_adamw_w " << cfg.ga_adamw_w;
             std::cout << std::endl;
@@ -303,29 +306,42 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (cfg.theta_function == LINEAR_THETA_FUNCTION) std::cout << "Using linear function for theta" << std::endl;
         else if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION) {
             std::cout << "Using neural net for theta with " << cfg.theta_nn_hlayer_num_nodes.size()
-                      << " hidden layers: ";
+                      << " hidden layers: " << std::endl;
+
+            std::cout << "Hidden layer nodes:   ";        
             for (int i = 0; i < cfg.theta_nn_hlayer_num_nodes.size(); i++)
-                std::cout << cfg.theta_nn_hlayer_num_nodes[i] << " ";
-            std::cout << "and activation functions: " << std::endl;
+                std::cout << std::setw(10) <<  cfg.theta_nn_hlayer_num_nodes[i];
+            std::cout << std::endl;
+            std::cout << "Activation functions: ";
             for (int i = 0; i < cfg.theta_nn_layer_act_func_ids.size(); i++){
                 switch (cfg.theta_nn_layer_act_func_ids[i]){
                     case RELU_NN_ACTIVATION_FUNCTION:
-                        std::cout << "Relu " << std::endl;
+                        std::cout << std::setw(10) << "Relu";
                         break;
                     case LEAKY_RELU_NN_ACTIVATION_FUNCTION:
-                        std::cout << "Leaky Relu " << std::endl;
+                        std::cout << std::setw(10) << "Leaky Relu";
                         break;
                     case RELU_AND_NEG_RLEU_NN_ACTIVATION_FUNCTION: {
                         if (i % 2 == 0)
-                            std::cout << "Neg Relu " << std::endl;
+                            std::cout << std::setw(10) << "Neg Relu";
                         else
-                            std::cout << "Relu " << std::endl;
+                            std::cout << std::setw(10) << "Relu ";
                         break;
                     }
                     default:
-                        std::cout << "Linear Function" << std::endl;
+                        std::cout << std::setw(10) << "Linear";
                 }
             }
+            std::cout << std::endl;
+
+            std::cout << "Hidden layer dropout: ";         
+            for (int i = 0; i < cfg.nn_layer_dropout_probs.size(); i++)
+                std::cout << std::setw(10) <<  cfg.nn_layer_dropout_probs[i];
+            std::cout << std::endl;
+
+            std::cout << "Hidden layer freeze:  ";         
+            for (int i = 0; i < cfg.nn_layer_is_frozen_flags.size(); i++)
+                std::cout << std::setw(10) <<  cfg.nn_layer_is_frozen_flags[i];
             std::cout << std::endl;
         }
         if (cfg.obs_function == NORMAL_OBS_FUNCTION)

@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	{
 		std::cout << std::endl << std::endl;
         std::cout << "CFM-ID Version: "<< PROJECT_VER << std::endl;
-		std::cout << std::endl << "Usage: cfm-annotate.exe <smiles_or_inchi> <spectrum_file> <id> <ppm_mass_tol> <abs_mass_tol> <param_filename> <config_filename> <output_filename>" << std::endl << std::endl << std::endl;
+		std::cout << std::endl << "Usage: cfm-annotate <smiles_or_inchi> <spectrum_file> <id> <ppm_mass_tol> <abs_mass_tol> <param_filename> <config_filename> <output_filename>" << std::endl << std::endl << std::endl;
 		std::cout << std::endl << "smiles_or_inchi: " << std::endl << "The smiles or Inchi string for the input molecule" << std::endl;  
 		std::cout << std::endl << "spectrum_file:" << std::endl << "The filename where the input spectra can be found as a list of peaks 'mass intensity' delimited by lines, with either 'low','med' and 'high' lines beginning spectra of different energy levels, or 'energy0', 'energy1', etc. ";
 		std::cout << "e.g." << std::endl << "energy0" << std::endl << "65.02 40.0" << std::endl << "86.11 60.0" << std::endl << "energy1" << std::endl << "65.02 100.0 ... etc" << std::endl;

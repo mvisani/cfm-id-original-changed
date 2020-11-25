@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	if (argc != 4 && argc != 5 && argc != 6 )
 	{
 		std::cout << std::endl << "Usage:" << std::endl;
-		std::cout << "fraggraph-gen.exe <smiles or inchi string> <max_depth> <ionization_mode (+,- or *)> ";
+		std::cout << "fraggraph-gen <smiles or inchi string> <max_depth> <ionization_mode (+,- or *)> ";
 		std::cout << "<opt: fullgraph (default) or fragonly> <opt: output_filename (else stdout)>" << std::endl << std::endl;
 		std::cout << "ionization_mode: Positive ESI Ionization (+), Negative ESI Ionization (-), Positive EI Ionization (*)" << std::endl << std::endl;
 		exit(1);
