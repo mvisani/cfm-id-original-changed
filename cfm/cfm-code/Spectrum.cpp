@@ -34,7 +34,7 @@ void Spectrum::outputToStream(std::ostream &out,bool do_annotate , bool normaliz
 
         // compute display_intensity , and display if intensity is large enough
         double display_intensity = normalize_to_max ? itp->intensity / max_intensity * 100.0 : itp->intensity;
-        if (display_intensity > 0.001){
+        if (display_intensity >= 0.001){
             out << std::fixed << std::setprecision(5) << itp->mass << " " << std::setprecision(3) << display_intensity;
 
             if (do_annotate) {
