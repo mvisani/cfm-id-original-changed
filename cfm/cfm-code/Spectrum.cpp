@@ -20,6 +20,7 @@
 
 #include <fstream>
 #include <algorithm>
+#include <cmath>
 
 void Spectrum::outputToStream(std::ostream &out,bool do_annotate , bool normalize_to_max) const {
 
@@ -33,9 +34,10 @@ void Spectrum::outputToStream(std::ostream &out,bool do_annotate , bool normaliz
     for (auto itp = peaks.begin(); itp != peaks.end(); ++itp) {
 
         // compute display_intensity , and display if intensity is large enough
-        double display_intensity = normalize_to_max ? itp->intensity / max_intensity * 100.0 : itp->intensity;
-        if (display_intensity >= 0.001){
-            out << std::fixed << std::setprecision(5) << itp->mass << " " << std::setprecision(3) << display_intensity;
+        double display_intensity_value = normalize_to_max ? itp->intensity / max_intensity * 100.0 : itp->intensity;
+        int display_intensity = std::floor(display_intensity_value * 100 + 0.5);
+        if (display_intensity > 0){
+            out << std::fixed << std::setprecision(5) << itp->mass << " " << std::setprecision(2) << display_intensity / 100.0;
 
             if (do_annotate) {
                 std::stringstream ss_values;
