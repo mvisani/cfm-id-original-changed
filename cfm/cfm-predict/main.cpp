@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
                   << "CFM-ID Version: "<< PROJECT_VER << std::endl
-                  << "Usage: cfm-predict.exe <input_smiles_or_inchi> <prob_thresh_for_prune> <param_filename> <config_filename> <include_annotations> <output_filename> <apply_post_processing>"
+                  << "Usage: cfm-predict <input_smiles_or_inchi> <prob_thresh_for_prune> <param_filename> <config_filename> <include_annotations> <output_filename> <apply_post_processing>"
                   << std::endl << std::endl << std::endl;
         std::cout << std::endl << "input_smiles_or_inchi_or_file:" << std::endl
                   << "The smiles or inchi string of the structure whose spectra you want to predict, or a .txt file containing a list of <id smiles> pairs, one per line."
