@@ -620,14 +620,16 @@ int FragmentTreeNode::findAtomChargeLocationNSOC(RDKit::RWMol &rwmol, int charge
 void FragmentTreeNode::assignChargeAndRadical(RDKit::RWMol &rwmol, int charge_idx, int radical_idx, bool is_negative) {
 
     RDKit::Atom *atom = rwmol.getAtomWithIdx(charge_idx);
-    // This is important, CC[CH3+] and CC[CH+] has the same radical electrons and formal charges, set H for charged atom  to avoid this problem
+    // This is important, CC[CH3+] and CC[CH+] has the same radical electrons and formal charges,
+    // set H for charged atom  to avoid this problem
     alterNumHs(atom,0);
     if (is_negative) {
         atom->setFormalCharge(-1);
         alterNumHs(atom, -1); //Even-[H+] -> Even-[H+] + NL
     } else {
         atom->setFormalCharge(1);
-        if (radical_idx < 0) alterNumHs(atom, +1); //Even+[H+] -> Even+[H+] + NL
+        if (radical_idx < 0)
+            alterNumHs(atom, +1); //Even+[H+] -> Even+[H+] + NL
         else {
             RDKit::Atom *rad_atom = rwmol.getAtomWithIdx(radical_idx);
             rad_atom->setNumRadicalElectrons(1);

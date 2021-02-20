@@ -168,8 +168,8 @@ public:
 
     // compute predicted Spectra
     // if engry < -1 , compute all  Spectra
-    void computePredictedSpectra(Param &param, bool postprocess = false, bool use_existing_thetas = false,
-                                 int energy_level = -1);
+    void computePredictedSpectra(Param &param, bool use_existing_thetas = false,
+                                 int energy_level = -1, int min_peaks = 5, int max_peaks = 30, double perc_thresh = 80.0);
 
     void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 5, int max_peaks = 30,
                                      double min_intensity = 0.0);
@@ -244,6 +244,12 @@ public:
 
     double getWeightedJaccardScore(int engery_level);
 
+    void computeMergedPrediction();
+
+    const Spectrum* getMergedPrediction(){
+        return m_merged_predicted_spectra;
+    };
+
     ~MolData();
 protected
     : // These items are protected rather than private for access during tests.
@@ -260,6 +266,11 @@ protected
     std::vector<Spectrum> orig_spectra;
     // predicted spectra
     std::vector<Spectrum> predicted_spectra;
+
+    // merged predicted spectra
+    // used in casmi 
+    Spectrum *m_merged_predicted_spectra = nullptr;
+    
     //std::vector<FeatureVector *> fvs;
     std::vector<std::vector<double>> thetas;
     std::vector<std::vector<double>> log_probs;
@@ -270,8 +281,8 @@ protected
 
     void getEnumerationSpectraMasses(std::vector<double> &output_masses);
 
-    void computePredictedSingleEnergySpectra(Param &param, bool postprocess,
-                                             bool use_existing_thetas, int energy_level);
+    void computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas,
+                                                int min_peaks, int max_peaks, double perc_thresh);
 
     void translatePeaksFromMsgToSpectra(Spectrum &out_spec, Message *msg);
 

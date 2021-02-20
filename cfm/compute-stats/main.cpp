@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     if (argc < 5 || argc > 14) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
-                  << "Usage: compute-stats.exe <input_filename> "
+                  << "Usage: compute-stats <input_filename> "
                      "<measured_spec_dir> <predicted_spec_dir> "
                      "<num_spectra_per_mol> <ppm_mass_tol> <abs_mass_tol> "
                      "<output_filename> <cumulative_intensity_thresh> "
@@ -476,8 +476,8 @@ int main(int argc, char *argv[]) {
     reportMeanStd(out, dscores);
     out << std::endl << "Weighted Dice (mean, std): ";
     reportMeanStd(out, wdscores);
-    out << std::endl << "Altered Dot Product (mean, std): ";
-    reportMeanStd(out, adscores);
+    //out << std::endl << "Altered Dot Product (mean, std): ";
+    //reportMeanStd(out, adscores);
     out << std::endl << "Dot Product (mean, std): ";
     reportMeanStd(out, dpscores);
     out << std::endl << "Original Stein Dot Product (mean, std): ";

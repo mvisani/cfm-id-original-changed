@@ -33,7 +33,8 @@ EmNNModel::EmNNModel(config_t *a_cfg, FeatureCalculator *an_fc, std::string &a_s
     if (!initial_params_provided) {
         nn_param = boost::shared_ptr<NNParam>(
                 new NNParam(fc->getFeatureNames(), num_energies_to_include, a_cfg->theta_nn_hlayer_num_nodes,
-                            a_cfg->theta_nn_layer_act_func_ids, a_cfg->nn_layer_dropout_probs));
+                            a_cfg->theta_nn_layer_act_func_ids, a_cfg->nn_layer_dropout_probs, a_cfg->nn_layer_is_frozen_flags));
+                            
         comm->printToMasterOnly("EM_NN: No initial params provided");
     } else {
         nn_param = boost::shared_ptr<NNParam>(new NNParam(initial_params_filename));

@@ -31,6 +31,9 @@ probabilities using those thetas.
 
 #include <GraphMol/Fingerprints/Fingerprints.h>
 #include <GraphMol/RDKitBase.h>
+#include <GraphMol/RWMol.h>
+#include <GraphMol/SmilesParse/SmilesParse.h>
+#include <INCHI-API/inchi.h>
 
 double MolData::getMolecularWeight() const {
     romol_ptr_t mol = createMolPtr(smiles_or_inchi.c_str());
@@ -375,10 +378,12 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
     int first = 1;
     while (ifs.good()) {
         getline(ifs, line);
-        if (line.size() < 3)
-            continue;
+        // 1.empty line separates peaks and annotations
+        // 2. we need at least 4 char for peak: n space n newline
+        if (line.size() <= 3)
+            break;
         // in case we are seen version string
-        if (line.substr(0, VERSION_STRING.size()) == VERSION_STRING)
+        if (line[0] == '#')
             continue;
         // Check for the energy specifier - start a new spectrum if found
         // or start one anyway if there is no energy specifier
@@ -461,22 +466,21 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
         for (auto &spectrum : spectra) {
             result = (result || (spectrum.size() == 0));
         }
-    } else
+    } else if (spectra.size() > energy_level){
         result = spectra[energy_level].size() == 0;
-
+    } else {
+        result =true;
+    }
     return result;
 }
 
-void MolData::computePredictedSpectra(Param &param, bool postprocess, bool use_existing_thetas, int energy_level) {
-
-    computePredictedSingleEnergySpectra(param, postprocess,
-                                            use_existing_thetas, energy_level);
+void MolData::computePredictedSpectra(Param &param, bool use_existing_thetas,
+                                 int energy_level, int min_peaks, int max_peaks, double perc_thresh){
+    computePredictedSingleEnergySpectra(param, energy_level, use_existing_thetas, min_peaks, max_peaks, perc_thresh);
 }
 
-void MolData::computePredictedSingleEnergySpectra(Param &param,
-                                                  bool postprocess,
-                                                  bool use_existing_thetas,
-                                                  int energy_level) {
+void MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas,
+                                                int min_peaks, int max_peaks, double perc_thresh) {
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
@@ -493,8 +497,15 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
     } else
         createSpeactraSingleEnergry(energy_level);
 
-    if (postprocess)
-        postprocessPredictedSpectra();
+    // if (postprocess_method > 0){
+    // int min_peaks = (2 == postprocess_method) ? 1 : 5;
+    // int max_peaks = 30;
+    double min_intensity = 0.0;
+    postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_intensity);
+    //}
+    
+    //TODO: This should not be a default, fix this when we doing EI model
+    /*
     else {
         if(energy_level != -1){
             predicted_spectra[energy_level].normalizeAndSort();
@@ -506,7 +517,7 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
                 predicted_spectra[energy].quantisePeaksByMass(10);
             }
         }
-    }
+    }*/
 }
 
 void MolData::createSpeactraSingleEnergry(unsigned int energy_level) {
@@ -601,7 +612,7 @@ void MolData::writePredictedSpectraToFile(std::string &filename) {
 void MolData::writePredictedSpectraToMspFileStream(std::ostream &out) {
     for (unsigned int energy = 0; energy < getNumPredictedSpectra(); energy++) {
         const Spectrum *spec = getPredictedSpectrum(energy);
-        spec->outputToMspStream(out, id, cfg->ionization_mode, energy);
+        spec->outputToMspStream(out, id, cfg->ionization_mode, energy, smiles_or_inchi);
     }
 }
 
@@ -609,7 +620,7 @@ void MolData::writePredictedSpectraToMgfFileStream(std::ostream &out) {
     double mw = getMolecularWeight();
     for (unsigned int energy = 0; energy < getNumPredictedSpectra(); energy++) {
         const Spectrum *spec = getPredictedSpectrum(energy);
-        spec->outputToMgfStream(out, id, cfg->ionization_mode, energy, mw);
+        spec->outputToMgfStream(out, id, cfg->ionization_mode, energy, mw, smiles_or_inchi);
     }
 }
 
@@ -706,10 +717,42 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
     else
         std::cout << "Unknown spectrum type to output: " << spec_type << std::endl;
 
+    static const int POSITIVE_ESI_IONIZATION_MODE = 1;
+    static const int NEGATIVE_ESI_IONIZATION_MODE = 2;
+    static const int POSITIVE_EI_IONIZATION_MODE = 3;
     if ((std::string(spec_type) == "Predicted") && add_version){
-            out << VERSION_STRING << PROJECT_VER << std::endl;
-    }
+        std::string spectra_str;
+        switch (cfg->ionization_mode){
+            case (POSITIVE_ESI_IONIZATION_MODE):
+                spectra_str = "ESI-MS/MS [M+H]+ Spectra";
+                break;
 
+            case (NEGATIVE_ESI_IONIZATION_MODE):
+                spectra_str = "ESI-MS/MS [M-H]- Spectra";
+                break;
+            case (POSITIVE_EI_IONIZATION_MODE):
+                spectra_str = "EI-MS Spectra";
+                break;
+            default:
+                break;
+        }
+        out << "#In-silico " << spectra_str << std::endl
+            << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER << std::endl;
+
+        if (smiles_or_inchi.substr(0, 6) == "InChI=") {
+            out << "#" << smiles_or_inchi << std::endl;
+            out << "#InChiKey=" <<  RDKit::InchiToInchiKey(smiles_or_inchi) << std::endl;
+        }
+        else {
+            RDKit::RWMol* rwmol;
+            out << "#SMILES=" << smiles_or_inchi << std::endl;
+            rwmol = RDKit::SmilesToMol(smiles_or_inchi);
+            RDKit::ExtraInchiReturnValues rv;
+            out << "#InChiKey=" << RDKit::InchiToInchiKey(RDKit::MolToInchi(*rwmol, rv)) << std::endl;
+            delete rwmol;
+        }
+
+    }
     std::vector<Spectrum>::iterator it = spectra_to_output->begin();
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
         out << "energy" << energy << std::endl;
@@ -803,10 +846,31 @@ void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int e
     }
 }
 
+void MolData::computeMergedPrediction(){
+    if (m_merged_predicted_spectra == nullptr)
+        m_merged_predicted_spectra = new Spectrum();
+
+    std::map<double,double> peaks_map;
+    for(auto & spectrum: predicted_spectra){
+        for(auto & peak : *spectrum.getPeaks()){
+            if(peaks_map.find(peak.mass) == peaks_map.end())
+                peaks_map[peak.mass] = 0.0;
+            peaks_map[peak.mass] += peak.intensity;
+        }
+    }
+    for (const auto& peak_data : peaks_map){
+        Peak peak(peak_data.first,peak_data.second);
+        m_merged_predicted_spectra->push_back(peak);
+    }
+    m_merged_predicted_spectra->normalizeAndSort();
+}
+
 MolData::~MolData() {
 
     if (graph_computed)
         delete fg;
     if (ev_graph_computed)
         delete ev_fg;
+    if (m_merged_predicted_spectra != nullptr)
+        delete m_merged_predicted_spectra;
 }

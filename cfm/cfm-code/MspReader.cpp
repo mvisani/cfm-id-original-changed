@@ -16,6 +16,7 @@
 #########################################################################*/
 
 #include "MspReader.h"
+#include "Version.h"
 
 #include <iostream>
 #include <sstream>
@@ -119,7 +120,7 @@ void MspReader::readInMspFile(const char *filename, const char *pre_id, bool nor
 }
 
 
-void MspReader::writeLibraryToMspFile(const char *filename, int ionization_mode) const {
+void MspReader::writeLibraryToMspFile(const char *filename, std::string & smiles_or_inchi, int ionization_mode) const {
 
     std::ofstream out;
     out.open(filename, std::fstream::out | std::fstream::app);
@@ -128,7 +129,7 @@ void MspReader::writeLibraryToMspFile(const char *filename, int ionization_mode)
     for (; it != library.end(); ++it) {
         std::vector<Spectrum>::const_iterator its = it->second.begin();
         for (int energy = 0; its != it->second.end(); ++its, energy++)
-            its->outputToMspStream(out, it->first, ionization_mode, energy);
+            its->outputToMspStream(out, it->first, ionization_mode, energy, smiles_or_inchi);
     }
     out.close();
 

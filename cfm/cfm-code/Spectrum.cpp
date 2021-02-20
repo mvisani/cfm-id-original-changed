@@ -16,42 +16,61 @@
 
 #include "Spectrum.h"
 #include "Util.h"
+#include "Version.h"
 
 #include <fstream>
+#include <algorithm>
+#include <cmath>
 
-void Spectrum::outputToStream(std::ostream &out, bool do_annotate) const {
+void Spectrum::outputToStream(std::ostream &out,bool do_annotate , bool normalize_to_max) const {
 
-    auto itp = peaks.begin();
-    for (; itp != peaks.end(); ++itp) {
-        out << std::setprecision(10) << itp->mass << " " << itp->intensity;
-        if (do_annotate) {
-            std::stringstream ss_values;
-            ss_values << std::setprecision(5) << "(";
-            auto ita = itp->annotations.begin();
-            for (; ita != itp->annotations.end(); ++ita) {
-                out << " " << ita->first;
-                if (ita != itp->annotations.begin())
-                    ss_values << " ";
-                ss_values << ita->second * 100.0;
-            }
-            ss_values << ")";
-            if (!itp->annotations.empty())
-                out << " " << ss_values.str();
+    double max_intensity = 0.0;
+    if (normalize_to_max) {
+        for (auto& peak : peaks) {
+            max_intensity = std::max(max_intensity, peak.intensity);
         }
-        out << std::endl;
+    }
+
+    for (auto itp = peaks.begin(); itp != peaks.end(); ++itp) {
+
+        // compute display_intensity , and display if intensity is large enough
+        double display_intensity_value = normalize_to_max ? itp->intensity / max_intensity * 100.0 : itp->intensity;
+        int display_intensity = std::floor(display_intensity_value * 100 + 0.5);
+        if (display_intensity > 0){
+            out << std::fixed << std::setprecision(5) << itp->mass << " " << std::setprecision(2) << display_intensity / 100.0;
+
+            if (do_annotate) {
+                std::stringstream ss_values;
+                ss_values << std::setprecision(5) << "(";
+                auto ita = itp->annotations.begin();
+                for (; ita != itp->annotations.end(); ++ita) {
+                    out << " " << ita->first;
+                    if (ita != itp->annotations.begin())
+                        ss_values << " ";
+                    ss_values << ita->second * 100.0;
+                }
+                ss_values << ")";
+                if (!itp->annotations.empty())
+                    out << " " << ss_values.str();
+            }
+            
+            out << std::endl;
+        }
     }
 }
 
 void Spectrum::outputToMspStream(std::ostream &out, std::string id,
-                                 int ionization_mode, int energy) const {
+                                 int ionization_mode, int energy, std::string&  smiles_or_inchi) const {
 
     if (ionization_mode == POSITIVE_EI_IONIZATION_MODE)
-        out << "Name: +ve in-silico MS by CFM-ID for " << id << std::endl;
+        out << "Name: +ve in-silico MS by ";
     else if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
-        out << "Name: +ve in-silico MS/MS by CFM-ID for " << id << std::endl;
+        out << "Name: +ve in-silico MS/MS by ";
     else
-        out << "Name: -ve in-silico MS/MS by CFM-ID for " << id << std::endl;
+        out << "Name: -ve in-silico MS/MS by ";
+    out << APP_STRING << " " << PROJECT_VER << " for " << id << std::endl;
     out << "ID: " << id << std::endl;
+    out << "Smiles/Inchi:" << smiles_or_inchi << std::endl;
     out << "Comment: Energy" << energy << std::endl;
     out << "Num peaks: " << peaks.size() << std::endl;
     outputToStream(out, false);
@@ -59,8 +78,13 @@ void Spectrum::outputToMspStream(std::ostream &out, std::string id,
 }
 
 void Spectrum::outputToMgfStream(std::ostream &out, std::string id,
-                                 int ionization_mode, int energy,
-                                 double mw) const {
+
+
+                                 int ionization_mode,
+
+
+ int energy,
+                                 double mw, std::string & smiles_or_inchi) const {
 
     out << "BEGIN IONS" << std::endl;
     out << "PEPMASS=" << std::setprecision(10) << mw << std::endl;
@@ -70,12 +94,14 @@ void Spectrum::outputToMgfStream(std::ostream &out, std::string id,
     else if (ionization_mode == NEGATIVE_ESI_IONIZATION_MODE)
         out << "CHARGE=1-" << std::endl;
     out << "TITLE=" << id << ";Energy" << energy << ";";
-    if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
-        out << "[M+H]+;In-silico MS/MS by CFM-ID;" << std::endl;
-        /*else if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
-            out << "[M]+;In-silico MS by CFM-ID;" << std::endl;*/
+    if (ionization_mode == POSITIVE_EI_IONIZATION_MODE)
+        out << "[M+H]+;In-silico MS by ";
+    else if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
+            out << "[M]+;In-silico MS/MS by ";
     else if (ionization_mode == NEGATIVE_ESI_IONIZATION_MODE)
-        out << "[M-H]+;In-silico MS/MS by CFM-ID;" << std::endl;
+        out << "[M-H]+;In-silico MS/MS by ";
+    out << APP_STRING << " " << PROJECT_VER << ";"
+        << smiles_or_inchi << ";" << std::endl;
     outputToStream(out, false);
     out << "END IONS" << std::endl;
 }

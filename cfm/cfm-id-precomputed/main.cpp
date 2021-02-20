@@ -34,10 +34,10 @@ int main(int argc, char *argv[]) {
     double abs_mass_tol = 0.01, ppm_mass_tol = 10.0;
     std::string score_type = "Dice";
 
-    if (argc < 4 || argc > 10) {
+    if (argc < 4 || argc > 11) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
-                  << "Usage: cfm-id.exe <spectrum_file> <id> <candidate_file> <num_highest> <ppm_mass_tol> <abs_mass_tol> <score_type> <output_filename>"
+                  << "Usage: cfm-id-precomputed <spectrum_file> <id> <candidate_file> <num_highest> <ppm_mass_tol> <abs_mass_tol> <score_type> <output_filename>"
                   << std::endl << std::endl << std::endl;
         std::cout << std::endl << "spectrum_file:" << std::endl
                   << "The filename where the input spectra can be found. This can be a .msp file in which the desired spectrum is listed under a corresponding id (next arg). Or it could be a single file with a list of peaks 'mass intensity' delimited by lines, with either 'low','med' and 'high' lines beginning spectra of different energy levels, or 'energy0', 'energy1', etc. ";
@@ -67,6 +67,14 @@ int main(int argc, char *argv[]) {
                   << "preprocessing_candidates_spectra (opt):" << std::endl
                   << "Whether to clean the candidates spectra (default = 0(off))"
                   << std::endl;
+        std::cout << std::endl
+                  << "preprocessing_candidates_spectra (opt):" << std::endl
+                  << "Whether to clean the candidates spectra (default = 0(off))"
+                  << std::endl;
+        std::cout << std::endl
+                  << "merge_candidate_spectra (opt):" << std::endl
+                  << "Whether to merge the candidates spectra into one spectra (default = 0(off))"
+                  << std::endl;
         exit(1);
     }
 
@@ -74,7 +82,7 @@ int main(int argc, char *argv[]) {
     std::string target_id = argv[2];
     std::string candidate_file = argv[3];
     bool preprocessing_candidates_spectra = false;
-
+    bool merge_candidate_spectra = false;
     if (argc > 4) {
         try { num_highest = boost::lexical_cast<int>(argv[4]); }
         catch (boost::bad_lexical_cast e) {
@@ -104,7 +112,8 @@ int main(int argc, char *argv[]) {
     }
     if (argc > 9)
         preprocessing_candidates_spectra =  boost::lexical_cast<bool>(argv[9]);
-
+    if (argc > 10)
+        merge_candidate_spectra =  boost::lexical_cast<bool>(argv[10]);
 
         //Dummy param and config (since the spectra are already computed)
         config_t cfg;
@@ -147,7 +156,7 @@ int main(int argc, char *argv[]) {
         }
         Identifier identifier(&param, &cfg, cmp, 0.0);
 
-        identifier.rankPrecomputedCandidatesForSpecMatch(candidates, targetData.getSpectra(), preprocessing_candidates_spectra);
+        identifier.rankPrecomputedCandidatesForSpecMatch(candidates, targetData.getSpectra(), preprocessing_candidates_spectra, merge_candidate_spectra);
 
         //Keep only the num_highest
         if (num_highest > 0 && num_highest < (int) candidates.size()) candidates.resize(num_highest);
