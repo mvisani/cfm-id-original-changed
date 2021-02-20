@@ -273,7 +273,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
 
         if(brk.isRingBreak()){
             romol_ptr_t child_ion, child_nl;
-            // TODO NOT the smartest way to do this, we need better way to handle ring break and multi frags
+            // TODO: NOT the smartest way to do this, we need better way to handle ring break and multi frags
             for(const auto & mol : mols)
                 // if there is bond break on the ring, and it come with root
                 if (nullptr != getLabeledAtom(mol, "Root"))
@@ -323,11 +323,50 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             labelBreakPropertiesInNL(child_nl, ion, brk);
 
             //Add the child node
-            std::vector<int> child_e_loc;
-            createChildIonElectronLocRecord(child_e_loc, child_ion);
-            child_ion->setProp("HadRingBreak", 0);
-            children.push_back(
-                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false));
+            if (!brk.isCycliaztion()){
+                std::vector<int> child_e_loc;
+                createChildIonElectronLocRecord(child_e_loc, child_ion);
+                child_ion->setProp("HadRingBreak", 0);
+                children.push_back(
+                        FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false));
+            }
+            else{
+                // in case of cyclizaztion
+                // this is special case of second stage of ring breakeage
+                std::vector<int> child_e_loc;
+                
+                // Find one end of ring  and current root
+                RDKit::RWMol * rw_child_ion;
+                (*rw_child_ion) = *child_ion.get();
+                RDKit::ROMol::AtomIterator ring_root_ai;
+                RDKit::ROMol::AtomIterator current_root_ai;
+
+                for (auto ai = rw_child_ion->beginAtoms(); ai != rw_child_ion->endAtoms(); ++ai) {
+                    int is_ring_root = 0;
+                    (*ai)->getProp("CurrentRingBreakRoot", is_ring_root);
+                    if (is_ring_root){
+                        (*ai)->setProp("CurrentRingBreakRoot", 0);
+                        ring_root_ai = ai;
+                    }
+                    int is_current = 0;
+                    (*ai)->getProp("Root", is_current);
+                    if (is_current){
+                        current_root_ai = ai;
+                    }
+                }
+                
+                // do this only if we can at least have a 3 member ring
+                if(nullptr == rw_child_ion->getBondBetweenAtoms((*ring_root_ai)->getIdx(), (*current_root_ai)->getIdx())){
+                    rw_child_ion->addBond(*ring_root_ai, *current_root_ai, RDKit::Bond::BondType::SINGLE);
+                    romol_ptr_t cyclizated_child_ion = boost::make_shared<RDKit::ROMol>(RDKit::ROMol(*rw_child_ion));
+
+                    createChildIonElectronLocRecord(child_e_loc, cyclizated_child_ion);
+                    child_ion->setProp("HadRingBreak", 0);
+                    children.push_back(
+                            FragmentTreeNode(cyclizated_child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false));
+                }
+            }
+            
         } else if (mols.size() > 2) {
 
             //Collect the NL and ion parts (which may be multiple fragments each)
@@ -741,13 +780,16 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
         (*ai)->setProp("OrigValence", origval);
         (*ai)->setProp("Root", 0);
         (*ai)->setProp("OtherRoot", 0);
+        // keep track of root of ring break
+        // we need this for cyclization
+        (*ai)->setProp("CurrentRingBreakRoot", 0);
 
         //Create breaks for any implied ionic bonds (-1 bond_idx, and ring_idx overloaded with the atom idx)
         int ionic_frag_q;
         (*ai)->getProp("IonicFragmentCharge", ionic_frag_q);
         if (ionic_frag_q != 0 &&
             num_ionic != ion.get()->getNumAtoms()) //(must have at least one non-ionic atom to break further)
-            breaks.push_back(Break((*ai)->getIdx(), true, false, -1, computeNumIonicAlloc(num_ionic - 1)));
+            breaks.push_back(Break((*ai)->getIdx(), true, false, -1, computeNumIonicAlloc(num_ionic - 1), false));
     }
 
     // if previous break is a ring break
@@ -781,7 +823,9 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
             continue;
 
         if (rinfo->numBondRings(bidx) == 0)
-            breaks.push_back(Break(bidx, false, false, -1, computeNumIonicAlloc(num_ionic)));
+            breaks.push_back(Break(bidx, false, false, -1, computeNumIonicAlloc(num_ionic), false));
+            if (was_on_the_ring)
+                breaks.push_back(Break(bidx, false, false, -1, computeNumIonicAlloc(num_ionic), true));
         else
             ring_bonds_count ++;
     }
@@ -807,7 +851,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
                 if (rinfo->numBondRings(*it) != 1)
                     continue;
-                breaks.push_back(Break(*it, false, true, ring_idx, computeNumIonicAlloc(num_ionic)));
+                breaks.push_back(Break(*it, false, true, ring_idx, computeNumIonicAlloc(num_ionic), false));
             }
         }
     }
@@ -867,6 +911,9 @@ void FragmentTreeNode::applyBreak(Break &brk, int ionic_allocation_idx) {
             // only used for ring break
             broken_bond->getEndAtom()->setProp("Root", 0);
             broken_bond->getEndAtom()->setProp("OtherRoot", 1);
+            // keep track of CurrentRingBreak
+            broken_bond->getEndAtom()->setProp("CurrentRingBreakRoot", 1);
+            broken_bond->getBeginAtom()->setProp("CurrentRingBreakRoot", 1);
         }
     }
 
