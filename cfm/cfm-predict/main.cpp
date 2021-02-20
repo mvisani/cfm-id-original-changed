@@ -3,8 +3,8 @@
 #
 # main.cpp
 #
-# Description: 	Predict the MS/MS spectra for a given structure using a
-#				pre-trained CFM model.
+# Description:   Predict the MS/MS spectra for a given structure using a
+#                pre-trained CFM model.
 #
 # Copyright (c) 2013, Felicity Allen
 # All rights reserved.
@@ -67,6 +67,8 @@ int main(int argc, char *argv[]) {
     std::string config_filename = "param_config.txt";
     double prob_thresh_for_prune = 0.001;
     double postprocessing_energy = 80;
+    int min_peaks = 1;
+    int max_peaks = 30;
 
     if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9 && argc != 10) {
         std::cout << std::endl << std::endl;
@@ -93,13 +95,19 @@ int main(int argc, char *argv[]) {
                   << std::endl;
         std::cout << std::endl << "postprocessing method (opt):" << std::endl
                   << "Post-process predicted spectra with 1.take the top 80% of energy (at least 5 peaks), or the highest 30 peaks (whichever comes first) \n "
-                     "2.take the top 80% of energy, or the highest 30 peaks (whichever comes first) (0 = OFF, 1 = OPT#1, 2 = OPT#2 (default) )."
+                     "2.take the top 80% of energy, or the highest 30 peaks (whichever comes first) (0 = OFF, 1 = OPT#1, 2 = OPT#2 (default))."
                   << std::endl;
         std::cout << std::endl << "suppress_exception (opt):" << std::endl
                   << "Suppress exceptions so that the program returns normally even when it fails to produce a result (0 = OFF (default), 1 = ON)."
                   << std::endl;
         std::cout << std::endl << "postprocessing_energy (opt):" << std::endl
                   << "postprocessing energy out of 100% (default 80%)"
+                  << std::endl;
+        std::cout << std::endl << "override_min_peaks (opt):" << std::endl
+                  << "min amount of peak will include in the spectra"
+                  << std::endl;
+        std::cout << std::endl << "override_max_peaks (opt):" << std::endl
+                  << "max amount of peak will include in the spectra"
                   << std::endl;
         exit(1);
     }
@@ -133,6 +141,14 @@ int main(int argc, char *argv[]) {
             std::cout << "Invalid postprocessing_method (Must be 0, 1 or 2): " << argv[7] << std::endl;
             exit(1);
         }
+        if(postprocessing_method == 1){
+            min_peaks = 5;
+            max_peaks = 30;
+        }
+        if(postprocessing_method == 2){
+            min_peaks = 1;
+            max_peaks = 30;
+        }
     }
     if (argc == 9) {
         try { suppress_exceptions = boost::lexical_cast<bool>(argv[8]); }
@@ -144,7 +160,23 @@ int main(int argc, char *argv[]) {
     if (argc == 10) {
         try { postprocessing_energy = boost::lexical_cast<float>(argv[9]); }
         catch (boost::bad_lexical_cast e) {
-            std::cout << "Invalid postprocessing_energy: " << argv[8] << std::endl;
+            std::cout << "Invalid postprocessing_energy: " << argv[9] << std::endl;
+            exit(1);
+        }
+    }
+
+    if (argc == 11) {
+        try { min_peaks = boost::lexical_cast<int>(argv[10]); }
+        catch (boost::bad_lexical_cast e) {
+            std::cout << "Invalid min_peaks: " << argv[10] << std::endl;
+            exit(1);
+        }
+    }
+
+    if (argc == 12) {
+        try { max_peaks = boost::lexical_cast<int>(argv[11]); }
+        catch (boost::bad_lexical_cast e) {
+            std::cout << "Invalid max_peaks: " << argv[11] << std::endl;
             exit(1);
         }
     }
@@ -222,7 +254,7 @@ int main(int argc, char *argv[]) {
                 fgen = new LikelyFragmentGraphGenerator(param, &cfg, prob_thresh_for_prune);
 
             it->computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
-            it->computePredictedSpectra(*nn_param, postprocessing_method, true, -1 ,postprocessing_energy);
+            it->computePredictedSpectra(*nn_param, true, -1 , min_peaks, max_peaks, postprocessing_energy);
             //Predict the spectra (and post-process, use existing thetas)
         }
         catch (RDKit::MolSanitizeException & e) {

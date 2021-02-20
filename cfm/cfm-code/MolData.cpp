@@ -474,17 +474,13 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
     return result;
 }
 
-void MolData::computePredictedSpectra(Param &param, int postprocess_method, bool use_existing_thetas, int energy_level, double perc_thresh) {
-
-    computePredictedSingleEnergySpectra(param, postprocess_method,
-                                        use_existing_thetas, energy_level, perc_thresh);
+void MolData::computePredictedSpectra(Param &param, bool use_existing_thetas,
+                                 int energy_level, int min_peaks, int max_peaks, double perc_thresh){
+    computePredictedSingleEnergySpectra(param, energy_level, use_existing_thetas, min_peaks, max_peaks, perc_thresh);
 }
 
-void MolData::computePredictedSingleEnergySpectra(Param &param,
-                                                  int postprocess_method,
-                                                  bool use_existing_thetas,
-                                                  int energy_level,
-                                                  double perc_thresh) {
+void MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas,
+                                                int min_peaks, int max_peaks, double perc_thresh) {
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
@@ -501,14 +497,15 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
     } else
         createSpeactraSingleEnergry(energy_level);
 
-    if (postprocess_method > 0){
-        int min_peaks = (2 == postprocess_method) ? 1 : 5;
-        int max_peaks = 30;
-        double min_intensity = 0.0;
-        postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_intensity);
-    }
+    // if (postprocess_method > 0){
+    // int min_peaks = (2 == postprocess_method) ? 1 : 5;
+    // int max_peaks = 30;
+    double min_intensity = 0.0;
+    postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_intensity);
+    //}
     
     //TODO: This should not be a default, fix this when we doing EI model
+    /*
     else {
         if(energy_level != -1){
             predicted_spectra[energy_level].normalizeAndSort();
@@ -520,7 +517,7 @@ void MolData::computePredictedSingleEnergySpectra(Param &param,
                 predicted_spectra[energy].quantisePeaksByMass(10);
             }
         }
-    }
+    }*/
 }
 
 void MolData::createSpeactraSingleEnergry(unsigned int energy_level) {

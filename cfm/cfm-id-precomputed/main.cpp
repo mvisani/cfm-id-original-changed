@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     if (argc < 4 || argc > 11) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
-                  << "Usage: cfm-id.exe <spectrum_file> <id> <candidate_file> <num_highest> <ppm_mass_tol> <abs_mass_tol> <score_type> <output_filename>"
+                  << "Usage: cfm-id-precomputed <spectrum_file> <id> <candidate_file> <num_highest> <ppm_mass_tol> <abs_mass_tol> <score_type> <output_filename>"
                   << std::endl << std::endl << std::endl;
         std::cout << std::endl << "spectrum_file:" << std::endl
                   << "The filename where the input spectra can be found. This can be a .msp file in which the desired spectrum is listed under a corresponding id (next arg). Or it could be a single file with a list of peaks 'mass intensity' delimited by lines, with either 'low','med' and 'high' lines beginning spectra of different energy levels, or 'energy0', 'energy1', etc. ";

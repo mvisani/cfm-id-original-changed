@@ -102,7 +102,7 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
 
             //Predict the spectra (and post-process, use existing thetas)
             for(auto & energy_level: used_engeries)
-                moldata.computePredictedSpectra(*param, false, true, energy_level);
+                moldata.computePredictedSpectra(*param, false, energy_level);
             
             if (output_all_scores)
                 std::cout << *it->getId() << ":";

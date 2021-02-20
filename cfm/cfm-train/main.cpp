@@ -344,7 +344,7 @@ int main(int argc, char *argv[]) {
 
             //Predicted spectrum
             for (auto e = start_energy; e < cfg.spectrum_depths.size(); ++e)
-                mit->computePredictedSpectra(*param, false, false, e);
+                mit->computePredictedSpectra(*param, false, e);
 
             if (spectra_in_msp)
                 mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
