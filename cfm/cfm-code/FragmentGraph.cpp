@@ -74,7 +74,7 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
+    int id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate(), node.isCyclization());
 
     if (parentid < 0 || fragments[id]->getDepth() == -1)
         fragments[id]->setDepth(node.depth);    //Set start fragment depth
@@ -105,7 +105,7 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
+    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate(), node.isCyclization());
 
     if (fragments[frag_id]->getDepth() == -1 || node.depth < fragments[frag_id]->getDepth())
         fragments[frag_id]->setDepth(node.depth);    //Set start fragment depth
@@ -167,7 +167,7 @@ FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std::vec
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
+    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate(), node.isCyclization());
 
     if (parent_frag_id < 0 || fragments[frag_id]->getDepth() == -1)
         fragments[frag_id]->setDepth(node.depth);    //Set start fragment depth
@@ -209,7 +209,9 @@ FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std::vec
 }
 
 
-int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bool is_intermediate) {
+int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, 
+    bool is_intermediate,
+    bool is_cyclization) {
 
     std::string reduced_smiles;
 
@@ -255,9 +257,9 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bo
         Spectrum isotope_spectrum;
         long charge = RDKit::MolOps::getFormalCharge(*ion.get());
         isotope->computeIsotopeSpectrum(isotope_spectrum, ion, charge);
-        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, isotope_spectrum, is_intermediate));
+        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, isotope_spectrum, is_intermediate, is_cyclization));
     } else
-        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, is_intermediate));
+        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, is_intermediate, is_cyclization));
 
     frag_mass_lookup[rounded_mass].push_back(newid);
     from_id_tmap.resize(newid + 1);
@@ -341,7 +343,9 @@ void FragmentGraph::writeFragmentsOnly(std::ostream &out) const {
         out << *(it->getIonSmiles());
 
         if (it->isIntermediate())
-            out << " Intermediate Fragment ";
+            out << " Intermediate Fragment";
+        if (it->isCyclization())
+            out << " Cyclization Fragment";
         out << std::endl;
     }
 }
@@ -387,6 +391,10 @@ void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isot
         // write flag
         bool is_intermediate = (*it)->isIntermediate();
         out.write(reinterpret_cast<const char *>(&is_intermediate), sizeof(is_intermediate));
+
+        // write flag
+        bool is_cyclization = (*it)->isCyclization();
+        out.write(reinterpret_cast<const char *>(&is_cyclization), sizeof(is_cyclization));
 
         if (include_isotopes) {
             const Spectrum *isospec = (*it)->getIsotopeSpectrum();
@@ -443,6 +451,9 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
         bool is_intermediate;
         ifs.read(reinterpret_cast<char *>(&is_intermediate), sizeof(is_intermediate));
 
+        bool is_cyclization;
+        ifs.read(reinterpret_cast<char *>(&is_cyclization), sizeof(is_cyclization));
+
         if (include_isotopes) {
             Spectrum isospec;
             unsigned int iso_size;
@@ -454,9 +465,9 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
                 ifs.read(reinterpret_cast<char *>(&pintensity), sizeof(pintensity));
                 isospec.push_back(Peak(pmass, pintensity));
             }
-            fragments.push_back(new Fragment(null, null, id, mass, isospec, is_intermediate));
+            fragments.push_back(new Fragment(null, null, id, mass, isospec, is_intermediate, is_cyclization));
         } else
-            fragments.push_back(new Fragment(null, null, id, mass, is_intermediate));
+            fragments.push_back(new Fragment(null, null, id, mass, is_intermediate, is_cyclization));
     }
 
     //Transitions

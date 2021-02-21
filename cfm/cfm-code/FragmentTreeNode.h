@@ -161,6 +161,9 @@ public:
 
     bool isIntermediate() const { return is_intermediate; };
     
+    bool isCyclization() const { return is_cyclization; };
+
+    void setCyclization(bool is_cyclization) { this->is_cyclization = is_cyclization; };
 private:
     // Helper class for feature labels that need to be added during fragment graph
     // computation
@@ -213,6 +216,7 @@ private:
     static void recordOrigAtomIdxs(RDKit::RWMol &rwmol);
 
     bool is_intermediate = false;
+    bool is_cyclization = false;
 };
 
 #endif // __FRAG_TREE_NODE_H__
