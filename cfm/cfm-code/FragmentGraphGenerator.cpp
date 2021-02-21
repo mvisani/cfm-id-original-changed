@@ -81,6 +81,9 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
     for (ai = rwmol->beginAtoms(); ai != rwmol->endAtoms(); ++ai) {
         (*ai)->setProp("FragIdx", 0);
         (*ai)->setProp("NumUnbrokenRings", rinfo->numAtomRings((*ai)->getIdx()));
+        // keep track of root of ring break
+        // we need this for cyclization
+        (*ai)->setProp("CurrentRingBreakRoot", 0);
     }
     int num_ionic = addIonicChargeLabels(rwmol);
     if (num_frags - num_ionic != 1) {
