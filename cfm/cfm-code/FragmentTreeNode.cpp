@@ -349,7 +349,6 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 //(*rw_child_ion) = *child_ion;
                 RDKit::ROMol::AtomIterator ring_root_ai;
                 RDKit::ROMol::AtomIterator current_root_ai;
-
                 for (auto ai = rw_child_ion->beginAtoms(); ai != rw_child_ion->endAtoms(); ++ai) {
                     int is_ring_root = 0;
 
@@ -368,7 +367,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 // do this only if we can at least have a 3 member ring
                 auto ring_root_atom_idx = (*ring_root_ai)->getIdx();
                 auto current_root_atom_idx = (*current_root_ai)->getIdx();
-                std::cerr << current_root_atom_idx << std::endl;
+                //std::cerr << current_root_atom_idx << std::endl;
                 if(nullptr == rw_child_ion->getBondBetweenAtoms(ring_root_atom_idx, current_root_atom_idx) &&
                     (ring_root_atom_idx != current_root_atom_idx)){
                     rw_child_ion->addBond(*ring_root_ai, *current_root_ai, RDKit::Bond::BondType::SINGLE);
@@ -377,6 +376,10 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                     //bond->setProp("Broken", 0);
                     bond->setProp("OnTheRing", 0);
                     this->fh->addLabels(rw_child_ion);
+
+                    //int is_current = 0;
+                    (*current_root_ai)->setProp("Root", 1);
+                    
                     // labelAromatics(rw_child_ion);
                     romol_ptr_t cyclizated_child_ion = boost::make_shared<RDKit::ROMol>(RDKit::ROMol(*rw_child_ion));
                     
