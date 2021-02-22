@@ -350,10 +350,10 @@ void MolData::computeLogTransitionProbabilities() {
         // Set the persistence log probabilities
         int offset = fg->getNumTransitions();
         for (unsigned int i = 0; i < fg->getNumFragments(); i++){
-            if(fg->getFragmentAtIdx(i)->isIntermediate())
-                log_probs[energy][offset + i] = -100000000;
-            else
-                log_probs[energy][offset + i] = -denom_cache[i];
+            //if(fg->getFragmentAtIdx(i)->isIntermediate())
+            //    log_probs[energy][offset + i] = -100000000;
+            //else
+            log_probs[energy][offset + i] = -denom_cache[i];
         }
     }
 }
@@ -673,21 +673,18 @@ void MolData::getEnumerationSpectraMasses(std::vector<double> &output_masses) {
     std::vector<double> all_masses;
     if (fg->hasIsotopesIncluded()) {
         for (unsigned int i = 0; i < numf; i++) {
-            //if(!fg->getFragmentAtIdx(i)->isIntermediate()) {
-                const Fragment *f = fg->getFragmentAtIdx(i);
-                const Spectrum *isotope_spec = f->getIsotopeSpectrum();
-                Spectrum::const_iterator itp = isotope_spec->begin();
-                for (; itp != isotope_spec->end(); ++itp)
-                    all_masses.push_back(itp->mass);
-            //}
+            
+            const Fragment *f = fg->getFragmentAtIdx(i);
+            const Spectrum *isotope_spec = f->getIsotopeSpectrum();
+            Spectrum::const_iterator itp = isotope_spec->begin();
+            for (; itp != isotope_spec->end(); ++itp)
+                all_masses.push_back(itp->mass);
         }
     } else {
         all_masses.resize(numf);
         for (unsigned int i = 0; i < numf; i++) {
-            //if(!fg->getFragmentAtIdx(i)->isIntermediate()){
-                const Fragment *f = fg->getFragmentAtIdx(i);
-                all_masses[i] = f->getMass();
-           // }
+            const Fragment *f = fg->getFragmentAtIdx(i);
+            all_masses[i] = f->getMass();
         }
     }
     std::sort(all_masses.begin(), all_masses.end());
