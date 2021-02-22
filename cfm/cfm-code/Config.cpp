@@ -79,6 +79,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_no_progress_count = 3;
     cfg.collected_all_used_idx = false;
     cfg.em_max_iterations = DEFAULT_EM_MAX_ITERATIONS;
+    cfg.allow_intermediate_peak = false;
 }
 
 void initConfig(config_t &cfg, std::string &filename, bool report_all) {
@@ -158,6 +159,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_no_progress_count") cfg.ga_no_progress_count = (int) value;
         else if (name == "collected_all_used_idx") cfg.collected_all_used_idx = (bool) value;
         else if (name == "em_max_iterations") cfg.em_max_iterations = (int) value;
+        else if (name == "allow_intermediate_peak") cfg.allow_intermediate_peak = (bool) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -213,6 +215,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             if (cfg.include_precursor_h_losses_only) std::cout << " from precursor only";
             std::cout << std::endl;
         }
+        if (cfg.allow_intermediate_peak)
+            std::cout << "Allow intermeidate peaks" << std::endl;
         if (cfg.param_init_type == PARAM_RANDOM_INIT) std::cout << "Using Random Parameter Initialisation" << std::endl;
         else if (cfg.param_init_type == PARAM_FULL_ZERO_INIT) std::cout << "Using Full Zero Initialisation" << std::endl;
         else if (cfg.param_init_type == PARAM_ZERO_INIT) std::cout << "Using Zero Initialisation (non-zero Bias)" << std::endl;
