@@ -350,10 +350,10 @@ void MolData::computeLogTransitionProbabilities() {
         // Set the persistence log probabilities
         int offset = fg->getNumTransitions();
         for (unsigned int i = 0; i < fg->getNumFragments(); i++){
-            //if(fg->getFragmentAtIdx(i)->isIntermediate())
-            //    log_probs[energy][offset + i] = -100000000;
-            //else
-            log_probs[energy][offset + i] = -denom_cache[i];
+            if(fg->getFragmentAtIdx(i)->isIntermediate() && cfg->allow_intermediate_peak)
+                log_probs[energy][offset + i] = -100000000;
+            else
+                log_probs[energy][offset + i] = -denom_cache[i];
         }
     }
 }
