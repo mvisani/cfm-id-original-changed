@@ -344,12 +344,12 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 std::vector<int> child_e_loc;
                 
                 // Find one end of ring  and current root
-                RDKit::RWMol * rw_child_ion = new RDKit::RWMol(*child_ion);
+                RDKit::RWMol rw_child_ion = RDKit::RWMol(*child_ion);
                 //std::copy(rw_child_ion, child_ion)
                 //(*rw_child_ion) = *child_ion;
                 RDKit::ROMol::AtomIterator ring_root_ai;
                 RDKit::ROMol::AtomIterator current_root_ai;
-                for (auto ai = rw_child_ion->beginAtoms(); ai != rw_child_ion->endAtoms(); ++ai) {
+                for (auto ai = rw_child_ion.beginAtoms(); ai != rw_child_ion.endAtoms(); ++ai) {
                     int is_ring_root = 0;
 
                     (*ai)->getProp("CurrentRingBreakRoot", is_ring_root);
@@ -369,42 +369,38 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
 
                 auto num_h_ring_root = (*ring_root_ai)->getNumExplicitHs();
                 auto num_h_current_root = (*current_root_ai)->getNumExplicitHs();
-                if(nullptr == rw_child_ion->getBondBetweenAtoms(ring_root_atom_idx, current_root_atom_idx)
+                if(nullptr == rw_child_ion.getBondBetweenAtoms(ring_root_atom_idx, current_root_atom_idx)
                     && (ring_root_atom_idx != current_root_atom_idx)
                     && (num_h_ring_root > 1)
                     && (num_h_current_root > 1)){
-
-                    rw_child_ion->addBond(*ring_root_ai, *current_root_ai, RDKit::Bond::BondType::SINGLE);
+                    
+                    // add a single bond between atom
+                    rw_child_ion.addBond(*ring_root_ai, *current_root_ai, RDKit::Bond::BondType::SINGLE);
+                    // remove H from each atom
                     (*ring_root_ai)->setNumExplicitHs(num_h_ring_root - 1);
                     (*current_root_ai)->setNumExplicitHs(num_h_current_root - 1);
 
-
-                    rw_child_ion->setProp("HadRingBreak", 0);
-                    auto bond = rw_child_ion->getBondBetweenAtoms(ring_root_atom_idx, current_root_atom_idx);
+                    // fill some labels
+                    rw_child_ion.setProp("HadRingBreak", 0);
+                    auto bond = rw_child_ion.getBondBetweenAtoms(ring_root_atom_idx, current_root_atom_idx);
                     bond->setProp("OnTheRing", 0);
-                    this->fh->addLabels(rw_child_ion);
+                    this->fh->addLabels(&rw_child_ion);
                     (*current_root_ai)->setProp("Root", 1);
 
-
+                    // sanitize the modified mol
                     try {
-                        RDKit::MolOps::sanitizeMol(*rw_child_ion);
+                        RDKit::MolOps::sanitizeMol(rw_child_ion);
                     } catch (RDKit::MolSanitizeException e) {
                     std::cout << "Could not sanitize " << std::endl;
-                            throw e;
+                        throw e;
                     }
 
-                    romol_ptr_t cyclizated_child_ion = boost::make_shared<RDKit::ROMol>(RDKit::ROMol(*rw_child_ion));
-                    
-                    // TODO check this
-                    // labelAromatics(rw_child_ion);
-                    
+                    // create child ion ptr
+                    romol_ptr_t cyclizated_child_ion = boost::make_shared<RDKit::ROMol>(RDKit::ROMol(rw_child_ion));
                     createChildIonElectronLocRecord(child_e_loc, cyclizated_child_ion);
                     auto next_node = FragmentTreeNode(cyclizated_child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false);
                     next_node.setCyclization(true);
                     children.push_back(next_node);
-                }
-                else{
-                    delete rw_child_ion;
                 }
             }
             
