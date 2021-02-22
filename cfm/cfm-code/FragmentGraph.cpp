@@ -214,7 +214,6 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass,
     bool is_cyclization) {
 
     std::string reduced_smiles;
-
     //Round the mass to 5 decimal places and use that as an initial filter
     double rounded_mass = floor(mass * 10000.0 + 0.5) / 10000.0;
     if (frag_mass_lookup.find(rounded_mass) != frag_mass_lookup.end()) {
@@ -230,6 +229,7 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass,
         for (; it != frag_mass_lookup[rounded_mass].end(); ++it) {
             try {
                 RDKit::RWMol *f2_reduced = RDKit::SmilesToMol(*fragments[*it]->getReducedSmiles());
+
                 if (areMatching(&f1_copy, f2_reduced)) {
                     delete f2_reduced;
                     return *it;
@@ -258,8 +258,10 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass,
         long charge = RDKit::MolOps::getFormalCharge(*ion.get());
         isotope->computeIsotopeSpectrum(isotope_spectrum, ion, charge);
         fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, isotope_spectrum, is_intermediate, is_cyclization));
-    } else
+    } else{
         fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, is_intermediate, is_cyclization));
+    }
+        
 
     frag_mass_lookup[rounded_mass].push_back(newid);
     from_id_tmap.resize(newid + 1);

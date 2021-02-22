@@ -367,23 +367,44 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 auto ring_root_atom_idx = (*ring_root_ai)->getIdx();
                 auto current_root_atom_idx = (*current_root_ai)->getIdx();
 
-                if(nullptr == rw_child_ion->getBondBetweenAtoms(ring_root_atom_idx, current_root_atom_idx) &&
-                    (ring_root_atom_idx != current_root_atom_idx)){
+                auto num_h_ring_root = (*ring_root_ai)->getNumExplicitHs();
+                auto num_h_current_root = (*current_root_ai)->getNumExplicitHs();
+                if(nullptr == rw_child_ion->getBondBetweenAtoms(ring_root_atom_idx, current_root_atom_idx)
+                    && (ring_root_atom_idx != current_root_atom_idx)
+                    && (num_h_ring_root > 1)
+                    && (num_h_current_root > 1)){
+
                     rw_child_ion->addBond(*ring_root_ai, *current_root_ai, RDKit::Bond::BondType::SINGLE);
+                    (*ring_root_ai)->setNumExplicitHs(num_h_ring_root - 1);
+                    (*current_root_ai)->setNumExplicitHs(num_h_current_root - 1);
+
+
                     rw_child_ion->setProp("HadRingBreak", 0);
                     auto bond = rw_child_ion->getBondBetweenAtoms(ring_root_atom_idx, current_root_atom_idx);
                     bond->setProp("OnTheRing", 0);
                     this->fh->addLabels(rw_child_ion);
                     (*current_root_ai)->setProp("Root", 1);
 
-                    // std::cerr << "Add Cycliaztion" << std::endl;
-                    // labelAromatics(rw_child_ion);
+
+                    try {
+                        RDKit::MolOps::sanitizeMol(*rw_child_ion);
+                    } catch (RDKit::MolSanitizeException e) {
+                    std::cout << "Could not sanitize " << std::endl;
+                            throw e;
+                    }
+
                     romol_ptr_t cyclizated_child_ion = boost::make_shared<RDKit::ROMol>(RDKit::ROMol(*rw_child_ion));
+                    
+                    // TODO check this
+                    // labelAromatics(rw_child_ion);
                     
                     createChildIonElectronLocRecord(child_e_loc, cyclizated_child_ion);
                     auto next_node = FragmentTreeNode(cyclizated_child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false);
                     next_node.setCyclization(true);
                     children.push_back(next_node);
+                }
+                else{
+                    delete rw_child_ion;
                 }
             }
             

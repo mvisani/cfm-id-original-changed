@@ -163,7 +163,7 @@ public:
     
     bool isCyclization() const { return is_cyclization; };
 
-    void setCyclization(bool is_cyclization) { this->is_cyclization = is_cyclization; };
+    void setCyclization(bool flag) { this->is_cyclization = flag; };
 private:
     // Helper class for feature labels that need to be added during fragment graph
     // computation
