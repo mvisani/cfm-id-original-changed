@@ -245,6 +245,7 @@ struct config_t {
     int ga_no_progress_count;
 
     bool collected_all_used_idx;
+    bool allow_intermediate_peak;
 };
 
 void initDefaultConfig(config_t &cfg);
