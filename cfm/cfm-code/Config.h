@@ -246,6 +246,7 @@ struct config_t {
 
     bool collected_all_used_idx;
     bool allow_intermediate_peak;
+    bool allow_cyclization;
 };
 
 void initDefaultConfig(config_t &cfg);

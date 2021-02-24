@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_SUITE(FragGenTestPositiveESIMaxElectronMovement)
 
         //Break just the one bond
         std::vector<Break> breaks;
-        node->generateBreaks(breaks, false);
+        node->generateBreaks(breaks, false, false);
         node->applyBreak(breaks[12], 0);	//Break Bond 11 (after the O)
         node->generateChildrenOfBreak(breaks[12]);
 
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_SUITE(FragGenTestPositiveESIMaxElectronMovement)
             //Now break one of the children (to check the second level works)
             FragmentTreeNode *child = &node->children[6];
             std::vector<Break> child_breaks;
-            child->generateBreaks(child_breaks, false);
+            child->generateBreaks(child_breaks, false, false);
             child->applyBreak(breaks[5], 0);	//Break Bond 5
             child->generateChildrenOfBreak(breaks[5]);
             itt = child->children.begin();

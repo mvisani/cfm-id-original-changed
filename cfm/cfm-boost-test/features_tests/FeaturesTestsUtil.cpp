@@ -65,7 +65,7 @@ getFeatureVector(std::string smiles_or_inchi, std::vector<std::string> &fnames, 
     FragmentGraphGenerator fgen(fc);
     FragmentTreeNode *node = fgen.createStartNode(smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE);
     std::vector<Break> breaks;
-    node->generateBreaks(breaks, include_h_loss);
+    node->generateBreaks(breaks, include_h_loss, false);
 
     //std::cout << breaks.size() << std::endl;
 

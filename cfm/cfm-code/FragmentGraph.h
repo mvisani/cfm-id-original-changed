@@ -215,13 +215,14 @@ class FragmentGraph {
 public:
     FragmentGraph()
             : include_isotopes(false), allow_frag_detours(true),
-              include_h_losses(true), include_h_losses_precursor_only(false) {};
+              include_h_losses(true), include_h_losses_precursor_only(false), allow_cyclization(false) {};
 
     FragmentGraph(config_t *cfg)
             : include_isotopes(cfg->include_isotopes),
               allow_frag_detours(cfg->allow_frag_detours),
               include_h_losses(cfg->include_h_losses),
-              include_h_losses_precursor_only(cfg->include_precursor_h_losses_only) {
+              include_h_losses_precursor_only(cfg->include_precursor_h_losses_only),
+              allow_cyclization(cfg->allow_cyclization) {
         if (include_isotopes)
             isotope = new IsotopeCalculator(cfg->isotope_thresh);
     };
@@ -279,6 +280,8 @@ public:
     bool includesHLossesPrecursorOnly() const {
         return include_h_losses_precursor_only;
     };
+    
+    bool allowCyclization() const { return allow_cyclization; };
 
     void clearAllSmiles();
 
@@ -355,6 +358,7 @@ protected:
     bool allow_frag_detours;
     bool include_h_losses;
     bool include_h_losses_precursor_only;
+    bool allow_cyclization;
 
     // Mapping from rounded mass to list of fragment ids,
     // to enable fast check for existing fragments

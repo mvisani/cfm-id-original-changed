@@ -189,7 +189,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node,
         h_loss_allowed = current_graph->includesHLossesPrecursorOnly() || current_graph->includesHLosses();
     else                //Break from Non-Precursor
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
-    node.generateBreaks(breaks, h_loss_allowed);
+    node.generateBreaks(breaks, h_loss_allowed, current_graph->allowCyclization());
 
     bool ring_can_break = (remaining_ring_breaks > 0);
     for (auto it = breaks.begin(); it != breaks.end(); ++it) {
@@ -277,7 +277,7 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
     else                //Break from Non-Precursor
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
 
-    node.generateBreaks(breaks, h_loss_allowed);
+    node.generateBreaks(breaks, h_loss_allowed, current_graph->allowCyclization());
 
     std::vector<Break>::iterator it = breaks.begin();
 

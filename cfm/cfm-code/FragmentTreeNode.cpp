@@ -19,6 +19,7 @@
 #include "FragmentTreeNode.h"
 #include "MILP.h"
 #include "Config.h"
+#include "Util.h"
 
 #include <GraphMol/RWMol.h>
 #include <GraphMol/MolOps.h>
@@ -789,7 +790,7 @@ void FragmentTreeNode::labelBreakPropertiesInNL(romol_ptr_t &current_nl, romol_p
 
 }
 
-void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H_only_loss) {
+void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H_only_loss, bool include_cyclization) {
 
     int num_ionic = countNumIonicFragments(ion.get());
     RDKit::PeriodicTable *pt = RDKit::PeriodicTable::getTable();
@@ -859,7 +860,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
 
         if (rinfo->numBondRings(bidx) == 0)
             breaks.push_back(Break(bidx, false, false, -1, computeNumIonicAlloc(num_ionic), false));
-            if (was_on_the_ring)
+            if (was_on_the_ring && include_cyclization)
                 // add a cyclization break
                 breaks.push_back(Break(bidx, false, false, -1, computeNumIonicAlloc(num_ionic), true));
         else

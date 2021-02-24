@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
 	cfg.ionization_mode = ionization_mode;
 	cfg.fg_depth = max_depth;
 	cfg.include_h_losses = true; 
+	cfg.allow_cyclization = true;
 
 	time_t before = time( nullptr );
 
