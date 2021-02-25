@@ -29,14 +29,14 @@ public:
     Break()
             : h_only_break(true), ring_break(false), ionic_break(false), bond_idx(-1),
               ring_idx(-1), num_ionic_frag_allocations(1),
-              ionic_idx(-1) {};
+              ionic_idx(-1), is_cycliaztion(false) {};
 
     // Constructor for Break (ionic or standard or ring)
     Break(int a_bond_or_ionic_atom_idx, bool a_ionic_break,
-             bool is_ring_break, int a_ring_idx, int a_num_ionic_frag_allocations)
+             bool is_ring_break, int a_ring_idx, int a_num_ionic_frag_allocations, bool is_cycliaztion)
             : h_only_break(false), ring_break(is_ring_break), ionic_break(a_ionic_break),
               bond_idx(-1), ring_idx(-1), ionic_idx(-1),
-              num_ionic_frag_allocations(a_num_ionic_frag_allocations) {
+              num_ionic_frag_allocations(a_num_ionic_frag_allocations), is_cycliaztion(is_cycliaztion) {
 
         if (is_ring_break)
             ring_idx = a_ring_idx;
@@ -61,6 +61,8 @@ public:
 
     int getNumIonicFragAllocations() const { return num_ionic_frag_allocations; };
 
+    bool isCycliaztion() const { return is_cycliaztion; };
+
 private:
     int bond_idx;    // Indexes of the broken bond(s)
 
@@ -72,6 +74,7 @@ private:
     int num_ionic_frag_allocations;
 
     bool h_only_break;
+    bool is_cycliaztion;
 };
 
 // Class for generating fragments via the systematic bond disconnection approach
@@ -106,7 +109,7 @@ public:
     // num_rbreak_nrbonds is used to reduce mount of ring breaks
     // if a ion has less than give none ring break bonds, a ring break can happen
     // not the best idea ever
-    void generateBreaks(std::vector<Break> &breaks, bool include_H_only_loss);
+    void generateBreaks(std::vector<Break> &breaks, bool include_H_only_loss, bool include_cyclization);
 
     // Record a break in the properties of the ion
     void applyBreak(Break &brk, int ionic_allocation_idx);
@@ -157,6 +160,10 @@ public:
                                     boost::tuple<int, int, int> &pidx_nidx_ridx);
 
     bool isIntermediate() const { return is_intermediate; };
+    
+    bool isCyclization() const { return is_cyclization; };
+
+    void setCyclization(bool flag) { this->is_cyclization = flag; };
 private:
     // Helper class for feature labels that need to be added during fragment graph
     // computation
@@ -209,6 +216,7 @@ private:
     static void recordOrigAtomIdxs(RDKit::RWMol &rwmol);
 
     bool is_intermediate = false;
+    bool is_cyclization = false;
 };
 
 #endif // __FRAG_TREE_NODE_H__

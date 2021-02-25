@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_SUITE(FeaturesTestFunctionalGroups)
         std::string smiles_or_inchi("CCCCC(O)=O");
         FragmentTreeNode *node = fgen.createStartNode(smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE);
         std::vector<Break> breaks;
-        node->generateBreaks(breaks, false);
+        node->generateBreaks(breaks, false, false);
         node->applyBreak(breaks[2], 0);    //Break Bond 2
         node->generateChildrenOfBreak(breaks[2]);
 

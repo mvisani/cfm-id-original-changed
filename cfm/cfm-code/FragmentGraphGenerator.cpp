@@ -81,6 +81,9 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
     for (ai = rwmol->beginAtoms(); ai != rwmol->endAtoms(); ++ai) {
         (*ai)->setProp("FragIdx", 0);
         (*ai)->setProp("NumUnbrokenRings", rinfo->numAtomRings((*ai)->getIdx()));
+        // keep track of root of ring break
+        // we need this for cyclization
+        (*ai)->setProp("CurrentRingBreakRoot", 0);
     }
     int num_ionic = addIonicChargeLabels(rwmol);
     if (num_frags - num_ionic != 1) {
@@ -186,7 +189,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node,
         h_loss_allowed = current_graph->includesHLossesPrecursorOnly() || current_graph->includesHLosses();
     else                //Break from Non-Precursor
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
-    node.generateBreaks(breaks, h_loss_allowed);
+    node.generateBreaks(breaks, h_loss_allowed, current_graph->allowCyclization());
 
     bool ring_can_break = (remaining_ring_breaks > 0);
     for (auto it = breaks.begin(); it != breaks.end(); ++it) {
@@ -274,7 +277,7 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
     else                //Break from Non-Precursor
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
 
-    node.generateBreaks(breaks, h_loss_allowed);
+    node.generateBreaks(breaks, h_loss_allowed, current_graph->allowCyclization());
 
     std::vector<Break>::iterator it = breaks.begin();
 

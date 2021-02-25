@@ -19,7 +19,7 @@ FeatureVector *getFeaturesTestIonicFeaturesFV(int break_idx, int ionic_idx, bool
     std::string smiles_or_inchi("[Na+].[Cl-].CC=CC");
     FragmentTreeNode *node = fgen.createStartNode( smiles_or_inchi, POSITIVE_ESI_IONIZATION_MODE );
     std::vector<Break> breaks;
-    node->generateBreaks(breaks, true);
+    node->generateBreaks(breaks, true, false);
 
     Break *brk = &breaks[break_idx];
 
@@ -29,7 +29,7 @@ FeatureVector *getFeaturesTestIonicFeaturesFV(int break_idx, int ionic_idx, bool
 
     if( rebreak_child ){
         std::vector<Break> child_breaks;
-        child->generateBreaks(child_breaks, true);
+        child->generateBreaks(child_breaks, true, false);
         child->applyBreak(child_breaks[0], 0 );
         child->generateChildrenOfBreak(child_breaks[0]);
         child = &(child->children[0]);

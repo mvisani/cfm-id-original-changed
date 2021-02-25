@@ -80,6 +80,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.collected_all_used_idx = false;
     cfg.em_max_iterations = DEFAULT_EM_MAX_ITERATIONS;
     cfg.allow_intermediate_peak = false;
+    cfg.allow_cyclization = false;
 }
 
 void initConfig(config_t &cfg, std::string &filename, bool report_all) {
@@ -160,6 +161,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "collected_all_used_idx") cfg.collected_all_used_idx = (bool) value;
         else if (name == "em_max_iterations") cfg.em_max_iterations = (int) value;
         else if (name == "allow_intermediate_peak") cfg.allow_intermediate_peak = (bool) value;
+        else if (name == "allow_cyclization") cfg.allow_cyclization = (bool) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
