@@ -187,12 +187,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double val_q = 0.0;
 
         int molidx = 0, num_val_mols = 0, num_training_mols = 0;
-        double train_dice = 0.0, train_w_dice = 0.0;
-        double val_dice = 0.0, val_w_dice = 0.0;
+        double train_dice = 0.0, train_dp = 0.0;
+        double val_dice = 0.0, val_dp = 0.0;
         for (mol_it = molDataSet.begin(); mol_it != molDataSet.end(); ++mol_it, molidx++) {
             computeLossAndMetrics(energy_level, molidx, mol_it, suft, val_q, num_val_mols, num_training_mols,
-                                  train_dice, train_w_dice,
-                                  val_dice, val_w_dice);
+                                  train_dice, train_dp,
+                                  val_dice, val_dp);
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
@@ -208,14 +208,14 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         if (!cfg->disable_training_metrics) {
             train_dice = comm->collectQInMaster(train_dice);
-            train_w_dice = comm->collectQInMaster(train_w_dice);
+            train_dp = comm->collectQInMaster(train_dp);
         }
 
         if (!cfg->disable_cross_val_metrics) {
             val_q = comm->collectQInMaster(val_q);
             num_val_mols = comm->collectSumInMaster(num_val_mols);
             val_dice = comm->collectQInMaster(val_dice);
-            val_w_dice = comm->collectQInMaster(val_w_dice);
+            val_dp = comm->collectQInMaster(val_dp);
         }
 
         // Check for convergence
@@ -223,7 +223,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         if (comm->isMaster()) {
             std::string qdif_str = getMetricsString(loss, prev_loss, best_loss, after, val_q, num_val_mols,
                                                     num_training_mols, train_dice,
-                                                    train_w_dice, val_dice, val_w_dice, loss_ratio);
+                                                    train_dp, val_dice, val_dp, loss_ratio);
 
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
@@ -292,19 +292,19 @@ float EmModel::getUsedCupTime(clock_t c_start, clock_t c_end) const {
 void EmModel::computeLossAndMetrics(int energy_level, int molidx,
                                     std::vector<MolData, std::allocator<MolData>>::iterator &mol_it,
                                     suft_counts_t &suft, double &val_q, int &num_val_mols, int &num_training_mols,
-                                    double &train_dice, double &train_w_dice, double &val_dice,
-                                    double &val_w_dice) {
+                                    double &train_dice, double &train_dp, double &val_dice,
+                                    double &val_dp) {
     if (mol_it->getGroup() == validation_group && !cfg->disable_cross_val_metrics) {
         num_val_mols++;
         val_q += computeLogLikelihoodLoss(molidx, *mol_it, suft, energy_level);
         computeMetrics(energy_level, mol_it, val_dice,
-                       val_w_dice);
+                       val_dp);
 
     } else {
         num_training_mols++;
         if (!cfg->disable_training_metrics) {
             computeMetrics(energy_level, mol_it, train_dice,
-                           train_w_dice);
+                           train_dp);
         }
     }
 }
@@ -313,8 +313,8 @@ std::string
 EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
                           const std::chrono::system_clock::time_point &after,
                           double val_q, int num_val_mols,
-                          int num_training_mols, double train_dice, double train_w_dice, double val_dice,
-                          double val_w_dice, double loss_ratio) const {
+                          int num_training_mols, double train_dice, double train_dp, double val_dice,
+                          double val_dp, double loss_ratio) const {
     std::string qdif_str = "[M-Step][T+" + getTimeDifferenceStr(start_time, after) + "s]";
     qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols);
 
@@ -326,14 +326,14 @@ EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
 
     if (!cfg->disable_training_metrics) {
         qdif_str += "\nDice_Avg=" + std::to_string(train_dice / num_training_mols)
-                    + " Weighted_Dice_Avg=" += std::to_string(train_w_dice / num_training_mols);
+                    + " DotProduct_Avg=" += std::to_string(train_dp / num_training_mols);
     }
 
     if (!cfg->disable_cross_val_metrics) {
         qdif_str += "\nValidation_Loss=" + std::to_string(val_q)
                     + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
                     + "\nValidation_Dice_Avg=" + std::to_string(val_dice / num_val_mols)
-                    + " Weighted_Validation_Dice_Avg=" += std::to_string(val_w_dice / num_val_mols);
+                    + " Weighted_Validation_DotProduct_Avg=" += std::to_string(val_dp / num_val_mols);
     }
     return qdif_str;
 }
@@ -378,20 +378,20 @@ EmModel::computeAndSyncLoss(std::vector<MolData> &data, suft_counts_t &suft, uns
 }
 
 void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocator<MolData>>::iterator &moldata,
-                             double &dice, double &w_dice) {
+                             double &dice, double &dp) {
 
     Comparator *dice_cmp = new Dice(cfg->ppm_mass_tol, cfg->abs_mass_tol);
-    Comparator *weighed_dice_cmp = new WeightedDice(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+    Comparator *dotproduct_cmp = new DotProduct(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
     moldata->computePredictedSpectra(*param, false, energy_level);
-    moldata->postprocessPredictedSpectra(80, 1, 1000);
+    moldata->postprocessPredictedSpectra(80, 1, 30);
     dice += dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                              moldata->getPredictedSpectrum(energy_level));
-    w_dice += weighed_dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
+    dp += dotproduct_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                                        moldata->getPredictedSpectrum(energy_level));
 
     delete dice_cmp;
-    delete weighed_dice_cmp;
+    delete dotproduct_cmp;
 }
 
 void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
