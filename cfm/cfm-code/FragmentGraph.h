@@ -53,7 +53,7 @@ public:
             : id(an_id), ion_smiles(*a_fragment.getIonSmiles()),
               reduced_smiles(*a_fragment.getReducedSmiles()),
               mass(a_fragment.getMass()), depth(-1), is_intermediate(a_fragment.isIntermediate()),  
-              is_cyclization(a_fragment.isCyclization())
+              is_cyclization(a_fragment.isCyclization()), isotope_spectrum(*a_fragment.getIsotopeSpectrum())
               {};
 
     // Access Functions
