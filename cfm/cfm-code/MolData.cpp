@@ -826,10 +826,22 @@ void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int e
 
     std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
-        double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
 
-        if(intensity_difference > cfg->ga_diff_sampling_difference){
+        /*if(intensity_difference > cfg->ga_diff_sampling_difference){
             double peak_mass = peak_pair.second.mass;
+            difference.insert(std::pair<double,double>(intensity_difference, peak_mass));
+        }*/
+        //if(intensity_difference > cfg->ga_diff_sampling_difference){
+
+        double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
+        double peak_mass = peak_pair.second.mass;
+        // We are going to force model to deal with miss peaked peak first
+        // and fix intensity difference as a secondary task 
+        if ((peak_pair.first.intensity == 0.0) || (peak_pair.first.intensity == 0.0)){
+            intensity_difference += 1
+            difference.insert(std::pair<double,double>(intensity_difference, peak_mass));
+        }
+        else if(intensity_difference > cfg->ga_diff_sampling_difference) {
             difference.insert(std::pair<double,double>(intensity_difference, peak_mass));
         }
     }
