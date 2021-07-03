@@ -838,7 +838,7 @@ void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int e
         // We are going to force model to deal with miss peaked peak first
         // and fix intensity difference as a secondary task 
         if ((peak_pair.first.intensity == 0.0) || (peak_pair.first.intensity == 0.0)){
-            intensity_difference += 1
+            intensity_difference += 1;
             difference.insert(std::pair<double,double>(intensity_difference, peak_mass));
         }
         else if(intensity_difference > cfg->ga_diff_sampling_difference) {
