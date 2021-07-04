@@ -731,7 +731,7 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
         }
         case USE_DIFFERENCE_SAMPLING_BFS_CO:
         case USE_DIFFERENCE_SAMPLING_BFS:{
-            moldata.computePredictedSpectra(*param, true, energy);
+            moldata.computePredictedSpectra(*param, true, energy, 1, 30, 80);
             std::set<unsigned int> selected_weights;
 
             moldata.getSelectedWeights(selected_weights, energy);
