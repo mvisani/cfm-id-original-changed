@@ -301,7 +301,8 @@ BOOST_AUTO_TEST_SUITE(NNParamsIndexAndDropOutTests)
                                  RELU_NN_ACTIVATION_FUNCTION, LINEAR_NN_ACTIVATION_FUNCTION};
 
         std::vector<float> dropout_probs(2, 0.0);
-        NNParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
+        boost::container::vector<bool> frozen(2, false);
+        NNParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs, frozen);
 
         std::vector<unsigned int> bias_indexes;
         param.getBiasIndexes(bias_indexes);
@@ -320,7 +321,8 @@ BOOST_AUTO_TEST_SUITE(NNParamsIndexAndDropOutTests)
                                  RELU_NN_ACTIVATION_FUNCTION, LINEAR_NN_ACTIVATION_FUNCTION};
 
         std::vector<float> dropout_probs{0.5, 0.5, 0, 0};
-        NNParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
+        boost::container::vector<bool> frozen(4, false);
+        NNParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs, frozen);
 
         auto dropout_prob_ptr = param.getDropoutsProbPtr();
         BOOST_CHECK_EQUAL(dropout_prob_ptr->size(), dropout_probs.size());
@@ -371,7 +373,9 @@ BOOST_AUTO_TEST_SUITE(NNParamsIndexAndDropOutTests)
                                  LINEAR_NN_ACTIVATION_FUNCTION};
 
         std::vector<float> dropout_probs(2,0.0);
-        NNParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs);
+        boost::container::vector<bool> frozen(2, false);
+        NNParam param(fnames, 1, hlayer_numnodes, act_ids, dropout_probs, frozen);
+
         param.initWeights(PARAM_RANDOM_INIT);
 
         //Save to file
