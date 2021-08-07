@@ -82,7 +82,7 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
             used_engeries.push_back(idx);
 
     //Compute the scores for each candidate
-    std::vector<Candidate>::iterator it = candidates.begin();
+    auto it = candidates.begin();
     for (; it != candidates.end(); ++it) {
 
         LikelyFragmentGraphGenerator *fgen;
@@ -102,7 +102,7 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
 
             //Predict the spectra (and post-process, use existing thetas)
             for(auto & energy_level: used_engeries)
-                moldata.computePredictedSpectra(*param, false, energy_level);
+                moldata.computePredictedSpectra(*param, false, energy_level, 1, 30, 100.0, cfg->use_log_scale_peak);
             
             if (output_all_scores)
                 std::cout << *it->getId() << ":";

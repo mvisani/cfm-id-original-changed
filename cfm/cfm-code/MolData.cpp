@@ -74,6 +74,16 @@ void MolData::writeFVFragmentGraph(std::string &fv_filename) {
     }
 }
 
+void MolData::convertSpectraToLogScale(){
+    for(auto & spectrum : spectra)
+        spectrum.convertToLogScale();
+}
+
+void MolData::convertSpectraToLinearScale(){
+    for(auto & spectrum : spectra)
+        spectrum.convertToLinearScale();
+}
+
 void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
 
     fg = fgen.createNewGraph(cfg);
@@ -474,13 +484,16 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
     return result;
 }
 
-void MolData::computePredictedSpectra(Param &param, bool use_existing_thetas,
-                                 int energy_level, int min_peaks, int max_peaks, double perc_thresh){
-    computePredictedSingleEnergySpectra(param, energy_level, use_existing_thetas, min_peaks, max_peaks, perc_thresh);
+void
+MolData::computePredictedSpectra(Param &param, bool use_existing_thetas, int energy_level, int min_peaks, int max_peaks,
+                                 double perc_thresh, bool force_linear_scale) {
+    computePredictedSingleEnergySpectra(param, energy_level, use_existing_thetas, min_peaks, max_peaks, perc_thresh,
+                                        false);
 }
 
-void MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas,
-                                                int min_peaks, int max_peaks, double perc_thresh) {
+void
+MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas, int min_peaks,
+                                             int max_peaks, double perc_thresh, bool force_linear_scale) {
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
@@ -496,6 +509,9 @@ void MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level
         }
     } else
         createSpeactraSingleEnergry(energy_level);
+
+    if(force_linear_scale && cfg->use_log_scale_peak)
+        predicted_spectra[energy_level].convertToLinearScale();
 
     // if (postprocess_method > 0){
     // int min_peaks = (2 == postprocess_method) ? 1 : 5;
@@ -818,7 +834,7 @@ double MolData::getWeightedJaccardScore(int engery_level){
 }
 
 // It is caller's response to compute predicted spectra
-void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int energry_level) {
+void MolData::getSelectedMasses(std::set<unsigned int> &selected_weights, int energry_level) {
 
     Comparator *cmp = new Dice(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
@@ -827,23 +843,13 @@ void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int e
     std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
+        // we are bias towards to peak should be there
+        if (peak_pair.first.intensity > 0 && peak_pair.second.intensity == 0)
+            intensity_difference += 100.0;
         if(intensity_difference > cfg->ga_diff_sampling_difference){
             double peak_mass = peak_pair.second.mass;
             difference.insert(std::pair<double,double>(intensity_difference, peak_mass));
         }
-        
-        /*
-        double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
-        double peak_mass = peak_pair.second.mass;
-        // We are going to force model to deal with miss peaked peak first
-        // and fix intensity difference as a secondary taga_diff_sampling_peak_num
-        // if intensity_difference less then 0.1, it is good enough
-        //if(intensity_difference > cfg->ga_diff_sampling_difference) {
-        if ((peak_pair.first.intensity == 0.0) || (peak_pair.first.intensity == 0.0)){
-            // add mgaic number 100, NOTE MAX difference between intensity is 100
-            intensity_difference += 100;
-        }
-        difference.insert(std::pair<double,double>(intensity_difference, peak_mass));*/
     }
     delete(cmp);
 

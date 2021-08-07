@@ -113,6 +113,9 @@ public:
 
     void quantisePeaksByMass(int num_dec_places);
 
+    void convertToLogScale();
+
+    void convertToLinearScale();
 
 private:
     std::vector<Peak> peaks;

@@ -92,12 +92,13 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     int sampling_method = cfg->ga_sampling_method;
     int em_no_progress_count = 0;
 
-    auto mol_it = molDataSet.begin();
-    for (int molidx = 0; mol_it != molDataSet.end(); ++mol_it, molidx++) {
-        if (mol_it->hasEmptySpectrum(energy_level) && mol_it->getGroup() != validation_group)
+    for (auto & mol_data : molDataSet) {
+        if (mol_data.hasEmptySpectrum(energy_level) && mol_data.getGroup() != validation_group)
             std::cout << "Warning: No peaks with explanatory fragment found for "
-                      << mol_it->getId() << ", ignoring this input molecule."
-                      << std::endl;
+            << mol_data.getId() << ", ignoring this input molecule."<< std::endl;
+
+        if (cfg->use_log_scale_peak)
+            mol_data.convertSpectraToLogScale();
     }
 
     while (iter < cfg->em_max_iterations) {
@@ -109,18 +110,14 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             writeStatus(msg.c_str());
         comm->printToMasterOnly(msg.c_str());
 
-        std::vector<MolData>::iterator mol_it;
-
         // Reset sufficient counts
         suft_counts_t suft;
         initSuft(suft, molDataSet);
 
-        int num_converged = 0, num_nonconverged = 0;
-        int tot_numc = 0, total_numnonc = 0;
         auto before = std::chrono::high_resolution_clock::now();
 
         // Do the inference part (E-step)
-        mol_it = molDataSet.begin();
+        auto mol_it = molDataSet.begin();
         for (int molidx = 0; mol_it != molDataSet.end(); ++mol_it, molidx++) {
 
             if (!mol_it->hasComputedGraph())
@@ -383,7 +380,7 @@ void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocat
     Comparator *dice_cmp = new Dice(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *dotproduct_cmp = new DotProduct(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
-    moldata->computePredictedSpectra(*param, false, energy_level, 1, 30, 80);
+    moldata->computePredictedSpectra(*param, false, energy_level, 1, 30, 80, false);
     //moldata->postprocessPredictedSpectra(80, 1, 30);
     dice += dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                              moldata->getPredictedSpectrum(energy_level));
@@ -731,10 +728,10 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
         }
         case USE_DIFFERENCE_SAMPLING_BFS_CO:
         case USE_DIFFERENCE_SAMPLING_BFS:{
-            moldata.computePredictedSpectra(*param, true, energy, 1, 30);
+            moldata.computePredictedSpectra(*param, true, energy, 1, 30, false);
             std::set<unsigned int> selected_weights;
 
-            moldata.getSelectedWeights(selected_weights, energy);
+            moldata.getSelectedMasses(selected_weights, energy);
             if (sampling_method == USE_DIFFERENCE_SAMPLING_BFS_CO)
                 moldata.getSampledTransitionIdUsingDiffMapBFS(selected_trans_id, selected_weights);
             else if (sampling_method == USE_DIFFERENCE_SAMPLING_BFS)

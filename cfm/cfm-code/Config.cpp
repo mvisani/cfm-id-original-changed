@@ -81,6 +81,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.em_max_iterations = DEFAULT_EM_MAX_ITERATIONS;
     cfg.allow_intermediate_peak = false;
     cfg.allow_cyclization = false;
+    cfg.use_log_scale_peak = false;
 }
 
 void initConfig(config_t &cfg, std::string &filename, bool report_all) {
@@ -162,6 +163,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "em_max_iterations") cfg.em_max_iterations = (int) value;
         else if (name == "allow_intermediate_peak") cfg.allow_intermediate_peak = (bool) value;
         else if (name == "allow_cyclization") cfg.allow_cyclization = (bool) value;
+        else if (name == "use_log_scale_peak") cfg.use_log_scale_peak = (bool) value;
         else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -362,6 +364,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (cfg.fragraph_compute_timeout_in_secs > 0)
             std::cout << "Timeout set on fragment graph computation to " << cfg.fragraph_compute_timeout_in_secs
                       << " mins" << std::endl;
+        if (cfg.use_log_scale_peak)
+            std::cout << "Use log scale peaks" << std::endl;
     }
 }
 

@@ -168,8 +168,9 @@ public:
 
     // compute predicted Spectra
     // if engry < -1 , compute all  Spectra
-    void computePredictedSpectra(Param &param, bool use_existing_thetas = false,
-                                 int energy_level = -1, int min_peaks = 1, int max_peaks = 30, double perc_thresh = 100.0);
+    void
+    computePredictedSpectra(Param &param, bool use_existing_thetas = false, int energy_level = -1, int min_peaks = 1,
+                            int max_peaks = 30, double perc_thresh = 100.0, bool force_linear_scale = false);
 
     void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 1, int max_peaks = 30,
                                      double min_intensity = 0.0);
@@ -240,7 +241,7 @@ public:
 
     // Return a listed of select weights in Fixed Point INT
     // int_weight = std::round(weight * 1e-5)
-    void getSelectedWeights(std::set<unsigned int> &selected_weights, int energry_level);
+    void getSelectedMasses(std::set<unsigned int> &selected_weights, int energry_level);
 
     double getWeightedJaccardScore(int engery_level);
 
@@ -249,6 +250,10 @@ public:
     const Spectrum* getMergedPrediction(){
         return m_merged_predicted_spectra;
     };
+
+    void convertSpectraToLogScale();
+
+    void convertSpectraToLinearScale();
 
     ~MolData();
 protected
@@ -260,7 +265,7 @@ protected
     EvidenceFragmentGraph *ev_fg;
     bool graph_computed;
     bool ev_graph_computed;
-    // spectra , which will be pruned during traning
+    // spectra , which will be pruned during training
     std::vector<Spectrum> spectra;
     // orig copy of spectra
     std::vector<Spectrum> orig_spectra;
@@ -281,8 +286,8 @@ protected
 
     void getEnumerationSpectraMasses(std::vector<double> &output_masses);
 
-    void computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas,
-                                                int min_peaks, int max_peaks, double perc_thresh);
+    void computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas, int min_peaks,
+                                             int max_peaks, double perc_thresh, bool force_linear_scale);
 
     void translatePeaksFromMsgToSpectra(Spectrum &out_spec, Message *msg);
 

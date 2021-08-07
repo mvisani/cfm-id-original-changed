@@ -288,10 +288,20 @@ int Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
         } else
             ++peak;
     }
-    // std::cout << "Number of Removed Peaks " << removed_cout <<  std::endl;
     // Renormalise
     normalizeAndSort();
 
     return removed_cout;
 }
 
+void Spectrum::convertToLogScale(){
+    for(auto & peak : peaks)
+        peak.intensity = log(peak.intensity);
+    normalizeAndSort();
+}
+
+void Spectrum::convertToLinearScale(){
+    for(auto & peak : peaks)
+        peak.intensity = exp(peak.intensity);
+    normalizeAndSort();
+}
