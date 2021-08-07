@@ -164,7 +164,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "allow_intermediate_peak") cfg.allow_intermediate_peak = (bool) value;
         else if (name == "allow_cyclization") cfg.allow_cyclization = (bool) value;
         else if (name == "use_log_scale_peak") cfg.use_log_scale_peak = (bool) value;
-        else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
+        else std::cout << "Warning: Unknown parameter configuration identifier " << name << std::endl;
     }
     ifs.close();
 

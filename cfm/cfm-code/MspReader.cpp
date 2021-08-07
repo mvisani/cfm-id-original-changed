@@ -125,9 +125,8 @@ void MspReader::writeLibraryToMspFile(const char *filename, std::string & smiles
     std::ofstream out;
     out.open(filename, std::fstream::out | std::fstream::app);
 
-    std::map<std::string, std::vector<Spectrum> >::const_iterator it = library.begin();
-    for (; it != library.end(); ++it) {
-        std::vector<Spectrum>::const_iterator its = it->second.begin();
+    for (auto it = library.begin(); it != library.end(); ++it) {
+        auto its = it->second.begin();
         for (int energy = 0; its != it->second.end(); ++its, energy++)
             its->outputToMspStream(out, it->first, ionization_mode, energy, smiles_or_inchi);
     }
