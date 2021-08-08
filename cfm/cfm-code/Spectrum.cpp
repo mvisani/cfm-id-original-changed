@@ -24,7 +24,7 @@
 
 void Spectrum::outputToStream(std::ostream &out, bool do_annotate, bool normalize_to_max) const {
 
-    double max_intensity = normalize_to_max ? 0.0 : getMaxIntensity();
+    double max_intensity = normalize_to_max ? getMaxIntensity() : -1.0;
 
     for (auto & peak : peaks) {
 
