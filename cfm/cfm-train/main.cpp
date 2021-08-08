@@ -25,7 +25,6 @@
 
 #include "EmModel.h"
 #include "EmNNModel.h"
-#include "Version.h"
 
 void parseInputFile(std::vector<MolData> &data, std::string &input_filename, int mpi_rank, int mpi_nump, config_t *cfg);
 
@@ -344,7 +343,7 @@ int main(int argc, char *argv[]) {
 
             //Predicted spectrum
             for (auto e = start_energy; e < cfg.spectrum_depths.size(); ++e)
-                mit->computePredictedSpectra(*param, false, e);
+                mit->computePredictedSpectra(*param, false, e, 1, 30, 100, cfg.use_log_scale_peak);
 
             if (spectra_in_msp)
                 mit->writePredictedSpectraToMspFileStream(*out_pred_msp);
