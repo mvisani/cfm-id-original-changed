@@ -71,7 +71,7 @@ void printUsage() {
     std::cout << std::endl << "output_msp_or_mgf (opt):" << std::endl
               << "The filename for an output msp or mgf file to record predicted candidate spectra (if not given, doesn't save predicted spectra)"
               << std::endl;
-};
+}
 
 int main(int argc, char *argv[]) {
     bool to_stdout = true;
@@ -94,28 +94,28 @@ int main(int argc, char *argv[]) {
     std::string candidate_file = argv[3];
     if (argc > 4) {
         try { num_highest = boost::lexical_cast<int>(argv[4]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast & e) {
             std::cout << "Invalid num_highest: " << argv[4] << std::endl;
             exit(1);
         }
     }
     if (argc > 5) {
         try { ppm_mass_tol = boost::lexical_cast<float>(argv[5]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast & e) {
             std::cout << "Invalid ppm_tol: " << argv[5] << std::endl;
             exit(1);
         }
     }
     if (argc > 6) {
         try { abs_mass_tol = boost::lexical_cast<float>(argv[6]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast & e) {
             std::cout << "Invalid abs_tol: " << argv[6] << std::endl;
             exit(1);
         }
     }
     if (argc > 7) {
         try { prob_thresh_for_prune = boost::lexical_cast<float>(argv[7]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast & e) {
             std::cout << "Invalid prob_thresh_for_prune: " << argv[7] << std::endl;
             exit(1);
         }
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
     if (argc > 10) score_type = argv[10];
     if (argc > 11) {
         try { apply_postprocessing = boost::lexical_cast<int>(argv[11]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast & e) {
             std::cout << "Invalid apply_postprocessing flag: " << argv[11] << std::endl;
             exit(1);
         }

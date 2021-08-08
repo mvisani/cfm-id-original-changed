@@ -169,9 +169,9 @@ public:
     // compute predicted Spectra
     // if engry < -1 , compute all  Spectra
     void computePredictedSpectra(Param &param, bool use_existing_thetas = false,
-                                 int energy_level = -1, int min_peaks = 5, int max_peaks = 30, double perc_thresh = 80.0);
+                                 int energy_level = -1, int min_peaks = 1, int max_peaks = 30, double perc_thresh = 100.0);
 
-    void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 5, int max_peaks = 30,
+    void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 1, int max_peaks = 30,
                                      double min_intensity = 0.0);
 
     void quantisePredictedSpectra(int num_dec_places);

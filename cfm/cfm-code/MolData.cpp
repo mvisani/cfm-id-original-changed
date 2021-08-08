@@ -820,18 +820,30 @@ double MolData::getWeightedJaccardScore(int engery_level){
 // It is caller's response to compute predicted spectra
 void MolData::getSelectedWeights(std::set<unsigned int> &selected_weights, int energry_level) {
 
-    Comparator *cmp = new Jaccard(cfg->ppm_mass_tol,cfg->abs_mass_tol);
+    Comparator *cmp = new Dice(cfg->ppm_mass_tol,cfg->abs_mass_tol);
     std::vector<peak_pair_t> peak_pairs;
     cmp->getMatchingPeakPairsWithNoneMatchs(peak_pairs, &spectra[energry_level], &predicted_spectra[energry_level]);
 
     std::map<double, double, std::greater<double>> difference;
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
-
         if(intensity_difference > cfg->ga_diff_sampling_difference){
             double peak_mass = peak_pair.second.mass;
             difference.insert(std::pair<double,double>(intensity_difference, peak_mass));
         }
+        
+        /*
+        double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
+        double peak_mass = peak_pair.second.mass;
+        // We are going to force model to deal with miss peaked peak first
+        // and fix intensity difference as a secondary taga_diff_sampling_peak_num
+        // if intensity_difference less then 0.1, it is good enough
+        //if(intensity_difference > cfg->ga_diff_sampling_difference) {
+        if ((peak_pair.first.intensity == 0.0) || (peak_pair.first.intensity == 0.0)){
+            // add mgaic number 100, NOTE MAX difference between intensity is 100
+            intensity_difference += 100;
+        }
+        difference.insert(std::pair<double,double>(intensity_difference, peak_mass));*/
     }
     delete(cmp);
 
