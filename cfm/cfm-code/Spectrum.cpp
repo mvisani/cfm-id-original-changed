@@ -24,12 +24,7 @@
 
 void Spectrum::outputToStream(std::ostream &out, bool do_annotate, bool normalize_to_max) const {
 
-    double max_intensity = 0.0;
-    if (normalize_to_max) {
-        for (auto &peak : peaks) {
-            max_intensity = std::max(max_intensity, peak.intensity);
-        }
-    }
+    double max_intensity = normalize_to_max ? 0.0 : getMaxIntensity();
 
     for (auto & peak : peaks) {
 
@@ -131,17 +126,17 @@ void Spectrum::quantisePeaksByMass(int num_dec_places) {
 void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_intensity) {
 
     std::sort(peaks.begin(), peaks.end(), sort_peaks_by_intensity);
+    auto max_intensity = peaks[0].intensity;
     double total = 0.0;
-    auto it = peaks.begin();
     int count = 0;
     // we need at least 1 peak
     min_peaks = std::max(min_peaks, 1);
-    for (; it != peaks.end(); ++it) {
-        total += it->intensity;
+    for (auto & peak : peaks) {
+        total += peak.intensity;
         count++;
         // e.g. Take the top 80% of energy (assuming at least 5 peaks),
         // or the highest 30 peaks (whichever comes first)
-        if ((total > perc_thresh && count >= min_peaks) || count >= max_peaks || it->intensity < min_intensity) {
+        if ((total > perc_thresh && count >= min_peaks) || count >= max_peaks || (peak.intensity/max_intensity) < min_intensity) {
             break;
         }
     }
@@ -293,7 +288,8 @@ int Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
 
 void Spectrum::convertToLogScale() {
     // find max intensity
-    auto max_intensity = 0.0;
+    auto max_intensity = getMaxIntensity();
+
     for (auto &peak : peaks)
         max_intensity = std::max(peak.intensity, max_intensity);
 
@@ -307,12 +303,17 @@ void Spectrum::convertToLogScale() {
 void Spectrum::convertToLinearScale() {
 
     // find max intensity
-    auto max_intensity = 0.0;
-    for (auto &peak : peaks)
-        max_intensity = std::max(peak.intensity, max_intensity);
+    auto max_intensity = getMaxIntensity();
 
     auto ratio = 100.0 / log(101);
     for (auto &peak : peaks)
         peak.intensity = exp((peak.intensity/max_intensity)/ratio) - 1;
     normalizeAndSort();
+}
+
+double Spectrum::getMaxIntensity() const{
+    auto max_intensity = 0.0;
+    for (auto &peak : peaks)
+        max_intensity = std::max(peak.intensity, max_intensity);
+    return max_intensity;
 }

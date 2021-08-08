@@ -33,8 +33,8 @@ public:
 
     Peak(double a_mass, double an_intensity) :
             mass(a_mass), intensity(an_intensity){};
-    double mass;
-    double intensity;
+    double mass = 0.0;
+    double intensity = 0.0;
     std::vector<annotation_t> annotations;
 };
 
@@ -121,6 +121,8 @@ private:
     std::vector<Peak> peaks;
     bool is_normalized;
     bool is_sorted;
+
+    double getMaxIntensity() const;
 };
 
 
