@@ -261,7 +261,7 @@ void Spectrum::sortAndNormalizeAnnotations() {
 int Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
                                         double abs_tol, double ppm_tol) {
 
-    int removed_cout = 0;
+    int num_removed = 0;
     // Remove any peaks more than mass_tol away from any fragment
     auto peak = peaks.begin();
     for (; peak != peaks.end();) {
@@ -275,7 +275,7 @@ int Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
             }
         }
         if (!found) {
-            removed_cout++;
+            num_removed++;
             peak = peaks.erase(peak);
         } else
             ++peak;
@@ -283,7 +283,7 @@ int Spectrum::removePeaksWithNoFragment(std::vector<double> &frag_masses,
     // Renormalise
     normalizeAndSort();
 
-    return removed_cout;
+    return num_removed;
 }
 
 void Spectrum::convertToLogScale() {

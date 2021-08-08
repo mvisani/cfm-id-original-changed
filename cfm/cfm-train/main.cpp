@@ -285,7 +285,13 @@ int main(int argc, char *argv[]) {
                 std::string spec_file = peakfile_dir_or_msp + "/" + mit->getId() + ".txt";
                 mit->readInSpectraFromFile(spec_file);
             }
-            mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
+            auto remove_msg = mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
+
+            std::ofstream eout;
+            eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
+            eout << "ID: " << mit->getId();
+            eout << remove_msg << std::endl;
+            eout.close();
         }
     }
 

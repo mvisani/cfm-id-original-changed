@@ -34,6 +34,7 @@ probabilities using those thetas.
 #include <GraphMol/RWMol.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
 #include <INCHI-API/inchi.h>
+#include <string>
 
 double MolData::getMolecularWeight() const {
     romol_ptr_t mol = createMolPtr(smiles_or_inchi.c_str());
@@ -454,19 +455,24 @@ void MolData::readInSpectraFromMSP(MspReader &msp, bool readToPredicted) {
 
 void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
 
-    std::vector<Spectrum>::iterator it = spectra.begin();
-    for (; it != spectra.end(); ++it)
-        it->clean(abs_tol, ppm_tol);
+    for (auto &spectrum : spectra)
+        spectrum.clean(abs_tol, ppm_tol);
 }
 
-void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
+std::string MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
 
     std::vector<double> all_masses;
     getEnumerationSpectraMasses(all_masses);
 
+    std::string msg;
+    auto spectrum_idx = 1;
     for (auto &spectrum : spectra) {
-        spectrum.removePeaksWithNoFragment(all_masses, abs_tol, ppm_tol);
+        auto num_peaks = spectrum.size();
+        auto num_removed = spectrum.removePeaksWithNoFragment(all_masses, abs_tol, ppm_tol);
+        msg += "Spectrum " + std::to_string(spectrum_idx)+ ": " + std::to_string(num_removed) + "/" + std::to_string(num_peaks);
+        spectrum_idx += 1;
     }
+    return msg;
 }
 
 bool MolData::hasEmptySpectrum(int energy_level) const {

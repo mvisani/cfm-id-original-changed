@@ -120,7 +120,7 @@ public:
     };
 
     // Spectrum Related Functions
-    void removePeaksWithNoFragment(double abs_tol, double ppm_tol);
+    std::string removePeaksWithNoFragment(double abs_tol, double ppm_tol);
 
     bool hasEmptySpectrum(int energy_level = -1) const;
 
