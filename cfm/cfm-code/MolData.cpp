@@ -469,7 +469,7 @@ std::string MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
     for (auto &spectrum : spectra) {
         auto num_peaks = spectrum.size();
         auto num_removed = spectrum.removePeaksWithNoFragment(all_masses, abs_tol, ppm_tol);
-        msg += "Spectrum " + std::to_string(spectrum_idx)+ ": " + std::to_string(num_removed) + "/" + std::to_string(num_peaks);
+        msg += " Spectrum#" + std::to_string(spectrum_idx)+ " removed: " + std::to_string(num_removed) + "/" + std::to_string(num_peaks);
         spectrum_idx += 1;
     }
     return msg;

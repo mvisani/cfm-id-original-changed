@@ -289,8 +289,7 @@ int main(int argc, char *argv[]) {
 
             std::ofstream eout;
             eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
-            eout << "ID: " << mit->getId();
-            eout << remove_msg << std::endl;
+            eout << "ID: " << mit->getId() << "Remove Peaks With No Fragment. " << remove_msg << std::endl;
             eout.close();
         }
     }
