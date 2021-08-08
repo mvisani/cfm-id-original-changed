@@ -844,8 +844,8 @@ void MolData::getSelectedMasses(std::set<unsigned int> &selected_weights, int en
     for(const auto & peak_pair : peak_pairs){
         double intensity_difference = std::fabs(peak_pair.first.intensity - peak_pair.second.intensity);
         // we are bias towards to peak should be there
-        // if (peak_pair.first.intensity > 0 && peak_pair.second.intensity == 0)
-        //    intensity_difference += 100.0;
+        if (peak_pair.first.intensity > 0 && peak_pair.second.intensity == 0)
+            intensity_difference += 100.0;
         if(intensity_difference > cfg->ga_diff_sampling_difference){
             double peak_mass = peak_pair.second.mass;
             difference.insert(std::pair<double,double>(intensity_difference, peak_mass));
