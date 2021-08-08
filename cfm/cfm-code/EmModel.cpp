@@ -380,7 +380,7 @@ void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocat
     Comparator *dice_cmp = new Dice(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *dotproduct_cmp = new DotProduct(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
-    moldata->computePredictedSpectra(*param, false, energy_level, 1, 30, 80, false);
+    moldata->computePredictedSpectra(*param, false, energy_level, 1, 30, 80, cfg->use_log_scale_peak);
     //moldata->postprocessPredictedSpectra(80, 1, 30);
     dice += dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                              moldata->getPredictedSpectrum(energy_level));
