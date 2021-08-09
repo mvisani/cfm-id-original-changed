@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
     std::string input_smiles_or_inchi = argv[1];
     if (argc >= 3) {
         try { prob_thresh_for_prune = boost::lexical_cast<float>(argv[2]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid prob_thresh_for_prune: " << argv[2] << std::endl;
             exit(1);
         }
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
     }
     if (argc >= 6) {
         try { do_annotate = boost::lexical_cast<bool>(argv[5]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid include_annotations (Must be 0 or 1): " << argv[5] << std::endl;
             exit(1);
         }
@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
     }
     if (argc >= 8) {
         try { postprocessing_method = boost::lexical_cast<int>(argv[7]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid postprocessing_method (Must be 0, 1 or 2): " << argv[7] << std::endl;
             exit(1);
         }
@@ -152,14 +152,14 @@ int main(int argc, char *argv[]) {
     }
     if (argc == 9) {
         try { suppress_exceptions = boost::lexical_cast<bool>(argv[8]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid suppress_exceptions (Must be 0 or 1): " << argv[8] << std::endl;
             exit(1);
         }
     }
     if (argc == 10) {
         try { postprocessing_energy = boost::lexical_cast<float>(argv[9]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid postprocessing_energy: " << argv[9] << std::endl;
             exit(1);
         }
@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
 
     if (argc == 11) {
         try { min_peaks = boost::lexical_cast<int>(argv[10]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid min_peaks: " << argv[10] << std::endl;
             exit(1);
         }
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
 
     if (argc == 12) {
         try { max_peaks = boost::lexical_cast<int>(argv[11]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid max_peaks: " << argv[11] << std::endl;
             exit(1);
         }

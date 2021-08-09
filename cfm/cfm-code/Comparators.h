@@ -38,7 +38,7 @@ class Comparator {
 public:
     Comparator(double a_ppm_tol, double a_abs_tol) : ppm_tol(a_ppm_tol), abs_tol(a_abs_tol) {};
 
-    ~Comparator() = default;
+    virtual ~Comparator() = default;
 
     virtual double computeScore(const Spectrum *measured, const Spectrum *predicted) const = 0;
 
