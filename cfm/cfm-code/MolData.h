@@ -242,8 +242,6 @@ public:
     // int_weight = std::round(weight * 1e-5)
     void getSelectedWeights(std::set<unsigned int> &selected_weights, int energry_level);
 
-    double getWeightedJaccardScore(int engery_level);
-
     void computeMergedPrediction();
 
     const Spectrum* getMergedPrediction(){
@@ -256,8 +254,8 @@ protected
     int group;
     std::string id;
     std::string smiles_or_inchi;
-    FragmentGraph *fg;
-    EvidenceFragmentGraph *ev_fg;
+    FragmentGraph *fg = nullptr;
+    EvidenceFragmentGraph *ev_fg = nullptr;
     bool graph_computed;
     bool ev_graph_computed;
     // spectra , which will be pruned during traning
@@ -274,7 +272,7 @@ protected
     //std::vector<FeatureVector *> fvs;
     std::vector<std::vector<double>> thetas;
     std::vector<std::vector<double>> log_probs;
-    config_t *cfg;
+    config_t *cfg = nullptr;
 
     // General utilty functions
     void computeGraphWithGenerator(FragmentGraphGenerator &fgen);
