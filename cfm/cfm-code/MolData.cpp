@@ -443,19 +443,24 @@ void MolData::readInSpectraFromMSP(MspReader &msp, bool readToPredicted) {
 
 void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
 
-    std::vector<Spectrum>::iterator it = spectra.begin();
-    for (; it != spectra.end(); ++it)
-        it->clean(abs_tol, ppm_tol);
+    for (auto &spectrum : spectra)
+        spectrum.clean(abs_tol, ppm_tol);
 }
 
-void MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
+std::string MolData::removePeaksWithNoFragment(double abs_tol, double ppm_tol) {
 
     std::vector<double> all_masses;
     getEnumerationSpectraMasses(all_masses);
 
+    std::string msg;
+    auto spectrum_idx = 1;
     for (auto &spectrum : spectra) {
-        spectrum.removePeaksWithNoFragment(all_masses, abs_tol, ppm_tol);
+        auto num_peaks = spectrum.size();
+        auto num_removed = spectrum.removePeaksWithNoFragment(all_masses, abs_tol, ppm_tol);
+        msg += " Spectrum#" + std::to_string(spectrum_idx)+ " removed: " + std::to_string(num_removed) + "/" + std::to_string(num_peaks);
+        spectrum_idx += 1;
     }
+    return msg;
 }
 
 bool MolData::hasEmptySpectrum(int energy_level) const {
@@ -473,13 +478,16 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
     return result;
 }
 
-void MolData::computePredictedSpectra(Param &param, bool use_existing_thetas,
-                                      int energy_level, int min_peaks, int max_peaks, double perc_thresh) {
-    computePredictedSingleEnergySpectra(param, energy_level, use_existing_thetas, min_peaks, max_peaks, perc_thresh);
+void
+MolData::computePredictedSpectra(Param &param, bool use_existing_thetas, int energy_level, int min_peaks, int max_peaks,
+                                 double perc_thresh, double min_relative_intensity) {
+    computePredictedSingleEnergySpectra(param, energy_level, use_existing_thetas, min_peaks, max_peaks, perc_thresh,
+                                        min_relative_intensity);
 }
 
-void MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas,
-                                                  int min_peaks, int max_peaks, double perc_thresh) {
+void
+MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas, int min_peaks,
+                                             int max_peaks, double perc_thresh, double min_relative_intensity) {
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
@@ -496,12 +504,8 @@ void MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level
     } else
         createSpeactraSingleEnergry(energy_level);
 
-    // if (postprocess_method > 0){
-    // int min_peaks = (2 == postprocess_method) ? 1 : 5;
-    // int max_peaks = 30;
-    double min_intensity = 0.0;
-    postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_intensity);
-    //}
+
+    postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_relative_intensity);
 
     //TODO: This should not be a default, fix this when we doing EI model
     /*
@@ -752,12 +756,13 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
     }
 }
 
-void MolData::postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks, double min_intensity) {
+void
+MolData::postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks, double min_relative_intensity) {
 
 
     for (auto &predicted_spectrum : predicted_spectra) {
         predicted_spectrum.quantisePeaksByMass(10);
-        predicted_spectrum.postProcess(perc_thresh, min_peaks, max_peaks, min_intensity);
+        predicted_spectrum.postProcess(perc_thresh, min_peaks, max_peaks, min_relative_intensity);
         predicted_spectrum.normalizeAndSort();
         predicted_spectrum.sortAndNormalizeAnnotations();
     }
