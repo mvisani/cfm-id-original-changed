@@ -491,14 +491,14 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
 
 void
 MolData::computePredictedSpectra(Param &param, bool use_existing_thetas, int energy_level, int min_peaks, int max_peaks,
-                                 double perc_thresh, bool force_linear_scale) {
+                                 double perc_thresh, double min_relative_intensity,bool force_linear_scale) {
     computePredictedSingleEnergySpectra(param, energy_level, use_existing_thetas, min_peaks, max_peaks, perc_thresh,
-                                        false);
+                                        min_relative_intensity,force_linear_scale);
 }
 
 void
 MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas, int min_peaks,
-                                             int max_peaks, double perc_thresh, bool force_linear_scale) {
+                                             int max_peaks, double perc_thresh, double min_relative_intensity,bool force_linear_scale)  {
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
@@ -515,15 +515,10 @@ MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, boo
     } else
         createSpeactraSingleEnergry(energy_level);
 
-    if(force_linear_scale && cfg->use_log_scale_peak)
+	
+	if(force_linear_scale && cfg->use_log_scale_peak)
         predicted_spectra[energy_level].convertToLinearScale();
-
-    // if (postprocess_method > 0){
-    // int min_peaks = (2 == postprocess_method) ? 1 : 5;
-    // int max_peaks = 30;
-    double min_intensity = 0.0;
-    postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_intensity);
-    //}
+    postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_relative_intensity);
 
     //TODO: This should not be a default, fix this when we doing EI model
     /*
@@ -774,12 +769,13 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
     }
 }
 
-void MolData::postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks, double min_intensity) {
+void
+MolData::postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks, double min_relative_intensity) {
 
 
     for (auto &predicted_spectrum : predicted_spectra) {
         predicted_spectrum.quantisePeaksByMass(10);
-        predicted_spectrum.postProcess(perc_thresh, min_peaks, max_peaks, min_intensity);
+        predicted_spectrum.postProcess(perc_thresh, min_peaks, max_peaks, min_relative_intensity);
         predicted_spectrum.normalizeAndSort();
         predicted_spectrum.sortAndNormalizeAnnotations();
     }

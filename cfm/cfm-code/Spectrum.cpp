@@ -33,7 +33,7 @@ void Spectrum::outputToStream(std::ostream &out, bool do_annotate, bool normaliz
         int display_intensity = std::floor(display_intensity_value * 100 + 0.5);
         if (display_intensity > 0) {
             out << std::fixed << std::setprecision(5) << peak.mass << " " << std::setprecision(2)
-                << display_intensity / 100.0;
+            << display_intensity / 100.0;
 
             if (do_annotate) {
                 std::stringstream ss_values;
@@ -81,7 +81,7 @@ void Spectrum::outputToMgfStream(std::ostream &out, std::string id,
     out << "BEGIN IONS" << std::endl;
     out << "PEPMASS=" << std::setprecision(10) << mw << std::endl;
     if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE ||
-        ionization_mode == POSITIVE_EI_IONIZATION_MODE)
+    ionization_mode == POSITIVE_EI_IONIZATION_MODE)
         out << "CHARGE=1+" << std::endl;
     else if (ionization_mode == NEGATIVE_ESI_IONIZATION_MODE)
         out << "CHARGE=1-" << std::endl;
@@ -93,7 +93,7 @@ void Spectrum::outputToMgfStream(std::ostream &out, std::string id,
     else if (ionization_mode == NEGATIVE_ESI_IONIZATION_MODE)
         out << "[M-H]+;In-silico MS/MS by ";
     out << APP_STRING << " " << PROJECT_VER << ";"
-        << smiles_or_inchi << ";" << std::endl;
+    << smiles_or_inchi << ";" << std::endl;
     outputToStream(out, false);
     out << "END IONS" << std::endl;
 }
@@ -123,7 +123,7 @@ void Spectrum::quantisePeaksByMass(int num_dec_places) {
     normalizeAndSort();
 }
 
-void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_intensity) {
+void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_relative_intensity) {
 
     std::sort(peaks.begin(), peaks.end(), sort_peaks_by_intensity);
     auto max_intensity = peaks[0].intensity;
@@ -136,7 +136,7 @@ void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, dou
         count++;
         // e.g. Take the top 80% of energy (assuming at least 5 peaks),
         // or the highest 30 peaks (whichever comes first)
-        if ((total > perc_thresh && count >= min_peaks) || count >= max_peaks || (peak.intensity/max_intensity) < min_intensity) {
+        if ((total > perc_thresh && count >= min_peaks) || count >= max_peaks || (peak.intensity/max_intensity) < min_relative_intensity) {
             break;
         }
     }
@@ -190,7 +190,7 @@ void Spectrum::clean(double abs_mass_tol, double ppm_mass_tol) {
 
         double mass_tol = getMassTol(abs_mass_tol, ppm_mass_tol, itp->mass);
         while (fabs(itp->mass - prev_mass) < mass_tol &&
-               itp->intensity < prev_intensity) {
+        itp->intensity < prev_intensity) {
             peak_flags[idx] = false;
             if (idx < peaks.size() - 1) {
                 idx += 1;
@@ -211,7 +211,7 @@ void Spectrum::clean(double abs_mass_tol, double ppm_mass_tol) {
     for (int idx = peaks.size() - 1; ritp != peaks.rend(); ++ritp, idx--) {
         double mass_tol = getMassTol(abs_mass_tol, ppm_mass_tol, ritp->mass);
         while (fabs(ritp->mass - prev_mass) < mass_tol &&
-               ritp->intensity < prev_intensity) {
+        ritp->intensity < prev_intensity) {
             peak_flags[idx] = false;
             if (idx > 0) {
                 idx -= 1;
@@ -233,8 +233,8 @@ void Spectrum::clean(double abs_mass_tol, double ppm_mass_tol) {
         if (peak_flags[idx])
             peaks.push_back(*itp);
 
-    // Re-normalize
-    normalizeAndSort();
+        // Re-normalize
+        normalizeAndSort();
 }
 
 void Spectrum::sortAndNormalizeAnnotations() {

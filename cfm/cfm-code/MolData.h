@@ -155,12 +155,12 @@ public:
     // computeTransitionThetas  below (delteMols = true), pruning according to
     // prob_thresh_for_prune value.
     void computeLikelyFragmentGraphAndSetThetas(LikelyFragmentGraphGenerator &fgen,
-                                           double prob_thresh_for_prune,
-                                           bool retain_smiles = false);
+                                                double prob_thresh_for_prune,
+                                                bool retain_smiles = false);
 
     // Note that the following should be called in this order
     // since each one assumes all previous have already been called.E
-    void computeFragmentGraph( FeatureCalculator *fc);
+    void computeFragmentGraph(FeatureCalculator *fc);
 
     void computeTransitionThetas(Param &param);
 
@@ -168,12 +168,12 @@ public:
 
     // compute predicted Spectra
     // if engry < -1 , compute all  Spectra
-    void
-    computePredictedSpectra(Param &param, bool use_existing_thetas = false, int energy_level = -1, int min_peaks = 1,
-                            int max_peaks = 30, double perc_thresh = 100.0, bool force_linear_scale = false);
+    void computePredictedSpectra(Param &param, bool use_existing_thetas = false,
+                                 int energy_level = -1, int min_peaks = 1, int max_peaks = 30,
+                                 double perc_thresh = 100.0, double min_relative_intensity = 0.0, bool force_linear_scale = false);
 
     void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 1, int max_peaks = 30,
-                                     double min_intensity = 0.0);
+                                     double min_relative_intensity = 0.0);
 
     void quantisePredictedSpectra(int num_dec_places);
 
@@ -214,7 +214,7 @@ public:
     };
 
     virtual const Fragment *getFragmentAtIdx(int index) const {
-        return  fg->getFragmentAtIdx(index);
+        return fg->getFragmentAtIdx(index);
     };
 
     const tmap_t *getFromIdTMap() const {
@@ -229,11 +229,11 @@ public:
         fg->writeFullGraph(out);
     };
 
-    void writeFragmentsOnly(std::ostream &out) const{
+    void writeFragmentsOnly(std::ostream &out) const {
         fg->writeFragmentsOnly(out);
     }
 
-    bool hasIsotopesIncluded() const{
+    bool hasIsotopesIncluded() const {
         return fg->hasIsotopesIncluded();
     }
 
@@ -245,7 +245,7 @@ public:
 
     void computeMergedPrediction();
 
-    const Spectrum* getMergedPrediction(){
+    const Spectrum *getMergedPrediction() {
         return m_merged_predicted_spectra;
     };
 
@@ -254,6 +254,7 @@ public:
     void convertSpectraToLinearScale();
 
     ~MolData();
+
 protected
     : // These items are protected rather than private for access during tests.
     int group;
@@ -273,7 +274,7 @@ protected
     // merged predicted spectra
     // used in casmi 
     Spectrum *m_merged_predicted_spectra = nullptr;
-    
+
     //std::vector<FeatureVector *> fvs;
     std::vector<std::vector<double>> thetas;
     std::vector<std::vector<double>> log_probs;
@@ -285,7 +286,7 @@ protected
     void getEnumerationSpectraMasses(std::vector<double> &output_masses);
 
     void computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas, int min_peaks,
-                                             int max_peaks, double perc_thresh, bool force_linear_scale);
+                                             int max_peaks, double perc_thresh, double min_relative_intensity,bool force_linear_scale = false);
 
     void translatePeaksFromMsgToSpectra(Spectrum &out_spec, Message *msg);
 

@@ -277,19 +277,19 @@ int main(int argc, char *argv[]) {
     if (spectra_in_msp)
         msp = new MspReader(peakfile_dir_or_msp.c_str(), "");
     
-    for (auto mit = data.begin(); mit != data.end(); ++mit) {
+    for (auto & mit : data ){
         if (!no_train) {
             if (spectra_in_msp)
-                mit->readInSpectraFromMSP(*msp);
+                mit.readInSpectraFromMSP(*msp);
             else {
-                std::string spec_file = peakfile_dir_or_msp + "/" + mit->getId() + ".txt";
-                mit->readInSpectraFromFile(spec_file);
+                std::string spec_file = peakfile_dir_or_msp + "/" + mit.getId() + ".txt";
+                mit.readInSpectraFromFile(spec_file);
             }
-            auto remove_msg = mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
 
+            auto remove_msg = mit.removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
             std::ofstream eout;
             eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
-            eout << "ID: " << mit->getId() << " Remove Peaks With No Fragment. " << remove_msg << std::endl;
+            eout << "ID: " << mit.getId() << " Remove Peaks With No Fragment. " << remove_msg << std::endl;
             eout.close();
         }
     }
