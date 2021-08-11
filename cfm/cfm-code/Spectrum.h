@@ -95,7 +95,7 @@ public:
 
     bool isNormalizedAndSorted() const { return is_normalized && is_sorted; };
 
-    void postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_relative_intensity = 0.0);
+    void postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_relative_intensity_prec = 0.0);
 
     void normalizeAndSort();
 

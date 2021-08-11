@@ -123,7 +123,7 @@ void Spectrum::quantisePeaksByMass(int num_dec_places) {
     normalizeAndSort();
 }
 
-void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_relative_intensity) {
+void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_relative_intensity_prec) {
 
     std::sort(peaks.begin(), peaks.end(), sort_peaks_by_intensity);
     auto max_intensity = peaks[0].intensity;
@@ -136,7 +136,7 @@ void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, dou
         count++;
         // e.g. Take the top 80% of energy (assuming at least 5 peaks),
         // or the highest 30 peaks (whichever comes first)
-        if ((total > perc_thresh && count >= min_peaks) || count >= max_peaks || (peak.intensity/max_intensity) < min_relative_intensity) {
+        if ((total > perc_thresh && count >= min_peaks) || count >= max_peaks || (peak.intensity/max_intensity) * 100.0 < min_relative_intensity_prec) {
             break;
         }
     }
