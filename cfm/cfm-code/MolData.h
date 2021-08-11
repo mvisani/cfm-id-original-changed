@@ -173,7 +173,7 @@ public:
                                  double perc_thresh = 100.0, double min_relative_intensity = 0.0, bool force_linear_scale = false);
 
     void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 1, int max_peaks = 30,
-                                     double min_relative_intensity = 0.0);
+                                     double min_relative_intensity_prec = 0.0);
 
     void quantisePredictedSpectra(int num_dec_places);
 
