@@ -448,8 +448,8 @@ void MolData::readInSpectraFromMSP(MspReader &msp, bool readToPredicted) {
     //once finished, copy specturm to orig
     //because we already  sort and normalized
     orig_spectra.clear();
-    for (const auto &spec: spectra)
-        orig_spectra.push_back(spec);
+    for (const auto &spectrum: spectra)
+        orig_spectra.push_back(spectrum);
 }
 
 void MolData::cleanSpectra(double abs_tol, double ppm_tol) {
@@ -511,13 +511,17 @@ MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, boo
         for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
              energy++) {
             createSpeactraSingleEnergry(energy);
+            if(force_linear_scale && cfg->use_log_scale_peak)
+                predicted_spectra[energy].convertToLinearScale();
         }
-    } else
-        createSpeactraSingleEnergry(energy_level);
+    } else {
 
-	
-	if(force_linear_scale && cfg->use_log_scale_peak)
-        predicted_spectra[energy_level].convertToLinearScale();
+        createSpeactraSingleEnergry(energy_level);
+        if(force_linear_scale && cfg->use_log_scale_peak)
+            predicted_spectra[energy_level].convertToLinearScale();
+    }
+
+
     postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_relative_intensity);
 
     //TODO: This should not be a default, fix this when we doing EI model
