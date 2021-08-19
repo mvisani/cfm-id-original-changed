@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     std::string param_filename = "param_output.log";
     std::string config_filename = "param_config.txt";
     double prob_thresh_for_prune = 0.001;
-    double postprocessing_energy = 80;
+    double postprocessing_energy = 100;
     int min_peaks = 1;
     int max_peaks = 30;
     double min_peak_intensity = 3.0;
@@ -148,10 +148,12 @@ int main(int argc, char *argv[]) {
         if (postprocessing_method == 1) {
             min_peaks = 5;
             max_peaks = 30;
+            postprocessing_energy = 80;
         }
         if (postprocessing_method == 2) {
             min_peaks = 1;
             max_peaks = 30;
+            postprocessing_energy = 80;
         }
     }
     if (argc == 9) {
