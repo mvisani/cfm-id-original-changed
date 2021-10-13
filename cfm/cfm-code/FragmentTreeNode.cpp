@@ -803,22 +803,10 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
         (*ai)->setProp("NumUnbrokenRings", rinfo->numAtomRings((*ai)->getIdx()));
 
         //Fetch or compute the valence of the atom in the input molecule (we disallow valence changes for now)
-        int origval = -1;
-        unsigned int num_val = pt->getValenceList((*ai)->getSymbol()).size();
-        int def_val = pt->getDefaultValence((*ai)->getSymbol());
-        if (num_val == 1 && def_val != -1)
-            origval = def_val; //Hack to cover many cases - which can otherwise get complicated
-        else {
-            //This seems to work in most cases....
-            origval = (*ai)->getExplicitValence() + (*ai)->getImplicitValence() + (*ai)->getNumRadicalElectrons();
-            if (4 - pt->getNouterElecs((*ai)->getAtomicNum()) > 0) origval += (*ai)->getFormalCharge();
-            else origval -= (*ai)->getFormalCharge();
-        }
-
-        (*ai)->setProp("OrigValence", origval);
+        auto orig_val = getValence(*ai);
+        (*ai)->setProp("OrigValence", orig_val);
         (*ai)->setProp("Root", 0);
         (*ai)->setProp("OtherRoot", 0);
-
 
         //Create breaks for any implied ionic bonds (-1 bond_idx, and ring_idx overloaded with the atom idx)
         int ionic_frag_q;

@@ -84,6 +84,10 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
         // keep track of root of ring break
         // we need this for cyclization
         (*ai)->setProp("CurrentRingBreakRoot", 0);
+        // set origValence
+        auto orig_val = getValence(*ai);
+        (*ai)->setProp("OrigValence", orig_val);
+
     }
     int num_ionic = addIonicChargeLabels(rwmol);
     if (num_frags - num_ionic != 1) {
