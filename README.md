@@ -16,6 +16,9 @@ CFM-ID provides a method for accurately and efficiently identifying metabolites 
 * CFM-ID MSRB (mass spectrum rule based) can be found at (<https://bitbucket.org/wishartlab/msrb-fragmenter/src/master/>)
 * Original source code from CFM-ID 2.0 Can be found at (<https://sourceforge.net/p/cfm-id/wiki/Home/>)
 
+## License ##
+This is project is using  GNU LESSER GENERAL PUBLIC LICENSE 2.1, for detail refers to LICENSE.md file.
+
 ## What include in this tool set for? ##
 
 * cfm-predict
