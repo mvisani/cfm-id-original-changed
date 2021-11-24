@@ -134,6 +134,7 @@ int getValence(const RDKit::ROMol *mol, const RDKit::Atom *atom) {
     int valence = -1;
     unsigned int num_val = pt->getValenceList(atom->getSymbol()).size();
     int def_val = pt->getDefaultValence(atom->getSymbol());
+
     // NOTE this is a context specific solution for nitro group single bond oxygen
     auto fparams = new RDKit::FragCatParams(PI_BOND_FGRPS_PICKLE);
     const RDKit::MOL_SPTR_VECT &fgrps = fparams->getFuncGroups();
@@ -141,7 +142,6 @@ int getValence(const RDKit::ROMol *mol, const RDKit::Atom *atom) {
     for( auto & fgrp : fgrps){
         std::string fname;
         fgrp->getProp("_Name", fname);
-        //std::cout << fname << std::endl;
         // The format for each match is (queryAtomIdx, molAtomIdx)
         std::vector<RDKit::MatchVectType> fgp_matches;
         RDKit::SubstructMatch(*mol, *fgrp, fgp_matches);
@@ -152,7 +152,6 @@ int getValence(const RDKit::ROMol *mol, const RDKit::Atom *atom) {
 
     for(auto & oxy_idx : nirto_oxy_idx){
         if (atom->getIdx() == oxy_idx){
-            //std::cout << atom->getIdx() << atom->getSymbol() << atom->getFormalCharge() << std::endl;
             valence = 1;
             return valence;
         }
@@ -164,8 +163,6 @@ int getValence(const RDKit::ROMol *mol, const RDKit::Atom *atom) {
     else {
         //This seems to work in most cases....
         valence = atom->getExplicitValence() + atom->getImplicitValence() + atom->getNumRadicalElectrons();
-        std::cout << atom->getSymbol() << " " << valence <<std::endl;
-        std::cout << 4 - pt->getNouterElecs(atom->getAtomicNum())  << " " << atom->getFormalCharge() <<std::endl;
         if (4 - pt->getNouterElecs(atom->getAtomicNum()) > 0) {
             valence += atom->getFormalCharge();
         } else {
