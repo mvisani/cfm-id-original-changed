@@ -803,7 +803,7 @@ void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H
         (*ai)->setProp("NumUnbrokenRings", rinfo->numAtomRings((*ai)->getIdx()));
 
         //Fetch or compute the valence of the atom in the input molecule (we disallow valence changes for now)
-        auto orig_val = getValence(*ai);
+        auto orig_val = getValence(ion.get(), *ai);
         (*ai)->setProp("OrigValence", orig_val);
         (*ai)->setProp("Root", 0);
         (*ai)->setProp("OtherRoot", 0);
