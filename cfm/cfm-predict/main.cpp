@@ -66,10 +66,10 @@ int main(int argc, char *argv[]) {
     std::string param_filename = "param_output.log";
     std::string config_filename = "param_config.txt";
     double prob_thresh_for_prune = 0.001;
-    double postprocessing_energy = 100;
+    double postprocessing_energy = 80;
     int min_peaks = 1;
     int max_peaks = 30;
-    double min_peak_intensity = 3.0;
+    double min_peak_intensity = 100.0;
 
     if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9 && argc != 10 &&
         argc != 11 && argc != 12 && argc != 13) {
@@ -103,9 +103,9 @@ int main(int argc, char *argv[]) {
                   << "Suppress exceptions so that the program returns normally even when it fails to produce a result (0 = OFF (default), 1 = ON)."
                   << std::endl;
         std::cout << std::endl << "postprocessing_energy (opt):" << std::endl
-                  << "postprocessing energy out of 100% (default 100%)"
+                  << "postprocessing energy out of 80% (default 80%)"
                   << std::endl;
-        std::cout << std::endl << "min_peak_intensity (opt):" << std::endl
+        std::cout << std::endl << "min_peak_intensity [0,100.0] (opt):" << std::endl
                   << "min amount of peak relative intensity" << std::endl;
         std::cout << std::endl << "override_min_peaks (opt):" << std::endl
                   << "min amount of peak will include in the spectra"
@@ -267,7 +267,7 @@ int main(int argc, char *argv[]) {
                 fgen = new LikelyFragmentGraphGenerator(param, &cfg, prob_thresh_for_prune);
 
             mol_data.computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
-            mol_data.computePredictedSpectra(*nn_param, true, -1, min_peaks, max_peaks, postprocessing_energy, min_peak_intensity,cfg.use_log_scale_peak);
+            mol_data.computePredictedSpectra(*nn_param, true, -1, min_peaks, max_peaks, postprocessing_energy, min_peak_intensity, cfg.use_log_scale_peak);
             //Predict the spectra (and post-process, use existing thetas)
         }
         catch (RDKit::MolSanitizeException &e) {
