@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
     double postprocessing_energy = 80;
     int min_peaks = 1;
     int max_peaks = 30;
-    double min_peak_intensity = 100.0;
+    double min_peak_intensity = 0.0;
 
     if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9 && argc != 10 &&
         argc != 11 && argc != 12 && argc != 13) {
@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if (argc == 10) {
-        try { postprocessing_energy = boost::lexical_cast<float>(argv[9]); }
+        try { postprocessing_energy = boost::lexical_cast<double>(argv[9]); }
         catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid postprocessing_energy (Must be 0 or 100): " << argv[9] << std::endl;
             exit(1);
