@@ -145,6 +145,11 @@ int main(int argc, char *argv[]) {
             std::cout << "Invalid postprocessing_method (Must be 0, 1 or 2): " << argv[7] << std::endl;
             exit(1);
         }
+        if (postprocessing_method == 0) {
+            min_peaks = 1;
+            max_peaks = 1000;
+            postprocessing_energy = 100;
+        }
         if (postprocessing_method == 1) {
             min_peaks = 5;
             max_peaks = 30;
