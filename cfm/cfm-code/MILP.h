@@ -18,24 +18,31 @@
 #ifndef __MILP_H__
 #define __MILP_H__
 
-#include <GraphMol/ROMol.h>
+#include <GraphMol/RWMol.h>
 #include <vector>
+#include <GraphMol/MolOps.h>
 
 class MILP {
 
 public:
     MILP(RDKit::ROMol *a_mol, int a_fragmentidx, int a_broken_ringidx, bool a_verbose)
-            : mol(a_mol), fragmentidx(a_fragmentidx), broken_ringidx(a_broken_ringidx), verbose(a_verbose) {};
+            : fragmentidx(a_fragmentidx), broken_ringidx(a_broken_ringidx), verbose(a_verbose) {
+        mol = new RDKit::RWMol(*a_mol);
+        RDKit::MolOps::Kekulize(*mol);
+    };
 
     MILP(RDKit::ROMol *a_mol, int a_fragmentidx, bool a_verbose)
-            : mol(a_mol), fragmentidx(a_fragmentidx), broken_ringidx(-1), verbose(a_verbose) {};
+            : fragmentidx(a_fragmentidx), broken_ringidx(-1), verbose(a_verbose) {
+        this->mol = new RDKit::RWMol(*a_mol);
+        RDKit::MolOps::Kekulize(*mol);
+    };
 
     int runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs);
 
     int status;
 
 private:
-    RDKit::ROMol *mol;
+    RDKit::RWMol *mol;
     int fragmentidx;
     int broken_ringidx;        //Store the idx of any broken rings (or -1 if there are none).
     bool verbose;
