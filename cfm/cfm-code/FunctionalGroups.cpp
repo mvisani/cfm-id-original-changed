@@ -202,5 +202,6 @@ const std::string EXTRA_FGRPS_PICKLE =
 const std::string PI_BOND_FGRPS_PICKLE =
         "0 20 1e-008\n"
         "1\n"
-        "nitro_group_nitrate	[$([#8-]-[#7+](-[A])=O)]\n";
+        "NitroGroup	[N+](=O)[O-]\n";
+        //"nitro_group	[$([#8-]-[#7+](-*)=O)]\n";
         //"azide_ion	[$([#7-]=[N+]=[#7-])]\n";

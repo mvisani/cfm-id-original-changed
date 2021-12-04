@@ -128,35 +128,46 @@ void softmax(std::vector<double> &weights, std::vector<double> &probs) {
     }
 }
 
-int getValence(const RDKit::ROMol *mol, const RDKit::Atom *atom) {
+void labelNitroGroup(const RDKit::ROMol *mol) {
+    // NOTE this is a context specific solution for nitro group single bond oxygen
+    auto fparams = new RDKit::FragCatParams(PI_BOND_FGRPS_PICKLE);
+    const RDKit::MOL_SPTR_VECT &fgrps = fparams->getFuncGroups();
+    for (auto &fgrp: fgrps) {
+        std::string fg_name;
+        fgrp->getProp("_Name", fg_name);
+
+        for (auto ai = mol->beginAtoms(); ai != mol->endAtoms(); ++ai) {
+            (*ai)->setProp(fg_name, 0);
+            (*ai)->setProp(fg_name+"Charge", 0);
+        }
+        // The format for each match is (queryAtomIdx, molAtomIdx)
+        std::vector<RDKit::MatchVectType> fgp_matches;
+        RDKit::SubstructMatch(*mol, *fgrp, fgp_matches);
+        for (auto &fgp_match: fgp_matches){
+            for (auto &match: fgp_match){
+                mol->getAtomWithIdx(match.second)->setProp(fg_name, 1);
+                mol->getAtomWithIdx(match.second)->setProp(fg_name+"Charge", mol->getAtomWithIdx(match.second)->getFormalCharge());
+            }
+        }
+
+    }
+}
+
+int getValence(const RDKit::Atom *atom) {
     RDKit::PeriodicTable *pt = RDKit::PeriodicTable::getTable();
     //Fetch or compute the valence of the atom in the input molecule (we disallow valence changes for now)
     int valence = -1;
     unsigned int num_val = pt->getValenceList(atom->getSymbol()).size();
     int def_val = pt->getDefaultValence(atom->getSymbol());
 
-    // NOTE this is a context specific solution for nitro group single bond oxygen
-    auto fparams = new RDKit::FragCatParams(PI_BOND_FGRPS_PICKLE);
-    const RDKit::MOL_SPTR_VECT &fgrps = fparams->getFuncGroups();
-    std::vector<int> nirto_oxy_idx;
-    for( auto & fgrp : fgrps){
-        std::string fname;
-        fgrp->getProp("_Name", fname);
-        // The format for each match is (queryAtomIdx, molAtomIdx)
-        std::vector<RDKit::MatchVectType> fgp_matches;
-        RDKit::SubstructMatch(*mol, *fgrp, fgp_matches);
-        for (auto & fgp_match : fgp_matches)
-            for (auto & match : fgp_match)
-                nirto_oxy_idx.push_back(match.second);
+    //special case for nitrogroup
+    int on_nitro_group;
+    atom->getProp("NitroGroup", on_nitro_group);
+    if (atom->getSymbol() == "O" && atom->getFormalCharge() == -1)
+    {
+        valence = 1;
+        return valence;
     }
-
-    for(auto & oxy_idx : nirto_oxy_idx){
-        if (atom->getIdx() == oxy_idx){
-            valence = 1;
-            return valence;
-        }
-    }
-
     if (num_val == 1 && def_val != -1) {
         valence = def_val; //Hack to cover many cases - which can otherwise get complicated
     }

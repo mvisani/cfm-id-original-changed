@@ -78,6 +78,7 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
     RDKit::RingInfo *rinfo = rwmol->getRingInfo();
     RDKit::ROMol::AtomIterator ai;
 
+    labelNitroGroup(rwmol);
     for (ai = rwmol->beginAtoms(); ai != rwmol->endAtoms(); ++ai) {
         (*ai)->setProp("FragIdx", 0);
         (*ai)->setProp("NumUnbrokenRings", rinfo->numAtomRings((*ai)->getIdx()));
@@ -85,7 +86,8 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
         // we need this for cyclization
         (*ai)->setProp("CurrentRingBreakRoot", 0);
         // set origValence
-        auto orig_val = getValence(rwmol, *ai);
+        auto orig_val = getValence(*ai);
+        //std::cout << "[DEBUG][ID " <<  (*ai)->getIdx() << "]" << (*ai)->getSymbol() << " " << orig_val << std::endl;
         (*ai)->setProp("OrigValence", orig_val);
 
     }
