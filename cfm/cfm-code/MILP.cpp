@@ -68,6 +68,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             int min_limit = 0;
             if (!broken && fragidx == fragmentidx) {
                 limit = std::min(3, int(bond->getBondTypeAsDouble() + 1));
+                min_limit = int(bond->getBondTypeAsDouble());
                 min_single_bonds++;
                 bond->getProp("NumUnbrokenRings", numunbroken);
                 if (numunbroken > 0){
@@ -133,7 +134,8 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
         RDKit::RingInfo::VECT_INT_VECT::iterator bit = brings.begin();
         for (int ringidx = 0; bit != brings.end() && ret == 0; ++bit, ringidx++) {
 
-            if (ringidx == broken_ringidx) continue;
+            if (ringidx == broken_ringidx)
+                continue;
             row[0] = 1;
             row[1] = 1;
             row[2] = 1;
@@ -141,9 +143,11 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
             //Create a vector of flags indicating bonds included in the ring
             std::vector<int> ring_bond_flags(num_bonds);
-            for (int i = 0; i < num_bonds; i++) ring_bond_flags[i] = 0;
+            for (int i = 0; i < num_bonds; i++)
+                ring_bond_flags[i] = 0;
             RDKit::RingInfo::INT_VECT::iterator it;
-            for (it = bit->begin(); it != bit->end(); ++it) ring_bond_flags[*it] = 1;
+            for (it = bit->begin(); it != bit->end(); ++it)
+                ring_bond_flags[*it] = 1;
 
             //Traverse around the ring, creating the constraints
             RDKit::Bond *bond = mol->getBondWithIdx(*(bit->begin())); //Starting Bond
@@ -285,17 +289,22 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     output_bmax.resize(Ncol);
     if (ret == 0) {
         get_variables(lp, row);
-        for (int j = 0; j < Ncol; j++) output_bmax[j] = (int) row[j];
+        for (int j = 0; j < Ncol; j++)
+            output_bmax[j] = (int) row[j];
         int obj = get_objective(lp);
         output_max_e = obj - min_single_bonds;
-    } else for (int j = 0; j < Ncol; j++) output_bmax[j] = 0;
-
+    } else {
+        for (int j = 0; j < Ncol; j++)
+            output_bmax[j] = 0;
+    }
     //Combine the lone pair results
-    for (int j = 0; j < num_bonds; j++) output_bmax[j + num_bonds] += output_bmax[j + 2 * num_bonds];
+    for (int j = 0; j < num_bonds; j++)
+        output_bmax[j + num_bonds] += output_bmax[j + 2 * num_bonds];
     //Condense the atom H loss charge position results to a single index (or -1 if none)
     int hloss_idx[2] = {-1, -1};
     for (int j = 0; j < num_atoms; j++) {
-        if (output_bmax[j + 3 * num_bonds]) hloss_idx[fragmentidx] = j;
+        if (output_bmax[j + 3 * num_bonds])
+            hloss_idx[fragmentidx] = j;
     }
     output_bmax.resize(2 * num_bonds + 2);
     output_bmax[2 * num_bonds] = hloss_idx[0];
