@@ -85,7 +85,7 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
         // we need this for cyclization
         (*ai)->setProp("CurrentRingBreakRoot", 0);
         // set origValence
-        auto orig_val = getValence(rwmol, *ai);
+        auto orig_val = getValence(*ai);
         (*ai)->setProp("OrigValence", orig_val);
 
     }

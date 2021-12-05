@@ -72,10 +72,8 @@ void FeatureHelper::labelFunctionalGroups(RDKit::RWMol *rwmol, bool extra) {
     for (; fgrpi != fgrpe; ++fgrpi, idx++) {
         std::string fname;
         (*fgrpi)->getProp("_Name", fname);
-
-        // The format for each match is (queryAtomIdx, molAtomIdx)
         std::vector<RDKit::MatchVectType>
-                fgpMatches;
+                fgpMatches; // The format for each match is (queryAtomIdx, molAtomIdx)
         RDKit::SubstructMatch(*rwmol, *(fgrpi->get()), fgpMatches);
 
         std::vector<RDKit::MatchVectType>::const_iterator mat_it =
