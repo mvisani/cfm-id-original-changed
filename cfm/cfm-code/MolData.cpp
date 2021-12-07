@@ -637,10 +637,11 @@ void MolData::writePredictedSpectraToMspFileStream(std::ostream &out) {
 }
 
 void MolData::writePredictedSpectraToMgfFileStream(std::ostream &out) {
-    double mw = getMolecularWeight();
+    double parent_ion_mw = getParentIonMass();
+
     for (unsigned int energy = 0; energy < getNumPredictedSpectra(); energy++) {
         const Spectrum *spec = getPredictedSpectrum(energy);
-        spec->outputToMgfStream(out, id, cfg->ionization_mode, energy, mw, smiles_or_inchi);
+        spec->outputToMgfStream(out, id, cfg->ionization_mode, energy, parent_ion_mw, smiles_or_inchi);
     }
 }
 
@@ -875,6 +876,25 @@ void MolData::computeMergedPrediction() {
         m_merged_predicted_spectra->push_back(peak);
     }
     m_merged_predicted_spectra->normalizeAndSort();
+}
+
+double MolData::getParentIonMass() const{
+    romol_ptr_t mol = createMolPtr(smiles_or_inchi.c_str());
+    double parent_mass = getMonoIsotopicMass(mol);
+    switch (cfg->ionization_mode) {
+        case (POSITIVE_ESI_IONIZATION_MODE):
+            parent_mass +=  1.007276;
+            break;
+        case (NEGATIVE_ESI_IONIZATION_MODE):
+            parent_mass -=  1.007276;
+            break;
+        case (POSITIVE_EI_IONIZATION_MODE):
+            parent_mass -= MASS_ELECTRON;
+            break;
+        default:
+            break;
+    }
+    return parent_mass;
 }
 
 MolData::~MolData() {
