@@ -40,19 +40,21 @@ public:
     // not needed and takes more space.
     Fragment() {};
 
-    Fragment(std::string &a_ion_smiles, std::string &a_reduced_smiles, int an_id, double a_mass, bool is_intermediate)
+    Fragment(std::string &a_ion_smiles, std::string &a_reduced_smiles, int an_id, double a_mass, bool is_intermediate, bool is_cyclization)
             : id(an_id), ion_smiles(a_ion_smiles), reduced_smiles(a_reduced_smiles),
-              mass(a_mass), depth(-1), is_intermediate(is_intermediate) {};
+              mass(a_mass), depth(-1), is_intermediate(is_intermediate), is_cyclization(is_cyclization) {};
 
     Fragment(std::string &a_ion_smiles, std::string &a_reduced_smiles, int an_id, double a_mass,
-                 Spectrum &a_isotope_spec, bool is_intermediate)
+                 Spectrum &a_isotope_spec, bool is_intermediate, bool is_cyclization)
             : id(an_id), ion_smiles(a_ion_smiles), reduced_smiles(a_reduced_smiles),
-              mass(a_mass), isotope_spectrum(a_isotope_spec), depth(-1), is_intermediate(is_intermediate) {};
+              mass(a_mass), isotope_spectrum(a_isotope_spec), depth(-1), is_intermediate(is_intermediate), is_cyclization(is_cyclization)  {};
 
     Fragment(const Fragment &a_fragment, int an_id)
             : id(an_id), ion_smiles(*a_fragment.getIonSmiles()),
               reduced_smiles(*a_fragment.getReducedSmiles()),
-              mass(a_fragment.getMass()), depth(-1), is_intermediate(false) {};
+              mass(a_fragment.getMass()), depth(-1), is_intermediate(a_fragment.isIntermediate()),  
+              is_cyclization(a_fragment.isCyclization()), isotope_spectrum(*a_fragment.getIsotopeSpectrum())
+              {};
 
     // Access Functions
     double getMass() const { return mass; };
@@ -66,6 +68,10 @@ public:
     void setIntermediate(bool flag) { is_intermediate = flag; };
 
     bool isIntermediate() const { return is_intermediate; };
+
+    void setCyclization(bool flag) { is_cyclization = flag; };
+
+    bool isCyclization() const { return is_cyclization; };
 
     const std::string *getReducedSmiles() const { return &reduced_smiles; };
 
@@ -88,6 +94,7 @@ protected:
     Spectrum isotope_spectrum;
     int depth; // Depth -1 means hasn't been set yet.
     bool is_intermediate = false;
+    bool is_cyclization = false;
 };
 
 class EvidenceFragment : public Fragment {
@@ -208,13 +215,14 @@ class FragmentGraph {
 public:
     FragmentGraph()
             : include_isotopes(false), allow_frag_detours(true),
-              include_h_losses(true), include_h_losses_precursor_only(false) {};
+              include_h_losses(true), include_h_losses_precursor_only(false), allow_cyclization(false) {};
 
     FragmentGraph(config_t *cfg)
             : include_isotopes(cfg->include_isotopes),
               allow_frag_detours(cfg->allow_frag_detours),
               include_h_losses(cfg->include_h_losses),
-              include_h_losses_precursor_only(cfg->include_precursor_h_losses_only) {
+              include_h_losses_precursor_only(cfg->include_precursor_h_losses_only),
+              allow_cyclization(cfg->allow_cyclization) {
         if (include_isotopes)
             isotope = new IsotopeCalculator(cfg->isotope_thresh);
     };
@@ -272,6 +280,8 @@ public:
     bool includesHLossesPrecursorOnly() const {
         return include_h_losses_precursor_only;
     };
+    
+    bool allowCyclization() const { return allow_cyclization; };
 
     void clearAllSmiles();
 
@@ -348,6 +358,7 @@ protected:
     bool allow_frag_detours;
     bool include_h_losses;
     bool include_h_losses_precursor_only;
+    bool allow_cyclization;
 
     // Mapping from rounded mass to list of fragment ids,
     // to enable fast check for existing fragments
@@ -355,7 +366,7 @@ protected:
 
     // Find the id for an existing fragment that matches the input ion and mass
     // or create a new fragment in the case where no such fragment is found
-    int addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bool is_intermediate);
+    int addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bool is_intermediate, bool is_cyclization);
 
     // Determine if the two fragments match - assumes the masses have already
     // been checked to be roughly the same, now check reduced structure.

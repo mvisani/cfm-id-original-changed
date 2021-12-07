@@ -23,6 +23,7 @@
 #include <GraphMol/AtomIterators.h>
 #include <INCHI-API/inchi.h>
 
+
 double getMassTol(double abs_tol, double ppm_tol, double mass) {
     double mass_tol = (mass / 1000000.0) * ppm_tol;
     if (mass_tol < abs_tol) mass_tol = abs_tol;
@@ -120,4 +121,24 @@ void softmax(std::vector<double> &weights, std::vector<double> &probs) {
     for (auto &prob: probs) {
         prob /= sum;
     }
+}
+
+int getValence(const RDKit::Atom * atom) {
+    RDKit::PeriodicTable *pt = RDKit::PeriodicTable::getTable();
+    //Fetch or compute the valence of the atom in the input molecule (we disallow valence changes for now)
+    int valence = -1;
+    unsigned int num_val = pt->getValenceList(atom->getSymbol()).size();
+    int def_val = pt->getDefaultValence(atom->getSymbol());
+    if (num_val == 1 && def_val != -1) {
+        valence = def_val; //Hack to cover many cases - which can otherwise get complicated
+    } else {
+        //This seems to work in most cases....
+        valence = atom->getExplicitValence() + atom->getImplicitValence() + atom->getNumRadicalElectrons();
+        if (4 - pt->getNouterElecs(atom->getAtomicNum()) > 0) {
+            valence += atom->getFormalCharge();
+        } else {
+            valence -= atom->getFormalCharge();
+        }
+    }
+    return valence;
 }

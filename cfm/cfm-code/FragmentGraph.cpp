@@ -33,14 +33,19 @@ Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, cons
     RDKit::Atom *first_atom = an_ion.get()->getAtomWithIdx(0);
     if (first_atom->hasProp("Root"))
         root = getLabeledAtom(an_ion, "Root");
+    else
+        std::cerr << "Warning: Ion does not have Root Prop" << std::endl;
     if (root == nullptr)
        std::cerr << "Warning: Ion Root atoms not defined" << std::endl;
+ 
     ion = RootedROMol(an_ion, root);
 
     root = nullptr;
     first_atom = a_nl.get()->getAtomWithIdx(0);
     if (first_atom->hasProp("Root"))
         root = getLabeledAtom(a_nl, "Root");
+    else
+       std::cerr << "Warning: NL does not have Root Prop" << std::endl;
     if (root == nullptr)
        std::cerr << "Warning: NL Root atoms not defined" << std::endl;
     nl = RootedROMol(a_nl, root);
@@ -69,7 +74,7 @@ int FragmentGraph::addToGraph(const FragmentTreeNode &node, int parentid) {
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
+    int id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate(), node.isCyclization());
 
     if (parentid < 0 || fragments[id]->getDepth() == -1)
         fragments[id]->setDepth(node.depth);    //Set start fragment depth
@@ -100,7 +105,7 @@ int FragmentGraph::addToGraphAndReplaceMolWithFV(const FragmentTreeNode &node, i
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
+    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate(), node.isCyclization());
 
     if (fragments[frag_id]->getDepth() == -1 || node.depth < fragments[frag_id]->getDepth())
         fragments[frag_id]->setDepth(node.depth);    //Set start fragment depth
@@ -162,7 +167,7 @@ FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std::vec
 
     //If the fragment doesn't exist, add it
     double mass = getMonoIsotopicMass(node.ion);
-    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate());
+    int frag_id = addFragmentOrFetchExistingId(node.ion, mass, node.isIntermediate(), node.isCyclization());
 
     if (parent_frag_id < 0 || fragments[frag_id]->getDepth() == -1)
         fragments[frag_id]->setDepth(node.depth);    //Set start fragment depth
@@ -204,10 +209,11 @@ FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std::vec
 }
 
 
-int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bool is_intermediate) {
+int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, 
+    bool is_intermediate,
+    bool is_cyclization) {
 
     std::string reduced_smiles;
-
     //Round the mass to 5 decimal places and use that as an initial filter
     double rounded_mass = floor(mass * 10000.0 + 0.5) / 10000.0;
     if (frag_mass_lookup.find(rounded_mass) != frag_mass_lookup.end()) {
@@ -223,15 +229,16 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bo
         for (; it != frag_mass_lookup[rounded_mass].end(); ++it) {
             try {
                 RDKit::RWMol *f2_reduced = RDKit::SmilesToMol(*fragments[*it]->getReducedSmiles());
+
                 if (areMatching(&f1_copy, f2_reduced)) {
                     delete f2_reduced;
                     return *it;
                 }
                 delete f2_reduced;
             }
-            catch (RDKit::MolSanitizeException e) {
+            catch (RDKit::MolSanitizeException &e) {
                 std::cout << "Could not sanitize " << *fragments[*it]->getReducedSmiles() << std::endl;
-                throw e;
+                throw &e;
             }
         }
         reduced_smiles = RDKit::MolToSmiles(f1_copy);
@@ -250,9 +257,11 @@ int FragmentGraph::addFragmentOrFetchExistingId(romol_ptr_t ion, double mass, bo
         Spectrum isotope_spectrum;
         long charge = RDKit::MolOps::getFormalCharge(*ion.get());
         isotope->computeIsotopeSpectrum(isotope_spectrum, ion, charge);
-        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, isotope_spectrum, is_intermediate));
-    } else
-        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, is_intermediate));
+        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, isotope_spectrum, is_intermediate, is_cyclization));
+    } else{
+        fragments.push_back(new Fragment(smiles, reduced_smiles, newid, mass, is_intermediate, is_cyclization));
+    }
+        
 
     frag_mass_lookup[rounded_mass].push_back(newid);
     from_id_tmap.resize(newid + 1);
@@ -276,19 +285,28 @@ bool FragmentGraph::areMatching(RDKit::ROMol *f1_reduced_ion, RDKit::ROMol *f2_r
 void FragmentGraph::reduceMol(RDKit::RWMol &rwmol) {
 
     //Ensure that the OrigValence tags are set, otherwise add them
-    int israd = moleculeHasSingleRadical(&rwmol);
-    RDKit::ROMol::AtomIterator ai;
+    //int israd = moleculeHasSingleRadical(&rwmol);
+    /*RDKit::ROMol::AtomIterator ai;
     if (!rwmol.getAtomWithIdx(0)->hasProp("OrigValence")) {
+        std::cout << "OrigValence not set" << std::endl;
         for (ai = rwmol.beginAtoms(); ai != rwmol.endAtoms(); ++ai) {
             int origval = (*ai)->getExplicitValence() + (*ai)->getImplicitValence() + (*ai)->getNumRadicalElectrons() -
                           (*ai)->getFormalCharge();
-            //For radicals generated by removing a multibond, charge and radical are separate, so charge needs to be added, not subtracted
-            if (israd && (*ai)->getFormalCharge() && !(*ai)->getNumRadicalElectrons() &&
-                (*ai)->getSymbol() == "C")
+
+            // For radicals generated by removing a multibond,
+            // charge and radical are separated,
+            // so charge needs to be added, not subtracted
+            // sometime this fails ... we need to check if it is multibond
+            if (israd
+                && (*ai)->getFormalCharge()
+                && !(*ai)->getNumRadicalElectrons()
+                && (*ai)->getSymbol() == "C"){
                 origval += 2 * (*ai)->getFormalCharge();
+            }
+
             (*ai)->setProp("OrigValence", origval);
         }
-    }
+    }*/
 
     //Set all bonds to SINGLE
     RDKit::ROMol::BondIterator bi;
@@ -298,6 +316,7 @@ void FragmentGraph::reduceMol(RDKit::RWMol &rwmol) {
     }
 
     //Set all Hydrogens to give full valence and no charge or radicals
+    RDKit::ROMol::AtomIterator ai;
     for (ai = rwmol.beginAtoms(); ai != rwmol.endAtoms(); ++ai) {
         (*ai)->setFormalCharge(0);
         (*ai)->setNumRadicalElectrons(0);
@@ -336,7 +355,9 @@ void FragmentGraph::writeFragmentsOnly(std::ostream &out) const {
         out << *(it->getIonSmiles());
 
         if (it->isIntermediate())
-            out << " Intermediate Fragment ";
+            out << " Intermediate Fragment";
+        if (it->isCyclization())
+            out << " Cyclization Fragment";
         out << std::endl;
     }
 }
@@ -382,6 +403,10 @@ void FragmentGraph::writeFeatureVectorGraph(std::ostream &out, bool include_isot
         // write flag
         bool is_intermediate = (*it)->isIntermediate();
         out.write(reinterpret_cast<const char *>(&is_intermediate), sizeof(is_intermediate));
+
+        // write flag
+        bool is_cyclization = (*it)->isCyclization();
+        out.write(reinterpret_cast<const char *>(&is_cyclization), sizeof(is_cyclization));
 
         if (include_isotopes) {
             const Spectrum *isospec = (*it)->getIsotopeSpectrum();
@@ -438,6 +463,9 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
         bool is_intermediate;
         ifs.read(reinterpret_cast<char *>(&is_intermediate), sizeof(is_intermediate));
 
+        bool is_cyclization;
+        ifs.read(reinterpret_cast<char *>(&is_cyclization), sizeof(is_cyclization));
+
         if (include_isotopes) {
             Spectrum isospec;
             unsigned int iso_size;
@@ -449,9 +477,9 @@ void FragmentGraph::readFeatureVectorGraph(std::istream &ifs) {
                 ifs.read(reinterpret_cast<char *>(&pintensity), sizeof(pintensity));
                 isospec.push_back(Peak(pmass, pintensity));
             }
-            fragments.push_back(new Fragment(null, null, id, mass, isospec, is_intermediate));
+            fragments.push_back(new Fragment(null, null, id, mass, isospec, is_intermediate, is_cyclization));
         } else
-            fragments.push_back(new Fragment(null, null, id, mass, is_intermediate));
+            fragments.push_back(new Fragment(null, null, id, mass, is_intermediate, is_cyclization));
     }
 
     //Transitions

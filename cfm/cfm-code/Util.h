@@ -63,6 +63,9 @@ void alterNumHs(RDKit::Atom *atom, int H_diff);
 
 romol_ptr_t createMolPtr(const char *smiles_or_inchi);
 
+//Helper function to get valence
+int getValence(const RDKit::Atom * atom);
+
 /* given log(x) and log(y), compute log(x+y). uses the following identity:
    log(x + y) = log(x) + log(1 + y/x) = log(x) + log(1+exp(log(y)-log(x))) */
 inline double logAdd(double log_x, double log_y) {

@@ -34,16 +34,16 @@ Download RDKit_2017_09_3.tgz from https://github.com/rdkit/rdkit/archive/Release
    mkdir build
    cd build
    cmake .. \
-	   -DRDK_PGSQL_STATIC=OFF\ 
-	   -DRDK_BUILD_PYTHON_WRAPPERS=OFF\  
-	   -DRDK_BUILD_CPP_TESTS=OFF\  
-	   -DRDK_BUILD_DESCRIPTORS3D=OFF\
-	     -DRDK_INSTALL_STATIC_LIBS=OFF\    
-	     -DRDK_INSTALL_INTREE=ON \
-	   -DRDK_BUILD_INCHI_SUPPORT=ON\  
-	   -DRDK_OPTIMIZE_NATIVE=ON  \
-	   -DCMAKE_CXX_STANDARD=11 \ 
-	   -DCMAKE_BUILD_TYPE=Release
+       -DRDK_PGSQL_STATIC=OFF\ 
+       -DRDK_BUILD_PYTHON_WRAPPERS=OFF\  
+       -DRDK_BUILD_CPP_TESTS=OFF\  
+       -DRDK_BUILD_DESCRIPTORS3D=OFF\
+         -DRDK_INSTALL_STATIC_LIBS=OFF\    
+         -DRDK_INSTALL_INTREE=ON \
+       -DRDK_BUILD_INCHI_SUPPORT=ON\  
+       -DRDK_OPTIMIZE_NATIVE=ON  \
+       -DCMAKE_CXX_STANDARD=11 \ 
+       -DCMAKE_BUILD_TYPE=Release
    make install
 ```
 Note that ```-DRDK_INSTALL_INTREE=ON``` will install RDKit lib within its source file, while ```-DRDK_INSTALL_INTREE=OFF``` will install RDKit in the ```/usr/local/```. However, RDKit will not automaticlly install  InChI Extension in the  ```/usr/local/```. You can move InChI Extension with:
@@ -56,9 +56,9 @@ You may be able to use one of the pre-compiled dev versions: Ehttps://sourceforg
 
 If you wish to build your own, download compile the source code for LPSolve. Download lp_solve_5.5.2.5_source.tar.gz from https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5
 ```
-	tar -zxvf lp_solve_5.5.2.5_source.tar.gz
-	cd lp_solve_5.5/lpsolve55
-	./ccc
+    tar -zxvf lp_solve_5.5.2.5_source.tar.gz
+    cd lp_solve_5.5/lpsolve55
+    ./ccc
 ```
 This should create libs in e.g. lp_solve_5.5/lpsolve55/bin/ux64.
 If you encounter a build error with ```./ccc```, please use our  patched version at: https://bitbucket.org/wishartlab/cfm-id-code/downloads/lpsolve55_patched_ccc
@@ -69,18 +69,18 @@ If Compiling the cfm-train and cfm-test executables, Install a version of MPI.
 ###  Setup Libraries
 if your libaray installation is not under the stanard ```/usr/``` directory, you will need to set ```LD_LIBRARY_PATH``` to include Boost, RDKit and LPSolve library locations. This can be done in one of following method,
 1. Add following command in ```~/.bashrc```
-	```
-	export LD_LIBRARY_PATH = $LD_LIBRARY_PATH:~/boost_1_62_0/lib:~/RDKit_2017_09_3/lib:~/lp_solve_5.5/lpsolve55/bin/ux64
-	```
+    ```
+    export LD_LIBRARY_PATH = $LD_LIBRARY_PATH:~/boost_1_62_0/lib:~/RDKit_2017_09_3/lib:~/lp_solve_5.5/lpsolve55/bin/ux64
+    ```
    Then reload by  ```source ~/.bashrc ```
 2. go to ```/etc/ld.so.conf.d``` add ```*.conf``` for each library Boost, RDKit and LPSolve library locations
-	> boost.conf
-	  ~/boost_1_64_0/lib
-	  rdkit.conf
-	  ~/RDKit_2013_09_1/lib
-	  lp_solve.conf
-	  ~/lp_solve_5.5/lpsolve55/bin/ux64
-	    
+    > boost.conf
+      ~/boost_1_64_0/lib
+      rdkit.conf
+      ~/RDKit_2013_09_1/lib
+      lp_solve.conf
+      ~/lp_solve_5.5/lpsolve55/bin/ux64
+        
    Then reload ld by  ```sudo ldconfig ```
 
 ### Build CFM-ID
@@ -88,19 +88,19 @@ Download CFM-ID Release version from https://bitbucket.org/wishartlab/cfm-id-cod
 e.g. if you are in cfm/build, you can use cmake .. , setting the ```LPSOLVE_INCLUDE_DIR``` and ```LPSOLVE_LIBRARY_DIR``` values appropriately. Use  ```INCLUDE_TESTS``` and ```INCLUDE_TRAIN``` to enable or disbale``` cfm-tests``` and ``` cfm-train``` 
 
 ```
-	cd cfm
+    cd cfm
     mkdir  build;\
-	cd  build;\
-	cmake  ..  
-		-DINCLUDE_TESTS=${BUILD_CFM_TEST}\
-		-DINCLUDE_TRAIN=${BUILD_CFM_TRAIN}\
-		-DLPSOLVE_INCLUDE_DIR=/usr/local/include/lp_solve\
-		-DLPSOLVE_LIBRARY_DIR=/usr/local/lib\
-		-DRDKIT_INCLUDE_DIR=/usr/local/include/rdkit\
-		-DRDKIT_INCLUDE_EXT_DIR=/usr/local/include/rdkit/External\
-		-DRDKIT_LIBRARY_DIR=/usr/local/lib\
-		-DCMAKE_CXX_STANDARD=11;\
-	make install
+    cd  build;\
+    cmake  ..  
+        -DINCLUDE_TESTS=${BUILD_CFM_TEST}\
+        -DINCLUDE_TRAIN=${BUILD_CFM_TRAIN}\
+        -DLPSOLVE_INCLUDE_DIR=/usr/local/include/lp_solve\
+        -DLPSOLVE_LIBRARY_DIR=/usr/local/lib\
+        -DRDKIT_INCLUDE_DIR=/usr/local/include/rdkit\
+        -DRDKIT_INCLUDE_EXT_DIR=/usr/local/include/rdkit/External\
+        -DRDKIT_LIBRARY_DIR=/usr/local/lib\
+        -DCMAKE_CXX_STANDARD=11;\
+    make install
 ```
 
 This should produce the executable files in the ```cfm/bin``` directory.  Change to this directory. Run the programs from a command line as detailed on https://sourceforge.net/p/cfm-id/wiki/Home/
@@ -187,17 +187,17 @@ wget -O rdkit.tar.gz https://github.com/rdkit/rdkit/archive/Release_2017_09_3.ta
 tar xvzf rdkit.tar.gz;
 rm -rf *;
 cmake .. -DRDK_PGSQL_STATIC=OFF \
-	 -DRDK_BUILD_PYTHON_WRAPPERS=OFF \
-	 -DRDK_BUILD_CPP_TESTS=OFF \
-	 -DRDK_BUILD_DESCRIPTORS3D=OFF \
-	 -DRDK_INSTALL_STATIC_LIBS=OFF \
-	 -DRDK_BUILD_INCHI_SUPPORT=ON \
-	 -DRDK_OPTIMIZE_NATIVE=ON \
-	 -DCMAKE_CXX_STANDARD=11 \
-	 -DCMAKE_BUILD_TYPE=Release \
-	 -DRDK_INSTALL_INTREE=ON \
-	 -DBOOST_ROOT=$BOOST_ROOT \
-	 -DBoost_NO_BOOST_CMAKE=ON;
+     -DRDK_BUILD_PYTHON_WRAPPERS=OFF \
+     -DRDK_BUILD_CPP_TESTS=OFF \
+     -DRDK_BUILD_DESCRIPTORS3D=OFF \
+     -DRDK_INSTALL_STATIC_LIBS=OFF \
+     -DRDK_BUILD_INCHI_SUPPORT=ON \
+     -DRDK_OPTIMIZE_NATIVE=ON \
+     -DCMAKE_CXX_STANDARD=11 \
+     -DCMAKE_BUILD_TYPE=Release \
+     -DRDK_INSTALL_INTREE=ON \
+     -DBOOST_ROOT=$BOOST_ROOT \
+     -DBoost_NO_BOOST_CMAKE=ON;
 ```
 
 ### Build CFM-ID

@@ -3,8 +3,8 @@
 #
 # main.cpp
 #
-# Description: 	Predict the MS/MS spectra for a given structure using a
-#				pre-trained CFM model.
+# Description:   Predict the MS/MS spectra for a given structure using a
+#                pre-trained CFM model.
 #
 # Copyright (c) 2013, Felicity Allen
 # All rights reserved.
@@ -24,34 +24,34 @@
 #include <GraphMol/SmilesParse/SmilesParse.h>
 #include <boost/filesystem.hpp>
 
+#include <stdexcept>
+
 int main(int argc, char *argv[]);
 
 class SpectrumPredictionException : public std::exception {
 private:
-    std::string message_;
+    std::runtime_error message_;
 public:
-    SpectrumPredictionException(const std::string &message) noexcept : message_(message) {};
+    SpectrumPredictionException(const std::string & message) noexcept: message_(message) {};
 
-    virtual const char *what() const noexcept {
-        std::cout << message_ << std::endl;
-        return message_.c_str();
+    const char *what() const noexcept override {
+        return message_.what();
     }
 
-    ~SpectrumPredictionException() noexcept {};
+    ~SpectrumPredictionException() noexcept override = default;;
 };
 
 class FileException : public std::exception {
 private:
-    std::string message_;
+    std::runtime_error message_;
 public:
-    FileException(const std::string &message) noexcept : message_(message) {};
+    FileException(const std::string & message) noexcept: message_(message) {};
 
-    virtual const char *what() const noexcept {
-        std::cout << message_ << std::endl;
-        return message_.c_str();
+    const char *what() const noexcept override {
+        return message_.what();
     }
 
-    ~FileException() noexcept {};
+    ~FileException() noexcept override = default;;
 };
 
 
@@ -67,11 +67,15 @@ int main(int argc, char *argv[]) {
     std::string config_filename = "param_config.txt";
     double prob_thresh_for_prune = 0.001;
     double postprocessing_energy = 80;
+    int min_peaks = 1;
+    int max_peaks = 30;
+    double min_peak_intensity = 0.0;
 
-    if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9 && argc != 10) {
+    if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9 && argc != 10 &&
+        argc != 11 && argc != 12 && argc != 13) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
-                  << "CFM-ID Version: "<< PROJECT_VER << std::endl
+                  << "CFM-ID Version: " << PROJECT_VER << std::endl
                   << "Usage: cfm-predict <input_smiles_or_inchi> <prob_thresh_for_prune> <param_filename> <config_filename> <include_annotations> <output_filename> <apply_post_processing>"
                   << std::endl << std::endl << std::endl;
         std::cout << std::endl << "input_smiles_or_inchi_or_file:" << std::endl
@@ -93,13 +97,21 @@ int main(int argc, char *argv[]) {
                   << std::endl;
         std::cout << std::endl << "postprocessing method (opt):" << std::endl
                   << "Post-process predicted spectra with 1.take the top 80% of energy (at least 5 peaks), or the highest 30 peaks (whichever comes first) \n "
-                     "2.take the top 80% of energy, or the highest 30 peaks (whichever comes first) (0 = OFF, 1 = OPT#1, 2 = OPT#2 (default) )."
+                     "2.take the top 80% of energy, or the highest 30 peaks (whichever comes first) (0 = OFF, 1 = OPT#1, 2 = OPT#2 (default))."
                   << std::endl;
         std::cout << std::endl << "suppress_exception (opt):" << std::endl
                   << "Suppress exceptions so that the program returns normally even when it fails to produce a result (0 = OFF (default), 1 = ON)."
                   << std::endl;
         std::cout << std::endl << "postprocessing_energy (opt):" << std::endl
-                  << "postprocessing energy out of 100% (default 80%)"
+                  << "postprocessing energy out of 80% (default 80%)"
+                  << std::endl;
+        std::cout << std::endl << "min_peak_intensity [0,100.0] (opt):" << std::endl
+                  << "min amount of peak relative intensity" << std::endl;
+        std::cout << std::endl << "override_min_peaks (opt):" << std::endl
+                  << "min amount of peak will include in the spectra"
+                  << std::endl;
+        std::cout << std::endl << "override_max_peaks (opt):" << std::endl
+                  << "max amount of peak will include in the spectra"
                   << std::endl;
         exit(1);
     }
@@ -107,7 +119,7 @@ int main(int argc, char *argv[]) {
     std::string input_smiles_or_inchi = argv[1];
     if (argc >= 3) {
         try { prob_thresh_for_prune = boost::lexical_cast<float>(argv[2]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid prob_thresh_for_prune: " << argv[2] << std::endl;
             exit(1);
         }
@@ -118,7 +130,7 @@ int main(int argc, char *argv[]) {
     }
     if (argc >= 6) {
         try { do_annotate = boost::lexical_cast<bool>(argv[5]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid include_annotations (Must be 0 or 1): " << argv[5] << std::endl;
             exit(1);
         }
@@ -129,22 +141,61 @@ int main(int argc, char *argv[]) {
     }
     if (argc >= 8) {
         try { postprocessing_method = boost::lexical_cast<int>(argv[7]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid postprocessing_method (Must be 0, 1 or 2): " << argv[7] << std::endl;
             exit(1);
+        }
+        if (postprocessing_method == 0) {
+            min_peaks = 1;
+            max_peaks = 1000;
+            postprocessing_energy = 100;
+        }
+        if (postprocessing_method == 1) {
+            min_peaks = 5;
+            max_peaks = 30;
+            postprocessing_energy = 80;
+        }
+        if (postprocessing_method == 2) {
+            min_peaks = 1;
+            max_peaks = 30;
+            postprocessing_energy = 80;
         }
     }
     if (argc == 9) {
         try { suppress_exceptions = boost::lexical_cast<bool>(argv[8]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid suppress_exceptions (Must be 0 or 1): " << argv[8] << std::endl;
             exit(1);
         }
     }
     if (argc == 10) {
-        try { postprocessing_energy = boost::lexical_cast<float>(argv[9]); }
-        catch (boost::bad_lexical_cast e) {
-            std::cout << "Invalid postprocessing_energy: " << argv[8] << std::endl;
+        try { postprocessing_energy = boost::lexical_cast<double>(argv[9]); }
+        catch (boost::bad_lexical_cast &e) {
+            std::cout << "Invalid postprocessing_energy (Must be 0 or 100): " << argv[9] << std::endl;
+            exit(1);
+        }
+    }
+
+    if (argc == 11) {
+        try { min_peak_intensity = boost::lexical_cast<double>(argv[10]); }
+        catch (boost::bad_lexical_cast &e) {
+            std::cout << "Invalid min_peaks: " << argv[10] << std::endl;
+            exit(1);
+        }
+    }
+
+    if (argc == 12) {
+        try { min_peaks = boost::lexical_cast<int>(argv[10]); }
+        catch (boost::bad_lexical_cast &e) {
+            std::cout << "Invalid min_peaks: " << argv[10] << std::endl;
+            exit(1);
+        }
+    }
+
+    if (argc == 13) {
+        try { max_peaks = boost::lexical_cast<int>(argv[11]); }
+        catch (boost::bad_lexical_cast &e) {
+            std::cout << "Invalid max_peaks: " << argv[11] << std::endl;
             exit(1);
         }
     }
@@ -174,7 +225,7 @@ int main(int argc, char *argv[]) {
     std::ostream *out;
     std::ofstream of;
     std::streambuf *buf;
-    if (!to_stdout && output_filename.substr(output_filename.size() - 4).compare(".msp") == 0) {
+    if (!to_stdout && output_filename.substr(output_filename.size() - 4) == ".msp") {
         output_mode = MSP_OUTPUT_MODE;
         of.open(output_filename.c_str());
         if (!of.is_open()) {
@@ -183,7 +234,7 @@ int main(int argc, char *argv[]) {
         }
         buf = of.rdbuf();
         out = new std::ostream(buf);
-    } else if (!to_stdout && output_filename.substr(output_filename.size() - 4).compare(".mgf") == 0) {
+    } else if (!to_stdout && output_filename.substr(output_filename.size() - 4) == ".mgf") {
         output_mode = MGF_OUTPUT_MODE;
         of.open(output_filename.c_str());
         if (!of.is_open()) {
@@ -197,9 +248,9 @@ int main(int argc, char *argv[]) {
     //Check for batch input - if found, read in inchis and set up output directory, mgf or msp
     std::vector<MolData> data;
     bool batch_run = false;
-    std::string output_dir_str = "";
+    std::string output_dir_str;
     if (input_smiles_or_inchi.size() > 4 &&
-        input_smiles_or_inchi.substr(input_smiles_or_inchi.size() - 4).compare(".txt") == 0) {
+        input_smiles_or_inchi.substr(input_smiles_or_inchi.size() - 4) == ".txt") {
         parseInputFile(data, input_smiles_or_inchi, &cfg);
         batch_run = true;
         if (!to_stdout && output_mode == NO_OUTPUT_MODE) {
@@ -210,8 +261,7 @@ int main(int argc, char *argv[]) {
         to_stdout = false;
     } else data.push_back(MolData("NullId", input_smiles_or_inchi.c_str(), &cfg));
 
-    std::vector<MolData>::iterator it = data.begin();
-    for (; it != data.end(); ++it) {
+    for (auto & mol_data : data){
         //Create the MolData structure with the input
         try {
             //Calculate the pruned FragmentGraph
@@ -221,37 +271,37 @@ int main(int argc, char *argv[]) {
             else
                 fgen = new LikelyFragmentGraphGenerator(param, &cfg, prob_thresh_for_prune);
 
-            it->computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
-            it->computePredictedSpectra(*nn_param, postprocessing_method, true, -1 ,postprocessing_energy);
+            mol_data.computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, do_annotate);
+            mol_data.computePredictedSpectra(*nn_param, true, -1, min_peaks, max_peaks, postprocessing_energy, min_peak_intensity, cfg.use_log_scale_peak);
             //Predict the spectra (and post-process, use existing thetas)
         }
-        catch (RDKit::MolSanitizeException & e) {
-            std::cout << "Could not sanitize input: " << it->getSmilesOrInchi() << std::endl;
+        catch (RDKit::MolSanitizeException &e) {
+            std::cout << "Could not sanitize input: " << mol_data.getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions)
-                throw SpectrumPredictionException("RDKit could not sanitize input: " + it->getSmilesOrInchi());
+                throw SpectrumPredictionException("RDKit could not sanitize input: " + mol_data.getSmilesOrInchi());
             continue;
         }
-        catch (RDKit::SmilesParseException & pe) {
-            std::cout << "Could not parse input: " << it->getSmilesOrInchi() << std::endl;
+        catch (RDKit::SmilesParseException &pe) {
+            std::cout << "Could not parse input: " << mol_data.getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions)
-                throw SpectrumPredictionException("RDKit could not parse input: " + it->getSmilesOrInchi());
+                throw SpectrumPredictionException("RDKit could not parse input: " + mol_data.getSmilesOrInchi());
             continue;
         }
-        catch (FragmentGraphGenerationException & ge) {
-            std::cout << "Could not compute fragmentation graph for input: " << it->getSmilesOrInchi() << std::endl;
+        catch (FragmentGraphGenerationException &ge) {
+            std::cout << "Could not compute fragmentation graph for input: " << mol_data.getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions)
                 throw SpectrumPredictionException(
-                        "Could not compute fragmentation graph for input: " + it->getSmilesOrInchi());
+                        "Could not compute fragmentation graph for input: " + mol_data.getSmilesOrInchi());
             continue;
         }
-        catch (IonizationException & ie) {
-            std::cout << "Could not ionize: " << it->getSmilesOrInchi() << std::endl;
+        catch (IonizationException &ie) {
+            std::cout << "Could not ionize: " << mol_data.getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions) throw IonizationException();
             continue;
         }
-        catch (std::runtime_error & e) {
+        catch (std::runtime_error &e) {
             // whatever else can go wrong
-            std::cout << e.what()<< std::endl;
+            std::cout << e.what() << std::endl;
             if (!batch_run && !suppress_exceptions)
                 throw std::runtime_error(e.what());
             continue;
@@ -260,7 +310,7 @@ int main(int argc, char *argv[]) {
         //Set up the output stream (if not already set up)
         if (output_mode == NO_OUTPUT_MODE) {
             if (!to_stdout) {
-                if (batch_run) output_filename = output_dir_str + it->getId() + ".log";
+                if (batch_run) output_filename = output_dir_str + mol_data.getId() + ".log";
                 of.open(output_filename.c_str());
                 if (!of.is_open()) {
                     std::cout << "Error: Could not open output file " << output_filename << std::endl;
@@ -273,11 +323,11 @@ int main(int argc, char *argv[]) {
 
         //Write the spectra to output
         if (output_mode == NO_OUTPUT_MODE) {
-            it->outputSpectra(*out, "Predicted", do_annotate);
+            mol_data.outputSpectra(*out, "Predicted", do_annotate);
             *out << std::endl;
-            if (do_annotate) it->writeFragmentsOnly(*out);
-        } else if (output_mode == MSP_OUTPUT_MODE) it->writePredictedSpectraToMspFileStream(*out);
-        else if (output_mode == MGF_OUTPUT_MODE) it->writePredictedSpectraToMgfFileStream(*out);
+            if (do_annotate) mol_data.writeFragmentsOnly(*out);
+        } else if (output_mode == MSP_OUTPUT_MODE) mol_data.writePredictedSpectraToMspFileStream(*out);
+        else if (output_mode == MGF_OUTPUT_MODE) mol_data.writePredictedSpectraToMgfFileStream(*out);
 
         if (output_mode == NO_OUTPUT_MODE) {
             if (!to_stdout) of.close();

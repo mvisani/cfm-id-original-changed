@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     if (argc < 4 || argc > 11) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
-                  << "Usage: cfm-id.exe <spectrum_file> <id> <candidate_file> <num_highest> <ppm_mass_tol> <abs_mass_tol> <score_type> <output_filename>"
+                  << "Usage: cfm-id-precomputed <spectrum_file> <id> <candidate_file> <num_highest> <ppm_mass_tol> <abs_mass_tol> <score_type> <output_filename>"
                   << std::endl << std::endl << std::endl;
         std::cout << std::endl << "spectrum_file:" << std::endl
                   << "The filename where the input spectra can be found. This can be a .msp file in which the desired spectrum is listed under a corresponding id (next arg). Or it could be a single file with a list of peaks 'mass intensity' delimited by lines, with either 'low','med' and 'high' lines beginning spectra of different energy levels, or 'energy0', 'energy1', etc. ";
@@ -85,21 +85,21 @@ int main(int argc, char *argv[]) {
     bool merge_candidate_spectra = false;
     if (argc > 4) {
         try { num_highest = boost::lexical_cast<int>(argv[4]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid num_highest: " << argv[4] << std::endl;
             exit(1);
         }
     }
     if (argc > 5) {
         try { ppm_mass_tol = boost::lexical_cast<float>(argv[5]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid ppm_tol: " << argv[5] << std::endl;
             exit(1);
         }
     }
     if (argc > 6) {
         try { abs_mass_tol = boost::lexical_cast<float>(argv[6]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid abs_tol: " << argv[6] << std::endl;
             exit(1);
         }

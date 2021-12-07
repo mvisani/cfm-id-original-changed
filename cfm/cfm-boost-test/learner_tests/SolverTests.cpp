@@ -90,7 +90,7 @@ BOOST_FIXTURE_TEST_SUITE(SolverTests, SolverTestFixture)
         double beta_1 = 0.9;
         double beta_2 = 0.9;
         double eps = 1e-6;
-        Adam Solver (grads.size(), learning_rate, beta_1, beta_2, eps);
+        //Adam Solver (grads.size(), learning_rate, beta_1, beta_2, eps);
 
         // iteration one, when there momentum doing nothing
         // m_t = 0.1 * grads

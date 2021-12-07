@@ -92,12 +92,13 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     int sampling_method = cfg->ga_sampling_method;
     int em_no_progress_count = 0;
 
-    auto mol_it = molDataSet.begin();
-    for (int molidx = 0; mol_it != molDataSet.end(); ++mol_it, molidx++) {
-        if (mol_it->hasEmptySpectrum(energy_level) && mol_it->getGroup() != validation_group)
+    for (auto &mol_data : molDataSet) {
+        if (mol_data.hasEmptySpectrum(energy_level) && mol_data.getGroup() != validation_group)
             std::cout << "Warning: No peaks with explanatory fragment found for "
-                      << mol_it->getId() << ", ignoring this input molecule."
-                      << std::endl;
+                      << mol_data.getId() << ", ignoring this input molecule." << std::endl;
+
+        if (cfg->use_log_scale_peak)
+            mol_data.convertSpectraToLogScale();
     }
 
     while (iter < cfg->em_max_iterations) {
@@ -109,18 +110,14 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             writeStatus(msg.c_str());
         comm->printToMasterOnly(msg.c_str());
 
-        std::vector<MolData>::iterator mol_it;
-
         // Reset sufficient counts
         suft_counts_t suft;
         initSuft(suft, molDataSet);
 
-        int num_converged = 0, num_nonconverged = 0;
-        int tot_numc = 0, total_numnonc = 0;
         auto before = std::chrono::high_resolution_clock::now();
 
         // Do the inference part (E-step)
-        mol_it = molDataSet.begin();
+        auto mol_it = molDataSet.begin();
         for (int molidx = 0; mol_it != molDataSet.end(); ++mol_it, molidx++) {
 
             if (!mol_it->hasComputedGraph())
@@ -148,9 +145,10 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait
         auto after = std::chrono::high_resolution_clock::now();
-        
+
         std::string estep_time_msg =
-                "[E-Step][T+"+getTimeDifferenceStr(start_time, after)+"s]Completed E-step processing: Time Elapsed = " +
+                "[E-Step][T+" + getTimeDifferenceStr(start_time, after) +
+                "s]Completed E-step processing: Time Elapsed = " +
                 getTimeDifferenceStr(before, after) + " s";
         if (comm->isMaster())
             writeStatus(estep_time_msg.c_str());
@@ -172,7 +170,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         after = std::chrono::high_resolution_clock::now();
         std::string param_update_time_msg =
-                "[M-Step][T+"+ std::to_string(getTimeDifference(start_time, after))+"s]Completed M-step update: Time Elapsed = " +
+                "[M-Step][T+" + std::to_string(getTimeDifference(start_time, after)) +
+                "s]Completed M-step update: Time Elapsed = " +
                 getTimeDifferenceStr(before, after);
         if (comm->isMaster())
             writeStatus(param_update_time_msg.c_str());
@@ -187,19 +186,19 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double val_q = 0.0;
 
         int molidx = 0, num_val_mols = 0, num_training_mols = 0;
-        double train_dice = 0.0, train_w_dice = 0.0;
-        double val_dice = 0.0, val_w_dice = 0.0;
+        double train_dice = 0.0, train_dp = 0.0;
+        double val_dice = 0.0, val_dp = 0.0;
         for (mol_it = molDataSet.begin(); mol_it != molDataSet.end(); ++mol_it, molidx++) {
             computeLossAndMetrics(energy_level, molidx, mol_it, suft, val_q, num_val_mols, num_training_mols,
-                                  train_dice, train_w_dice,
-                                  val_dice, val_w_dice);
+                                  train_dice, train_dp,
+                                  val_dice, val_dp);
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
         after = std::chrono::high_resolution_clock::now();
 
         std::string q_time_msg =
-                "[M-Step][T+"+ getTimeDifferenceStr(start_time, after)+"s]Finished loss compute: Time Elapsed = " +
+                "[M-Step][T+" + getTimeDifferenceStr(start_time, after) + "s]Finished loss compute: Time Elapsed = " +
                 getTimeDifferenceStr(before, after) + " seconds";
         if (comm->isMaster())
             writeStatus(q_time_msg.c_str());
@@ -207,15 +206,15 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         num_training_mols = comm->collectSumInMaster(num_training_mols);
 
         if (!cfg->disable_training_metrics) {
-            train_dice = comm->collectQInMaster(train_dice);
-            train_w_dice = comm->collectQInMaster(train_w_dice);
+            train_dice = comm->collectQInMaster((float) train_dice);
+            train_dp = comm->collectQInMaster((float) train_dp);
         }
 
         if (!cfg->disable_cross_val_metrics) {
-            val_q = comm->collectQInMaster(val_q);
-            num_val_mols = comm->collectSumInMaster(num_val_mols);
-            val_dice = comm->collectQInMaster(val_dice);
-            val_w_dice = comm->collectQInMaster(val_w_dice);
+            val_q = comm->collectQInMaster((float) val_q);
+            num_val_mols = comm->collectSumInMaster((float) num_val_mols);
+            val_dice = comm->collectQInMaster((float) val_dice);
+            val_dp = comm->collectQInMaster((float) val_dp);
         }
 
         // Check for convergence
@@ -223,7 +222,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         if (comm->isMaster()) {
             std::string qdif_str = getMetricsString(loss, prev_loss, best_loss, after, val_q, num_val_mols,
                                                     num_training_mols, train_dice,
-                                                    train_w_dice, val_dice, val_w_dice, loss_ratio);
+                                                    train_dp, val_dice, val_dp, loss_ratio);
 
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
@@ -272,13 +271,13 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
 float
 EmModel::getTimeDifference(const std::chrono::system_clock::time_point &before,
-        const std::chrono::system_clock::time_point &after) const {
+                           const std::chrono::system_clock::time_point &after) const {
     auto count = std::chrono::duration_cast<std::chrono::milliseconds>(after - before).count();
-    return count/1000.0f;
+    return count / 1000.0f;
 }
 
 std::string EmModel::getTimeDifferenceStr(const std::chrono::system_clock::time_point &before,
-                                 const std::chrono::system_clock::time_point &after) const{
+                                          const std::chrono::system_clock::time_point &after) const {
     float value = getTimeDifference(before, after);
     std::stringstream stream;
     stream << std::fixed << std::setprecision(2) << value;
@@ -286,25 +285,25 @@ std::string EmModel::getTimeDifferenceStr(const std::chrono::system_clock::time_
 }
 
 float EmModel::getUsedCupTime(clock_t c_start, clock_t c_end) const {
-    return std::round((float)(c_end - c_start) / (float)CLOCKS_PER_SEC * 100) / 100;
+    return std::round((float) (c_end - c_start) / (float) CLOCKS_PER_SEC * 100) / 100;
 }
 
 void EmModel::computeLossAndMetrics(int energy_level, int molidx,
                                     std::vector<MolData, std::allocator<MolData>>::iterator &mol_it,
                                     suft_counts_t &suft, double &val_q, int &num_val_mols, int &num_training_mols,
-                                    double &train_dice, double &train_w_dice, double &val_dice,
-                                    double &val_w_dice) {
+                                    double &train_dice, double &train_dp, double &val_dice,
+                                    double &val_dp) {
     if (mol_it->getGroup() == validation_group && !cfg->disable_cross_val_metrics) {
         num_val_mols++;
         val_q += computeLogLikelihoodLoss(molidx, *mol_it, suft, energy_level);
         computeMetrics(energy_level, mol_it, val_dice,
-                       val_w_dice);
+                       val_dp);
 
     } else {
         num_training_mols++;
         if (!cfg->disable_training_metrics) {
             computeMetrics(energy_level, mol_it, train_dice,
-                           train_w_dice);
+                           train_dp);
         }
     }
 }
@@ -313,8 +312,8 @@ std::string
 EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
                           const std::chrono::system_clock::time_point &after,
                           double val_q, int num_val_mols,
-                          int num_training_mols, double train_dice, double train_w_dice, double val_dice,
-                          double val_w_dice, double loss_ratio) const {
+                          int num_training_mols, double train_dice, double train_dp, double val_dice,
+                          double val_dp, double loss_ratio) const {
     std::string qdif_str = "[M-Step][T+" + getTimeDifferenceStr(start_time, after) + "s]";
     qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols);
 
@@ -326,14 +325,14 @@ EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
 
     if (!cfg->disable_training_metrics) {
         qdif_str += "\nDice_Avg=" + std::to_string(train_dice / num_training_mols)
-                    + " Weighted_Dice_Avg=" += std::to_string(train_w_dice / num_training_mols);
+                    + " DotProduct_Avg=" += std::to_string(train_dp / num_training_mols);
     }
 
     if (!cfg->disable_cross_val_metrics) {
-        qdif_str += "\nValidation_Loss=" + std::to_string(val_q)
+        qdif_str += "\nValidation_Loss_Total=" + std::to_string(val_q)
                     + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
                     + "\nValidation_Dice_Avg=" + std::to_string(val_dice / num_val_mols)
-                    + " Weighted_Validation_Dice_Avg=" += std::to_string(val_w_dice / num_val_mols);
+                    + " Validation_DotProduct_Avg=" += std::to_string(val_dp / num_val_mols);
     }
     return qdif_str;
 }
@@ -343,12 +342,11 @@ EmModel::updateTrainingParams(double loss, double prev_loss, double loss_ratio, 
                               int &sampling_method,
                               int &count_no_progress) const {
     if (loss_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
-        if (cfg->ga_reset_sampling && sampling_method != cfg->ga_sampling_method2){
+        if (cfg->ga_reset_sampling && sampling_method != cfg->ga_sampling_method2) {
             cfg->ga_reset_sampling = false;
             sampling_method = cfg->ga_sampling_method2;
             comm->printToMasterOnly(("Switched to sampling method: " + std::to_string(sampling_method)).c_str());
-        }
-        else if (learning_rate > cfg->ending_step_size)
+        } else if (learning_rate > cfg->ending_step_size)
             learning_rate = std::max(learning_rate * 0.5f, cfg->ending_step_size);
         else
             count_no_progress += 1;
@@ -378,20 +376,20 @@ EmModel::computeAndSyncLoss(std::vector<MolData> &data, suft_counts_t &suft, uns
 }
 
 void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocator<MolData>>::iterator &moldata,
-                             double &dice, double &w_dice) {
+                             double &dice, double &dp) {
 
     Comparator *dice_cmp = new Dice(cfg->ppm_mass_tol, cfg->abs_mass_tol);
-    Comparator *weighed_dice_cmp = new WeightedDice(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+    Comparator *dotproduct_cmp = new DotProduct(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
-    moldata->computePredictedSpectra(*param, false, false, energy_level);
-    moldata->postprocessPredictedSpectra(80, 1, 1000);
+    moldata->computePredictedSpectra(*param, false, energy_level, 1, 30, 80, cfg->use_log_scale_peak);
+    //moldata->postprocessPredictedSpectra(80, 1, 30);
     dice += dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
-                                             moldata->getPredictedSpectrum(energy_level));
-    w_dice += weighed_dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
-                                                       moldata->getPredictedSpectrum(energy_level));
+                                   moldata->getPredictedSpectrum(energy_level));
+    dp += dotproduct_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
+                                       moldata->getPredictedSpectrum(energy_level));
 
     delete dice_cmp;
-    delete weighed_dice_cmp;
+    delete dotproduct_cmp;
 }
 
 void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
@@ -469,15 +467,15 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         // igorne used idx collection
         // include all idx
 
-        if(cfg->collected_all_used_idx){
+        if (cfg->collected_all_used_idx) {
             auto grad_offset = energy * param->getNumWeightsPerEnergyLevel();
-            for(int i = 0 ; i < param->getNumWeightsPerEnergyLevel(); ++i)
+            for (int i = 0; i < param->getNumWeightsPerEnergyLevel(); ++i)
                 comm->used_idxs.insert(grad_offset + i);
         }
 
         for (int molidx = 0; itdata != data.end(); ++itdata, molidx++) {
-            if (itdata->getGroup() != validation_group){
-                if(!cfg->collected_all_used_idx)
+            if (itdata->getGroup() != validation_group) {
+                if (!cfg->collected_all_used_idx)
                     collectUsedIdx(*itdata, comm->used_idxs, energy);
                 computeThetas(&(*itdata));
             }
@@ -489,7 +487,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         auto after = std::chrono::high_resolution_clock::now();
         if (comm->isMaster())
             std::cout << "[M-Step][T+" << getTimeDifferenceStr(start_time, after) <<
-            "s]Collect Used Index, Time Used: " << getTimeDifferenceStr(before, after) + "s" << std::endl;
+                      "s]Collect Used Index, Time Used: " << getTimeDifferenceStr(before, after) + "s" << std::endl;
     }
 
     int n = 0;
@@ -522,7 +520,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         // Compute the gradient
         std::fill(grads.begin(), grads.end(), 0.0);
         auto mol_it = data.begin();
-        std::clock_t  c_start = clock();
+        std::clock_t c_start = clock();
         for (auto batch_idx = 0; batch_idx < num_batch; ++batch_idx) {
             double num_trans = 0;
             for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
@@ -536,8 +534,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 }
             }
 
-            if(num_trans >0)
-                for(auto & grad : grads)
+            if (num_trans > 0)
+                for (auto &grad : grads)
                     grad /= num_trans;
 
             comm->collectGradsInMasterOrigMpi(grads);
@@ -559,16 +557,16 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         // compute loss
         std::clock_t c_end = clock();
         std::string cpu_usage_string = "";
-        if(!cfg->disable_cpu_usage_metrics){
+        if (!cfg->disable_cpu_usage_metrics) {
             float cpu_time = getUsedCupTime(c_start, c_end);
-            auto max_cpu_time = comm->getTimeUsages(cpu_time,MPI_MAX);
-            auto min_cpu_time = comm->getTimeUsages(cpu_time,MPI_MIN);
-            auto total_cpu_time = comm->getTimeUsages(cpu_time,MPI_SUM);
-            auto avg_cpu_time =  std::floor(total_cpu_time/ (float) comm->getNumProcesses() * 100.0f)/ 100.0f;
+            auto max_cpu_time = comm->getTimeUsages(cpu_time, MPI_MAX);
+            auto min_cpu_time = comm->getTimeUsages(cpu_time, MPI_MIN);
+            auto total_cpu_time = comm->getTimeUsages(cpu_time, MPI_SUM);
+            auto avg_cpu_time = std::floor(total_cpu_time / (float) comm->getNumProcesses() * 100.0f) / 100.0f;
             auto idle_cpu_time = max_cpu_time * (float) comm->getNumProcesses() - total_cpu_time;
-            cpu_usage_string =  "CPU_Usage(min,max,avg,idle/total): " + std::to_string(min_cpu_time) + "s "
-                    + std::to_string(max_cpu_time) + "s " + std::to_string(avg_cpu_time) + "s "
-                    + std::to_string(idle_cpu_time) + "/" + std::to_string(total_cpu_time) + "s";
+            cpu_usage_string = "CPU_Usage(min,max,avg,idle/total): " + std::to_string(min_cpu_time) + "s "
+                               + std::to_string(max_cpu_time) + "s " + std::to_string(avg_cpu_time) + "s "
+                               + std::to_string(idle_cpu_time) + "/" + std::to_string(total_cpu_time) + "s";
         }
 
         loss = computeAndSyncLoss(data, suft, energy);
@@ -576,10 +574,10 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         auto after = std::chrono::high_resolution_clock::now();
 
         if (comm->isMaster()) {
-            std::cout << iter << ".[T+" << getTimeDifferenceStr(start_time, after) <<"s]" << "Loss=" <<
-            loss << " Prev_Loss=" << prev_loss
-            << " Time_Escaped: " << getTimeDifferenceStr(before, after) << "s";
-            if(!cfg->disable_cpu_usage_metrics){
+            std::cout << iter << ".[T+" << getTimeDifferenceStr(start_time, after) << "s]" << "Loss=" <<
+                      loss << " Prev_Loss=" << prev_loss
+                      << " Time_Escaped: " << getTimeDifferenceStr(before, after) << "s";
+            if (!cfg->disable_cpu_usage_metrics) {
                 std::cout << cpu_usage_string;
             }
             std::cout << std::endl;
@@ -588,7 +586,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         }
         comm->broadcastDropouts(param.get());
 
-        if((fabs((loss - prev_loss) / loss) < cfg->ga_converge_thresh) || (prev_loss >= loss))
+        if ((fabs((loss - prev_loss) / loss) < cfg->ga_converge_thresh) || (prev_loss >= loss))
             ga_no_progress_count++;
         else
             ga_no_progress_count = 0;
@@ -637,7 +635,7 @@ int EmModel::computeAndAccumulateGradient(float *grads, int mol_idx, MolData &mo
     unsigned int suft_offset = energy * (num_transitions + num_fragments);
 
     std::set<int> selected_trans_id;
-    if (sampling_method != USE_NO_SAMPLING){
+    if (sampling_method != USE_NO_SAMPLING) {
         getSubSampledTransitions(mol_data, sampling_method, energy, selected_trans_id);
         num_used_transitions = selected_trans_id.size();
     }
@@ -646,58 +644,58 @@ int EmModel::computeAndAccumulateGradient(float *grads, int mol_idx, MolData &mo
     auto frag_trans_map = mol_data.getFromIdTMap()->begin();
     for (int from_idx = 0; frag_trans_map != mol_data.getFromIdTMap()->end(); ++frag_trans_map, from_idx++) {
 
-            //Do some random selection
-            std::vector<int> sampled_ids;
-            if (sampling_method != USE_NO_SAMPLING) {
-                for (auto & id: *frag_trans_map)
-                    if (selected_trans_id.find(id) != selected_trans_id.end())
-                        sampled_ids.push_back(id);
-            } else
-                sampled_ids = *frag_trans_map;
+        //Do some random selection
+        std::vector<int> sampled_ids;
+        if (sampling_method != USE_NO_SAMPLING) {
+            for (auto &id: *frag_trans_map)
+                if (selected_trans_id.find(id) != selected_trans_id.end())
+                    sampled_ids.push_back(id);
+        } else
+            sampled_ids = *frag_trans_map;
 
-            // Calculate the denominator of the sum terms
-            double denom = 1.0;
-            for (auto trans_id : sampled_ids)
-                denom += exp(mol_data.getThetaForIdx(energy, trans_id));
+        // Calculate the denominator of the sum terms
+        double denom = 1.0;
+        for (auto trans_id : sampled_ids)
+            denom += exp(mol_data.getThetaForIdx(energy, trans_id));
 
-            // Complete the innermost sum terms	(sum over j')
-            //std::map<unsigned int, double> sum_terms;
-            std::vector<double> sum_terms(mol_data.getFeatureVectorForIdx(0)->getTotalLength());
+        // Complete the innermost sum terms	(sum over j')
+        //std::map<unsigned int, double> sum_terms;
+        std::vector<double> sum_terms(mol_data.getFeatureVectorForIdx(0)->getTotalLength());
 
-            for (auto trans_id : sampled_ids) {
-                const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
+        for (auto trans_id : sampled_ids) {
+            const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
 
-                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                    auto fv_idx = *fv_it;
-                    double val = exp(mol_data.getThetaForIdx(energy, trans_id)) / denom;
-                    sum_terms[fv_idx] += val;
-                }
+            for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                auto fv_idx = *fv_it;
+                double val = exp(mol_data.getThetaForIdx(energy, trans_id)) / denom;
+                sum_terms[fv_idx] += val;
             }
-
-            // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
-            double nu_sum = 0.0;
-            for (auto trans_id : sampled_ids) {
-                double nu = (*suft_values)[trans_id + suft_offset];
-                nu_sum += nu;
-                const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
-                for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
-                    auto fv_idx = *fv_it;
-                    *(grads + fv_idx + grad_offset) += nu;
-                }
-            }
-
-            // Accumulate the last term of each transition and the
-            // persistence (i = j) terms of the gradient and Q
-            double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
-            for(auto idx = 0 ; idx < sum_terms.size(); ++idx)
-                if(sum_terms[idx] != 0)
-                    *(grads + idx + grad_offset) -= (nu_sum + nu) * sum_terms[idx];
         }
+
+        // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
+        double nu_sum = 0.0;
+        for (auto trans_id : sampled_ids) {
+            double nu = (*suft_values)[trans_id + suft_offset];
+            nu_sum += nu;
+            const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
+            for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
+                auto fv_idx = *fv_it;
+                *(grads + fv_idx + grad_offset) += nu;
+            }
+        }
+
+        // Accumulate the last term of each transition and the
+        // persistence (i = j) terms of the gradient and Q
+        double nu = (*suft_values)[offset + from_idx + suft_offset]; // persistence (i=j)
+        for (auto idx = 0; idx < sum_terms.size(); ++idx)
+            if (sum_terms[idx] != 0)
+                *(grads + idx + grad_offset) -= (nu_sum + nu) * sum_terms[idx];
+    }
 
     return num_used_transitions;
 }
 
-void EmModel::collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_idxs, unsigned int energy){
+void EmModel::collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_idxs, unsigned int energy) {
 
     if (!mol_data.hasComputedGraph())
         return;
@@ -706,11 +704,11 @@ void EmModel::collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_idx
 
     // Iterate over from_id (i)
     for (auto frag_trans_map = mol_data.getFromIdTMap()->begin(); frag_trans_map != mol_data.getFromIdTMap()->end();
-    ++frag_trans_map) {
+         ++frag_trans_map) {
         for (auto trans_id : *frag_trans_map) {
             const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
             for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
-                    used_idxs.insert(*fv_it + grad_offset);
+                used_idxs.insert(*fv_it + grad_offset);
         }
     }
 }
@@ -719,22 +717,20 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
                                        std::set<int> &selected_trans_id) const {
 
     switch (sampling_method) {
-        case USE_RANDOM_SAMPLING:
-        {
+        case USE_RANDOM_SAMPLING: {
             moldata.getRandomSampledTransitions(selected_trans_id, cfg->ga_sampling_max_selection);
             break;
         }
-        case USE_GRAPH_RANDOM_WALK_SAMPLING:
-        {
-            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id,cfg->ga_sampling_max_selection);
+        case USE_GRAPH_RANDOM_WALK_SAMPLING: {
+            moldata.getSampledTransitionIdsRandomWalk(selected_trans_id, cfg->ga_sampling_max_selection);
             break;
         }
         case USE_DIFFERENCE_SAMPLING_BFS_CO:
-        case USE_DIFFERENCE_SAMPLING_BFS:{
-            moldata.computePredictedSpectra(*param, false, true, energy);
+        case USE_DIFFERENCE_SAMPLING_BFS: {
+            moldata.computePredictedSpectra(*param, true, energy, 1, 30, 100.0, false);
             std::set<unsigned int> selected_weights;
 
-            moldata.getSelectedWeights(selected_weights, energy);
+            moldata.getSelectedMasses(selected_weights, energy);
             if (sampling_method == USE_DIFFERENCE_SAMPLING_BFS_CO)
                 moldata.getSampledTransitionIdUsingDiffMapBFS(selected_trans_id, selected_weights);
             else if (sampling_method == USE_DIFFERENCE_SAMPLING_BFS)
@@ -769,11 +765,11 @@ double EmModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_coun
 
         // Calculate the denominator of the sum terms
         double denom = 1.0;
-        for (const auto & itt : *it)
+        for (const auto &itt : *it)
             denom += exp(moldata.getThetaForIdx(energy, itt));
 
         // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
-        for (const auto & itt: *it) {
+        for (const auto &itt: *it) {
             double nu = (*suft_values)[itt + suft_offset];
             q += nu * (moldata.getThetaForIdx(energy, itt) - log(denom));
         }
@@ -808,8 +804,8 @@ void EmModel::updateGradientForRegularizationTerm(float *grads, unsigned int ene
 
     auto it = ((MasterComms *) comm)->master_used_idxs.begin();
     for (; it != ((MasterComms *) comm)->master_used_idxs.end(); ++it) {
-            float weight = param->getWeightAtIdx(*it);
-            *(grads + *it) -= cfg->lambda * weight;
+        float weight = param->getWeightAtIdx(*it);
+        *(grads + *it) -= cfg->lambda * weight;
     }
 
     // Remove the Bias terms (don't regularize the bias terms!)

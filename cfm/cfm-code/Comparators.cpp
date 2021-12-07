@@ -3,7 +3,7 @@
 #
 # Comparators.cpp
 #
-# Description: 	Functions for comparing spectra and returning a score.
+# Description:     Functions for comparing spectra and returning a score.
 #
 # Copyright (c) 2013, Felicity Allen
 # All rights reserved.
@@ -276,13 +276,13 @@ double Combined::computeScore(const Spectrum *measured, const Spectrum *predicte
     DotProduct dp(ppm_tol, abs_tol);
     WeightedRecall wr(ppm_tol, abs_tol);
     WeightedPrecision wp(ppm_tol, abs_tol);
-    Jaccard ja(ppm_tol, abs_tol);
+    Dice di(ppm_tol, abs_tol);
     double dp_score = 100.0 * dp.computeScore(measured, predicted);
-    double ja_score = 100.0 * ja.computeScore(measured, predicted);
+    double di_score = 100.0 * di.computeScore(measured, predicted);
     double wp_score = wp.computeScore(measured, predicted);
     double wr_score = wr.computeScore(measured, predicted);
-    std::cout << dp_score << " " << ja_score << " " << wp_score << " " << wr_score;
-    return dp_score + ja_score + wp_score + wr_score;
+    //std::cout << dp_score << " " << ja_score << " " << wp_score << " " << wr_score;
+    return dp_score + di_score + wp_score + wr_score;
 
 }
 

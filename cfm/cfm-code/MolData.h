@@ -105,6 +105,8 @@ public:
 
     double getMolecularWeight() const;
 
+    double getParentIonMass() const;
+
     int getIonizationMode() const { return cfg->ionization_mode; };
 
     void readInSpectraFromFile(const std::string &filename,
@@ -120,7 +122,7 @@ public:
     };
 
     // Spectrum Related Functions
-    void removePeaksWithNoFragment(double abs_tol, double ppm_tol);
+    std::string removePeaksWithNoFragment(double abs_tol, double ppm_tol);
 
     bool hasEmptySpectrum(int energy_level = -1) const;
 
@@ -155,12 +157,12 @@ public:
     // computeTransitionThetas  below (delteMols = true), pruning according to
     // prob_thresh_for_prune value.
     void computeLikelyFragmentGraphAndSetThetas(LikelyFragmentGraphGenerator &fgen,
-                                           double prob_thresh_for_prune,
-                                           bool retain_smiles = false);
+                                                double prob_thresh_for_prune,
+                                                bool retain_smiles = false);
 
     // Note that the following should be called in this order
     // since each one assumes all previous have already been called.E
-    void computeFragmentGraph( FeatureCalculator *fc);
+    void computeFragmentGraph(FeatureCalculator *fc);
 
     void computeTransitionThetas(Param &param);
 
@@ -168,11 +170,12 @@ public:
 
     // compute predicted Spectra
     // if engry < -1 , compute all  Spectra
-    void computePredictedSpectra(Param &param, int postprocess_method = 0, bool use_existing_thetas = false,
-                                 int energy_level = -1, double perc_thresh = 80.0);
+    void computePredictedSpectra(Param &param, bool use_existing_thetas = false,
+                                 int energy_level = -1, int min_peaks = 1, int max_peaks = 30,
+                                 double perc_thresh = 100.0, double min_relative_intensity = 0.0, bool force_linear_scale = false);
 
-    void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 5, int max_peaks = 30,
-                                     double min_intensity = 0.0);
+    void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 1, int max_peaks = 30,
+                                     double min_relative_intensity_prec = 0.0);
 
     void quantisePredictedSpectra(int num_dec_places);
 
@@ -213,7 +216,7 @@ public:
     };
 
     virtual const Fragment *getFragmentAtIdx(int index) const {
-        return  fg->getFragmentAtIdx(index);
+        return fg->getFragmentAtIdx(index);
     };
 
     const tmap_t *getFromIdTMap() const {
@@ -228,11 +231,11 @@ public:
         fg->writeFullGraph(out);
     };
 
-    void writeFragmentsOnly(std::ostream &out) const{
+    void writeFragmentsOnly(std::ostream &out) const {
         fg->writeFragmentsOnly(out);
     }
 
-    bool hasIsotopesIncluded() const{
+    bool hasIsotopesIncluded() const {
         return fg->hasIsotopesIncluded();
     }
 
@@ -240,27 +243,30 @@ public:
 
     // Return a listed of select weights in Fixed Point INT
     // int_weight = std::round(weight * 1e-5)
-    void getSelectedWeights(std::set<unsigned int> &selected_weights, int energry_level);
-
-    double getWeightedJaccardScore(int engery_level);
+    void getSelectedMasses(std::set<unsigned int> &selected_weights, int energry_level);
 
     void computeMergedPrediction();
 
-    const Spectrum* getMergedPrediction(){
+    const Spectrum *getMergedPrediction() {
         return m_merged_predicted_spectra;
     };
 
+    void convertSpectraToLogScale();
+
+    void convertSpectraToLinearScale();
+
     ~MolData();
+
 protected
     : // These items are protected rather than private for access during tests.
     int group;
     std::string id;
     std::string smiles_or_inchi;
-    FragmentGraph *fg;
-    EvidenceFragmentGraph *ev_fg;
+    FragmentGraph *fg = nullptr;
+    EvidenceFragmentGraph *ev_fg = nullptr;
     bool graph_computed;
     bool ev_graph_computed;
-    // spectra , which will be pruned during traning
+    // spectra , which will be pruned during training
     std::vector<Spectrum> spectra;
     // orig copy of spectra
     std::vector<Spectrum> orig_spectra;
@@ -270,19 +276,19 @@ protected
     // merged predicted spectra
     // used in casmi 
     Spectrum *m_merged_predicted_spectra = nullptr;
-    
+
     //std::vector<FeatureVector *> fvs;
     std::vector<std::vector<double>> thetas;
     std::vector<std::vector<double>> log_probs;
-    config_t *cfg;
+    config_t *cfg = nullptr;
 
     // General utilty functions
     void computeGraphWithGenerator(FragmentGraphGenerator &fgen);
 
     void getEnumerationSpectraMasses(std::vector<double> &output_masses);
 
-    void computePredictedSingleEnergySpectra(Param &param, int postprocess_method,
-                                             bool use_existing_thetas, int energy_level, double perc_thresh);
+    void computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas, int min_peaks,
+                                             int max_peaks, double perc_thresh, double min_relative_intensity,bool force_linear_scale = false);
 
     void translatePeaksFromMsgToSpectra(Spectrum &out_spec, Message *msg);
 

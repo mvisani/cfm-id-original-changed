@@ -70,8 +70,8 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_sampling_method2 = USE_NO_SAMPLING;
     cfg.ga_reset_sampling = false;
     cfg.ga_sampling_max_selection = 100;
-    cfg.ga_diff_sampling_peak_num = 20;
-    cfg.ga_diff_sampling_difference = 0.05;
+    cfg.ga_diff_sampling_peak_num = 30;
+    cfg.ga_diff_sampling_difference = 0.1;
     cfg.disable_cross_val_metrics = false;
     cfg.disable_training_metrics = false;
     cfg.disable_cpu_usage_metrics = true;
@@ -79,6 +79,9 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_no_progress_count = 3;
     cfg.collected_all_used_idx = false;
     cfg.em_max_iterations = DEFAULT_EM_MAX_ITERATIONS;
+    cfg.allow_intermediate_peak = false;
+    cfg.allow_cyclization = false;
+    cfg.use_log_scale_peak = false;
 }
 
 void initConfig(config_t &cfg, std::string &filename, bool report_all) {
@@ -158,7 +161,10 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "ga_no_progress_count") cfg.ga_no_progress_count = (int) value;
         else if (name == "collected_all_used_idx") cfg.collected_all_used_idx = (bool) value;
         else if (name == "em_max_iterations") cfg.em_max_iterations = (int) value;
-        else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
+        else if (name == "allow_intermediate_peak") cfg.allow_intermediate_peak = (bool) value;
+        else if (name == "allow_cyclization") cfg.allow_cyclization = (bool) value;
+        else if (name == "use_log_scale_peak") cfg.use_log_scale_peak = (bool) value;
+        else std::cout << "Warning: Unknown parameter configuration identifier " << name << std::endl;
     }
     ifs.close();
 
@@ -213,6 +219,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             if (cfg.include_precursor_h_losses_only) std::cout << " from precursor only";
             std::cout << std::endl;
         }
+        if (cfg.allow_intermediate_peak)
+            std::cout << "Allow intermeidate peaks" << std::endl;
         if (cfg.param_init_type == PARAM_RANDOM_INIT) std::cout << "Using Random Parameter Initialisation" << std::endl;
         else if (cfg.param_init_type == PARAM_FULL_ZERO_INIT) std::cout << "Using Full Zero Initialisation" << std::endl;
         else if (cfg.param_init_type == PARAM_ZERO_INIT) std::cout << "Using Zero Initialisation (non-zero Bias)" << std::endl;
@@ -356,6 +364,8 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (cfg.fragraph_compute_timeout_in_secs > 0)
             std::cout << "Timeout set on fragment graph computation to " << cfg.fragraph_compute_timeout_in_secs
                       << " mins" << std::endl;
+        if (cfg.use_log_scale_peak)
+            std::cout << "Use log scale peaks" << std::endl;
     }
 }
 
