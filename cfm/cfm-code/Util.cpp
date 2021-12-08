@@ -16,13 +16,16 @@
 
 
 #include "Util.h"
+#include "FunctionalGroups.h"
+#include <vector>
 #include <GraphMol/RWMol.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
 #include <GraphMol/MolOps.h>
 #include <GraphMol/PeriodicTable.h>
 #include <GraphMol/AtomIterators.h>
+#include <GraphMol/FragCatalog/FragCatParams.h>
+#include <GraphMol/Substruct/SubstructMatch.h>
 #include <INCHI-API/inchi.h>
-
 
 double getMassTol(double abs_tol, double ppm_tol, double mass) {
     double mass_tol = (mass / 1000000.0) * ppm_tol;
