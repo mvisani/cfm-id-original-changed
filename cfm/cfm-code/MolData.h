@@ -105,6 +105,8 @@ public:
 
     double getMolecularWeight() const;
 
+    double getParentIonMass() const;
+
     int getIonizationMode() const { return cfg->ionization_mode; };
 
     void readInSpectraFromFile(const std::string &filename,

@@ -28,6 +28,4 @@ static const int NUM_EXTRA_FGRPS = 13;
 
 extern const std::string EXTRA_FGRPS_PICKLE;
 
-extern const std::string PI_BOND_FGRPS_PICKLE;
-
 #endif // __FGRPS_H__

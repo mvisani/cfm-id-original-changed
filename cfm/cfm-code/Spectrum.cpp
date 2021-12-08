@@ -91,7 +91,7 @@ void Spectrum::outputToMgfStream(std::ostream &out, std::string id,
     else if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
         out << "[M]+;In-silico MS/MS by ";
     else if (ionization_mode == NEGATIVE_ESI_IONIZATION_MODE)
-        out << "[M-H]+;In-silico MS/MS by ";
+        out << "[M-H]-;In-silico MS/MS by ";
     out << APP_STRING << " " << PROJECT_VER << ";"
     << smiles_or_inchi << ";" << std::endl;
     outputToStream(out, false);

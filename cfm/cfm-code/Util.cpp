@@ -16,9 +16,6 @@
 
 
 #include "Util.h"
-#include "FunctionalGroups.h"
-
-#include <vector>
 #include <GraphMol/RWMol.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
 #include <GraphMol/MolOps.h>
@@ -26,8 +23,6 @@
 #include <GraphMol/AtomIterators.h>
 #include <INCHI-API/inchi.h>
 
-#include <GraphMol/FragCatalog/FragCatParams.h>
-#include <GraphMol/Substruct/SubstructMatch.h>
 
 double getMassTol(double abs_tol, double ppm_tol, double mass) {
     double mass_tol = (mass / 1000000.0) * ppm_tol;
@@ -170,8 +165,7 @@ int getValence(const RDKit::Atom *atom) {
     }
     if (num_val == 1 && def_val != -1) {
         valence = def_val; //Hack to cover many cases - which can otherwise get complicated
-    }
-    else {
+    } else {
         //This seems to work in most cases....
         valence = atom->getExplicitValence() + atom->getImplicitValence() + atom->getNumRadicalElectrons();
         if (4 - pt->getNouterElecs(atom->getAtomicNum()) > 0) {
