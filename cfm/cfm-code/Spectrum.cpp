@@ -87,9 +87,9 @@ void Spectrum::outputToMgfStream(std::ostream &out, std::string id,
         out << "CHARGE=1-" << std::endl;
     out << "TITLE=" << id << ";Energy" << energy << ";";
     if (ionization_mode == POSITIVE_EI_IONIZATION_MODE)
-        out << "[M+H]+;In-silico MS by ";
+        out << "[M]+;In-silico MS by ";
     else if (ionization_mode == POSITIVE_ESI_IONIZATION_MODE)
-        out << "[M]+;In-silico MS/MS by ";
+        out << "[M+H]+In-silico MS/MS by ";
     else if (ionization_mode == NEGATIVE_ESI_IONIZATION_MODE)
         out << "[M-H]-;In-silico MS/MS by ";
     out << APP_STRING << " " << PROJECT_VER << ";"
