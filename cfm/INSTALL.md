@@ -185,7 +185,10 @@ set ``DRDK_INSTALL_INTREE`` to ``ON``
 ```
 wget -O rdkit.tar.gz https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;\
 tar xvzf rdkit.tar.gz;
-rm -rf *;
+rm rdkit.tar.gz;
+cd rdkit-Release_2017_09_3;
+mkdir build;
+cd build;
 cmake .. -DRDK_PGSQL_STATIC=OFF \
      -DRDK_BUILD_PYTHON_WRAPPERS=OFF \
      -DRDK_BUILD_CPP_TESTS=OFF \

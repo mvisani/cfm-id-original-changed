@@ -51,7 +51,7 @@ RUN rm -rf /tmp/lp_solve_5.5
 # download rdkit
 
 RUN cd /tmp;\
-	wget -O rdkit.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/master.tar.gz\
+	wget -O rdkit.tar.gz https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;\
 	tar xvzf rdkit.tar.gz;\
 	rm rdkit.tar.gz
 
@@ -67,7 +67,6 @@ RUN mkdir build;\
 			  -DRDK_INSTALL_STATIC_LIBS=OFF\
 			  -DRDK_INSTALL_INTREE=OFF\
 			  -DRDK_BUILD_INCHI_SUPPORT=ON\ 
-			  -DRDK_OPTIMIZE_NATIVE=OFF\
 			  -DCMAKE_CXX_STANDARD=11\
 			  -DCMAKE_BUILD_TYPE=Release;\
 	make install -j ${MAKE_PROCESSOR_COUNT};
