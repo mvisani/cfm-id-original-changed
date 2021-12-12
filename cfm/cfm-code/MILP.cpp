@@ -68,13 +68,15 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             int min_limit = 0;
             if (!broken && fragidx == fragmentidx) {
                 limit = std::min(3, int(bond->getBondTypeAsDouble() + 1));
-                min_limit = int(bond->getBondTypeAsDouble());
                 min_single_bonds++;
                 bond->getProp("NumUnbrokenRings", numunbroken);
                 if (numunbroken > 0){
                     limit = 2;
+                    // loss restrictions on a ring break
+                    min_limit = 1;
                 }
                 else {
+                    min_limit = int(bond->getBondTypeAsDouble());
                     begin_lp_limit = allow_lp_q && getAtomLPLimit(begin_atom);
                     end_lp_limit = allow_lp_q && getAtomLPLimit(bond->getEndAtom());
                 }
