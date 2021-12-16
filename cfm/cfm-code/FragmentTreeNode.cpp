@@ -58,6 +58,9 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
         MILP f0_solver(ion.get(), 0, brk_ringidx, verbose);
         f0_max_e = f0_solver.runSolver(f0_output_bmax, true, f0_max_limit, 3);
 
+        if(f0_max_e == -1)
+            continue;
+
         //Compute the max electron assignment for F1
         if (brk.getBondIdx() != -1) {
             MILP f1_solver(ion.get(), 1, brk_ringidx, verbose);
@@ -69,6 +72,9 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
                 f0_output_bmax[i] += f1_output_bmax[i];
             f0_output_bmax[N + 1] = f1_output_bmax[N + 1];
         }
+
+        if(f1_max_e == -1)
+            continue;
 
         //Remove single bonds
         int num_bonds = f0_output_bmax.size() / 2 - 1;

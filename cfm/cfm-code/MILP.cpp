@@ -340,6 +340,8 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     } else {
         for (int j = 0; j < Ncol; j++)
             output_bmax[j] = 0;
+        // NOTE RETURN -1 if can not find good solution
+        output_max_e = -1;
     }
     //Combine the lone pair results
     for (int j = 0; j < num_bonds; j++)
