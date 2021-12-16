@@ -185,7 +185,7 @@ private:
     // of the node. -- e_f0 specifies the number of epairs to assigne to F0,
     // e_to_allocate is the total number to allocate, and output_bmax specifies
     // where the epairs can go.
-    void addChild(int e_f0, int e_to_allocate, std::vector<int> &output_bmax,
+    int addChild(int e_f0, int e_to_allocate, std::vector<int> &output_bmax,
                   Break &brk, int charge_frag);
 
     // Utility function for counting the number of electron pairs allocated to the
