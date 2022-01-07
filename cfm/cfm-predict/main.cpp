@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
         if (!to_stdout)
             std::cout << "Read " << data.size() << " molecules from input file." << std::endl;
     } else
-        data.push_back(MolData("NullId", input_smiles_or_inchi.c_str(), &cfg));
+        data.push_back(MolData(single_prediction_id.c_str(), input_smiles_or_inchi.c_str(), &cfg));
 
     for (int mol_idx = 0; mol_idx < data.size(); ++ mol_idx) {
         auto mol_data = data[mol_idx];
