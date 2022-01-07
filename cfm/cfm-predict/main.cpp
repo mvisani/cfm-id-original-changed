@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     double min_peak_intensity = 0.0;
 
     if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9 && argc != 10 &&
-        argc != 11 && argc != 12 && argc != 13) {
+        argc != 11 && argc != 12 && argc != 13 && argc != 14) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
                   << "CFM-ID Version: " << PROJECT_VER << std::endl
@@ -112,6 +112,9 @@ int main(int argc, char *argv[]) {
                   << std::endl;
         std::cout << std::endl << "override_max_peaks (opt):" << std::endl
                   << "max amount of peak will include in the spectra"
+                  << std::endl;
+        std::cout << std::endl << "prediction_id (opt):" << std::endl
+                  << "id for predicted spectra, only used in single input mode"
                   << std::endl;
         exit(1);
     }
@@ -201,6 +204,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    std::string single_prediction_id = "NullId";
+    if (argc == 14) {
+        single_prediction_id = argv[12];
+    }
+    
     //Initialise model configuration
     config_t cfg;
     if (!boost::filesystem::exists(config_filename)) {
@@ -272,7 +280,7 @@ int main(int argc, char *argv[]) {
         if (!to_stdout)
             std::cout << "Read " << data.size() << " molecules from input file." << std::endl;
     } else
-        data.push_back(MolData("NullId", input_smiles_or_inchi.c_str(), &cfg));
+        data.push_back(MolData(single_prediction_id.c_str(), input_smiles_or_inchi.c_str(), &cfg));
 
     for (int mol_idx = 0; mol_idx < data.size(); ++ mol_idx) {
         auto mol_data = data[mol_idx];
