@@ -243,18 +243,8 @@ int main(int argc, char *argv[]) {
         }
         buf = of.rdbuf();
         out = new std::ostream(buf);
-    } else if (!to_stdout &&
-        (output_filename.substr(output_filename.size() - 4) == ".txt"
-        ||  output_filename.substr(output_filename.size() - 4) == ".log")) {
-        output_mode = SINGLE_TXT_OUTPUT_MODE;
-        of.open(output_filename.c_str());
-        if (!of.is_open()) {
-            std::cout << "Error: Could not open output txt/log file " << output_filename << std::endl;
-            throw FileException("Could not open output txt/log file " + output_filename);
-        }
-        buf = of.rdbuf();
-        out = new std::ostream(buf);
     }
+
     //Check for batch input - if found, read in inchis and set up output directory, mgf or msp
     std::vector<MolData> data;
     bool batch_run = false;
@@ -269,8 +259,7 @@ int main(int argc, char *argv[]) {
             output_dir_str = output_filename + "/";
         }
         to_stdout = false;
-    } else
-        data.push_back(MolData("NullId", input_smiles_or_inchi.c_str(), &cfg));
+    } else data.push_back(MolData("NullId", input_smiles_or_inchi.c_str(), &cfg));
 
     for (auto & mol_data : data){
         //Create the MolData structure with the input
@@ -333,17 +322,12 @@ int main(int argc, char *argv[]) {
         }
 
         //Write the spectra to output
-        if (output_mode == NO_OUTPUT_MODE || output_mode == SINGLE_TXT_OUTPUT_MODE) {
+        if (output_mode == NO_OUTPUT_MODE) {
             mol_data.outputSpectra(*out, "Predicted", do_annotate);
             *out << std::endl;
-            if (do_annotate)
-                mol_data.writeFragmentsOnly(*out);
-            if (output_mode == SINGLE_TXT_OUTPUT_MODE)
-                *out << std::endl << std::endl;
-        } else if (output_mode == MSP_OUTPUT_MODE)
-            mol_data.writePredictedSpectraToMspFileStream(*out);
-        else if (output_mode == MGF_OUTPUT_MODE)
-            mol_data.writePredictedSpectraToMgfFileStream(*out);
+            if (do_annotate) mol_data.writeFragmentsOnly(*out);
+        } else if (output_mode == MSP_OUTPUT_MODE) mol_data.writePredictedSpectraToMspFileStream(*out);
+        else if (output_mode == MGF_OUTPUT_MODE) mol_data.writePredictedSpectraToMgfFileStream(*out);
 
         if (output_mode == NO_OUTPUT_MODE) {
             if (!to_stdout) of.close();
@@ -381,4 +365,5 @@ void parseInputFile(std::vector<MolData> &data, std::string &input_filename, con
     }
 
     std::cout << "Read " << data.size() << " molecules from input file." << std::endl;
+
 }
