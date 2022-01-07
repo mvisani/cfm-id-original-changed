@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
     int min_peaks = 1;
     int max_peaks = 30;
     double min_peak_intensity = 0.0;
+    std::string single_prediction_id = "NullId";
 
     if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9 && argc != 10 &&
         argc != 11 && argc != 12 && argc != 13 && argc != 14) {
@@ -106,12 +107,12 @@ int main(int argc, char *argv[]) {
                   << "postprocessing energy out of 80% (default 80%)"
                   << std::endl;
         std::cout << std::endl << "min_peak_intensity [0,100.0] (opt):" << std::endl
-                  << "min amount of peak relative intensity" << std::endl;
+                  << "min amount of peak relative intensity, , enter -1 to use default" << std::endl;
         std::cout << std::endl << "override min peaks constraint (opt):" << std::endl
-                  << "min amount of peak will include in the spectra"
+                  << "min amount of peak will include in the spectra, enter -1 to use default"
                   << std::endl;
         std::cout << std::endl << "override max peaks constraint(opt):" << std::endl
-                  << "max amount of peak will include in the spectra"
+                  << "max amount of peak will include in the spectra, enter -1 to use default"
                   << std::endl;
         std::cout << std::endl << "prediction id (opt):" << std::endl
                   << "id for predicted spectra, only used in single input mode"
@@ -181,7 +182,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (argc == 11) {
-        try { min_peak_intensity = boost::lexical_cast<double>(argv[10]); }
+        try {
+            auto input_min_peak_intensity = boost::lexical_cast<double>(argv[10]);
+            if (input_min_peak_intensity >= 0)
+                min_peak_intensity = input_min_peak_intensity;
+        }
         catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid min_peaks: " << argv[10] << std::endl;
             exit(1);
@@ -189,24 +194,31 @@ int main(int argc, char *argv[]) {
     }
 
     if (argc == 12) {
-        try { min_peaks = boost::lexical_cast<int>(argv[10]); }
+        try {
+            auto input_min_peaks = boost::lexical_cast<int>(argv[11]);
+            if (input_min_peaks >= 0)
+                min_peaks = input_min_peaks;
+        }
         catch (boost::bad_lexical_cast &e) {
-            std::cout << "Invalid min_peaks: " << argv[10] << std::endl;
+            std::cout << "Invalid min peaks: " << argv[11] << std::endl;
             exit(1);
         }
     }
 
     if (argc == 13) {
-        try { max_peaks = boost::lexical_cast<int>(argv[11]); }
+        try {
+            auto input_max_peaks = boost::lexical_cast<int>(argv[12]);
+            if (input_max_peaks >= 0)
+                max_peaks = input_max_peaks;
+        }
         catch (boost::bad_lexical_cast &e) {
-            std::cout << "Invalid max_peaks: " << argv[11] << std::endl;
+            std::cout << "Invalid max peaks: " << argv[12] << std::endl;
             exit(1);
         }
     }
 
-    std::string single_prediction_id = "NullId";
     if (argc == 14) {
-        single_prediction_id = argv[12];
+        single_prediction_id = argv[13];
     }
 
     //Initialise model configuration
