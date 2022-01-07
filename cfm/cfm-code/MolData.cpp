@@ -753,7 +753,7 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
         }
         out << "#In-silico " << spectra_str << std::endl
             << "#PREDICTED BY " << APP_STRING << " " << PROJECT_VER << std::endl;
-        out << "#ID=" << this->getId() << std::endl;
+
         if (smiles_or_inchi.substr(0, 6) == "InChI=") {
             out << "#" << smiles_or_inchi << std::endl;
             out << "#InChiKey=" << RDKit::InchiToInchiKey(smiles_or_inchi) << std::endl;
