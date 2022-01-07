@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     double min_peak_intensity = 0.0;
 
     if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9 && argc != 10 &&
-        argc != 11 && argc != 12 && argc != 13) {
+        argc != 11 && argc != 12 && argc != 13 && argc != 14) {
         std::cout << std::endl << std::endl;
         std::cout << std::endl
                   << "CFM-ID Version: " << PROJECT_VER << std::endl
