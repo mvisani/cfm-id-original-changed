@@ -107,11 +107,14 @@ int main(int argc, char *argv[]) {
                   << std::endl;
         std::cout << std::endl << "min_peak_intensity [0,100.0] (opt):" << std::endl
                   << "min amount of peak relative intensity" << std::endl;
-        std::cout << std::endl << "override_min_peaks (opt):" << std::endl
+        std::cout << std::endl << "override min peaks constraint (opt):" << std::endl
                   << "min amount of peak will include in the spectra"
                   << std::endl;
-        std::cout << std::endl << "override_max_peaks (opt):" << std::endl
+        std::cout << std::endl << "override max peaks constraint(opt):" << std::endl
                   << "max amount of peak will include in the spectra"
+                  << std::endl;
+        std::cout << std::endl << "prediction id (opt):" << std::endl
+                  << "id for predicted spectra, only used in single input mode"
                   << std::endl;
         exit(1);
     }
@@ -199,6 +202,11 @@ int main(int argc, char *argv[]) {
             std::cout << "Invalid max_peaks: " << argv[11] << std::endl;
             exit(1);
         }
+    }
+
+    std::string single_prediction_id = "NullId";
+    if (argc == 14) {
+        single_prediction_id = argv[12];
     }
 
     //Initialise model configuration
