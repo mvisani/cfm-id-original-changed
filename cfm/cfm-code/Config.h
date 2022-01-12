@@ -116,6 +116,7 @@ static const int MAX_BREAKABLE_RING_SIZE = 8;
 static const int NO_OUTPUT_MODE = 0;
 static const int MSP_OUTPUT_MODE = 1;
 static const int MGF_OUTPUT_MODE = 2;
+static const int SINGLE_TXT_OUTPUT_MODE = 3;
 
 //Maximum additional electron pairs to either side during fragmentation
 static const int MAX_E_MOVE = 4;

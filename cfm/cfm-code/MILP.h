@@ -37,7 +37,7 @@ public:
         RDKit::MolOps::Kekulize(*mol);
     };
 
-    int runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs, int allow_change_distance);
+    int runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs);
 
 private:
     std::unique_ptr<RDKit::RWMol> mol;
