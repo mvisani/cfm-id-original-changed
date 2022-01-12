@@ -120,7 +120,7 @@ static const int SINGLE_TXT_OUTPUT_MODE = 3;
 
 //Maximum additional electron pairs to either side during fragmentation
 static const int MAX_E_MOVE = 4;
-static const int MAX_BOND_CHANGE_DISTANCE = 3;
+static const int MAX_BOND_CHANGE_DISTANCE = 5;
 
 static const int LINEAR_THETA_FUNCTION = 1;
 static const int NEURAL_NET_THETA_FUNCTION = 2;

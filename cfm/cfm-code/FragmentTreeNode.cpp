@@ -56,7 +56,7 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
     for(int allowed_bond_change = 1; allowed_bond_change <= MAX_BOND_CHANGE_DISTANCE; allowed_bond_change++) {
         //Compute the max electron assignment for F0
         MILP f0_solver(ion.get(), 0, brk_ringidx, verbose);
-        f0_max_e = f0_solver.runSolver(f0_output_bmax, true, f0_max_limit, 3);
+        f0_max_e = f0_solver.runSolver(f0_output_bmax, true, f0_max_limit, allowed_bond_change);
 
         if(f0_max_e == -1)
             continue;
@@ -64,7 +64,7 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
         //Compute the max electron assignment for F1
         if (brk.getBondIdx() != -1) {
             MILP f1_solver(ion.get(), 1, brk_ringidx, verbose);
-            f1_max_e = f1_solver.runSolver(f1_output_bmax, true, f1_max_limit, 3);
+            f1_max_e = f1_solver.runSolver(f1_output_bmax, true, f1_max_limit, allowed_bond_change);
 
             //Combine the electron allocations of the two fragments
             unsigned int N = f0_output_bmax.size() - 2;
@@ -98,8 +98,8 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
             }
         }
 
-        if (number_child_added > 0)
-            break;
+        //if (number_child_added > 0)
+        //    break;
     }
 
 }
