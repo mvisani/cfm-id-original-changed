@@ -18,23 +18,17 @@
 #include "MILP.h"
 #include "lp_lib.h"
 #include <GraphMol/RingInfo.h>
-#include <GraphMol/MolOps.h>
 
 //#ifndef __DEBUG_CONSTRAINTS__
 //#define __DEBUG_CONSTRAINTS__
 
-int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs, int allow_change_distance) {
+int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs) {
     //Uses lp_solve: based on demonstration code provided.
     unsigned int numunbroken;
     int broken, fragidx, origval;
     int Ncol, *colno = nullptr, i, ret = 0, output_max_e = 0;
     REAL *row = nullptr;
     lprec *lp;
-
-    // topological matrix
-    // The result of this is cached in the molecule's local property dictionary, which will handle deallocation.
-    // The caller should not delete this pointer.
-    double* dist_matrix = RDKit::MolOps::getDistanceMat(*mol, false, false);
 
     // Variables are: num electron pairs
     // added per bond-> i.e. 1 = single, 2 = double, 3 = triple,
@@ -60,22 +54,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     if (ret == 0) {
         set_add_rowmode(lp, TRUE);
 
-        // get broken bond idx and its atom
-        unsigned int broken_bond_atom_idx = 0;
-        unsigned int broken_bond_other_atom_idx = 0;
-        //RDKit::Atom *broken_end_atom = 0;
-
-        for (i = 0; i < num_bonds; i++) {
-            auto bond = mol->getBondWithIdx(i);
-            bond->getProp("Broken", broken);
-            if (broken){
-                broken_bond_atom_idx = bond->getBeginAtom()->getIdx();
-                broken_bond_other_atom_idx = bond->getBeginAtom()->getIdx();
-                break;
-            }
-        }
-
-        //All bonds must be at most MAX(current bond + 1 , TRIPLE bonds) ( <= 3 )
+        //All bonds must be at most TRIPLE bonds ( <= 3 )
         //except broken bonds ( <= 0 ) and ring bonds ( <= 2 )
         for (i = 0; i < num_bonds && ret == 0; i++) {
             set_int(lp, i + 1, TRUE); //sets variable to integer
@@ -85,42 +64,17 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             int end_lp_limit = 0, begin_lp_limit = 0;    //bonds for which there is no lone pair to donate (or broken, or in other fragment) are limited to 0
             bond->getProp("Broken", broken);
             RDKit::Atom *begin_atom = bond->getBeginAtom();
-            RDKit::Atom *end_atom = bond->getBeginAtom();
-            auto begin_atom_idx = begin_atom->getIdx();
-            auto end_atom_idx = end_atom->getIdx();
-
             begin_atom->getProp("FragIdx", fragidx);
             int min_limit = 0;
             if (!broken && fragidx == fragmentidx) {
-
-                // this is a hack, fix it
-                auto distance = std::min(dist_matrix[begin_atom_idx * num_atoms + broken_bond_atom_idx],
-                                         dist_matrix[begin_atom_idx * num_atoms + broken_bond_other_atom_idx]);
-                distance = std::min(distance,dist_matrix[end_atom_idx * num_atoms + broken_bond_atom_idx]);
-                distance = std::min(distance,dist_matrix[end_atom_idx * num_atoms + broken_bond_other_atom_idx]);
-
-                //std::cout << distance << std::endl;
+                limit = 3;
+                min_limit = 1;
                 min_single_bonds++;
-
-                //std::min(3, int(bond->getBondTypeAsDouble() + 1));
-                if(distance <= allow_change_distance){
-                    bond->getProp("NumUnbrokenRings", numunbroken);
-                    if (numunbroken > 0){
-                        limit = 2;
-                        // loss restrictions on a ring break
-                        min_limit = 1;// int(bond->getBondTypeAsDouble());
-                    }
-                    else {
-                        limit = 3;
-                        min_limit = int(bond->getBondTypeAsDouble());
-                        begin_lp_limit = allow_lp_q && getAtomLPLimit(begin_atom);
-                        end_lp_limit = allow_lp_q && getAtomLPLimit(bond->getEndAtom());
-                    }
-                }
-                else{
-                    // dont change
-                    min_limit = int(bond->getBondTypeAsDouble());
-                    limit = int(bond->getBondTypeAsDouble());
+                bond->getProp("NumUnbrokenRings", numunbroken);
+                if (numunbroken > 0) limit = 2;
+                else {
+                    begin_lp_limit = allow_lp_q && getAtomLPLimit(begin_atom);
+                    end_lp_limit = allow_lp_q && getAtomLPLimit(bond->getEndAtom());
                 }
             }
             //Valence limit constraint
@@ -135,7 +89,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
                 ret = 3;
                 break;
             }
-#ifdef __DEBUG_CONSTRAINTS__
+#ifdef __DEBUG_CONSTRsAINTS__
             printConstraint( 3, colno, false, limit );
 #endif
 
@@ -178,8 +132,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
         RDKit::RingInfo::VECT_INT_VECT::iterator bit = brings.begin();
         for (int ringidx = 0; bit != brings.end() && ret == 0; ++bit, ringidx++) {
 
-            if (ringidx == broken_ringidx)
-                continue;
+            if (ringidx == broken_ringidx) continue;
             row[0] = 1;
             row[1] = 1;
             row[2] = 1;
@@ -187,11 +140,9 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
             //Create a vector of flags indicating bonds included in the ring
             std::vector<int> ring_bond_flags(num_bonds);
-            for (int i = 0; i < num_bonds; i++)
-                ring_bond_flags[i] = 0;
+            for (int i = 0; i < num_bonds; i++) ring_bond_flags[i] = 0;
             RDKit::RingInfo::INT_VECT::iterator it;
-            for (it = bit->begin(); it != bit->end(); ++it)
-                ring_bond_flags[*it] = 1;
+            for (it = bit->begin(); it != bit->end(); ++it) ring_bond_flags[*it] = 1;
 
             //Traverse around the ring, creating the constraints
             RDKit::Bond *bond = mol->getBondWithIdx(*(bit->begin())); //Starting Bond
@@ -204,8 +155,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
                 colno[1] = bond->getIdx() + 1;
                 colno[2] = prev_bond->getIdx() + 1 + num_bonds;
                 colno[3] = bond->getIdx() + 1 + num_bonds;
-                if (!add_constraintex(lp, 4, row, colno, LE, 3))
-                    ret = 3;
+                if (!add_constraintex(lp, 4, row, colno, LE, 3)) ret = 3;
                 atom = bond->getOtherAtom(atom);
                 prev_bond = bond;
                 first_flag = 0;
@@ -241,17 +191,17 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
             //Base valence constraints
             RDKit::ROMol::OEDGE_ITER cbond_beg,cbond_end;
-		    boost::tie(cbond_beg, cbond_end) = mol->getAtomBonds( atom );
+            boost::tie(cbond_beg, cbond_end) = mol->getAtomBonds( atom );
             //RDKit::ROMol::OEDGE_ITER it = ip.first;
             int j = 0;
             if (hloss_allowed) j = 1;
 
             for ( ; cbond_beg != cbond_end; ++ cbond_beg ){
-            //for (; it != ip.second; ++it) {
+                //for (; it != ip.second; ++it) {
                 RDKit::Bond *cbond = (*mol)[*cbond_beg].get();
                 int cbond_broken;
                 cbond->getProp("Broken", cbond_broken);
-                if(cbond_broken) 
+                if(cbond_broken)
                     continue;
 
                 colno[j] = cbond->getIdx() + 1; //variable idx i.e. bond
@@ -333,24 +283,17 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     output_bmax.resize(Ncol);
     if (ret == 0) {
         get_variables(lp, row);
-        for (int j = 0; j < Ncol; j++)
-            output_bmax[j] = (int) row[j];
+        for (int j = 0; j < Ncol; j++) output_bmax[j] = (int) row[j];
         int obj = get_objective(lp);
         output_max_e = obj - min_single_bonds;
-    } else {
-        for (int j = 0; j < Ncol; j++)
-            output_bmax[j] = 0;
-        // NOTE RETURN -1 if can not find good solution
-        output_max_e = -1;
-    }
+    } else for (int j = 0; j < Ncol; j++) output_bmax[j] = 0;
+
     //Combine the lone pair results
-    for (int j = 0; j < num_bonds; j++)
-        output_bmax[j + num_bonds] += output_bmax[j + 2 * num_bonds];
+    for (int j = 0; j < num_bonds; j++) output_bmax[j + num_bonds] += output_bmax[j + 2 * num_bonds];
     //Condense the atom H loss charge position results to a single index (or -1 if none)
     int hloss_idx[2] = {-1, -1};
     for (int j = 0; j < num_atoms; j++) {
-        if (output_bmax[j + 3 * num_bonds])
-            hloss_idx[fragmentidx] = j;
+        if (output_bmax[j + 3 * num_bonds]) hloss_idx[fragmentidx] = j;
     }
     output_bmax.resize(2 * num_bonds + 2);
     output_bmax[2 * num_bonds] = hloss_idx[0];
@@ -367,14 +310,14 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 //Helper function - allows traversal of a ring one bond at a time
 RDKit::Bond *MILP::getNextBondInRing(RDKit::Bond *bond, RDKit::Atom *atom, std::vector<int> &ring_bond_flags) {
 
-	RDKit::ROMol::OEDGE_ITER beg_abond, end_abond;
-	boost::tie(beg_abond, end_abond)= atom->getOwningMol().getAtomBonds( atom );
-	for( ; beg_abond != end_abond; ++beg_abond ){
-		int idx = (*mol)[*beg_abond]->getIdx();
-		if( ring_bond_flags[idx] && idx != bond->getIdx() )
-			return atom->getOwningMol().getBondWithIdx(idx);
-	}
-	return nullptr;	//Error@!
+    RDKit::ROMol::OEDGE_ITER beg_abond, end_abond;
+    boost::tie(beg_abond, end_abond)= atom->getOwningMol().getAtomBonds( atom );
+    for( ; beg_abond != end_abond; ++beg_abond ){
+        int idx = (*mol)[*beg_abond]->getIdx();
+        if( ring_bond_flags[idx] && idx != bond->getIdx() )
+            return atom->getOwningMol().getBondWithIdx(idx);
+    }
+    return nullptr;	//Error@!
 }
 
 void MILP::printConstraint(int num_terms, int *colno, bool ge, int val) {
