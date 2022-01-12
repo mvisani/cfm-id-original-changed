@@ -112,7 +112,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
                     }
                     else {
                         limit = 3;
-                        min_limit = int(bond->getBondTypeAsDouble());
+                        min_limit = 1; //int(bond->getBondTypeAsDouble());
                         begin_lp_limit = allow_lp_q && getAtomLPLimit(begin_atom);
                         end_lp_limit = allow_lp_q && getAtomLPLimit(bond->getEndAtom());
                     }
