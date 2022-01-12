@@ -98,8 +98,8 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
             }
         }
 
-        if (number_child_added > 0)
-            break;
+        //if (number_child_added > 0)
+        //    break;
     }
 
 }
