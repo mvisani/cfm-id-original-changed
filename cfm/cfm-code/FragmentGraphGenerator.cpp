@@ -212,7 +212,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node,
 
             auto current_child_size = node.children.size();
             node.applyBreak(brk, ifrag_idx);
-            node.generateChildrenOfBreak(brk);
+            node.generateChildrenOfBreak(brk, false);
             auto added_child_count = node.children.size() - current_child_size;
             // if this is ring break
             // update control vars
@@ -301,7 +301,7 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
         //Generate the children
         for (int iidx = 0; iidx < it->getNumIonicFragAllocations(); iidx++) {
             node.applyBreak(*it, iidx);
-            node.generateChildrenOfBreak(*it);
+            node.generateChildrenOfBreak(*it, false);
 
             // if this is ring break
             // update control vars

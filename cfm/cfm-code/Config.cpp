@@ -82,6 +82,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.allow_intermediate_peak = true;
     cfg.allow_cyclization = false;
     cfg.use_log_scale_peak = false;
+    cfg.use_iterative_fg_gen = false;
 }
 
 void initConfig(config_t &cfg, std::string &filename, bool report_all) {
@@ -164,6 +165,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "allow_intermediate_peak") cfg.allow_intermediate_peak = (bool) value;
         else if (name == "allow_cyclization") cfg.allow_cyclization = (bool) value;
         else if (name == "use_log_scale_peak") cfg.use_log_scale_peak = (bool) value;
+        else if (name == "use_iterative_fg_gen") cfg.use_iterative_fg_gen = (bool) value;
         else std::cout << "Warning: Unknown parameter configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -220,7 +222,14 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             std::cout << std::endl;
         }
         if (cfg.allow_intermediate_peak)
-            std::cout << "Allow intermeidate peaks" << std::endl;
+            std::cout << "Allow intermediate peaks" << std::endl;
+        if (cfg.allow_cyclization)
+            std::cout << "Allow cyclization" << std::endl;
+        if (cfg.use_log_scale_peak)
+            std::cout << "Use log scale peak" << std::endl;
+        if (cfg.use_iterative_fg_gen)
+            std::cout << "Use iterative fragmentation graph generation" << std::endl;
+
         if (cfg.param_init_type == PARAM_RANDOM_INIT) std::cout << "Using Random Parameter Initialisation" << std::endl;
         else if (cfg.param_init_type == PARAM_FULL_ZERO_INIT) std::cout << "Using Full Zero Initialisation" << std::endl;
         else if (cfg.param_init_type == PARAM_ZERO_INIT) std::cout << "Using Zero Initialisation (non-zero Bias)" << std::endl;
