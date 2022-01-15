@@ -54,6 +54,7 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk, bool use_iterative_fg
 
     // not use_iterative_fg_gen, following loop should only run once
     // else run MAX_BOND_CHANGE_DISTANCE times
+    // loop will stop of there is solution
     auto number_child_added = 0;
     auto max_allowed_bond_change = use_iterative_fg_gen ? MAX_BOND_CHANGE_DISTANCE : 1;
     for(int allowed_bond_change = 1; allowed_bond_change <= MAX_BOND_CHANGE_DISTANCE; allowed_bond_change++) {

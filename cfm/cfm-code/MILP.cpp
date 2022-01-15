@@ -76,8 +76,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             }
         }
 
-        //All bonds must be at most MAX(current bond + 1 , TRIPLE bonds) ( <= 3 )
-        //except broken bonds ( <= 0 ) and ring bonds ( <= 2 )
+
         for (i = 0; i < num_bonds && ret == 0; i++) {
 
             set_int(lp, i + 1, TRUE); //sets variable to integer
@@ -86,6 +85,8 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             int end_lp_limit = 0, begin_lp_limit = 0;    //bonds for which there is no lone pair to donate (or broken, or in other fragment) are limited to 0
             int min_limit = 0;
             if (!strict) {
+                //All bonds must be at most TRIPLE bonds ( <= 3 )
+                //except broken bonds ( <= 0 ) and ring bonds ( <= 2 )
                 RDKit::Bond *bond = mol->getBondWithIdx(i);
                 bond->getProp("Broken", broken);
                 RDKit::Atom *begin_atom = bond->getBeginAtom();
@@ -104,6 +105,9 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
                 }
             }
             else {
+                // All none-ring bonds must be at most MAX(current bond + 1 , TRIPLE bonds) ( <= 3 )
+                // All ring bond must be at Max Double Bond
+                // Add current bond type as lower bond in this mode for none ring bond
                 RDKit::Bond *bond = mol->getBondWithIdx(i);
                 bond->getProp("Broken", broken);
                 RDKit::Atom *begin_atom = bond->getBeginAtom();
