@@ -119,7 +119,7 @@ public:
 
     // For an already applied break, generate the possible child fragments
     // and add them to the children field in the node
-    void generateChildrenOfBreak(Break &brk);
+    void generateChildrenOfBreak(Break &brk, bool use_iterative_fg_gen);
 
     void setTmpTheta(double val, int energy) {
         if (tmp_thetas.size() < energy + 1)

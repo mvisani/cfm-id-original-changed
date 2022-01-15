@@ -23,7 +23,8 @@
 //#ifndef __DEBUG_CONSTRAINTS__
 //#define __DEBUG_CONSTRAINTS__
 
-int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs, int allow_change_distance) {
+int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs, bool strict,
+                    int allow_change_distance) {
     //Uses lp_solve: based on demonstration code provided.
     unsigned int numunbroken;
     int broken, fragidx, origval;
@@ -78,49 +79,69 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
         //All bonds must be at most MAX(current bond + 1 , TRIPLE bonds) ( <= 3 )
         //except broken bonds ( <= 0 ) and ring bonds ( <= 2 )
         for (i = 0; i < num_bonds && ret == 0; i++) {
+
             set_int(lp, i + 1, TRUE); //sets variable to integer
 
-            RDKit::Bond *bond = mol->getBondWithIdx(i);
             int limit = 0;      //bonds that are broken or in the other fragment are limited to 0
             int end_lp_limit = 0, begin_lp_limit = 0;    //bonds for which there is no lone pair to donate (or broken, or in other fragment) are limited to 0
-            bond->getProp("Broken", broken);
-            RDKit::Atom *begin_atom = bond->getBeginAtom();
-            RDKit::Atom *end_atom = bond->getBeginAtom();
-            auto begin_atom_idx = begin_atom->getIdx();
-            auto end_atom_idx = end_atom->getIdx();
-
-            begin_atom->getProp("FragIdx", fragidx);
             int min_limit = 0;
-            if (!broken && fragidx == fragmentidx) {
+            if (!strict) {
+                RDKit::Bond *bond = mol->getBondWithIdx(i);
+                bond->getProp("Broken", broken);
+                RDKit::Atom *begin_atom = bond->getBeginAtom();
+                begin_atom->getProp("FragIdx", fragidx);
 
-                // this is a hack, fix it
-                auto distance = std::min(dist_matrix[begin_atom_idx * num_atoms + broken_bond_atom_idx],
-                                         dist_matrix[begin_atom_idx * num_atoms + broken_bond_other_atom_idx]);
-                distance = std::min(distance,dist_matrix[end_atom_idx * num_atoms + broken_bond_atom_idx]);
-                distance = std::min(distance,dist_matrix[end_atom_idx * num_atoms + broken_bond_other_atom_idx]);
-
-                //std::cout << distance << std::endl;
-                min_single_bonds++;
-
-                //std::min(3, int(bond->getBondTypeAsDouble() + 1));
-                if(distance <= allow_change_distance){
+                if (!broken && fragidx == fragmentidx) {
+                    limit = 3;
+                    min_limit = 1;
+                    min_single_bonds++;
                     bond->getProp("NumUnbrokenRings", numunbroken);
-                    if (numunbroken > 0){
-                        limit = 2;
-                        // loss restrictions on a ring break
-                        min_limit = 1;// int(bond->getBondTypeAsDouble());
-                    }
+                    if (numunbroken > 0) limit = 2;
                     else {
-                        limit = std::max(3, int(bond->getBondTypeAsDouble()) + 1);
-                        min_limit = int(bond->getBondTypeAsDouble());
                         begin_lp_limit = allow_lp_q && getAtomLPLimit(begin_atom);
                         end_lp_limit = allow_lp_q && getAtomLPLimit(bond->getEndAtom());
                     }
                 }
-                else{
-                    // dont change
-                    min_limit = int(bond->getBondTypeAsDouble());
-                    limit = int(bond->getBondTypeAsDouble());
+            }
+            else {
+                RDKit::Bond *bond = mol->getBondWithIdx(i);
+                bond->getProp("Broken", broken);
+                RDKit::Atom *begin_atom = bond->getBeginAtom();
+                RDKit::Atom *end_atom = bond->getBeginAtom();
+                auto begin_atom_idx = begin_atom->getIdx();
+                auto end_atom_idx = end_atom->getIdx();
+
+                begin_atom->getProp("FragIdx", fragidx);
+                if (!broken && fragidx == fragmentidx) {
+
+                    // this is a hack, fix it
+                    auto distance = std::min(dist_matrix[begin_atom_idx * num_atoms + broken_bond_atom_idx],
+                                             dist_matrix[begin_atom_idx * num_atoms + broken_bond_other_atom_idx]);
+                    distance = std::min(distance,dist_matrix[end_atom_idx * num_atoms + broken_bond_atom_idx]);
+                    distance = std::min(distance,dist_matrix[end_atom_idx * num_atoms + broken_bond_other_atom_idx]);
+
+                    min_single_bonds++;
+
+                    //std::min(3, int(bond->getBondTypeAsDouble() + 1));
+                    if(distance <= allow_change_distance){
+                        bond->getProp("NumUnbrokenRings", numunbroken);
+                        if (numunbroken > 0){
+                            limit = 2;
+                            // loss restrictions on a ring break
+                            min_limit = 1;// int(bond->getBondTypeAsDouble());
+                        }
+                        else {
+                            limit = std::max(3, int(bond->getBondTypeAsDouble()) + 1);
+                            min_limit = int(bond->getBondTypeAsDouble());
+                            begin_lp_limit = allow_lp_q && getAtomLPLimit(begin_atom);
+                            end_lp_limit = allow_lp_q && getAtomLPLimit(bond->getEndAtom());
+                        }
+                    }
+                    else{
+                        // dont change
+                        min_limit = int(bond->getBondTypeAsDouble());
+                        limit = int(bond->getBondTypeAsDouble());
+                    }
                 }
             }
             //Valence limit constraint

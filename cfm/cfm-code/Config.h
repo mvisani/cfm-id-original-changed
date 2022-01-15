@@ -251,6 +251,7 @@ struct config_t {
     bool allow_cyclization;
 
     bool use_log_scale_peak;
+    bool use_iterative_fg_gen;
 };
 
 void initDefaultConfig(config_t &cfg);
