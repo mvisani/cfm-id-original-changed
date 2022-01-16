@@ -26,7 +26,7 @@ FragmentGraph *getTestGraph(std::string smiles_or_inchi,
     cfg.allow_frag_detours = allow_frag_detours;
     FragmentGraph *graph = gg.createNewGraph(&cfg);
 
-    gg.compute(*startNode, graph_depth, -1, 2);
+    gg.compute(*startNode, graph_depth, -1, 2, false);
     delete startNode;
     return graph;
 }

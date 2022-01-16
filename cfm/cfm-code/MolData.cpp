@@ -91,7 +91,7 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
 
     const int root_id = -1;
-    fgen.compute(*startnode, cfg->fg_depth, root_id, cfg->max_ring_breaks);
+    fgen.compute(*startnode, cfg->fg_depth, root_id, cfg->max_ring_breaks, cfg->use_iterative_fg_gen);
 
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
@@ -128,7 +128,7 @@ void MolData::computeLikelyFragmentGraphAndSetThetas(
     fg = fgen.createNewGraph(cfg);
     FragmentTreeNode *startnode =
             fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
-    fgen.compute(*startnode, cfg->fg_depth, -1, 0.0, cfg->max_ring_breaks);
+    fgen.compute(*startnode, cfg->fg_depth, -1, 0.0, cfg->max_ring_breaks, cfg->use_iterative_fg_gen);
     if (!cfg->allow_frag_detours)
         fg->removeDetours();
 
