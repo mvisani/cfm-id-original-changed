@@ -34,7 +34,7 @@
 #include <GraphMol/ForceFieldHelpers/MMFF/AtomTyper.h>
 #include <GraphMol/ChemTransforms/ChemTransforms.h>
 
-void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
+void FragmentTreeNode::generateChildrenOfBreak(Break &brk, bool use_iterative_fg_gen) {
 
     bool verbose = false;
 
@@ -52,42 +52,58 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
     int f0_max_limit = std::min(total_free_epairs, orig_epairs.first + MAX_E_MOVE);
     int f1_max_limit = std::min(total_free_epairs, orig_epairs.second + MAX_E_MOVE);
 
-    //Compute the max electron assignment for F0
-    MILP f0_solver(ion.get(), 0, brk_ringidx, verbose);
-    f0_max_e = f0_solver.runSolver(f0_output_bmax, true, f0_max_limit);
+    // not use_iterative_fg_gen, following loop should only run once
+    // else run MAX_BOND_CHANGE_DISTANCE times
+    // loop will stop of there is solution
+    auto number_child_added = 0;
+    auto max_allowed_bond_change = use_iterative_fg_gen ? MAX_BOND_CHANGE_DISTANCE : 1;
+    for(int allowed_bond_change = 1; allowed_bond_change <= MAX_BOND_CHANGE_DISTANCE; allowed_bond_change++) {
+        //Compute the max electron assignment for F0
+        MILP f0_solver(ion.get(), 0, brk_ringidx, verbose);
+        f0_max_e = f0_solver.runSolver(f0_output_bmax, true, f0_max_limit, use_iterative_fg_gen, allowed_bond_change);
 
-    //Compute the max electron assignment for F1
-    if (brk.getBondIdx() != -1) {
-        MILP f1_solver(ion.get(), 1, brk_ringidx, verbose);
-        f1_max_e = f1_solver.runSolver(f1_output_bmax, true, f1_max_limit);
+        if(f0_max_e == -1)
+            return;
 
-        //Combine the electron allocations of the two fragments
-        unsigned int N = f0_output_bmax.size() - 2;
-        for (unsigned int i = 0; i < N; i++)
-            f0_output_bmax[i] += f1_output_bmax[i];
-        f0_output_bmax[N + 1] = f1_output_bmax[N + 1];
-    }
+        //Compute the max electron assignment for F1
+        if (brk.getBondIdx() != -1) {
+            MILP f1_solver(ion.get(), 1, brk_ringidx, verbose);
+            f1_max_e = f1_solver.runSolver(f1_output_bmax, true, f1_max_limit, use_iterative_fg_gen, allowed_bond_change);
 
-    //Remove single bonds
-    int num_bonds = f0_output_bmax.size() / 2 - 1;
-    for (unsigned int i = 0; i < num_bonds; i++) {
-        if (f0_output_bmax[i] >= 1) f0_output_bmax[i] -= 1;
-    }
-
-    //Iterate through the possible solutions, adding them to the node as children
-    int min_f0 = total_free_epairs - f1_max_e;
-    int max_f0 = f0_max_e;
-    if (brk.isRingBreak()) {
-        int charge_frag = 0;
-        for (int e_f0 = min_f0; e_f0 <= max_f0; e_f0++) {
-            addChild(e_f0, total_free_epairs, f0_output_bmax, brk, charge_frag);
+            //Combine the electron allocations of the two fragments
+            unsigned int N = f0_output_bmax.size() - 2;
+            for (unsigned int i = 0; i < N; i++)
+                f0_output_bmax[i] += f1_output_bmax[i];
+            f0_output_bmax[N + 1] = f1_output_bmax[N + 1];
         }
-    } else {
-        for (int charge_frag = 0; charge_frag <= 1; charge_frag++) {
+
+        if(f1_max_e == -1)
+            return;
+
+        //Remove single bonds
+        int num_bonds = f0_output_bmax.size() / 2 - 1;
+        for (unsigned int i = 0; i < num_bonds; i++) {
+            if (f0_output_bmax[i] >= 1) f0_output_bmax[i] -= 1;
+        }
+
+        //Iterate through the possible solutions, adding them to the node as children
+        int min_f0 = total_free_epairs - f1_max_e;
+        int max_f0 = f0_max_e;
+        if (brk.isRingBreak()) {
+            int charge_frag = 0;
             for (int e_f0 = min_f0; e_f0 <= max_f0; e_f0++) {
-                addChild(e_f0, total_free_epairs, f0_output_bmax, brk, charge_frag);
+                number_child_added += addChild(e_f0, total_free_epairs, f0_output_bmax, brk, charge_frag);
+            }
+        } else {
+            for (int charge_frag = 0; charge_frag <= 1; charge_frag++) {
+                for (int e_f0 = min_f0; e_f0 <= max_f0; e_f0++) {
+                    number_child_added +=  addChild(e_f0, total_free_epairs, f0_output_bmax, brk, charge_frag);
+                }
             }
         }
+
+        if (number_child_added > 0)
+            break;
     }
 }
 

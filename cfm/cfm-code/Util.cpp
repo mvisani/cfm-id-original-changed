@@ -161,7 +161,7 @@ int getValence(const RDKit::Atom *atom) {
     //special case for nitrogroup
     int on_nitro_group;
     atom->getProp("NitroGroup", on_nitro_group);
-    if (atom->getSymbol() == "O" && atom->getFormalCharge() == -1)
+    if (atom->getSymbol() == "O" && atom->getFormalCharge() == -1 && on_nitro_group)
     {
         valence = 1;
         return valence;

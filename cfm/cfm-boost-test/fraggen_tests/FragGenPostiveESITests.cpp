@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_SUITE(FragGenTestPositiveESIMaxElectronMovement)
         std::vector<Break> breaks;
         node->generateBreaks(breaks, false, false);
         node->applyBreak(breaks[12], 0);	//Break Bond 11 (after the O)
-        node->generateChildrenOfBreak(breaks[12]);
+        node->generateChildrenOfBreak(breaks[12], false);
 
         //Creat a simple graph for just these breaks
         config_t cfg; initDefaultConfig(cfg);
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_SUITE(FragGenTestPositiveESIMaxElectronMovement)
             std::vector<Break> child_breaks;
             child->generateBreaks(child_breaks, false, false);
             child->applyBreak(breaks[5], 0);	//Break Bond 5
-            child->generateChildrenOfBreak(breaks[5]);
+        child->generateChildrenOfBreak(breaks[5], false);
             itt = child->children.begin();
             for( ; itt != child->children.end(); ++itt ){
                 fg.addToGraph( *itt, 0 );
