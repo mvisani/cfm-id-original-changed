@@ -32,6 +32,8 @@ probabilities using those thetas.
 #include <GraphMol/Fingerprints/Fingerprints.h>
 #include <GraphMol/RDKitBase.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
+#include <GraphMol/Descriptors/MolDescriptors.h>
+#include <GraphMol/Descriptors/Crippen.h>
 #include <INCHI-API/inchi.h>
 #include <string>
 
@@ -763,6 +765,8 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
             rwmol = RDKit::SmilesToMol(smiles_or_inchi);
             RDKit::ExtraInchiReturnValues rv;
             out << "#InChiKey=" << RDKit::InchiToInchiKey(RDKit::MolToInchi(*rwmol, rv)) << std::endl;
+            out << "#Formula=" << RDKit::Descriptors::calcMolFormula(*rwmol) << std::endl;
+            out << "#PMass=" << std::fixed << std::setprecision(5) << getParentIonMass() << std::endl;
             delete rwmol;
         }
 
