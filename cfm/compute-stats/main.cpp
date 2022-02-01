@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 6) {
         try {
             ppm_mass_tol = boost::lexical_cast<double>(argv[5]);
-        } catch (boost::bad_lexical_cast e) {
+        } catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid ppm_mass_tol (Expecting numerical): " << argv[5]
                       << std::endl;
             exit(1);
@@ -344,8 +344,14 @@ int main(int argc, char *argv[]) {
                 } // If it's not in the MSP, we failed to predict/enumerate it
             } else {
                 std::string pred_spec_file =
-                        predicted_spec_dir + "/" + mit->getId() + ".log";
-                mit->readInSpectraFromFile(pred_spec_file, true);
+                        predicted_spec_dir + "/" + mit->getId();
+                if (boost::filesystem::exists( pred_spec_file + ".log" ) )
+                    mit->readInSpectraFromFile(pred_spec_file + ".log" , true);
+                else if (boost::filesystem::exists( pred_spec_file + ".txt" ) )
+                    mit->readInSpectraFromFile(pred_spec_file + ".txt" , true);
+                else
+                    std::cerr << "Can not open " << pred_spec_file + ".txt" << " or " << pred_spec_file + ".log" << std::endl;
+
             }
             if (quantise_spectra_dec_pl >= 0) {
                 mit->quantisePredictedSpectra(quantise_spectra_dec_pl);
