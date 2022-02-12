@@ -24,6 +24,7 @@
 #include <GraphMol/BondIterators.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
 #include <GraphMol/SmilesParse/SmilesWrite.h>
+#include <GraphMol/new_canon.h>
 #include <INCHI-API/inchi.h>
 
 
@@ -55,8 +56,17 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
     } else
         rwmol = RDKit::SmilesToMol(smiles_or_inchi);
 
-    //This is dirty, but for some reason RDKit doesn't throw the exception...
-    if (!rwmol) throw RDKit::SmilesParseException("Error occurred - assuming Smiles Parse  Exception");
+    // This is hacky way to get mol Canonicalized
+    rwmol = RDKit::SmilesToMol(RDKit::MolToSmiles(*rwmol));
+    // Canonical Rank Atoms
+    /*std::vector<unsigned int> atomRanks;
+    bool breakTies = true;
+    bool doIsomericSmiles = false;
+    RDKit::Canon::rankMolAtoms(*rwmol, atomRanks, doIsomericSmiles, doIsomericSmiles);*/
+
+    // This is dirty, but for some reason RDKit doesn't throw the exception...
+    if (!rwmol)
+        throw RDKit::SmilesParseException("Error occurred - assuming Smiles Parse  Exception");
 
     //Remove stereochemistry
     RDKit::MolOps::removeStereochemistry(*rwmol);
