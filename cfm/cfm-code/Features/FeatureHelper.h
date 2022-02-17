@@ -43,52 +43,49 @@ public:
 
 class FeatureHelper {
 public:
-    FeatureHelper() {
-    };
+    FeatureHelper(FeatureCalculator *fc) {
+        if(fc != nullptr) {
+            exec_flags[0] = fc->includesFeature("GasteigerCharges");
+            exec_flags[1] = fc->includesFeature("HydrogenMovement") ||
+                            fc->includesFeature("HydrogenRemoval");
 
-    explicit FeatureHelper(FeatureCalculator *fc) {
-        exec_flags[0] = fc->includesFeature("GasteigerCharges");
-        exec_flags[1] = fc->includesFeature("HydrogenMovement") ||
-                        fc->includesFeature("HydrogenRemoval");
+            exec_flags[2] = fc->includesFeature("IonRootMMFFAtomType") ||
+                            fc->includesFeature("NLRootMMFFAtomType") ||
+                            fc->includesFeature("IonNeighbourMMFFAtomType") ||
+                            fc->includesFeature("NLNeighbourMMFFAtomType");
 
-        exec_flags[2] = fc->includesFeature("IonRootMMFFAtomType") ||
-                        fc->includesFeature("NLRootMMFFAtomType") ||
-                        fc->includesFeature("IonNeighbourMMFFAtomType") ||
-                        fc->includesFeature("NLNeighbourMMFFAtomType");
+            exec_flags[3] = fc->includesFeature("BrokenOrigBondType") ||
+                            fc->includesFeature("NeighbourOrigBondTypes");
 
-        exec_flags[3] = fc->includesFeature("BrokenOrigBondType") ||
-                        fc->includesFeature("NeighbourOrigBondTypes");
+            exec_flags[4] = fc->includesFeature("IonFunctionalGroupFeatures") ||
+                            fc->includesFeature("NLFunctionalGroupFeatures") ||
+                            fc->includesFeature("IonFunctionalGroupFeaturesD2") ||
+                            fc->includesFeature("NLFunctionalGroupFeaturesD2") ||
+                            fc->includesFeature("IonFunctionalGroupRootOnlyFeatures") ||
+                            fc->includesFeature("NLFunctionalGroupRootOnlyFeatures");
 
-        exec_flags[4] = fc->includesFeature("IonFunctionalGroupFeatures") ||
-                        fc->includesFeature("NLFunctionalGroupFeatures") ||
-                        fc->includesFeature("IonFunctionalGroupFeaturesD2") ||
-                        fc->includesFeature("NLFunctionalGroupFeaturesD2") ||
-                        fc->includesFeature("IonFunctionalGroupRootOnlyFeatures") ||
-                        fc->includesFeature("NLFunctionalGroupRootOnlyFeatures");
+            exec_flags[5] = fc->includesFeature("IonExtraFunctionalGroupFeatures") ||
+                            fc->includesFeature("NLExtraFunctionalGroupFeatures");
 
-        exec_flags[5] = fc->includesFeature("IonExtraFunctionalGroupFeatures") ||
-                        fc->includesFeature("NLExtraFunctionalGroupFeatures");
+            if (exec_flags[4]) {
+                fparams = new RDKit::FragCatParams(FGRPS_PICKLE);
+                if (fparams->getNumFuncGroups() != NUM_FGRPS)
+                    throw FeatureHelperException(
+                            "Mismatch in expected and found number of functional groups");
+            }
 
-        if (exec_flags[4]) {
-            fparams = new RDKit::FragCatParams(FGRPS_PICKLE);
-            if (fparams->getNumFuncGroups() != NUM_FGRPS)
-                throw FeatureHelperException(
-                        "Mismatch in expected and found number of functional groups");
-        }
-
-        if (exec_flags[5]) {
-            xfparams = new RDKit::FragCatParams(EXTRA_FGRPS_PICKLE);
-            if (xfparams->getNumFuncGroups() != NUM_EXTRA_FGRPS)
-                throw FeatureHelperException(
-                        "Mismatch in expected and found number of extra functional groups");
+            if (exec_flags[5]) {
+                xfparams = new RDKit::FragCatParams(EXTRA_FGRPS_PICKLE);
+                if (xfparams->getNumFuncGroups() != NUM_EXTRA_FGRPS)
+                    throw FeatureHelperException(
+                            "Mismatch in expected and found number of extra functional groups");
+            }
         }
     };
 
     ~FeatureHelper() {
-        if(fparams != nullptr)
-            delete fparams;
-        if(xfparams != nullptr)
-            delete xfparams;
+        delete fparams;
+        delete xfparams;
     }
 
     void addLabels(RDKit::RWMol *rwmol) {

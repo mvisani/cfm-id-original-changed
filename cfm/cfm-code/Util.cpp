@@ -149,6 +149,7 @@ void labelNitroGroup(const RDKit::ROMol *mol) {
         }
 
     }
+    delete fparams;
 }
 
 int getValence(const RDKit::Atom *atom) {
