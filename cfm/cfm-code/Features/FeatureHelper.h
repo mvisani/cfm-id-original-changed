@@ -43,7 +43,8 @@ public:
 
 class FeatureHelper {
 public:
-    FeatureHelper(FeatureCalculator *fc) {
+    FeatureHelper() = default;
+    explicit FeatureHelper(FeatureCalculator *fc) {
         if(fc != nullptr) {
             exec_flags[0] = fc->includesFeature("GasteigerCharges");
             exec_flags[1] = fc->includesFeature("HydrogenMovement") ||
