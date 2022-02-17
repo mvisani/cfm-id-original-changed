@@ -60,9 +60,9 @@ class FragmentGraphTimeoutException : public std::exception {
 class FragmentGraphGenerator {
 public:
     //Constructor
-    FragmentGraphGenerator() : verbose(0), mols_to_fv(false) { fh = new FeatureHelper(); };
+    FragmentGraphGenerator() : verbose(0), mols_to_fv(false), fc(nullptr), fh(nullptr) {};
 
-    FragmentGraphGenerator(int a_verbose) : verbose(a_verbose), mols_to_fv(false) { fh = new FeatureHelper(); };
+    FragmentGraphGenerator(int a_verbose) : verbose(a_verbose), mols_to_fv(false), fc(nullptr), fh(nullptr) {};
 
     //Constructor to use if the transition molecules are to be replaced by a feature vector as
     //soon as they are created (for less memory usage).
@@ -70,7 +70,7 @@ public:
             fc(a_fc), verbose(0), mols_to_fv(a_mols_to_fv) { fh = new FeatureHelper(fc); };
 
     //Destructor
-    ~FragmentGraphGenerator() { delete fh; };
+    virtual  ~FragmentGraphGenerator() { delete fh; };
 
     //Start a graph. Compute can then add to this graph, but it is the caller's
     //responsibility to delete it
@@ -123,6 +123,11 @@ public:
         fc = new FeatureCalculator(*nnparam->getFeatureNames());
         mols_to_fv = true;
         fh = new FeatureHelper(fc);
+    };
+
+    // LikelyFragmentGraphGenerator need to delete its fc
+    virtual ~LikelyFragmentGraphGenerator() {
+        delete fc;
     };
 
     //Start a graph. Compute can then add to this graph, but it is the caller's

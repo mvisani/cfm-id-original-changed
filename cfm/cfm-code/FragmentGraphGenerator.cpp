@@ -122,7 +122,8 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
     //Ionize the molecule
     applyIonization(rwmol, ionization_mode);
 
-    return (new FragmentTreeNode(romol_ptr_t(rwmol), num_ep, 0, fh, e_loc));
+    auto start_node = new FragmentTreeNode(romol_ptr_t(rwmol), num_ep, 0, fh, e_loc);
+    return start_node;
 }
 
 int FragmentGraphGenerator::countExtraElectronPairs(RDKit::RWMol *rwmol, std::vector<int> &output_e_loc) {
