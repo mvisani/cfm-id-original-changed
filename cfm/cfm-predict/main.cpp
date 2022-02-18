@@ -360,10 +360,12 @@ int main(int argc, char *argv[]) {
             if (output_mode == SINGLE_TXT_OUTPUT_MODE && mol_idx > 0 )
                 *out << std::endl << std::endl;
             mol_data.outputSpectra(*out, "Predicted", do_annotate);
-            *out << std::endl;
-            if (do_annotate)
-                mol_data.writeFragmentsOnly(*out);
 
+            if (do_annotate){
+                *out << std::endl;
+                mol_data.writeFragmentsOnly(*out);
+            }
+            
         } else if (output_mode == MSP_OUTPUT_MODE)
             mol_data.writePredictedSpectraToMspFileStream(*out);
         else if (output_mode == MGF_OUTPUT_MODE)
