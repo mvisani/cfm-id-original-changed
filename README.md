@@ -36,7 +36,7 @@ This is project is using  GNU LESSER GENERAL PUBLIC LICENSE 2.1, for detail refe
 * Note Only Insatll on linux and Mac has been verified, while install on Windows from source code is possible 
 
 ### Use Pre Build Docker Image ###
-Docker Image can be found at <https://hub.docker.com/repository/docker/wishartlab/cfmid>
+Docker Image can be found at <https://hub.docker.com/r/wishartlab/cfmid>.
 
     docker push wishartlab/cfmid:latest
 
