@@ -1,6 +1,6 @@
 FROM adoptopenjdk/openjdk11:jre-11.0.8_10-alpine
 LABEL author="Fei Wang" 
-LABEL name="CFM-ID 4 Docker Image include MSML and MSRB"
+LABEL name="CFM-ID 4 Docker Image"
 
 ###########################################################################################
 # Set ENV
@@ -16,7 +16,7 @@ ARG MODEL_DIR="/trained_models_cfmid4.0"
 ############################################################################################
 RUN	apk update && apk add --no-cache wget tar;\
 	cd /tmp;\
-	wget -O lp_solve_src.tar.gz https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download;\
+	wget -O lp_solve_src.tar.gz 'https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download' ;\
 	tar xvzf lp_solve_src.tar.gz;\
 	rm lp_solve_src.tar.gz;\
 	apk del wget tar;
@@ -42,36 +42,28 @@ RUN	apk update && apk add --no-cache g++ gcc make;\
 	apk del g++ gcc make;
 
 ############################################################################################
-# Build RDkit
+# Build RdKit
 ############################################################################################
 # download rdkit
+ARG RDKit_VERSION="2017_09_3"
 RUN apk update && apk add --no-cache wget tar;\
 	cd /tmp;\
-	wget -O rdkit.tar.gz https://github.com/rdkit/rdkit/archive/Release_2020_09_4.tar.gz;\
+	wget -O rdkit.tar.gz https://github.com/rdkit/rdkit/archive/Release_${RDKit_VERSION}.tar.gz ;\
 	tar xvzf rdkit.tar.gz;\
 	rm rdkit.tar.gz;\
 	apk del wget tar;
 
-WORKDIR /tmp/rdkit-Release_2020_09_4
+WORKDIR /tmp/rdkit-Release_${RDKit_VERSION}
 # build and install rdkit
+# DRDK_OPTIMIZE_NATIVE set to OFF since we are building for docker
 RUN apk add --no-cache g++ gcc make cmake boost-dev;\
 	mkdir build;\
 	cd build;\
-	# DRDK_OPTIMIZE_NATIVE set to OFF since we are building for docker
-	cmake .. -DRDK_PGSQL_STATIC=OFF\
-		 	  -DRDK_BUILD_PYTHON_WRAPPERS=OFF\
-			  -DRDK_BUILD_CPP_TESTS=OFF  \
-			  -DRDK_BUILD_DESCRIPTORS3D=OFF\
-			  -DRDK_INSTALL_STATIC_LIBS=OFF\
-			  -DRDK_INSTALL_INTREE=OFF\
-			  -DRDK_BUILD_INCHI_SUPPORT=ON\ 
-			  -DRDK_OPTIMIZE_NATIVE=OFF\
-			  -DCMAKE_CXX_STANDARD=11\
-			  -DCMAKE_BUILD_TYPE=Release;\
-	make install -j 6;\
+	cmake .. -DRDK_PGSQL_STATIC=OFF -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_CPP_TESTS=OFF -DRDK_BUILD_DESCRIPTORS3D=OFF -DRDK_INSTALL_STATIC_LIBS=OFF -DRDK_INSTALL_INTREE=OFF -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_OPTIMIZE_NATIVE=OFF -DCMAKE_CXX_STANDARD=11 -DCMAKE_BUILD_TYPE=Release;\
+	make install -j 12;\
 	mkdir -p /usr/local/include/rdkit/External/INCHI-API/;\
 	cp ../External/INCHI-API/*.h /usr/local/include/rdkit/External/INCHI-API/;\
-	rm -rf /tmp/rdkit-Release_2020_09_4;\
+	rm -rf /tmp/rdkit-Release_${RDKit_VERSION};\
 	apk del g++ gcc make cmake boost-dev;\
 	apk add --no-cache boost-serialization boost-regex;
 
@@ -104,9 +96,10 @@ RUN apk update && apk add --no-cache wget tar g++ gcc make;\
 # Build CFM-ID 4 MSML
 ############################################################################################
 # build and install cfm
+ARG MSML_VERSION="4.4.3"
 RUN apk update && apk add --no-cache wget tar;\
 	cd /opt;\
-	wget -O cfmid.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/CFM-ID_4.4.3.tar.gz;\
+	wget -O cfmid.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/CFM-ID_${MSML_VERSION}.tar.gz ;\
 	mkdir cfmid;\
 	tar xf cfmid.tar.gz -C cfmid;\
 	rm cfmid.tar.gz;\
@@ -128,7 +121,7 @@ RUN apk add --no-cache g++ gcc make cmake boost-dev;\
 			 -DRDKIT_INCLUDE_EXT_DIR=/usr/local/include/rdkit/External\
 			 -DRDKIT_LIBRARY_DIR=/usr/local/lib\
 			 -DCMAKE_CXX_STANDARD=11;\
-	make install -j 6;\
+	make install -j 12;\
 	cd .. && rm -rf build;\
 	apk del g++ gcc make cmake boost-dev;\
 	apk add --no-cache boost-filesystem boost-serialization boost-system boost-thread;\
@@ -138,11 +131,12 @@ RUN apk add --no-cache g++ gcc make cmake boost-dev;\
 ############################################################################################
 # Build CFM-ID 4 MSRB
 ############################################################################################
+ARG MSRB_VERSION="1.1.11"
 ENV PATH /opt/msrb:$PATH
 RUN apk update && apk add --no-cache wget;\
 	mkdir /opt/msrb;\
     cd /opt/msrb;\
-	wget -O msrb-fragmenter.jar https://bitbucket.org/wishartlab/msrb-fragmenter/downloads/msrb-fragmenter-1.1.11.jar;\
+	wget -O msrb-fragmenter.jar https://bitbucket.org/wishartlab/msrb-fragmenter/downloads/msrb-fragmenter-${MSRB_VERSION}.jar ;\
 	ln -s /opt/msrb/msrb-fragmenter.jar /root/msrb-fragmenter.jar;\
 	apk del wget;
 
@@ -161,6 +155,6 @@ WORKDIR /cfmid
 ############################################################################################
 # move version label to bottom for faster build
 ############################################################################################
-LABEL cfmid.version = "4.5.0.0"
-LABEL cfmid.msml.version="4.4.3"
-LABEL cfmid.msrb.version="1.1.11"
+LABEL cfmid.version = "4.5.0.1"
+LABEL cfmid.msml.version=${MSML_VERSION}
+LABEL cfmid.msrb.version=${MSRB_VERSION}
