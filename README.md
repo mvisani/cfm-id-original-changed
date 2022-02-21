@@ -36,7 +36,7 @@ This is project is using  GNU LESSER GENERAL PUBLIC LICENSE 2.1, for detail refe
 * Note Only Insatll on linux and Mac has been verified, while install on Windows from source code is possible 
 
 ### Use Pre Build Docker Image ###
-Docker Image can be found at <https://hub.docker.com/repository/docker/wishartlab/cfmid>
+Docker Image can be found at <https://hub.docker.com/r/wishartlab/cfmid>.
 
     docker push wishartlab/cfmid:latest
 
@@ -102,6 +102,7 @@ Docker Image can be found at <https://hub.docker.com/repository/docker/wishartla
 ### Run cfm-predict in a docker container ###
 
 Assuming your current directory is in the working directory.
+#### For Linux Bash: #### 
 To predict ESI-MS/MS [M+H]+ spectra  
 
     sudo docker run --rm=true -v $(pwd):/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 /cfmid/public/[M+H]+/myout"
@@ -110,6 +111,14 @@ To predict ESI-MS/MS [M-H]- spectra
 
     sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt 1 /cfmid/public/[M-H]-/myout"
 
+#### For Windows PoweShell: #### 
+To predict ESI-MS/MS [M+H]+ spectra  
+
+    docker run --rm=true -v ${pwd}:/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 /cfmid/public/[M+H]+/myout"
+
+To predict ESI-MS/MS [M-H]- spectra  
+
+    docker run --rm=true -v ${pwd}:/root -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt 1 /cfmid/public/[M-H]-/myout"
 ## cfm-id ##
 
 Given an input spectrum and a list of candidate smiles (or inchi) strings, **cfm-id** computes the predicted spectrum for each candidate and compares it to the input spectrum. It returns a ranking of the candidates according to how closely they match. The spectrum prediction is done using a pre-trained CFM model.

@@ -28,6 +28,8 @@ cd boost_1_62_0
 Install RDKit (see http://rdkit.org/), including the InChI Extensions (python extensions are not required). Set the environment variable RDBASE to the RDKit install location (the directory with Code, lib etc..).
 Download RDKit_2017_09_3.tgz from https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;
 
+*NOTE:Newer RDKit may work but we have not test it yet*
+
 ```
    tar -zxvf RDKit_2017_09_3.tgz
    cd ../..
@@ -38,8 +40,8 @@ Download RDKit_2017_09_3.tgz from https://github.com/rdkit/rdkit/archive/Release
        -DRDK_BUILD_PYTHON_WRAPPERS=OFF\  
        -DRDK_BUILD_CPP_TESTS=OFF\  
        -DRDK_BUILD_DESCRIPTORS3D=OFF\
-         -DRDK_INSTALL_STATIC_LIBS=OFF\    
-         -DRDK_INSTALL_INTREE=ON \
+       -DRDK_INSTALL_STATIC_LIBS=OFF\    
+       -DRDK_INSTALL_INTREE=ON \
        -DRDK_BUILD_INCHI_SUPPORT=ON\  
        -DRDK_OPTIMIZE_NATIVE=ON  \
        -DCMAKE_CXX_STANDARD=11 \ 
@@ -52,7 +54,7 @@ mkdir  -p  /usr/local/include/rdkit/External/INCHI-API/;\
 cp  ../External/INCHI-API/*.h  /usr/local/include/rdkit/External/INCHI-API/;\
 ```
 ### Get LPSolve library
-You may be able to use one of the pre-compiled dev versions: Ehttps://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_dev_ux64.tar.gz/download
+You may be able to use one of the pre-compiled dev versions: https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_dev_ux64.tar.gz/download
 
 If you wish to build your own, download compile the source code for LPSolve. Download lp_solve_5.5.2.5_source.tar.gz from https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5
 ```
