@@ -40,11 +40,11 @@ This is project is using  GNU LESSER GENERAL PUBLIC LICENSE 2.1, for detail refe
 
 Docker Image can be found at <https://hub.docker.com/r/wishartlab/cfmid>.
 
-    docker push wishartlab/cfmid:latest
+    docker pull wishartlab/cfmid:latest
 
 Docker Image for NPS-MS
 
-    docker push wishartlab/cfmid:nps-ms_1.0.0
+    docker pull wishartlab/cfmid:nps-ms_1.0.0
 
 ## cfm-predict ##
 
