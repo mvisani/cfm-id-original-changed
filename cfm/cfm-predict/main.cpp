@@ -238,7 +238,6 @@ int main(int argc, char *argv[]) {
         min_peaks = min_peaks == -1 ? cfg.default_predicted_peak_min : min_peaks;
         max_peaks = max_peaks == -1 ? cfg.default_predicted_peak_max : max_peaks;
         min_peak_intensity = min_peak_intensity < 0 ? cfg.default_predicted_min_intensity : min_peak_intensity;
-        std::cout << postprocessing_energy  << " " << min_peaks << " " << max_peaks << " " << min_peak_intensity << std::endl;
     }
 
     //Read in the parameters
