@@ -60,8 +60,8 @@ void parseInputFile(std::vector<MolData> &data, std::string &input_filename, con
 int main(int argc, char *argv[]) {
     bool to_stdout = true;
     int do_annotate = 0;
-    int postprocessing_method = 2;
-    int suppress_exceptions = 0;
+    int postprocessing_method = 3;
+    int suppress_exceptions = 1;
     std::string output_filename;
     std::string param_filename = "param_output.log";
     std::string config_filename = "param_config.txt";
@@ -98,10 +98,12 @@ int main(int argc, char *argv[]) {
                   << std::endl;
         std::cout << std::endl << "postprocessing method (opt):" << std::endl
                   << "Post-process predicted spectra with 1.take the top 80% of energy (at least 5 peaks), or the highest 30 peaks (whichever comes first) \n "
-                     "2.take the top 80% of energy, or the highest 30 peaks (whichever comes first) (0 = OFF, 1 = OPT#1, 2 = OPT#2 (default))."
+                     "2.take the top 80% of energy, or the highest 30 peaks (whichever comes first) "
+                     "3.use specified in config file, if no fall back to OPT#2 "
+                     "(0 = OFF, 1 = OPT#1, 2 = OPT#2, 3 = OPT#3 (default))."
                   << std::endl;
         std::cout << std::endl << "suppress_exception (opt):" << std::endl
-                  << "Suppress exceptions so that the program returns normally even when it fails to produce a result (0 = OFF (default), 1 = ON)."
+                  << "Suppress exceptions so that the program returns normally even when it fails to produce a result (0 = OFF , 1 = ON (default))."
                   << std::endl;
         std::cout << std::endl << "postprocessing_energy (opt):" << std::endl
                   << "postprocessing energy out of 80% (default 80%)"
@@ -229,10 +231,13 @@ int main(int argc, char *argv[]) {
     }
     initConfig(cfg, config_filename);
 
-    postprocessing_energy = postprocessing_energy < 0 ? cfg.default_postprocessing_energy : postprocessing_energy;
-    min_peaks = min_peaks == -1 ? cfg.default_predicted_peak_min  : min_peaks;
-    max_peaks = max_peaks == -1 ? cfg.default_predicted_peak_max  : max_peaks;
-    min_peak_intensity = min_peak_intensity < 0 ? cfg.default_predicted_min_intensity : min_peak_intensity;
+    if (postprocessing_method == 3){
+        postprocessing_energy = postprocessing_energy < 0 ? cfg.default_postprocessing_energy : postprocessing_energy;
+        min_peaks = min_peaks == -1 ? cfg.default_predicted_peak_min : min_peaks;
+        max_peaks = max_peaks == -1 ? cfg.default_predicted_peak_max : max_peaks;
+        min_peak_intensity = min_peak_intensity < 0 ? cfg.default_predicted_min_intensity : min_peak_intensity;
+        std::cout << postprocessing_energy  << " " << min_peaks << " " << max_peaks << " " << min_peak_intensity << std::endl;
+    }
 
     //Read in the parameters
     if (!boost::filesystem::exists(param_filename)) {

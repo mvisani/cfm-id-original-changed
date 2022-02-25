@@ -83,7 +83,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.allow_cyclization = false;
     cfg.use_log_scale_peak = false;
     cfg.use_iterative_fg_gen = false;
-    cfg.default_predicted_peak_min = 5;
+    cfg.default_predicted_peak_min = 1;
     cfg.default_predicted_peak_max = 30;
     cfg.default_predicted_min_intensity = 0.0;
     cfg.default_postprocessing_energy = 80.0;
