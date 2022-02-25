@@ -24,6 +24,11 @@ ionization_mode 1
 ga_sampling_method 4
 ga_minibatch_nth_size 20
 collected_all_used_idx 1
+########PostProcessing#####
+default_predicted_peak_min 1
+default_predicted_peak_max 30
+default_predicted_min_intensity 0
+default_postprocessing_energy 8.0
 ########NNConfig###########
 theta_function 2
 theta_nn_hlayer_num_nodes 128

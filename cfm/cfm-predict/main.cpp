@@ -66,10 +66,10 @@ int main(int argc, char *argv[]) {
     std::string param_filename = "param_output.log";
     std::string config_filename = "param_config.txt";
     double prob_thresh_for_prune = 0.001;
-    double postprocessing_energy = 80;
-    int min_peaks = 1;
-    int max_peaks = 30;
-    double min_peak_intensity = 0.0;
+    double postprocessing_energy = -1;
+    int min_peaks = -1;
+    int max_peaks = -1;
+    double min_peak_intensity = -1;
     std::string single_prediction_id = "NullId";
 
     if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9 && argc != 10 &&
@@ -229,6 +229,11 @@ int main(int argc, char *argv[]) {
     }
     initConfig(cfg, config_filename);
 
+    postprocessing_energy = postprocessing_energy < 0 ? cfg.default_postprocessing_energy : postprocessing_energy;
+    min_peaks = min_peaks == -1 ? cfg.default_predicted_peak_min  : min_peaks;
+    max_peaks = max_peaks == -1 ? cfg.default_predicted_peak_max  : max_peaks;
+    min_peak_intensity = min_peak_intensity < 0 ? cfg.default_predicted_min_intensity : min_peak_intensity;
+
     //Read in the parameters
     if (!boost::filesystem::exists(param_filename)) {
         std::cout << "Could not find file: " << param_filename << std::endl;
@@ -377,7 +382,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (!to_stdout)
-            std::cout << "Predicted Spectra for " << mol_data.getId() << " " << mol_data.getSmilesOrInchi() << std::endl;
+            std::cout << "("<< mol_idx + 1 <<"/" << data.size()<< ") Predicted Spectra for " << mol_data.getId() << " " << mol_data.getSmilesOrInchi() << std::endl;
     }
     if (output_mode != NO_OUTPUT_MODE) delete out;
     return (0);
