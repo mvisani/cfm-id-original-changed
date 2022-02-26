@@ -155,13 +155,6 @@ RUN  mkdir /root/output;\
      mkdir /cfmid/public/spectra;\
      ln -s /opt/msrb/msrb-fragmenter.jar /cfmid/msrb-fragmenter.jar
 
-############################################################################################
-# Copy Python
-############################################################################################
-RUN	apk update && apk add --no-cache python3;
-RUN ln -s /usr/bin/python3 /usr/bin/python;
-COPY /docker/predict.py /cfmid
-
 # Set WORKDIR to /cfmid so that cfm-id-precomputed will be able to use relative paths
 # starting with "public".
 WORKDIR /cfmid
