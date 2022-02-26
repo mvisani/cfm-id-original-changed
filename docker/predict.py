@@ -60,20 +60,21 @@ def esi_prediction_task(smiles, output_id, task_config) -> Tuple[
             msrb_cmd.append(output_id)
         else:
             msrb_cmd.append('-o')
+            msrb_cmd.append(output_id)
 
         if adduct_type != AdductType.ALL:
             msrb_cmd.append('-a')
             msrb_cmd.append(adduct_type)
-        # no extra adducts
-        msrb_cmd.append('-na')
+            msrb_cmd.append('-na')
 
         # run msrb first
+        # print(' '.join(msrb_cmd))
         process = subprocess.Popen(
             msrb_cmd, stdout=subprocess.PIPE, shell=os.name == 'nt')
         std_output, std_error = process.communicate()
 
         if process.returncode != 0:
-            print('Error with MSRB: ', ''.jon(msrb_cmd))
+            print('Error with MSRB: ', ' '.join(msrb_cmd))
             print(std_error.decode('ascii'))
         
         msrb_results_rows = [row for row in std_output.decode('ascii').split('\n') if '[main]' not in row and 'STATUS REPORT' not in row and 'chemical class' not in row] 
@@ -117,15 +118,14 @@ def esi_prediction_task(smiles, output_id, task_config) -> Tuple[
             process = subprocess.Popen(
                 msml_cmd, stdout=subprocess.PIPE, shell=os.name == 'nt', cwd='./')
             
-
             #TODO Catch Error and send as output
             std_output, std_error = process.communicate()
 
             if process.returncode != 0:
-                print('Error with MSML: ', ''.jon(msml_cmd))
+                print('Error with MSML: ', ' '.join(msml_cmd))
                 print(std_error.decode('ascii'))
 
-            if task_config['cfm_use_stdout'] and std_error == None:
+            if not output_to_file and std_error == None:
                 predicted_spectra_str += std_output.decode('ascii')
                 msml_predicted_adduct_types.append(adduct_type)
     
@@ -143,7 +143,7 @@ if __name__ == '__main__':
 
     parser.add_argument(
         '--input_list', help='list of input compounds', default='./public/input.txt')
-    parser.add_argument('--adduct_type', help='one of [ALL|[M+H]+|[M-H]-]', type=str, default='stdout')
+    parser.add_argument('--adduct_type', help='one of [ALL|[M+H]+|[M-H]-]', type=str, default='ALL')
     parser.add_argument('--output', help='one of [output dir|output file(ends with .txt or .log)| stdout]', type=str, default='stdout')
     
     # CFM MSML configs
@@ -167,7 +167,7 @@ if __name__ == '__main__':
 
     # MSRB config
     parser.add_argument('--msrb_binary', help='location of msrb-fragmenter jar file',
-                        default='./msrb-fragmenter-1.1.11.jar')
+                        default='./msrb-fragmenter.jar')
 
     args = parser.parse_args()
     # get time
@@ -188,7 +188,9 @@ if __name__ == '__main__':
         is_std_output = True
     elif '.txt' in output or '.log' in output:
         is_single_output = True
-        os.makedirs(os.path.dirname(output), exist_ok=True)
+        dir_path = os.path.dirname(output)
+        if dir_path != '' and not os.path.exists(dir_path):
+            os.makedirs(dir_path)
     else:
         os.makedirs(output, exist_ok=True)
 
@@ -304,7 +306,7 @@ if __name__ == '__main__':
                             print(predicted_spectra_str)
                             print('\n'*2)
 
-                        finished_predict_task_last_interval += 1
+                        finished_predict_task += 1
 
                 # remove the now completed future
                 del futures_in_working[future]
@@ -313,9 +315,9 @@ if __name__ == '__main__':
                 single_output_out.close()
 
             # compute some metrics
-            finished_predict_task += finished_predict_task_last_interval
-            sec_since_start = time.time() - start_time
+            sleep_interval = 30
             if not is_std_output:
-                logger.info('Finished {} prediction tasks since start.'.format(
-                    finished_predict_task))
-
+                num_not_completed = len(not_completed)
+                logger.info('{} tasks in the queue. Finished {} prediction tasks since start.'.format(num_not_completed, finished_predict_task))
+                logger.info('Manager sleep for {:.2f} s'.format(sleep_interval))
+                time.sleep(sleep_interval)
