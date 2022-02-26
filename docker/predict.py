@@ -70,7 +70,7 @@ def esi_prediction_task(smiles, output_id, task_config) -> Tuple[
         # run msrb first
         # print(' '.join(msrb_cmd))
         process = subprocess.Popen(
-            msrb_cmd, stdout=subprocess.PIPE, shell=os.name == 'nt')
+            msrb_cmd, stdout=subprocess.PIPE, shell = False)
         std_output, std_error = process.communicate()
 
         if process.returncode != 0:
@@ -295,18 +295,17 @@ if __name__ == '__main__':
                     print('Generated an exception:', exc)
                 else:
                     finished_task_id = futures_in_working[future]
-                    if finished_task_id > 0:
-                        predicted_spectra_str = data
-                        finished_tasks.append(finished_task_id)
-                     
-                        if is_single_output:
-                            single_output_out.write(predicted_spectra_str)
-                            single_output_out.write('\n'*2)
-                        elif is_std_output:
-                            print(predicted_spectra_str)
-                            print('\n'*2)
+                    predicted_spectra_str = data
+                    finished_tasks.append(finished_task_id)
+                    
+                    if is_single_output:
+                        single_output_out.write(predicted_spectra_str)
+                        single_output_out.write('\n'*2)
+                    elif is_std_output:
+                        print(predicted_spectra_str)
+                        print('\n'*2)
 
-                        finished_predict_task += 1
+                    finished_predict_task += 1
 
                 # remove the now completed future
                 del futures_in_working[future]
