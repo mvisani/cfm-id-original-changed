@@ -439,4 +439,4 @@ For now ,please refer to <https://sourceforge.net/p/cfm-id/wiki/Home/>
 # Build Docker Image #
 ## Dev Build ##
 Go to top directory
-```  docker build --no-cache -t cfmid:dev -f .\docker\DevBuild_Dockerfile . ```
+```  docker build -t cfmid:dev -f .\docker\DevBuild_Dockerfile . ```

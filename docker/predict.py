@@ -82,16 +82,16 @@ def esi_prediction_task(smiles, output_id, task_config) -> Tuple[
         predicted_spectra_str = msrb_results_str
         
         if  adduct_type in [AdductType.ALL, AdductType.M_H_POS]:
-            if AdductType.M_H_NEG not in msrb_results_str:
+            if AdductType.M_H_POS not in predicted_spectra_str:
                 msml_adduct_types.append(AdductType.M_H_POS)
             else:
                 msrb_predicted_adduct_types.append(AdductType.M_H_POS)
 
         if  adduct_type in [AdductType.ALL, AdductType.M_H_NEG]:
-            if AdductType.M_H_NEG not in msrb_results_str:
+            if AdductType.M_H_NEG not in predicted_spectra_str:
                 msml_adduct_types.append(AdductType.M_H_NEG)
             else:
-                msrb_predicted_adduct_types.append(AdductType.M_H_POS)
+                msrb_predicted_adduct_types.append(AdductType.M_H_NEG)
 
     elif adduct_type == AdductType.ALL: 
         # we don't need msrb and we need all adduct msml can do
