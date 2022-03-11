@@ -127,7 +127,7 @@ RUN apk update && apk add --no-cache wget tar;\
 	rm cfmid2_trained_models.tar.gz;\
 	rm -rf cfmid;\
 	apk del wget tar;
-	
+
 RUN apk add --no-cache g++ gcc make cmake boost-dev;\
 	cd /opt/cfm;\
 	mkdir build;\
@@ -165,10 +165,16 @@ RUN  mkdir /root/output;
 ############################################################################################
 # Create required folders, symlink
 ############################################################################################
-RUN  mkdir /root/output;\
-     mkdir -p /cfmid/public/system;\
-     mkdir /cfmid/public/spectra;\
-     ln -s /opt/msrb/msrb-fragmenter.jar /cfmid/msrb-fragmenter.jar
+RUN mkdir /root/output;\
+    mkdir -p /cfmid/public/system;\
+    mkdir /cfmid/public/spectra;\
+    ln -s /opt/msrb/msrb-fragmenter.jar /cfmid/msrb-fragmenter.jar;
+
+RUN ln -s ${MODEL_DIR}/ei_ms_models/ei_nn_iso_new ${MODEL_DIR}/EI;\
+	mkdir ${MODEL_DIR}/ESI;\
+	ln -s ${MODEL_DIR}/esi_msms_models/metab_se_cfm ${MODEL_DIR}/ESI/[M+H]+;\
+	ln -s ${MODEL_DIR}/esi_msms_models/negative_metab_se_cfm ${MODEL_DIR}/ESI/[M-H]-;\
+	ln -s /opt/cfm/bin/ISOTOPE.DAT /cfmid/ISOTOPE.DAT;
 
 # Set WORKDIR to /cfmid so that cfm-id-precomputed will be able to use relative paths
 # starting with "public".
