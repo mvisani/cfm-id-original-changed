@@ -122,8 +122,8 @@ RUN apk update && apk add --no-cache wget tar;\
 	mv cfmid/wishartlab* cfmid/v2;\
 	mv cfmid/v2/cfm cfm;\
 	wget -O cfmid2_trained_models.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/downloads/cfmid2_trained_models.tar.gz;\
-	tar xf cfmid2_trained_models.tar.gz\
-	mv cfmid2_trained_models ${MODEL_DIR};\
+	tar xf cfmid2_trained_models.tar.gz;\
+	mv cfmid2_trained_models /trained_models_cfmid2.0;\
 	rm cfmid2_trained_models.tar.gz;\
 	rm -rf cfmid;\
 	apk del wget tar;
