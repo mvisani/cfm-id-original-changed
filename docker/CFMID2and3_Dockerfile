@@ -1,6 +1,6 @@
 FROM adoptopenjdk/openjdk11:jre-11.0.8_10-alpine
 LABEL author="Fei Wang" 
-LABEL name="CFM-ID 4 Docker Image"
+LABEL name="CFM-ID 3 Docker Image"
 
 ###########################################################################################
 # Set ENV
@@ -9,7 +9,7 @@ ENV CFM_ROOT /opt/cfm
 ENV PATH /opt/cfm/bin:$PATH
 ARG BUILD_CFM_TRAIN="ON"
 ARG BUILD_CFM_TEST="OFF"
-ARG MODEL_DIR="/trained_models_cfmid4.0"
+ARG MODEL_DIR="/trained_models_cfmid2.0"
 
 ############################################################################################
 # Installs an LP Solver
@@ -67,6 +67,22 @@ RUN apk add --no-cache g++ gcc make cmake boost-dev;\
 	apk add --no-cache boost-serialization boost-regex;
 
 ############################################################################################
+# Build liblbfgs
+############################################################################################
+# Download, build, and install MPICH
+RUN mkdir /tmp/liblbfgs
+WORKDIR /tmp/liblbfgs
+RUN	apk update && apk add --no-cache wget tar g++ gcc make;\
+	wget https://github.com/downloads/chokkan/liblbfgs/liblbfgs-1.10.tar.gz; \
+      tar xvfz liblbfgs-1.10.tar.gz;\
+      cd liblbfgs-1.10;  \
+      ./configure; \
+      make install -j 6;\
+	  cd /tmp;\
+	  rm -rf /tmp/mpich-src;\
+	  apk del wget tar g++ gcc make;
+
+############################################################################################
 # Build MPICH
 ############################################################################################
 # Source is available at http://www.mpich.org/static/downloads/
@@ -91,27 +107,29 @@ RUN apk update && apk add --no-cache wget tar g++ gcc make;\
       && rm -rf /tmp/mpich-src\
 	  && apk del wget tar g++ gcc make;
 
+
 ############################################################################################
-# Build CFM-ID 4 MSML
+# Build CFM-ID 3 MSML / CFM-ID 2.4
 ############################################################################################
 # build and install cfm
-ARG MSML_VERSION="4.4.4"
-ADD cfm/cfm-annotate /tmp/cfm/cfm-annotate
-ADD cfm/cfm-boost-test /tmp/cfm/cfm-boost-test
-ADD cfm/cfm-code /tmp/cfm/cfm-code
-ADD cfm/cfm-annotate /tmp/cfm/cfm-annotate
-ADD cfm/cfm-id /tmp/cfm/cfm-id
-ADD cfm/cfm-id-precomputed /tmp/cfm/cfm-id-precomputed
-ADD cfm/cfm-predict /tmp/cfm/cfm-predict
-ADD cfm/cfm-train /tmp/cfm/cfm-train
-ADD cfm/cmake /tmp/cfm/cmake
-ADD cfm/compute-stats /tmp/cfm/compute-stats
-ADD cfm/fraggraph-gen /tmp/cfm/fraggraph-gen
-ADD cfm/CMakeLists.txt /tmp/cfm/CMakeLists.txt
-
-WORKDIR /tmp/cfm
-
+RUN apk update && apk add --no-cache wget tar;\
+	cd /opt;\
+	wget -O cfmid.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/CFM-ID_2.4.3.tar.gz;\
+	mkdir cfmid;\
+	tar xf cfmid.tar.gz -C cfmid;\
+	rm cfmid.tar.gz;\
+	rm cfmid.tar.gz;\
+	mv cfmid/wishartlab* cfmid/v2;\
+	mv cfmid/v2/cfm cfm;\
+	wget -O cfmid2_trained_models.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/downloads/cfmid2_trained_models.tar.gz;\
+	tar xf cfmid2_trained_models.tar.gz\
+	mv cfmid2_trained_models ${MODEL_DIR};\
+	rm cfmid2_trained_models.tar.gz;\
+	rm -rf cfmid;\
+	apk del wget tar;
+	
 RUN apk add --no-cache g++ gcc make cmake boost-dev;\
+	cd /opt/cfm;\
 	mkdir build;\
 	cd build;\
 	cmake .. -DINCLUDE_TESTS=${BUILD_CFM_TEST}\
@@ -121,30 +139,28 @@ RUN apk add --no-cache g++ gcc make cmake boost-dev;\
 			 -DRDKIT_INCLUDE_DIR=/usr/local/include/rdkit\
 			 -DRDKIT_INCLUDE_EXT_DIR=/usr/local/include/rdkit/External\
 			 -DRDKIT_LIBRARY_DIR=/usr/local/lib\
+			 -DLBFGS_INCLUDE_DIR=/usr/local/include\
+			 -DLBFGS_LIBRARY_DIR=/usr/local/lib\
 			 -DCMAKE_CXX_STANDARD=11;\
-	make install -j 12;\
+	make install -j 6;\
+	cd .. && rm -rf build;\
 	apk del g++ gcc make cmake boost-dev;\
-	apk add --no-cache boost-filesystem boost-serialization boost-system boost-thread;\
-	if [ ${BUILD_CFM_TRAIN} = "ON" ] ; then apk add --no-cache boost-program_options; fi;\
-	if [ ${BUILD_CFM_TEST} = "ON" ] ; then apk add --no-cache boost-unit_test_framework; fi;\
-	mkdir -p /opt/cfm/;\
-	mv /tmp/cfm/bin /opt/cfm/bin;\
-	rm -rf /tmp/cfm;
-
-RUN mkdir -p ${MODEL_DIR}/ESI;
-ADD cfm-pretrained-models/cfmid4/ ${MODEL_DIR}/ESI
+	apk add --no-cache boost-filesystem boost-serialization boost-system boost-thread;
 
 ############################################################################################
-# Build CFM-ID 4 MSRB
+# Download MSRB 1.0.8
 ############################################################################################
-ARG MSRB_VERSION="1.1.13"
-ENV PATH /opt/msrb:$PATH
-RUN apk update && apk add --no-cache wget;\
+ENV PATH /opt/msrb/bin:$PATH
+RUN apk update && apk add --no-cache openjdk11-jre-headless wget;\
 	mkdir /opt/msrb;\
     cd /opt/msrb;\
-	wget -O msrb-fragmenter.jar https://bitbucket.org/wishartlab/msrb-fragmenter/downloads/msrb-fragmenter-${MSRB_VERSION}.jar ;\
-	ln -s /opt/msrb/msrb-fragmenter.jar /root/msrb-fragmenter.jar;\
+	wget -O msrb-fragmenter.jar https://bitbucket.org/wishartlab/msrb-fragmenter/downloads/msrb-fragmenter-1.0.8.jar;\
 	apk del wget;
+
+############################################################################################
+# output folder
+############################################################################################
+RUN  mkdir /root/output;
 
 ############################################################################################
 # Create required folders, symlink
@@ -161,6 +177,6 @@ WORKDIR /cfmid
 ############################################################################################
 # move version label to bottom for faster build
 ############################################################################################
-LABEL cfmid.version = "DevBuild"
-LABEL cfmid.msml.version=${MSML_VERSION}
-LABEL cfmid.msrb.version=${MSRB_VERSION}
+LABEL cfmid.version = "3.0.2.1"
+LABEL cfmid.msml.version="2.4.3"
+LABEL cfmid.msrb.version="1.0.8"
