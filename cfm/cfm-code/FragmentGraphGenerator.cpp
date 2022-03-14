@@ -103,7 +103,7 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
     }
     int num_ionic = addIonicChargeLabels(rwmol);
     if (num_frags - num_ionic != 1) {
-        std::cout << "Unsupported input molecule: Too many starting fragments in " << smiles_or_inchi << std::endl;
+        std::cerr << "Unsupported input molecule: Too many starting fragments in " << smiles_or_inchi << std::endl;
         throw FragmentGraphGenerationException();
     }
 
@@ -386,15 +386,15 @@ void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization
                                                                                                        rad_side,
                                                                                                        is_neg);
     if (boost::get<0>(alreadyq_oktogo) && !boost::get<1>(alreadyq_oktogo)) {
-        std::cout << "Could not ionize - already charged molecule and didn't know what to do here" << std::endl;
+        std::cerr << "Could not ionize - already charged molecule and didn't know what to do here" << std::endl;
         throw IonizationException();
     } else if (!boost::get<0>(alreadyq_oktogo)) {
         std::pair<int, int> qidx_ridx = FragmentTreeNode::findChargeLocation(*rwmol, 0, rad_side, is_neg);
         if (qidx_ridx.first < 0) {
-            std::cout << "Could not ionize - no location found for charge" << std::endl;
+            std::cerr << "Could not ionize - no location found for charge" << std::endl;
             throw IonizationException();
         } else if (qidx_ridx.second < 0 && rad_side >= 0) {
-            std::cout << "Could not ionize - no location found for radical" << std::endl;
+            std::cerr << "Could not ionize - no location found for radical" << std::endl;
             throw IonizationException();
         }
         try {
@@ -403,7 +403,7 @@ void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization
                     *rwmol);    //Re-sanitize...sometimes RDKit only throws the exception the second time...
         }
         catch (RDKit::MolSanitizeException e) {
-            std::cout << "Could not ionize - sanitization failure" << std::endl;
+            std::cerr << "Could not ionize - sanitization failure" << std::endl;
             throw IonizationException();
         }
     }
