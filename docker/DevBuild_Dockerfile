@@ -131,8 +131,8 @@ RUN apk add --no-cache g++ gcc make cmake boost-dev;\
 	mv /tmp/cfm/bin /opt/cfm/bin;\
 	rm -rf /tmp/cfm;
 
-RUN mkdir -p ${MODEL_DIR}/ESI;
-ADD cfm-pretrained-models/cfmid4/ ${MODEL_DIR}/ESI
+RUN mkdir -p ${MODEL_DIR};
+ADD cfm-pretrained-models/cfmid4/ ${MODEL_DIR}
 
 ############################################################################################
 # Build CFM-ID 4 MSRB

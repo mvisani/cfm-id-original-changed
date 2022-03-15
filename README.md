@@ -440,3 +440,5 @@ For now ,please refer to <https://sourceforge.net/p/cfm-id/wiki/Home/>
 ## Dev Build ##
 Go to top directory
 ```  docker build -t cfmid:dev -f .\docker\DevBuild_Dockerfile . ```
+
+``` docker run --rm=true -v ${pwd}:/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 ./public/[M+H]+/myout" ``` 
