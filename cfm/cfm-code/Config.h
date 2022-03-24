@@ -252,6 +252,12 @@ struct config_t {
 
     bool use_log_scale_peak;
     bool use_iterative_fg_gen;
+
+    //default post-processing settings
+    int default_predicted_peak_min;
+    int default_predicted_peak_max;
+    double default_predicted_min_intensity;
+    double default_postprocessing_energy;
 };
 
 void initDefaultConfig(config_t &cfg);

@@ -97,21 +97,19 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
                 fgen = new LikelyFragmentGraphGenerator(nn_param, cfg, prob_thresh_for_prune);
             else
                 fgen = new LikelyFragmentGraphGenerator(param, cfg, prob_thresh_for_prune);
-            moldata.computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune, cfg->include_isotopes);
-            double precursor_mass = moldata.getFragmentAtIdx(0)->getMass();
+            moldata.computeLikelyFragmentGraphAndSetThetas(*fgen, prob_thresh_for_prune);
 
             //Predict the spectra (and post-process, use existing thetas)
             for(auto & energy_level: used_engeries)
-                moldata.computePredictedSpectra(*param, false, energy_level, 1, 30, 100.0, cfg->use_log_scale_peak);
+                moldata.computePredictedSpectra(*param, true, energy_level, cfg->default_predicted_peak_min, cfg->default_predicted_peak_max, cfg->default_postprocessing_energy, cfg->use_log_scale_peak);
             
             if (output_all_scores)
                 std::cout << *it->getId() << ":";
 
             score = 0.0;
             for (int postprocess = 0; postprocess <= 1; postprocess++) {
-
-                if (postprocess)
-                    moldata.postprocessPredictedSpectra();
+                //if (postprocess)
+                //    moldata.postprocessPredictedSpectra();
                 if (abs_mass_tol == 0.5 && !postprocess)
                     moldata.quantisePredictedSpectra(0);    //Integer precision data, combine integer masses.
 

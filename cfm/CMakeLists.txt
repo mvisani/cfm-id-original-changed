@@ -21,7 +21,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
     set(default_build_type "Debug")
 endif()
 
-project(cfm VERSION 4.4.3)
+project(cfm VERSION 4.4.6)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/cfm-code/Version.h)
 
 set(CFM_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin CACHE STRING "Where do you want the output binaries to install to?")
@@ -34,22 +34,22 @@ set(INCLUDE_TESTS OFF CACHE BOOL "Do you want to build the tests?")
 set(INCLUDE_TRAIN OFF CACHE BOOL "Do you want to build the training code?")
 
 # BOOST
-set(Boost_USE_STATIC_LIBS OFF CACHE BOOL "use static libraries from Boost")
+set(Boost_USE_STATIC_LIBS OFF CACHE BOOL "Use static libraries from Boost")
 include(FindBoost)
 
-set(Boost_componets filesystem system serialization program_options)
+set(Boost_components filesystem system serialization program_options)
 # For some reason msvc will give LNK2019 if not include thread
 if (MSVC)
-    list(APPEND Boost_componets thread)
+    list(APPEND Boost_components thread)
 endif()
 
 if (INCLUDE_TESTS)
-    list(APPEND Boost_componets unit_test_framework)
+    list(APPEND Boost_components unit_test_framework)
 endif()
 
 # we need 1.62 or higher for unit testing
 # on paper 1.59 + should work, seems 1.60 has building problem
-find_package(Boost 1.62 REQUIRED COMPONENTS ${Boost_componets})
+find_package(Boost 1.62 REQUIRED COMPONENTS ${Boost_components})
 
 include_directories(${Boost_INCLUDE_DIRS})
 

@@ -60,16 +60,16 @@ void parseInputFile(std::vector<MolData> &data, std::string &input_filename, con
 int main(int argc, char *argv[]) {
     bool to_stdout = true;
     int do_annotate = 0;
-    int postprocessing_method = 2;
-    int suppress_exceptions = 0;
+    int postprocessing_method = 3;
+    int suppress_exceptions = 1;
     std::string output_filename;
     std::string param_filename = "param_output.log";
     std::string config_filename = "param_config.txt";
     double prob_thresh_for_prune = 0.001;
-    double postprocessing_energy = 80;
-    int min_peaks = 1;
-    int max_peaks = 30;
-    double min_peak_intensity = 0.0;
+    double postprocessing_energy = -1;
+    int min_peaks = -1;
+    int max_peaks = -1;
+    double min_peak_intensity = -1;
     std::string single_prediction_id = "NullId";
 
     if (argc != 6 && argc != 2 && argc != 5 && argc != 3 && argc != 7 && argc != 8 && argc != 9 && argc != 10 &&
@@ -98,10 +98,12 @@ int main(int argc, char *argv[]) {
                   << std::endl;
         std::cout << std::endl << "postprocessing method (opt):" << std::endl
                   << "Post-process predicted spectra with 1.take the top 80% of energy (at least 5 peaks), or the highest 30 peaks (whichever comes first) \n "
-                     "2.take the top 80% of energy, or the highest 30 peaks (whichever comes first) (0 = OFF, 1 = OPT#1, 2 = OPT#2 (default))."
+                     "2.take the top 80% of energy, or the highest 30 peaks (whichever comes first) "
+                     "3.use specified in config file, if no fall back to OPT#2 "
+                     "(0 = OFF, 1 = OPT#1, 2 = OPT#2, 3 = OPT#3 (default))."
                   << std::endl;
         std::cout << std::endl << "suppress_exception (opt):" << std::endl
-                  << "Suppress exceptions so that the program returns normally even when it fails to produce a result (0 = OFF (default), 1 = ON)."
+                  << "Suppress exceptions so that the program returns normally even when it fails to produce a result (0 = OFF , 1 = ON (default))."
                   << std::endl;
         std::cout << std::endl << "postprocessing_energy (opt):" << std::endl
                   << "postprocessing energy out of 80% (default 80%)"
@@ -225,15 +227,27 @@ int main(int argc, char *argv[]) {
     config_t cfg;
     if (!boost::filesystem::exists(config_filename)) {
         std::cout << "Could not find file: " << config_filename << std::endl;
-        throw FileException("Could not find file: " + config_filename);
+        if (!suppress_exceptions)
+            throw FileException("Could not find file: " + param_filename);
+        exit(1);
     }
     initConfig(cfg, config_filename);
+
+    if (postprocessing_method == 3){
+        postprocessing_energy = postprocessing_energy < 0 ? cfg.default_postprocessing_energy : postprocessing_energy;
+        min_peaks = min_peaks == -1 ? cfg.default_predicted_peak_min : min_peaks;
+        max_peaks = max_peaks == -1 ? cfg.default_predicted_peak_max : max_peaks;
+        min_peak_intensity = min_peak_intensity < 0 ? cfg.default_predicted_min_intensity : min_peak_intensity;
+    }
 
     //Read in the parameters
     if (!boost::filesystem::exists(param_filename)) {
         std::cout << "Could not find file: " << param_filename << std::endl;
-        throw FileException("Could not find file: " + param_filename);
+        if (!suppress_exceptions)
+            throw FileException("Could not find file: " + param_filename);
+        exit(1);
     }
+
     Param *param;
     NNParam *nn_param;
     if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION)
@@ -251,7 +265,8 @@ int main(int argc, char *argv[]) {
         of.open(output_filename.c_str());
         if (!of.is_open()) {
             std::cerr << "Error: Could not open output msp file " << output_filename << std::endl;
-            throw FileException("Could not open output msp file " + output_filename);
+            if (!suppress_exceptions)
+                throw FileException("Could not open output msp file " + output_filename);
         }
         buf = of.rdbuf();
         out = new std::ostream(buf);
@@ -260,7 +275,8 @@ int main(int argc, char *argv[]) {
         of.open(output_filename.c_str());
         if (!of.is_open()) {
             std::cerr << "Error: Could not open output mgf file " << output_filename << std::endl;
-            throw FileException("Could not open output mgf file " + output_filename);
+            if (!suppress_exceptions)
+                throw FileException("Could not open output mgf file " + output_filename);
         }
         buf = of.rdbuf();
         out = new std::ostream(buf);
@@ -271,7 +287,8 @@ int main(int argc, char *argv[]) {
         of.open(output_filename.c_str());
         if (!of.is_open()) {
             std::cerr << "Error: Could not open output txt/log file " << output_filename << std::endl;
-            throw FileException("Could not open output txt/log file " + output_filename);
+            if (!suppress_exceptions)
+                throw FileException("Could not open output txt/log file " + output_filename);
         }
         buf = of.rdbuf();
         out = new std::ostream(buf);
@@ -282,7 +299,15 @@ int main(int argc, char *argv[]) {
     std::string output_dir_str;
     if (input_smiles_or_inchi.size() > 4 &&
         input_smiles_or_inchi.substr(input_smiles_or_inchi.size() - 4) == ".txt") {
-        parseInputFile(data, input_smiles_or_inchi, &cfg);
+
+        try {
+            parseInputFile(data, input_smiles_or_inchi, &cfg);
+        }
+        catch (FileException &e) {
+            if (!suppress_exceptions)
+                throw FileException("Could not parse input file " + input_smiles_or_inchi);
+            exit(1);
+        }
         batch_run = true;
         if (!to_stdout && output_mode == NO_OUTPUT_MODE) {
             if (output_filename != "." && !boost::filesystem::exists(output_filename))
@@ -348,7 +373,8 @@ int main(int argc, char *argv[]) {
                 of.open(output_filename.c_str());
                 if (!of.is_open()) {
                     std::cerr << "Error: Could not open output file " << output_filename << std::endl;
-                    throw FileException("Could not open output file " + output_filename);
+                    if (!batch_run && !suppress_exceptions)
+                        throw FileException("Could not open output file " + output_filename);
                 }
                 buf = of.rdbuf();
             } else buf = std::cout.rdbuf();
@@ -377,7 +403,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (!to_stdout)
-            std::cout << "Predicted Spectra for " << mol_data.getId() << " " << mol_data.getSmilesOrInchi() << std::endl;
+            std::cout << "("<< mol_idx + 1 <<"/" << data.size()<< ") Predicted Spectra for " << mol_data.getId() << " " << mol_data.getSmilesOrInchi() << std::endl;
     }
     if (output_mode != NO_OUTPUT_MODE) delete out;
     return (0);
