@@ -125,6 +125,9 @@ void Spectrum::quantisePeaksByMass(int num_dec_places) {
 
 void Spectrum::postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_relative_intensity_prec) {
 
+    if (peaks.empty())
+        return;
+
     std::sort(peaks.begin(), peaks.end(), sort_peaks_by_intensity);
     auto max_intensity = peaks[0].intensity;
     double total = 0.0;

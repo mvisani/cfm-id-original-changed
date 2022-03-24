@@ -329,6 +329,7 @@ void MolData::computeTransitionThetas(Param &param) {
         // Compute the theta value for each feature vector
         thetas[energy].resize(fg->getNumTransitions());
         for (unsigned int i = 0; i < fg->getNumTransitions(); i++)
+
             thetas[energy][i] = param.computeTheta(*(fg->getTransitionAtIdx(i)->getFeatureVector()), energy);
     }
 }
