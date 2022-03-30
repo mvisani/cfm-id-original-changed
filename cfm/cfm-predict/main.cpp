@@ -97,10 +97,10 @@ int main(int argc, char *argv[]) {
                   << "The filename of the output spectra file to write to (if not given or given stdout, prints to stdout), OR directory if multiple smiles inputs are given (else current directory) OR msp or mgf file."
                   << std::endl;
         std::cout << std::endl << "postprocessing method (opt):" << std::endl
-                  << "Post-process predicted spectra with 1.take the top 80% of energy (at least 5 peaks), or the highest 30 peaks (whichever comes first) \n "
-                     "2.take the top 80% of energy, or the highest 30 peaks (whichever comes first) "
-                     "3.use specified in config file, if no fall back to OPT#2 "
-                     "(0 = OFF, 1 = OPT#1, 2 = OPT#2, 3 = OPT#3 (default))."
+                  << "Post-process predicted spectra with: "
+                     "1.Use settings specified in config file, if no fall back to OPT#2 \n"
+                     "2.take the top 80% of energy, or the highest 30 peaks (whichever comes first) \n "
+                     "(0 = OFF, 1 = OPT#1 (default) if not specified fallback to #2, 2 = OPT#2)."
                   << std::endl;
         std::cout << std::endl << "suppress_exception (opt):" << std::endl
                   << "Suppress exceptions so that the program returns normally even when it fails to produce a result (0 = OFF , 1 = ON (default))."
@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
                   << "postprocessing energy out of 80% (default 80%)"
                   << std::endl;
         std::cout << std::endl << "min_peak_intensity [0,100.0] (opt):" << std::endl
-                  << "min amount of peak relative intensity, , enter -1 to use default" << std::endl;
+                  << "min amount of peak relative intensity, enter -1 to use default" << std::endl;
         std::cout << std::endl << "override min peaks constraint (opt):" << std::endl
                   << "min amount of peak will include in the spectra, enter -1 to use default"
                   << std::endl;
@@ -156,11 +156,6 @@ int main(int argc, char *argv[]) {
             min_peaks = 1;
             max_peaks = 1000;
             postprocessing_energy = 100;
-        }
-        if (postprocessing_method == 1) {
-            min_peaks = 5;
-            max_peaks = 30;
-            postprocessing_energy = 80;
         }
         if (postprocessing_method == 2) {
             min_peaks = 1;
@@ -353,10 +348,14 @@ int main(int argc, char *argv[]) {
                         "Could not compute fragmentation graph for input: " + mol_data.getSmilesOrInchi());
             continue;
         }
+
         catch (IonizationException &ie) {
             std::cerr << "Could not ionize: " << mol_data.getId() << " " << mol_data.getSmilesOrInchi() << std::endl;
             if (!batch_run && !suppress_exceptions) throw IonizationException();
             continue;
+        }
+        catch (FragmentGraphTimeoutException &te) {
+            std::cerr << "Timeout computing fragmentation graph for input: "  << mol_data.getId() << " " << mol_data.getSmilesOrInchi() << std::endl;
         }
         catch (std::runtime_error &e) {
             // whatever else can go wrong

@@ -380,7 +380,7 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         }
         if (cfg.fragraph_compute_timeout_in_secs > 0)
             std::cout << "Timeout set on fragment graph computation to " << cfg.fragraph_compute_timeout_in_secs
-                      << " mins" << std::endl;
+                      << " seconds" << std::endl;
         if (cfg.use_log_scale_peak)
             std::cout << "Use log scale peaks" << std::endl;
     }
