@@ -206,7 +206,6 @@ int main(int argc, char *argv[]) {
                 candidates.push_back(PrecomputedCandidate(id, smiles_or_inchi, &msps[spectrum_filename]));
             } else
                 candidates.push_back(PrecomputedCandidate(id, smiles_or_inchi, spectrum_filename));
-
         }
         ifs.close();
 

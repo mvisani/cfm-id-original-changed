@@ -148,6 +148,9 @@ RUN  mkdir /root/output;\
      mkdir /cfmid/public/spectra;\
      ln -s /opt/msrb/msrb-fragmenter.jar /cfmid/msrb-fragmenter.jar
 
+RUN ln -s ${MODEL_DIR}/cfmid4/[M+H]+ ${MODEL_DIR}/[M+H]+;\
+	ln -s ${MODEL_DIR}/cfmid4/[M-H]- ${MODEL_DIR}/[M-H]-;
+
 # Set WORKDIR to /cfmid so that cfm-id-precomputed will be able to use relative paths
 # starting with "public".
 WORKDIR /cfmid

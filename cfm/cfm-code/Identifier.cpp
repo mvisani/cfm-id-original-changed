@@ -144,19 +144,19 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
 
         }
         catch (RDKit::MolSanitizeException &me) {
-            std::cout << "Could not sanitize " << *it->getSmilesOrInchi() << std::endl;
+            std::cerr << "Could not sanitize " << *it->getSmilesOrInchi() << std::endl;
         }
         catch (RDKit::SmilesParseException &pe) {
-            std::cout << "Could not parse " << *it->getSmilesOrInchi() << std::endl;
+            std::cerr << "Could not parse " << *it->getSmilesOrInchi() << std::endl;
         }
         catch (FragmentGraphGenerationException &e) {
-            std::cout << "Could not compute fragmentation graph for " << *it->getSmilesOrInchi() << std::endl;
+            std::cerr << "Could not compute fragmentation graph for " << *it->getSmilesOrInchi() << std::endl;
         }
         catch (FragmentGraphTimeoutException &te) {
-            std::cout << "Timeout computing fragmentation graph for input: " << *it->getSmilesOrInchi() << std::endl;
+            std::cerr << "Timeout computing fragmentation graph for input: " << *it->getSmilesOrInchi() << std::endl;
         }
         catch (std::exception &e) {
-            std::cout << "Exception occurred:" << e.what() << std::endl;
+            std::cerr << "Exception occurred:" << e.what() << std::endl;
         }
 
         it->setScore(score);
