@@ -386,10 +386,10 @@ int main(int argc, char *argv[]) {
                 *out << std::endl << std::endl;
             mol_data.outputSpectra(*out, "Predicted", do_annotate);
 
-            if (do_annotate){
-                *out << std::endl;
-                mol_data.writeFragmentsOnly(*out);
-            }
+            //if (do_annotate){
+            //*out << std::endl;
+            //mol_data.writeFragmentsOnly(*out);
+            //}
             
         } else if (output_mode == MSP_OUTPUT_MODE)
             mol_data.writePredictedSpectraToMspFileStream(*out);
