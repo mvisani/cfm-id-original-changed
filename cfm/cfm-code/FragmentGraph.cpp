@@ -354,10 +354,10 @@ void FragmentGraph::writeFragmentsOnly(std::ostream &out) const {
         out << std::setprecision(10) << it->getMass() << " ";
         out << *(it->getIonSmiles());
 
-        //if (it->isIntermediate())
-        //    out << " Intermediate Fragment";
-        //if (it->isCyclization())
-        //    out << " Cyclization Fragment";
+        if (it->isIntermediate())
+            out << " Intermediate Fragment";
+        if (it->isCyclization())
+            out << " Cyclization Fragment";
         out << std::endl;
     }
 }
