@@ -60,7 +60,7 @@ void parseInputFile(std::vector<MolData> &data, std::string &input_filename, con
 int main(int argc, char *argv[]) {
     bool to_stdout = true;
     int do_annotate = 0;
-    int postprocessing_method = 3;
+    int postprocessing_method = 1;
     int suppress_exceptions = 1;
     std::string output_filename;
     std::string param_filename = "param_output.log";
@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
     }
     initConfig(cfg, config_filename);
 
-    if (postprocessing_method == 3){
+    if (postprocessing_method == 1){
         postprocessing_energy = postprocessing_energy < 0 ? cfg.default_postprocessing_energy : postprocessing_energy;
         min_peaks = min_peaks == -1 ? cfg.default_predicted_peak_min : min_peaks;
         max_peaks = max_peaks == -1 ? cfg.default_predicted_peak_max : max_peaks;
