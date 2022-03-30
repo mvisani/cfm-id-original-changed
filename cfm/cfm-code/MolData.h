@@ -235,6 +235,10 @@ public:
         fg->writeFragmentsOnly(out);
     }
 
+    void writeFragmentsOnlyForIds(std::ostream &out, std::set<int> & ids) const {
+        fg->writeFragmentsOnlyForIds(out, ids);
+    }
+
     bool hasIsotopesIncluded() const {
         return fg->hasIsotopesIncluded();
     }

@@ -55,6 +55,23 @@ void Spectrum::outputToStream(std::ostream &out, bool do_annotate, bool normaliz
     }
 }
 
+void Spectrum::getDisplayedFragmentIds(std::set<int> & ids, bool normalize_to_max) const {
+
+        double max_intensity = normalize_to_max ? getMaxIntensity() : -1.0;
+
+        for (auto & peak : peaks) {
+
+            // compute display_intensity , and display if intensity is large enough
+            double display_intensity_value = normalize_to_max ? peak.intensity / max_intensity * 100.0 : peak.intensity;
+            int display_intensity = std::floor(display_intensity_value * 100 + 0.5);
+            if (display_intensity > 0) {
+                for (auto & annotation : peak.annotations) {
+                    ids.insert(annotation.first);
+                }
+            }
+        }
+
+}
 void Spectrum::outputToMspStream(std::ostream &out, std::string id,
                                  int ionization_mode, int energy, std::string &smiles_or_inchi) const {
 

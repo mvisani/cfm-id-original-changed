@@ -362,6 +362,23 @@ void FragmentGraph::writeFragmentsOnly(std::ostream &out) const {
     }
 }
 
+void FragmentGraph::writeFragmentsOnlyForIds(std::ostream &out, std::set<int> & ids) const {
+
+    for (auto &it : fragments) {
+        if (ids.find(it->getId()) == ids.end())
+            continue;
+        out << it->getId() << " ";
+        out << std::setprecision(10) << it->getMass() << " ";
+        out << *(it->getIonSmiles());
+
+        //if (it->isIntermediate())
+        //    out << " Intermediate Fragment";
+        //if (it->isCyclization())
+        //    out << " Cyclization Fragment";
+        out << std::endl;
+    }
+}
+
 //Write the FragmentGraph to file (formerly the transition output - without feature details)
 void FragmentGraph::writeFullGraph(std::ostream &out) const {
 
@@ -831,6 +848,17 @@ void EvidenceFragmentGraph::writeFragmentsOnly(std::ostream &out) const {
         out << it.getId() << " ";
         out << std::setprecision(10) << it.getMass() << " ";
         out << *(it.getIonSmiles()) << std::endl;
+    }
+}
+
+void EvidenceFragmentGraph::writeFragmentsOnlyForIds(std::ostream &out, std::set<int> & ids) const {
+
+    for (auto &it : fragments) {
+        if (ids.find(it.getId()) != ids.end()) {
+            out << it.getId() << " ";
+            out << std::setprecision(10) << it.getMass() << " ";
+            out << *(it.getIonSmiles()) << std::endl;
+        }
     }
 }
 

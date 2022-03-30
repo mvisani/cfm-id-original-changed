@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <ostream>
+#include <set>
 #include "Config.h"
 
 typedef std::pair<int, double> annotation_t; //<Fragment Id, Score>
@@ -116,6 +117,8 @@ public:
     void convertToLogScale();
 
     void convertToLinearScale();
+
+    void getDisplayedFragmentIds(std::set<int> & ids, bool normalize_to_max = true) const;
 
 private:
     std::vector<Peak> peaks;

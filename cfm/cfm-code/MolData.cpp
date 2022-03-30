@@ -56,7 +56,7 @@ void MolData::readInFVFragmentGraph(std::string &fv_filename) {
     std::ifstream ifs(fv_filename.c_str(), std::ifstream::in | std::ios::binary);
 
     if (!ifs)
-        std::cout << "Could not open file " << fv_filename << std::endl;
+        std::cerr << "Could not open file " << fv_filename << std::endl;
     readInFVFragmentGraphFromStream(ifs);
 }
 
@@ -69,7 +69,7 @@ void MolData::writeFVFragmentGraph(std::string &fv_filename) {
     std::ofstream out;
     out.open(fv_filename.c_str(), std::ios::out | std::ios::binary);
     if (!out.is_open()) {
-        std::cout << "Warning: Trouble opening output fv fragment graph file: "
+        std::cerr << "Warning: Trouble opening output fv fragment graph file: "
                   << fv_filename << std::endl;
     } else {
         writeFVFragmentGraphToStream(out);
@@ -772,16 +772,24 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
         }
 
     }
-    std::vector<Spectrum>::iterator it = spectra_to_output->begin();
+
+    auto it = spectra_to_output->begin();
+    std::set<int> frag_ids;
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
         out << "energy" << energy << std::endl;
         it->outputToStream(out, do_annotate);
+        it->getDisplayedFragmentIds(frag_ids);
     }
+
+    if (do_annotate){
+        out << std::endl;
+        writeFragmentsOnlyForIds(out, frag_ids);
+    }
+
 }
 
 void
 MolData::postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks, double min_relative_intensity_prec) {
-
 
     for (auto &predicted_spectrum : predicted_spectra) {
         predicted_spectrum.quantisePeaksByMass(10);
