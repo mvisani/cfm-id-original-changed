@@ -23,7 +23,7 @@ RUN	apk update && apk add --no-cache wget tar;\
 
 WORKDIR /tmp/lp_solve_5.5
 #Patch build
-COPY lpsolve55_patched_ccc ./lpsolve55
+#COPY lpsolve55_patched_ccc ./lpsolve55
 # Copy headers
 RUN	apk update && apk add --no-cache g++ gcc make;\
 	mkdir -p /usr/local/include/lp_solve;\
@@ -34,7 +34,7 @@ RUN	apk update && apk add --no-cache g++ gcc make;\
 	cp ./lp_mipbb.h /usr/local/include/lp_solve/lp_mipbb.h;\
 	cp ./lp_types.h /usr/local/include/lp_solve/lp_types.h;\
 	cp ./lp_utils.h /usr/local/include/lp_solve/lp_utils.h;\
-	cd ./lpsolve55 && sh lpsolve55_patched_ccc;\
+	cd ./lpsolve55 && sh ccc;\
 	mkdir -p /usr/local/lib/lp_solve;\
 	cp ./bin/ux64/liblpsolve55.so /usr/local/lib/liblpsolve55.so;\
 	cp ./bin/ux64/liblpsolve55.a /usr/local/lib/liblpsolve55.a;\
@@ -96,7 +96,7 @@ RUN apk update && apk add --no-cache wget tar g++ gcc make;\
 # Build CFM-ID 4 MSML
 ############################################################################################
 # build and install cfm
-ARG MSML_VERSION="4.4.3"
+ARG MSML_VERSION="4.4.7"
 RUN apk update && apk add --no-cache wget tar;\
 	cd /opt;\
 	wget -O cfmid.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/CFM-ID_${MSML_VERSION}.tar.gz ;\
@@ -131,7 +131,7 @@ RUN apk add --no-cache g++ gcc make cmake boost-dev;\
 ############################################################################################
 # Build CFM-ID 4 MSRB
 ############################################################################################
-ARG MSRB_VERSION="1.1.11"
+ARG MSRB_VERSION="1.1.13"
 ENV PATH /opt/msrb:$PATH
 RUN apk update && apk add --no-cache wget;\
 	mkdir /opt/msrb;\
@@ -158,6 +158,6 @@ WORKDIR /cfmid
 ############################################################################################
 # move version label to bottom for faster build
 ############################################################################################
-LABEL cfmid.version = "4.5.0.1"
+LABEL cfmid.version = "4.5.3.2"
 LABEL cfmid.msml.version=${MSML_VERSION}
 LABEL cfmid.msrb.version=${MSRB_VERSION}
