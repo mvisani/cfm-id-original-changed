@@ -136,9 +136,8 @@ const boost::ptr_vector<FragmentFeature> &FeatureCalculator::fragmentFeatureCogs
     static bool initialised = false;
 
     if (!initialised) {
-        // Disabled for now
-        //cogs.push_back(new FragmentFingerPrintFeature());
-        //cogs.push_back(new FragmentFunctionalGroupFeature());
+        cogs.push_back(new FragmentFingerPrintFeature());
+        cogs.push_back(new FragmentFunctionalGroupFeature());
         initialised = true;
     }
     return cogs;
@@ -172,9 +171,8 @@ FeatureCalculator::FeatureCalculator(std::string &config_filename) {
 FeatureCalculator::FeatureCalculator(std::vector<std::string> &feature_list) {
 
     // Find the relevant feature cog for this name
-    std::vector<std::string>::iterator itname = feature_list.begin();
-    for (; itname != feature_list.end(); ++itname)
-        configureFeature(*itname);
+    for (auto feature_name: feature_list )
+        configureFeature(feature_name);
 
     if (used_break_feature_idxs.empty() && used_fragement_feature_idxs.empty()) {
         std::cout << "Warning: No features found in feature list" << std::endl;

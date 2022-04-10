@@ -381,7 +381,11 @@ void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocat
     Comparator *dice_cmp = new Dice(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *dotproduct_cmp = new DotProduct(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
-    moldata->computePredictedSpectra(*param, false, energy_level, 1, 30, 80, cfg->use_log_scale_peak);
+    moldata->computePredictedSpectra(*param, false, energy_level, cfg->default_predicted_peak_min,
+                                     cfg->default_predicted_peak_max, cfg->default_postprocessing_energy,
+                                     cfg->default_predicted_min_intensity,
+                                     cfg->use_log_scale_peak);
+
     //moldata->postprocessPredictedSpectra(80, 1, 30);
     dice += dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                    moldata->getPredictedSpectrum(energy_level));
@@ -727,7 +731,13 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
         }
         case USE_DIFFERENCE_SAMPLING_BFS_CO:
         case USE_DIFFERENCE_SAMPLING_BFS: {
-            moldata.computePredictedSpectra(*param, true, energy, 1, 30, 100.0, false);
+            moldata.computePredictedSpectra(*param, true, energy,
+                                            cfg->default_predicted_peak_min,
+                                            cfg->default_predicted_peak_max,
+                                            cfg->default_postprocessing_energy,
+                                            cfg->default_predicted_min_intensity,
+                                            cfg->use_log_scale_peak);
+
             std::set<unsigned int> selected_weights;
 
             moldata.getSelectedMasses(selected_weights, energy);

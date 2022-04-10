@@ -101,7 +101,12 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
 
             //Predict the spectra (and post-process, use existing thetas)
             for(auto & energy_level: used_engeries)
-                moldata.computePredictedSpectra(*param, true, energy_level, cfg->default_predicted_peak_min, cfg->default_predicted_peak_max, cfg->default_postprocessing_energy, cfg->use_log_scale_peak);
+                moldata.computePredictedSpectra(*param, true, energy_level,
+                                                cfg->default_predicted_peak_min,
+                                                cfg->default_predicted_peak_max,
+                                                cfg->default_postprocessing_energy,
+                                                cfg->default_predicted_min_intensity,
+                                                cfg->use_log_scale_peak);
             
             if (output_all_scores)
                 std::cout << *it->getId() << ":";
