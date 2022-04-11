@@ -25,7 +25,7 @@ param.cpp.
 
 void FragmentFingerPrintFeature::compute(FeatureVector &fv, romol_ptr_t precursor_ion) const{
 
-    int morgan_radius = 3;
+    int morgan_radius = 2;
     ExplicitBitVect *finger_print =
             RDKit::MorganFingerprints::getFingerprintAsBitVect(*precursor_ion, morgan_radius,
                                                                size);
