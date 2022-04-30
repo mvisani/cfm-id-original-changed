@@ -35,17 +35,7 @@ Download RDKit_2017_09_3.tgz from https://github.com/rdkit/rdkit/archive/Release
    cd ../..
    mkdir build
    cd build
-   cmake .. \
-       -DRDK_PGSQL_STATIC=OFF\ 
-       -DRDK_BUILD_PYTHON_WRAPPERS=OFF\  
-       -DRDK_BUILD_CPP_TESTS=OFF\  
-       -DRDK_BUILD_DESCRIPTORS3D=OFF\
-       -DRDK_INSTALL_STATIC_LIBS=OFF\    
-       -DRDK_INSTALL_INTREE=ON \
-       -DRDK_BUILD_INCHI_SUPPORT=ON\  
-       -DRDK_OPTIMIZE_NATIVE=ON  \
-       -DCMAKE_CXX_STANDARD=11 \ 
-       -DCMAKE_BUILD_TYPE=Release
+   cmake .. \ -DRDK_PGSQL_STATIC=OFF\  -DRDK_BUILD_PYTHON_WRAPPERS=OFF\   -DRDK_BUILD_CPP_TESTS=OFF -DRDK_BUILD_DESCRIPTORS3D=OFF\ -DRDK_INSTALL_STATIC_LIBS=OFF   -DRDK_INSTALL_INTREE=ON \ -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_OPTIMIZE_NATIVE=ON  \ -DCMAKE_CXX_STANDARD=11 \  -DCMAKE_BUILD_TYPE=Release
    make install
 ```
 Note that ```-DRDK_INSTALL_INTREE=ON``` will install RDKit lib within its source file, while ```-DRDK_INSTALL_INTREE=OFF``` will install RDKit in the ```/usr/local/```. However, RDKit will not automaticlly install  InChI Extension in the  ```/usr/local/```. You can move InChI Extension with:
@@ -179,7 +169,7 @@ the Boost CMake package configuration for details on what it provides.
 Set ``Boost_NO_BOOST_CMAKE`` to ``ON``, to disable the search for boost-cmake."
 
 ### Get lp_solve
-Install lp solve in the project directory or home directory. Precompiled version shold work out of box at https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_dev_ux64.tar.gz/download
+Install lp solve in the project directory or home directory. Precompiled version should work out of box at https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_dev_ux64.tar.gz/download
 
 ### Get RDkit
 Install RDkit in the project directory or home directory. Make sure set ``Boost_NO_BOOST_CMAKE`` to ``ON``  and

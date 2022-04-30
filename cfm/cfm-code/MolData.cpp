@@ -88,17 +88,22 @@ void MolData::convertSpectraToLinearScale(){
 
 void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
 
-    fg = fgen.createNewGraph(cfg);
-    FragmentTreeNode *startnode =
-            fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
+    try {
+        fg = fgen.createNewGraph(cfg);
+        FragmentTreeNode *startnode =
+                fgen.createStartNode(smiles_or_inchi, cfg->ionization_mode);
 
-    const int root_id = -1;
-    fgen.compute(*startnode, cfg->fg_depth, root_id, cfg->max_ring_breaks, cfg->use_iterative_fg_gen);
+        const int root_id = -1;
+        fgen.compute(*startnode, cfg->fg_depth, root_id, cfg->max_ring_breaks, cfg->use_iterative_fg_gen);
 
-    if (!cfg->allow_frag_detours)
-        fg->removeDetours();
-    delete startnode;
-    graph_computed = true;
+        if (!cfg->allow_frag_detours)
+            fg->removeDetours();
+        delete startnode;
+    } catch (std::exception &e) {
+        std::cerr << "Error Processing " << smiles_or_inchi << " " << e.what() << std::endl;
+        graph_computed = false;
+    }
+    graph_computed = false;
 }
 
 void MolData::computeFragmentGraph(FeatureCalculator *fc) {
