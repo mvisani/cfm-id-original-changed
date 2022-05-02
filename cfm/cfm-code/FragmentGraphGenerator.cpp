@@ -50,11 +50,12 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
 
     //Create the RDKit mol - this will be the ion
     RDKit::RWMol *rwmol;
-        if (smiles_or_inchi.substr(0, 6) == "InChI=") {
-            RDKit::ExtraInchiReturnValues rv;
-            rwmol = RDKit::InchiToMol(smiles_or_inchi, rv);
-        } else
-            rwmol = RDKit::SmilesToMol(smiles_or_inchi);
+
+    if (smiles_or_inchi.substr(0, 6) == "InChI=") {
+        RDKit::ExtraInchiReturnValues rv;
+        rwmol = RDKit::InchiToMol(smiles_or_inchi, rv);
+    } else
+        rwmol = RDKit::SmilesToMol(smiles_or_inchi);
 
     // This is hacky way to get mol Canonicalized
     rwmol = RDKit::SmilesToMol(RDKit::MolToSmiles(*rwmol));
