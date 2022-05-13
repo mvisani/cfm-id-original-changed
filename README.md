@@ -33,7 +33,7 @@ This is project is using  GNU LESSER GENERAL PUBLIC LICENSE 2.1, for detail refe
 
 ### Install from source code ###
 
-* Please check cfm/INSTALL.md
+* Please check cfm/INSTALL.md [a link](./cfm/INSTALL.md)
 * Note, Only Insatllation on linux and Mac has been verified, while install on Windows from source code is possible
 
 ### Use Pre Build Docker Image ###
@@ -437,8 +437,18 @@ Run the Singularity container from the SIF file:
 For now ,please refer to <https://sourceforge.net/p/cfm-id/wiki/Home/>
 
 # Build Docker Image #
+
+
+## CFM-ID 4 Image ##
+Go to top directory
+```  docker build -t cfmid:dev -f .\docker\CFMID4_Dockerfile . ```
+
 ## Dev Build ##
 Go to top directory
-```  docker build -t cfmid:dev -f .\docker\DevBuild_Dockerfile . ```
+```  docker build -t cfmid:dev -f .\docker\CFMID2and3_Dockerfile . ```
 
 ``` docker run --rm=true -v ${pwd}:/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 ./public/[M+H]+/myout" ``` 
+
+## CFM-ID 2 and 3 Image ##
+Go to top directory
+```  docker build -t cfmid:dev -f .\docker\DevBuild_Dockerfile . ```
