@@ -344,8 +344,7 @@ EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
     if (!cfg->disable_cross_val_metrics) {
         qdif_str += "\nValidation_Loss_Total=" + std::to_string(val_q)
                     + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
-                    + "\nValidation_Dice_Avg=" + st
-                    d::to_string(val_dice / num_val_mols)
+                    + "\nValidation_Dice_Avg=" + std::to_string(val_dice / num_val_mols)
                     + " Validation_DotProduct_Avg=" += std::to_string(val_dp / num_val_mols);
                     + "\nValidation_Precision_Avg=" + std::to_string(val_precision / num_val_mols)
                     + " Validation_Recall_Avg=" += std::to_string(val_recall / num_val_mols);
