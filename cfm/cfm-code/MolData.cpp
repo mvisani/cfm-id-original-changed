@@ -398,7 +398,7 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
         getline(ifs, line);
         // 1.empty line separates peaks and annotations
         // 2. we need at least 4 char for peak: n space n newline
-        if (line.size() <= 3)
+        if (line.length() < 2)
             break;
         // in case we are seen version string
         if (line[0] == '#')
