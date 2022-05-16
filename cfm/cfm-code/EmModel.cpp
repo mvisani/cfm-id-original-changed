@@ -337,8 +337,8 @@ EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
     if (!cfg->disable_training_metrics) {
         qdif_str += "\nDice_Avg=" + std::to_string(train_dice / num_training_mols)
                     + " DotProduct_Avg=" + std::to_string(train_dp / num_training_mols)
-                    + "\nPrecision_Avg=" + std::to_string(train_precision / num_training_mols)
-                    + " Recall_Avg=" + std::to_string(train_recall / num_training_mols);
+                    + "\nPrecision_Avg=" + std::to_string(train_precision / num_training_mols /100.0f)
+                    + " Recall_Avg=" + std::to_string(train_recall / num_training_mols /100.0f);
     }
 
     if (!cfg->disable_cross_val_metrics) {
@@ -346,8 +346,8 @@ EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
                     + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
                     + "\nValidation_Dice_Avg=" + std::to_string(val_dice / num_val_mols)
                     + " Validation_DotProduct_Avg=" + std::to_string(val_dp / num_val_mols)
-                    + "\nValidation_Precision_Avg=" + std::to_string(val_precision / num_val_mols)
-                    + " Validation_Recall_Avg=" += std::to_string(val_recall / num_val_mols);
+                    + "\nValidation_Precision_Avg=" + std::to_string(val_precision / num_val_mols /100.0f)
+                    + " Validation_Recall_Avg=" += std::to_string(val_recall / num_val_mols /100.0f);
     }
     return qdif_str;
 }
