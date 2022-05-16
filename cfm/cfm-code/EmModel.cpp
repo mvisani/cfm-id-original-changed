@@ -188,10 +188,12 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         int molidx = 0, num_val_mols = 0, num_training_mols = 0;
         double train_dice = 0.0, train_dp = 0.0;
         double val_dice = 0.0, val_dp = 0.0;
+        double train_precision  = 0.0, train_recall = 0.0, val_precsion = 0.0, val_recall = 0.0;
+
         for (mol_it = molDataSet.begin(); mol_it != molDataSet.end(); ++mol_it, molidx++) {
             computeLossAndMetrics(energy_level, molidx, mol_it, suft, val_q, num_val_mols, num_training_mols,
                                   train_dice, train_dp,
-                                  val_dice, val_dp);
+                                  val_dice, val_dp, train_precision, train_recall, val_precsion, val_recall);
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
@@ -208,6 +210,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         if (!cfg->disable_training_metrics) {
             train_dice = comm->collectQInMaster((float) train_dice);
             train_dp = comm->collectQInMaster((float) train_dp);
+            train_precision = comm->collectQInMaster((float) train_precision);
+            train_recall = comm->collectQInMaster((float) train_recall);
         }
 
         if (!cfg->disable_cross_val_metrics) {
@@ -215,6 +219,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             num_val_mols = comm->collectSumInMaster((float) num_val_mols);
             val_dice = comm->collectQInMaster((float) val_dice);
             val_dp = comm->collectQInMaster((float) val_dp);
+            val_precsion = comm->collectQInMaster((float) val_precsion);
+            val_recall = comm->collectQInMaster((float) val_recall);
         }
 
         // Check for convergence
@@ -222,7 +228,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         if (comm->isMaster()) {
             std::string qdif_str = getMetricsString(loss, prev_loss, best_loss, after, val_q, num_val_mols,
                                                     num_training_mols, train_dice,
-                                                    train_dp, val_dice, val_dp, loss_ratio);
+                                                    train_dp, val_dice, val_dp, loss_ratio,
+                                                    train_precision, train_recall, val_precsion, val_recall);
 
             writeStatus(qdif_str.c_str());
             comm->printToMasterOnly(qdif_str.c_str());
@@ -291,19 +298,21 @@ float EmModel::getUsedCupTime(clock_t c_start, clock_t c_end) const {
 void EmModel::computeLossAndMetrics(int energy_level, int molidx,
                                     std::vector<MolData, std::allocator<MolData>>::iterator &mol_it,
                                     suft_counts_t &suft, double &val_q, int &num_val_mols, int &num_training_mols,
-                                    double &train_dice, double &train_dp, double &val_dice,
-                                    double &val_dp) {
+                                    double &train_dice, double &train_dp, double &val_dice, double &val_dp,
+                                    double &train_precision, double &train_recall, double &val_precision,
+                                    double &val_recall) {
+
     if (mol_it->getGroup() == validation_group && !cfg->disable_cross_val_metrics) {
         num_val_mols++;
         val_q += computeLogLikelihoodLoss(molidx, *mol_it, suft, energy_level);
         computeMetrics(energy_level, mol_it, val_dice,
-                       val_dp);
+                       val_dp, val_precision, val_recall);
 
     } else {
         num_training_mols++;
         if (!cfg->disable_training_metrics) {
             computeMetrics(energy_level, mol_it, train_dice,
-                           train_dp);
+                           train_dp, train_precision, train_precision);
         }
     }
 }
@@ -313,7 +322,9 @@ EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
                           const std::chrono::system_clock::time_point &after,
                           double val_q, int num_val_mols,
                           int num_training_mols, double train_dice, double train_dp, double val_dice,
-                          double val_dp, double loss_ratio) const {
+                          double val_dp, double loss_ratio,
+                          double train_precision, double train_recall, double val_precision,
+                          double val_recall) const {
     std::string qdif_str = "[M-Step][T+" + getTimeDifferenceStr(start_time, after) + "s]";
     qdif_str += "Loss=" + std::to_string(loss) + " Loss_Avg=" + std::to_string(loss / num_training_mols);
 
@@ -326,13 +337,18 @@ EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
     if (!cfg->disable_training_metrics) {
         qdif_str += "\nDice_Avg=" + std::to_string(train_dice / num_training_mols)
                     + " DotProduct_Avg=" += std::to_string(train_dp / num_training_mols);
+                    + "\nPrecision_Avg=" + std::to_string(train_precision / num_val_mols)
+                    + " Recall_Avg=" += std::to_string(train_recall / num_val_mols);
     }
 
     if (!cfg->disable_cross_val_metrics) {
         qdif_str += "\nValidation_Loss_Total=" + std::to_string(val_q)
                     + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
-                    + "\nValidation_Dice_Avg=" + std::to_string(val_dice / num_val_mols)
+                    + "\nValidation_Dice_Avg=" + st
+                    d::to_string(val_dice / num_val_mols)
                     + " Validation_DotProduct_Avg=" += std::to_string(val_dp / num_val_mols);
+                    + "\nValidation_Precision_Avg=" + std::to_string(val_precision / num_val_mols)
+                    + " Validation_Recall_Avg=" += std::to_string(val_recall / num_val_mols);
     }
     return qdif_str;
 }
@@ -376,10 +392,12 @@ EmModel::computeAndSyncLoss(std::vector<MolData> &data, suft_counts_t &suft, uns
 }
 
 void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocator<MolData>>::iterator &moldata,
-                             double &dice, double &dp) {
+                             double &dice, double &dp, double &precision, double &recall) {
 
     Comparator *dice_cmp = new Dice(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *dotproduct_cmp = new DotProduct(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+    Comparator *p_cmp = new Precision(cfg->ppm_mass_tol, cfg->abs_mass_tol);
+    Comparator *r_cmp = new Recall(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
     moldata->computePredictedSpectra(*param, false, energy_level, cfg->default_predicted_peak_min,
                                      cfg->default_predicted_peak_max, cfg->default_postprocessing_energy,
@@ -390,6 +408,11 @@ void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocat
     dice += dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                    moldata->getPredictedSpectrum(energy_level));
     dp += dotproduct_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
+                                       moldata->getPredictedSpectrum(energy_level));
+
+    precision += p_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
+                                   moldata->getPredictedSpectrum(energy_level));
+    recall += r_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                        moldata->getPredictedSpectrum(energy_level));
 
     delete dice_cmp;
@@ -579,8 +602,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         if (comm->isMaster()) {
             std::cout << iter << ".[T+" << getTimeDifferenceStr(start_time, after) << "s]" << "Loss=" <<
-                      loss << " Prev_Loss=" << prev_loss
-                      << " Time_Escaped: " << getTimeDifferenceStr(before, after) << "s";
+                      loss << " Prev Loss=" << prev_loss
+                      << " Time Escaped: " << getTimeDifferenceStr(before, after) << "s";
             if (!cfg->disable_cpu_usage_metrics) {
                 std::cout << cpu_usage_string;
             }

@@ -93,8 +93,8 @@ protected:
     void getSubSampledTransitions(MolData &moldata, int sampling_method, unsigned int energy,
                                   std::set<int> &selected_trans_id) const;
     void
-    computeMetrics(int energy_level, std::vector<MolData, std::allocator<MolData>>::iterator &itdata,
-                       double &jaccard, double &w_jaccard);
+    computeMetrics(int energy_level, std::vector<MolData, std::allocator<MolData>>::iterator &moldata,
+                   double &dice, double &dp, double &precision, double &recall);
 
     double getUpdatedLearningRate(double learning_rate, int iter) const;
 
@@ -107,13 +107,17 @@ protected:
     getMetricsString(double loss, double prev_loss, double best_loss,
                      const std::chrono::system_clock::time_point &after,
                      double val_q, int num_val_mols,
-                     int num_training_mols, double train_jaccard, double train_w_jaccard, double val_jaccard,
-                     double val_w_jaccard, double loss_ratio) const;
+                     int num_training_mols, double train_dice, double train_dp, double val_dice,
+                     double val_dp, double loss_ratio, double train_precision, double train_recall, double val_precision,
+                     double val_recall) const;
 
     void
-    computeLossAndMetrics(int energy_level, int molidx, std::vector<MolData, std::allocator<MolData>>::iterator &mol_it,
+    computeLossAndMetrics(int energy_level, int molidx,
+                          std::vector<MolData, std::allocator<MolData>>::iterator &mol_it,
                           suft_counts_t &suft, double &val_q, int &num_val_mols, int &num_training_mols,
-                          double &train_jaccard, double &train_w_jaccard, double &val_jaccard, double &val_w_jaccard);
+                          double &train_dice, double &train_dp, double &val_dice, double &val_dp,
+                          double &train_precision, double &train_recall, double &val_precision,
+                          double &val_recall);
 
     float getUsedCupTime(clock_t c_start, clock_t c_end) const;
 
