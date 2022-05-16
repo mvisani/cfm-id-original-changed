@@ -312,7 +312,7 @@ void EmModel::computeLossAndMetrics(int energy_level, int molidx,
         num_training_mols++;
         if (!cfg->disable_training_metrics) {
             computeMetrics(energy_level, mol_it, train_dice,
-                           train_dp, train_precision, train_precision);
+                           train_dp, train_precision, train_recall);
         }
     }
 }
@@ -336,16 +336,16 @@ EmModel::getMetricsString(double loss, double prev_loss, double best_loss,
 
     if (!cfg->disable_training_metrics) {
         qdif_str += "\nDice_Avg=" + std::to_string(train_dice / num_training_mols)
-                    + " DotProduct_Avg=" += std::to_string(train_dp / num_training_mols)
-                    + "\nPrecision_Avg=" + std::to_string(train_precision / num_val_mols)
-                    + " Recall_Avg=" += std::to_string(train_recall / num_val_mols);
+                    + " DotProduct_Avg=" + std::to_string(train_dp / num_training_mols)
+                    + "\nPrecision_Avg=" + std::to_string(train_precision / num_training_mols)
+                    + " Recall_Avg=" + std::to_string(train_recall / num_training_mols);
     }
 
     if (!cfg->disable_cross_val_metrics) {
         qdif_str += "\nValidation_Loss_Total=" + std::to_string(val_q)
                     + " Validation_Loss_Avg=" + std::to_string(val_q / num_val_mols)
                     + "\nValidation_Dice_Avg=" + std::to_string(val_dice / num_val_mols)
-                    + " Validation_DotProduct_Avg=" += std::to_string(val_dp / num_val_mols)
+                    + " Validation_DotProduct_Avg=" + std::to_string(val_dp / num_val_mols)
                     + "\nValidation_Precision_Avg=" + std::to_string(val_precision / num_val_mols)
                     + " Validation_Recall_Avg=" += std::to_string(val_recall / num_val_mols);
     }
@@ -413,9 +413,11 @@ void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocat
                                    moldata->getPredictedSpectrum(energy_level));
     recall += r_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
                                        moldata->getPredictedSpectrum(energy_level));
-
+    //std::cout << "Dice: " << dice << " DP: " << dp << " Precision: " << precision << " Recall: " << recall << std::endl;
     delete dice_cmp;
     delete dotproduct_cmp;
+    delete p_cmp;
+    delete r_cmp;
 }
 
 void EmModel::initSuft(suft_counts_t &suft, std::vector<MolData> &data) {
