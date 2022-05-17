@@ -56,8 +56,7 @@ This should create libs in e.g. lp_solve_5.5/lpsolve55/bin/ux64.
 If you encounter a build error with ```./ccc```, please use our  patched version at: https://bitbucket.org/wishartlab/cfm-id-code/downloads/lpsolve55_patched_ccc
 
 ### Get MPI library (optional)
-If Compiling the cfm-train and cfm-test executables, Install a version of MPI.
-
+If Compiling the cfm-train and cfm-test executables, Install a version of MPI. Current CFM-ID are comptable with MPI-3.2
 ###  Setup Libraries
 if your libaray installation is not under the stanard ```/usr/``` directory, you will need to set ```LD_LIBRARY_PATH``` to include Boost, RDKit and LPSolve library locations. This can be done in one of following method,
 1. Add following command in ```~/.bashrc```
