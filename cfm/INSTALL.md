@@ -101,12 +101,13 @@ This should produce the executable files in the ```cfm/bin``` directory.  Change
 Please refers to the same intrcution as for liunx with follow change
 ### Install Homebrew
 Some packages such as libboost and mpi can be installed via homebrew: https://brew.sh/
-###  Install Libraries
+
+###  Install LPSolve (Required if build CFM-Train or CFM-Test)
 ```
 brew install lp_solve
 ```
 
-### Compile OpenMPI
+### Compile OpenMPI (Required if build CFM-Train or CFM-Test)
 By Default OpenMPI build does not include C++ binding. That is openmpi installed from homebrew will not work.
 
 ```
