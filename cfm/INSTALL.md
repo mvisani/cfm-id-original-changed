@@ -142,7 +142,7 @@ sudo mkdir  -p /opt/RDKit_2017_09_3/include/rdkit/External/INCHI-API\
 sudo cp  ../External/INCHI-API/*.h  /opt/RDKit_2017_09_3/include/rdkit/External;\
 ```
 
-## Setup Libraries if complied from source code
+## Setup Libraries
 
 Set ```DYLD_LIBRARY_PATH ``` to include Boost, RDKit and LPSolve library locations. 
 ```
