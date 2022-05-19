@@ -11,17 +11,10 @@ You can install this from prebuild repo via ppa or your favorite package managme
 sudo apt-get install libboost-all-dev
 ```
 If you wish to install this from source code
-Download boost_1_62_0.tar.gz from http://www.boost.org/users/history/version_1_62_0.html
+Download boost_1_71_0.tar.gz from http://www.boost.org/users/history/version_1_71_0.html
 ```
 cd boost_1_62_0
-./bootstrap.sh --prefix=. \
-                    --with-libraries=regex,\
-                    serialization,\
-                    filesystem,\
-                    system,\
-                    thread,
-                    program_options,\
-                    test 
+./bootstrap.sh --prefix=. 
 ./b2 address-model=64 install
 ```
 ### Get RDKit library
@@ -31,11 +24,12 @@ Download RDKit_2017_09_3.tgz from https://github.com/rdkit/rdkit/archive/Release
 *NOTE:Newer RDKit may work but we have not test it yet*
 
 ```
-   tar -zxvf RDKit_2017_09_3.tgz
-   cd ../..
+   wget https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;
+   tar -zxvf Release_2017_09_3.tar.gz
+   cd ../Release_2017_09_3
    mkdir build
    cd build
-   cmake .. \ -DRDK_PGSQL_STATIC=OFF\  -DRDK_BUILD_PYTHON_WRAPPERS=OFF\   -DRDK_BUILD_CPP_TESTS=OFF -DRDK_BUILD_DESCRIPTORS3D=OFF\ -DRDK_INSTALL_STATIC_LIBS=OFF   -DRDK_INSTALL_INTREE=ON \ -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_OPTIMIZE_NATIVE=ON  \ -DCMAKE_CXX_STANDARD=11 \  -DCMAKE_BUILD_TYPE=Release
+   cmake .. -DRDK_PGSQL_STATIC=OFF -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_CPP_TESTS=OFF -DRDK_BUILD_DESCRIPTORS3D=OFF -DRDK_INSTALL_STATIC_LIBS=OFF   -DRDK_INSTALL_INTREE=ON -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_OPTIMIZE_NATIVE=ON -DCMAKE_CXX_STANDARD=11 -DCMAKE_BUILD_TYPE=Release
    make install
 ```
 Note that ```-DRDK_INSTALL_INTREE=ON``` will install RDKit lib within its source file, while ```-DRDK_INSTALL_INTREE=OFF``` will install RDKit in the ```/usr/local/```. However, RDKit will not automaticlly install  InChI Extension in the  ```/usr/local/```. You can move InChI Extension with:
@@ -62,14 +56,14 @@ If Compiling the cfm-train and cfm-test executables, Install a version of MPI.
 if your libaray installation is not under the stanard ```/usr/``` directory, you will need to set ```LD_LIBRARY_PATH``` to include Boost, RDKit and LPSolve library locations. This can be done in one of following method,
 1. Add following command in ```~/.bashrc```
     ```
-    export LD_LIBRARY_PATH = $LD_LIBRARY_PATH:~/boost_1_62_0/lib:~/RDKit_2017_09_3/lib:~/lp_solve_5.5/lpsolve55/bin/ux64
+    export LD_LIBRARY_PATH = $LD_LIBRARY_PATH:~/boost_1_71_0/lib:~/RDKit_2017_09_3/lib:~/lp_solve_5.5/lpsolve55/bin/ux64
     ```
    Then reload by  ```source ~/.bashrc ```
 2. go to ```/etc/ld.so.conf.d``` add ```*.conf``` for each library Boost, RDKit and LPSolve library locations
     > boost.conf
-      ~/boost_1_64_0/lib
+      ~/boost_1_71_0/lib
       rdkit.conf
-      ~/RDKit_2013_09_1/lib
+      ~/RDKit_2017_09_3/lib
       lp_solve.conf
       ~/lp_solve_5.5/lpsolve55/bin/ux64
         
@@ -99,16 +93,71 @@ This should produce the executable files in the ```cfm/bin``` directory.  Change
 (Note: replace ~ with the paths where you've installed Boost or RDKit or lpsolve respectively.)
 
 
-COMPILING FOR MAC
+##COMPILING FOR MAC
 ------------------
 Please refers to the same intrcution as for liunx with follow change
-###  Install Libraries
+### Install Homebrew
 Some packages such as libboost and mpi can be installed via homebrew: https://brew.sh/
-###  Setup Libraries
+###  Install Libraries
+```
+brew install lp_solve
+```
+
+### Compile OpenMPI
+By Default OpenMPI build does not include C++ binding. That is openmpi installed from homebrew will not work.
+
+```
+configure --enable-mpi-cxx --disable-mpi-fortran --prefix=/usr/local/
+make install all
+```
+### Compile Boost lib
+Download boost-1.71.0 and assume we are going to install it in the ```/opt/boost_1_17_0```
+```
+./bootstrap.sh --prefix=/opt/boost_1_17_0 --without-libraries=python
+sudo ./b2 cxxflags=-std=c++17 cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" -j 8 install
+```
+
+### Compile Rdkit
+Download boost-1.71.0 and assume we are going to install it in the ```/opt/RDKit_2017_09_3```
+```
+   wget https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;
+   tar -zxvf Release_2017_09_3.tar.gz
+   cd ../Release_2017_09_3
+   mkdir build
+   cd build
+   cmake .. -DRDK_PGSQL_STATIC=OFF -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_CPP_TESTS=OFF -DRDK_BUILD_DESCRIPTORS3D=OFF -DRDK_INSTALL_STATIC_LIBS=OFF   -DRDK_INSTALL_INTREE=OFF -DCMAKE_INSTALL_PREFIX=/opt/RDKit_2017_09_3 -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_OPTIMIZE_NATIVE=ON -DCMAKE_CXX_STANDARD=11 -DCMAKE_BUILD_TYPE=Release -DCMAKE_MACOSX_RPATH=TRUE
+   make install
+```
+
+Note that  ```-DRDK_INSTALL_INTREE=ON``` install RDKit lib within its source file, while ```-DRDK_INSTALL_INTREE=OFF``` will install RDKit in the ```/usr/local/``` or specficed by ```DCMAKE_INSTALL_PREFIX``` However, RDKit will not automaticlly install  InChI Extension in the  ```/usr/local/```. You can move InChI Extension with:
+
+```
+sudo mkdir  -p /opt/RDKit_2017_09_3/include/rdkit/External/INCHI-API\
+sudo cp  ../External/INCHI-API/*.h  /opt/RDKit_2017_09_3/include/rdkit/External;\
+```
+
+## Setup Libraries if complied from source code
 Set ```DYLD_LIBRARY_PATH ``` to include Boost, RDKit and LPSolve library locations. 
 ```
-export LD_LIBRARY_PATH = $LD_LIBRARY_PATH:~/boost_1_62_0/lib:~/RDKit_2017_09_3/lib:~/lp_solve_5.5/lpsolve55/bin/ux64
+export DYLD_LIBRARY_PATH=/opt/boost_1_17_0/lib:$DYLD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=/opt/RDKit_2017_09_3/lib:$DYLD_LIBRARY_PATH
 ```
+### Build CFM-ID
+Download CFM-ID Release version from https://bitbucket.org/wishartlab/cfm-id-code/downloads/?tab=tags, or clone git repo. Run cmake ```CFM_ROOT ``` where ```CFM_ROOT``` is the location of the cfm directory
+e.g. if you are in cfm/build, you can use cmake .. , setting the ```LPSOLVE_INCLUDE_DIR``` and ```LPSOLVE_LIBRARY_DIR``` values appropriately. Use  ```INCLUDE_TESTS``` and ```INCLUDE_TRAIN``` to enable or disbale``` cfm-tests``` and ``` cfm-train``` 
+
+Following command assume libraries are installed via Homebrew
+```
+    cd cfm
+    mkdir  build;
+    cd  build;
+    cmake ..  -DINCLUDE_TESTS=ON -DINCLUDE_TRAIN=ON -DLPSOLVE_INCLUDE_DIR=/usr/local/Cellar/lp_solve/5.5.2.11/include -DLPSOLVE_LIBRARY_DIR=/usr/local/Cellar/lp_solve/5.5.2.11/lib -DRDKIT_INCLUDE_DIR=/opt/RDKit_2017_09_3/include/rdkit/ -DRDKIT_INCLUDE_EXT_DIR=/opt/RDKit_2017_09_3/include/rdkit/External -DRDKIT_LIBRARY_DIR=/opt/RDKit_2017_09_3/lib -DCMAKE_CXX_STANDARD=11
+    make install
+```
+
+This should produce the executable files in the ```cfm/bin``` directory.  Change to this directory. Run the programs from a command line as detailed on https://sourceforge.net/p/cfm-id/wiki/Home/
+(Note: replace ~ with the paths where you've installed Boost or RDKit or lpsolve respectively.)
+
 ## COMPILING FOR WINDOWS 
 
 ### Build on windows has been verfied on current version

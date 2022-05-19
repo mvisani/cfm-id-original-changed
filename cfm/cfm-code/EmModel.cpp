@@ -49,7 +49,7 @@ EmModel::EmModel(config_t *a_cfg, FeatureCalculator *an_fc,
         comm->printToMasterOnly(msg.c_str());
     }
     sparse_params = true;
-    start_time = std::chrono::high_resolution_clock::now();
+    start_time = std::chrono::system_clock::now();
 }
 
 EmModel::~EmModel() { delete comm; }
@@ -114,7 +114,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         suft_counts_t suft;
         initSuft(suft, molDataSet);
 
-        auto before = std::chrono::high_resolution_clock::now();
+        auto before = std::chrono::system_clock::now();
 
         // Do the inference part (E-step)
         auto mol_it = molDataSet.begin();
@@ -144,7 +144,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait
-        auto after = std::chrono::high_resolution_clock::now();
+        auto after = std::chrono::system_clock::now();
 
         std::string estep_time_msg =
                 "[E-Step][T+" + getTimeDifferenceStr(start_time, after) +
@@ -157,7 +157,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
         // Find a new set of parameters to maximize the expected log likelihood
         // (M-step)
-        before = std::chrono::high_resolution_clock::now();
+        before = std::chrono::system_clock::now();
         if (comm->isMaster())
             std::cout << "[M-SteP]Learning_Rate=" << learning_rate << std::endl;
         loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, sampling_method, energy_level);
@@ -168,7 +168,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         //std::vector<float> cpu_times;
         //comm->gatherTimeUsages(cpu_time_used, cpu_times);
 
-        after = std::chrono::high_resolution_clock::now();
+        after = std::chrono::system_clock::now();
         std::string param_update_time_msg =
                 "[M-Step][T+" + std::to_string(getTimeDifference(start_time, after)) +
                 "s]Completed M-step update: Time Elapsed = " +
@@ -181,7 +181,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         //    comm->printToMasterOnly(("used cpu time:" + std::to_string(cpu_time)).c_str());
 
         //compute loss
-        before = std::chrono::high_resolution_clock::now();
+        before = std::chrono::system_clock::now();
         // validation Q value
         double val_q = 0.0;
 
@@ -197,7 +197,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
-        after = std::chrono::high_resolution_clock::now();
+        after = std::chrono::system_clock::now();
 
         std::string q_time_msg =
                 "[M-Step][T+" + getTimeDifferenceStr(start_time, after) + "s]Finished loss compute: Time Elapsed = " +
@@ -279,7 +279,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 float
 EmModel::getTimeDifference(const std::chrono::system_clock::time_point &before,
                            const std::chrono::system_clock::time_point &after) const {
-    auto count = std::chrono::duration_cast<std::chrono::milliseconds>(after - before).count();
+    auto count = std::chrono::duration_cast<std::chrono::seconds>(after - before).count();
     return count / 1000.0f;
 }
 
@@ -488,7 +488,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
     //Initial Q and gradient calculation (to determine used indexes)
     if (comm->used_idxs.empty()) {
-        auto before = std::chrono::high_resolution_clock::now();
+        auto before = std::chrono::system_clock::now();
 
         auto itdata = data.begin();
 
@@ -512,7 +512,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         comm->setMasterUsedIdxs();
         if (comm->isMaster())
             zeroUnusedParams();
-        auto after = std::chrono::high_resolution_clock::now();
+        auto after = std::chrono::system_clock::now();
         if (comm->isMaster())
             std::cout << "[M-Step][T+" << getTimeDifferenceStr(start_time, after) <<
                       "s]Collect Used Index, Time Used: " << getTimeDifferenceStr(before, after) + "s" << std::endl;
@@ -530,7 +530,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
     int ga_no_progress_count = 0;
     while (iter++ < max_iteration && ga_no_progress_count <= cfg->ga_no_progress_count) {
 
-        auto before = std::chrono::high_resolution_clock::now();
+        auto before = std::chrono::system_clock::now();
         if (iter > 1)
             prev_loss = loss;
 
@@ -599,7 +599,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         loss = computeAndSyncLoss(data, suft, energy);
 
-        auto after = std::chrono::high_resolution_clock::now();
+        auto after = std::chrono::system_clock::now();
 
         if (comm->isMaster()) {
             std::cout << iter << ".[T+" << getTimeDifferenceStr(start_time, after) << "s]" << "Loss=" <<

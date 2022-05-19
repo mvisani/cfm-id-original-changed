@@ -14,6 +14,7 @@
 # We may need higher verison cmake
 cmake_minimum_required(VERSION 3.7.0)
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set a default build type if none was specified
 set(default_build_type "RelWithDebInfo")
@@ -121,6 +122,7 @@ if (INCLUDE_TRAIN OR INCLUDE_TESTS)
     include(FindMPI)
     if (MPI_FOUND)
         include_directories(${MPI_INCLUDE_PATH})
+        message(STATUS "Found MPI Headers ${MPI_INCLUDE_PATH}")
     else ()
         message(FATAL_ERROR "Could not find MPI")
     endif ()
