@@ -9,6 +9,8 @@ spectrum_weight 1
 spectrum_depth 2
 spectrum_weight 1
 allow_frag_detours 1
+allow_intermediate_peak 1
+allow_cyclization 0
 num_em_restarts 1
 em_no_progress_count 2
 em_max_iterations 100
