@@ -13,10 +13,11 @@ sudo apt-get install libboost-all-dev
 If you wish to install this from source code
 Download boost_1_71_0.tar.gz from http://www.boost.org/users/history/version_1_71_0.html
 ```
-cd boost_1_62_0
+cd boost_1_71_0
 ./bootstrap.sh --prefix=. 
 ./b2 address-model=64 install
 ```
+
 ### Get RDKit library
 Install RDKit (see http://rdkit.org/), including the InChI Extensions (python extensions are not required). Set the environment variable RDBASE to the RDKit install location (the directory with Code, lib etc..).
 Download RDKit_2017_09_3.tgz from https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;
@@ -37,15 +38,18 @@ Note that ```-DRDK_INSTALL_INTREE=ON``` will install RDKit lib within its source
 mkdir  -p  /usr/local/include/rdkit/External/INCHI-API/;\
 cp  ../External/INCHI-API/*.h  /usr/local/include/rdkit/External/INCHI-API/;\
 ```
+
 ### Get LPSolve library
 You may be able to use one of the pre-compiled dev versions: https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_dev_ux64.tar.gz/download
 
 If you wish to build your own, download compile the source code for LPSolve. Download lp_solve_5.5.2.5_source.tar.gz from https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5
+
 ```
     tar -zxvf lp_solve_5.5.2.5_source.tar.gz
     cd lp_solve_5.5/lpsolve55
     ./ccc
 ```
+
 This should create libs in e.g. lp_solve_5.5/lpsolve55/bin/ux64.
 If you encounter a build error with ```./ccc```, please use our  patched version at: https://bitbucket.org/wishartlab/cfm-id-code/downloads/lpsolve55_patched_ccc
 
@@ -92,7 +96,7 @@ This should produce the executable files in the ```cfm/bin``` directory.  Change
 (Note: replace ~ with the paths where you've installed Boost or RDKit or lpsolve respectively.)
 
 
-##COMPILING FOR MAC
+## COMPILING FOR MAC
 ------------------
 Please refers to the same intrcution as for liunx with follow change
 ### Install Homebrew
@@ -109,7 +113,9 @@ By Default OpenMPI build does not include C++ binding. That is openmpi installed
 configure --enable-mpi-cxx --disable-mpi-fortran --prefix=/usr/local/
 make install all
 ```
+
 ### Compile Boost lib
+
 Download boost-1.71.0 and assume we are going to install it in the ```/opt/boost_1_17_0```
 ```
 ./bootstrap.sh --prefix=/opt/boost_1_17_0 --without-libraries=python
@@ -117,6 +123,7 @@ sudo ./b2 cxxflags=-std=c++17 cxxflags="-stdlib=libc++" linkflags="-stdlib=libc+
 ```
 
 ### Compile Rdkit
+
 Download boost-1.71.0 and assume we are going to install it in the ```/opt/RDKit_2017_09_3```
 ```
    wget https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;
@@ -136,12 +143,15 @@ sudo cp  ../External/INCHI-API/*.h  /opt/RDKit_2017_09_3/include/rdkit/External;
 ```
 
 ## Setup Libraries if complied from source code
+
 Set ```DYLD_LIBRARY_PATH ``` to include Boost, RDKit and LPSolve library locations. 
 ```
 export DYLD_LIBRARY_PATH=/opt/boost_1_17_0/lib:$DYLD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=/opt/RDKit_2017_09_3/lib:$DYLD_LIBRARY_PATH
 ```
+
 ### Build CFM-ID
+
 Download CFM-ID Release version from https://bitbucket.org/wishartlab/cfm-id-code/downloads/?tab=tags, or clone git repo. Run cmake ```CFM_ROOT ``` where ```CFM_ROOT``` is the location of the cfm directory
 e.g. if you are in cfm/build, you can use cmake .. , setting the ```LPSOLVE_INCLUDE_DIR``` and ```LPSOLVE_LIBRARY_DIR``` values appropriately. Use  ```INCLUDE_TESTS``` and ```INCLUDE_TRAIN``` to enable or disbale``` cfm-tests``` and ``` cfm-train``` 
 
