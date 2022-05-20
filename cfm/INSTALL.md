@@ -1,7 +1,7 @@
 # INSTALL GUIDE
 * [COMPILING FOR LINUX](#compling-for-linux)
 * [COMPILING FOR MACOS](#compling-for-mac)
-* [COMPILING FOR Windows](#compling-for-windows)
+* [COMPILING FOR WINDOWS](#compling-for-windows)
 
 # COMPILING FOR LINUX
 
@@ -127,7 +127,7 @@ Download boost-1.71.0 and assume we are going to install it in the ```/opt/boost
 sudo ./b2 cxxflags=-std=c++17 cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" -j 8 install
 ```
 
-### Compile Rdkit
+## Compile Rdkit
 
 Download Rdkit-2017_09_3 and assume we are going to install it in the ```/opt/RDKit_2017_09_3```
 ```
