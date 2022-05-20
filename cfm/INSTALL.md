@@ -1,10 +1,14 @@
+# INSTALL GUIDE
+* [COMPILING FOR LINUX](#compling-for-linux)
+* [COMPILING FOR MACOS](#compling-for-mac)
+* [COMPILING FOR Windows](#compling-for-windows)
 
-## COMPILING FOR LINUX
+# COMPILING FOR LINUX
 
-###  Install Cmake and GCC
+##  Install Cmake and GCC
 Install CMake VERSION 3.7.0 or higher, and GCC 7 or higher. Eariler GCC version may still work.
 
-### Get Boost library
+## Get Boost library
 Install Boost VERSION 1.62 or higher. At minimum, include the regex,serialization,filesystem,system,thread,program_options,test modules.
 You can install this from prebuild repo via ppa or your favorite package managment tool, here is an example on ubuntu:
 ```
@@ -18,7 +22,7 @@ cd boost_1_71_0
 ./b2 address-model=64 install
 ```
 
-### Get RDKit library
+## Get RDKit library
 Install RDKit (see http://rdkit.org/), including the InChI Extensions (python extensions are not required). Set the environment variable RDBASE to the RDKit install location (the directory with Code, lib etc..).
 Download RDKit_2017_09_3.tgz from https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;
 
@@ -39,7 +43,7 @@ mkdir  -p  /usr/local/include/rdkit/External/INCHI-API/;\
 cp  ../External/INCHI-API/*.h  /usr/local/include/rdkit/External/INCHI-API/;\
 ```
 
-### Get LPSolve library
+## Get LPSolve library
 You may be able to use one of the pre-compiled dev versions: https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_dev_ux64.tar.gz/download
 
 If you wish to build your own, download compile the source code for LPSolve. Download lp_solve_5.5.2.5_source.tar.gz from https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5
@@ -53,9 +57,9 @@ If you wish to build your own, download compile the source code for LPSolve. Dow
 This should create libs in e.g. lp_solve_5.5/lpsolve55/bin/ux64.
 If you encounter a build error with ```./ccc```, please use our  patched version at: https://bitbucket.org/wishartlab/cfm-id-code/downloads/lpsolve55_patched_ccc
 
-### Get MPI library (optional)
+## Get MPI library (optional)
 If Compiling the cfm-train and cfm-test executables, Install a version of MPI. Current CFM-ID are comptable with MPI-3.2
-###  Setup Libraries
+##  Setup Libraries
 if your libaray installation is not under the stanard ```/usr/``` directory, you will need to set ```LD_LIBRARY_PATH``` to include Boost, RDKit and LPSolve library locations. This can be done in one of following method,
 1. Add following command in ```~/.bashrc```
     ```
@@ -72,7 +76,7 @@ if your libaray installation is not under the stanard ```/usr/``` directory, you
         
    Then reload ld by  ```sudo ldconfig ```
 
-### Build CFM-ID
+## Build CFM-ID
 Download CFM-ID Release version from https://bitbucket.org/wishartlab/cfm-id-code/downloads/?tab=tags, or clone git repo. Run cmake ```CFM_ROOT ``` where ```CFM_ROOT``` is the location of the cfm directory
 e.g. if you are in cfm/build, you can use cmake .. , setting the ```LPSOLVE_INCLUDE_DIR``` and ```LPSOLVE_LIBRARY_DIR``` values appropriately. Use  ```INCLUDE_TESTS``` and ```INCLUDE_TRAIN``` to enable or disbale``` cfm-tests``` and ``` cfm-train``` 
 
@@ -95,19 +99,19 @@ e.g. if you are in cfm/build, you can use cmake .. , setting the ```LPSOLVE_INCL
 This should produce the executable files in the ```cfm/bin``` directory.  Change to this directory. Run the programs from a command line as detailed on https://sourceforge.net/p/cfm-id/wiki/Home/
 (Note: replace ~ with the paths where you've installed Boost or RDKit or lpsolve respectively.)
 
-
-## COMPILING FOR MAC
 ------------------
-Please refers to the same intrcution as for liunx with follow change
-### Install Homebrew
+
+# COMPILING FOR MACOS
+
+## Install Homebrew
 Some packages such as libboost and mpi can be installed via homebrew: https://brew.sh/
 
-###  Install LPSolve (Required if build CFM-Train or CFM-Test)
+##  Install LPSolve (Required if build CFM-Train or CFM-Test)
 ```
 brew install lp_solve
 ```
 
-### Compile OpenMPI (Required if build CFM-Train or CFM-Test)
+## Compile OpenMPI (Required if build CFM-Train or CFM-Test)
 By Default OpenMPI build does not include C++ binding. That is openmpi installed from homebrew will not work.
 
 ```
@@ -115,7 +119,7 @@ configure --enable-mpi-cxx --disable-mpi-fortran --prefix=/usr/local/
 make install all
 ```
 
-### Compile Boost lib
+## Compile Boost lib
 
 Download boost-1.71.0 and assume we are going to install it in the ```/opt/boost_1_17_0```
 ```
@@ -125,7 +129,7 @@ sudo ./b2 cxxflags=-std=c++17 cxxflags="-stdlib=libc++" linkflags="-stdlib=libc+
 
 ### Compile Rdkit
 
-Download boost-1.71.0 and assume we are going to install it in the ```/opt/RDKit_2017_09_3```
+Download Rdkit-2017_09_3 and assume we are going to install it in the ```/opt/RDKit_2017_09_3```
 ```
    wget https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;
    tar -zxvf Release_2017_09_3.tar.gz
@@ -151,7 +155,7 @@ export DYLD_LIBRARY_PATH=/opt/boost_1_17_0/lib:$DYLD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=/opt/RDKit_2017_09_3/lib:$DYLD_LIBRARY_PATH
 ```
 
-### Build CFM-ID
+## Build CFM-ID
 
 Download CFM-ID Release version from https://bitbucket.org/wishartlab/cfm-id-code/downloads/?tab=tags, or clone git repo. Run cmake ```CFM_ROOT ``` where ```CFM_ROOT``` is the location of the cfm directory
 e.g. if you are in cfm/build, you can use cmake .. , setting the ```LPSOLVE_INCLUDE_DIR``` and ```LPSOLVE_LIBRARY_DIR``` values appropriately. Use  ```INCLUDE_TESTS``` and ```INCLUDE_TRAIN``` to enable or disbale``` cfm-tests``` and ``` cfm-train``` 
@@ -168,9 +172,10 @@ Following command assume libraries are installed via Homebrew
 This should produce the executable files in the ```cfm/bin``` directory.  Change to this directory. Run the programs from a command line as detailed on https://sourceforge.net/p/cfm-id/wiki/Home/
 (Note: replace ~ with the paths where you've installed Boost or RDKit or lpsolve respectively.)
 
-## COMPILING FOR WINDOWS 
+------------------
+# COMPILING FOR WINDOWS 
 
-### Build on windows has been verfied on current version
+## Build on windows has been verfied on current version
 
 1. Install CMake.
 
@@ -184,7 +189,7 @@ This should produce the executable files in the ```cfm/bin``` directory.  Change
     - see https://sourceforge.net/projects/lpsolve).
 
 5. (optional - if compiling the cfm-train and cfm-test executables)
-   Install a version of MPI e.g. Microsoft MPI.
+   Install a version of MPI e.g. Microsoft MPI. https://www.microsoft.com/en-us/download/details.aspx?id=100593
 
 6. Start the CMake GUI and set the source code location to the cfm directory (the directory with cfm-code, cfm-id...etc).
    Click Configure. A pop-up should appear asking you to select the generator.
@@ -202,10 +207,11 @@ This should produce the executable files in the ```cfm/bin``` directory.  Change
 10. This should produce the executable files in the cfm/bin directory.  Either add this directory to your path
     or start a command prompt in this directory. Run them from a command line as detailed
     on https://sourceforge.net/p/cfm-id/wiki/Home/.
-    
-## Build On ComputeCanada Cedar Cluster
 
-###  Use System Packages
+------------------
+# Build On ComputeCanada Cedar Cluster
+
+##  Use System Packages
 Use system provide compiler, boost, cmake, and mpi
 ```
 module load intel/2018.3
@@ -214,7 +220,7 @@ module load openmpi/3.1.2
 module load cmake/3.12.3
 ```
 
-### Boost and Cmake 
+## Boost and Cmake 
 Use -DBoost_NO_BOOST_CMAKE=ON to avoid problem
 As for cmake 3.16.3 and Boost 1.70 https://gitlab.kitware.com/cmake/cmake/blob/master/Modules/FindBoost.cmake
 "If Boost was built using the boost-cmake project or from Boost 1.70.0 on
@@ -227,10 +233,10 @@ the Boost CMake package configuration for details on what it provides.
 
 Set ``Boost_NO_BOOST_CMAKE`` to ``ON``, to disable the search for boost-cmake."
 
-### Get lp_solve
+## Get lp_solve
 Install lp solve in the project directory or home directory. Precompiled version should work out of box at https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_dev_ux64.tar.gz/download
 
-### Get RDkit
+## Get RDkit
 Install RDkit in the project directory or home directory. Make sure set ``Boost_NO_BOOST_CMAKE`` to ``ON``  and
 set ``DRDK_INSTALL_INTREE`` to ``ON`` 
 ```
@@ -254,7 +260,7 @@ cmake .. -DRDK_PGSQL_STATIC=OFF \
      -DBoost_NO_BOOST_CMAKE=ON;
 ```
 
-### Build CFM-ID
+## Build CFM-ID
 ```
 cmake .. -DINCLUDE_TESTS=ON\
   -DINCLUDE_TRAIN=ON -DLPSOLVE_INCLUDE_DIR=/home/feiw/libs/lpsolve\
