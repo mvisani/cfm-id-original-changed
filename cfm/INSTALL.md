@@ -214,6 +214,9 @@ This should produce the executable files in the ```cfm/bin``` directory.  Change
 ##  Use System Packages
 Use system provide compiler, boost, cmake, and mpi
 ```
+
+module load StdEnv/2018.3
+module load nixpkgs/16.09
 module load intel/2018.3
 module load boost/1.68.0
 module load openmpi/3.1.2
