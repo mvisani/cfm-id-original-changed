@@ -2,6 +2,7 @@
 * [COMPILING FOR LINUX](#compling-for-linux)
 * [COMPILING FOR MACOS](#compling-for-mac)
 * [COMPILING FOR WINDOWS](#compling-for-windows)
+* [Build On ComputeCanada Cedar Cluster](#build-on-computecanada-cedar-cluster)
 
 # COMPILING FOR LINUX
 
@@ -274,4 +275,5 @@ cmake .. -DINCLUDE_TESTS=OFF\
   -DCMAKE_CXX_STANDARD=11 \
   -DBOOST_ROOT=$BOOST_ROOT\
   -DBoost_NO_BOOST_CMAKE=ON;
+make install
 ```
