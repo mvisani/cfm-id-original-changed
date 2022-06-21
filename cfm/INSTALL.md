@@ -265,7 +265,7 @@ cmake .. -DRDK_PGSQL_STATIC=OFF \
 
 ## Build CFM-ID
 ```
-cmake .. -DINCLUDE_TESTS=ON\
+cmake .. -DINCLUDE_TESTS=OFF\
   -DINCLUDE_TRAIN=ON -DLPSOLVE_INCLUDE_DIR=/home/feiw/libs/lpsolve\
   -DLPSOLVE_LIBRARY_DIR=/home/feiw/libs/lpsolve \
   -DRDKIT_INCLUDE_DIR=/home/feiw/libs/rdkit_2017_09_3/Code \
