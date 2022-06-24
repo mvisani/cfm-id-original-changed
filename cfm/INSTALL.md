@@ -239,6 +239,13 @@ Set ``Boost_NO_BOOST_CMAKE`` to ``ON``, to disable the search for boost-cmake."
 
 ## Get lp_solve
 Install lp solve in the project directory or home directory. Precompiled version should work out of box at https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_dev_ux64.tar.gz/download
+```
+mkdir lpsolve
+cd lpsolve
+wget https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_dev_ux64.tar.gz
+tar -xzf lp_solve_5.5.2.11_dev_ux64.tar.gz
+rm lp_solve_5.5.2.11_dev_ux64.tar.gz
+```
 
 ## Get RDkit
 Install RDkit in the project directory or home directory. Make sure set ``Boost_NO_BOOST_CMAKE`` to ``ON``  and
@@ -262,16 +269,17 @@ cmake .. -DRDK_PGSQL_STATIC=OFF \
      -DRDK_INSTALL_INTREE=ON \
      -DBOOST_ROOT=$BOOST_ROOT \
      -DBoost_NO_BOOST_CMAKE=ON;
+make install
 ```
 
 ## Build CFM-ID
 ```
 cmake .. -DINCLUDE_TESTS=OFF\
-  -DINCLUDE_TRAIN=ON -DLPSOLVE_INCLUDE_DIR=/home/feiw/libs/lpsolve\
-  -DLPSOLVE_LIBRARY_DIR=/home/feiw/libs/lpsolve \
-  -DRDKIT_INCLUDE_DIR=/home/feiw/libs/rdkit_2017_09_3/Code \
-  -DRDKIT_INCLUDE_EXT_DIR=/home/feiw/libs/rdkit_2017_09_3/External \
-  -DRDKIT_LIBRARY_DIR=/home/feiw/libs/rdkit_2017_09_3/lib \
+  -DINCLUDE_TRAIN=ON -DLPSOLVE_INCLUDE_DIR=/home/$HOME/libs/lpsolve\
+  -DLPSOLVE_LIBRARY_DIR=/home/$HOME/libs/lpsolve \
+  -DRDKIT_INCLUDE_DIR=/home/$HOME/libs/rdkit_2017_09_3/Code \
+  -DRDKIT_INCLUDE_EXT_DIR=/home/$HOME/libs/rdkit_2017_09_3/External \
+  -DRDKIT_LIBRARY_DIR=/home/$HOME/libs/rdkit_2017_09_3/lib \
   -DCMAKE_CXX_STANDARD=11 \
   -DBOOST_ROOT=$BOOST_ROOT\
   -DBoost_NO_BOOST_CMAKE=ON;
