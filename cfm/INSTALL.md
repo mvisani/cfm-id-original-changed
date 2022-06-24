@@ -224,6 +224,12 @@ module load openmpi/3.1.2
 module load cmake/3.12.3
 ```
 
+# go to home
+```cd $HOME
+mkdir libs
+cd libs
+```
+
 ## Boost and Cmake 
 Use -DBoost_NO_BOOST_CMAKE=ON to avoid problem
 As for cmake 3.16.3 and Boost 1.70 https://gitlab.kitware.com/cmake/cmake/blob/master/Modules/FindBoost.cmake
@@ -245,6 +251,7 @@ cd lpsolve
 wget https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_dev_ux64.tar.gz
 tar -xzf lp_solve_5.5.2.11_dev_ux64.tar.gz
 rm lp_solve_5.5.2.11_dev_ux64.tar.gz
+cd ..
 ```
 
 ## Get RDkit
