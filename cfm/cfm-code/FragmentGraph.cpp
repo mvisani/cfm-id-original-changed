@@ -364,35 +364,15 @@ void FragmentGraph::writeFragmentsOnly(std::ostream &out) const {
 
 void FragmentGraph::writeFragmentsOnlyForIds(std::ostream &out, std::set<int> & ids) const {
 
-
-    //Transitions
-    for (const auto &transition : transitions) {
-        if (transition->isDuplicate()) {
-            continue;
-        }
-        if (ids.find(transition->getToId()) != ids.end()) {
-            //out << transition->getFromId() << " ";
-            out << transition->getToId() << " ";
-            out << std::setprecision(6) << fragments[transition->getToId()]->getMass() << " ";
-            out << *(transition->getIonSmiles()) << " ";
-            out << *(transition->getNLSmiles()) << " ";
-            out << std::endl;
+    for (auto &it : fragments) {
+        if (ids.find(it->getId()) != ids.end()) {
+            out << it->getId() << " ";
+            out << std::setprecision(6) << it->getMass() << " ";
+            out << *(it->getIonSmiles()) << std::endl;
         }
     }
-    /*
-    for (auto &it : fragments) {
 
-        out << it->getId() << " ";
-        out << std::setprecision(10) << it->getMass() << " ";
-        out << *(it->getIonSmiles());
-        transitions[from_id_tmap[it->getId()]]->getNLSmiles();
 
-        //if (it->isIntermediate())
-        //    out << " Intermediate Fragment";
-        //if (it->isCyclization())
-        //    out << " Cyclization Fragment";
-        out << std::endl;
-    }*/
 }
 
 //Write the FragmentGraph to file (formerly the transition output - without feature details)
@@ -869,24 +849,11 @@ void EvidenceFragmentGraph::writeFragmentsOnly(std::ostream &out) const {
 
 void EvidenceFragmentGraph::writeFragmentsOnlyForIds(std::ostream &out, std::set<int> & ids) const {
 
-    /*for (auto &it : fragments) {
+    for (auto &it : fragments) {
         if (ids.find(it.getId()) != ids.end()) {
             out << it.getId() << " ";
-            out << std::setprecision(10) << it.getMass() << " ";
+            out << std::setprecision(6) << it.getMass() << " ";
             out << *(it.getIonSmiles()) << std::endl;
-        }
-    }*/
-    for (const auto &transition : transitions) {
-        if (transition->isDuplicate()) {
-            continue;
-        }
-        if (ids.find(transition->getToId()) != ids.end()) {
-            //out << transition->getFromId() << " ";
-            out << transition->getToId() << " ";
-            out << std::setprecision(6) << fragments[transition->getToId()].getMass() << " ";
-            out << *(transition->getIonSmiles()) << " ";
-            out << *(transition->getNLSmiles()) << " ";
-            out << std::endl;
         }
     }
 }
