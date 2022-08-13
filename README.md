@@ -441,7 +441,7 @@ For now ,please refer to <https://sourceforge.net/p/cfm-id/wiki/Home/>
 
 ## CFM-ID 4 Image ##
 Go to top directory
-```  docker build -t cfmid:dev -f .\docker\CFMID4_Dockerfile . ```
+```  docker build -t cfmid -f .\docker\CFMID4_Dockerfile . ```
 
 ## Dev Build ##
 Go to top directory
