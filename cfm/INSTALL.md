@@ -176,7 +176,7 @@ This should produce the executable files in the ```cfm/bin``` directory.  Change
 ------------------
 # COMPILING FOR WINDOWS 
 
-## Build on windows has been verfied on current version
+## Build on windows has NOT been verfied on current version
 
 1. Install CMake.
 
