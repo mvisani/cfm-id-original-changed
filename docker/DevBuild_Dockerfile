@@ -1,6 +1,6 @@
 FROM adoptopenjdk/openjdk11:jre-11.0.8_10-alpine
 LABEL author="Fei Wang" 
-LABEL name="CFM-ID 4 Docker Image"
+LABEL name="CFM-ID 4 Dev Docker Image"
 
 ###########################################################################################
 # Set ENV
@@ -10,6 +10,11 @@ ENV PATH /opt/cfm/bin:$PATH
 ARG BUILD_CFM_TRAIN="ON"
 ARG BUILD_CFM_TEST="OFF"
 ARG MODEL_DIR="/trained_models_cfmid4.0"
+
+############################################################################################
+# DevTools for debug
+############################################################################################
+RUN	apk update && apk add --no-cache gdb valgrind;
 
 ############################################################################################
 # Installs an LP Solver

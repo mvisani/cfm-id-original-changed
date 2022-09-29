@@ -441,14 +441,14 @@ For now ,please refer to <https://sourceforge.net/p/cfm-id/wiki/Home/>
 
 ## CFM-ID 4 Image ##
 Go to top directory
-```  docker build -t cfmid -f .\docker\CFMID4_Dockerfile . ```
+```  docker build -t cfmid:lastest -f .\docker\CFMID4_Dockerfile . ```
 
 ## Dev Build ##
 Go to top directory
-```  docker build -t cfmid:dev -f .\docker\CFMID2and3_Dockerfile . ```
+```  docker build -t cfmid:dev -f .\docker\DevBuild_Dockerfile . ```
 
 ``` docker run --rm=true -v ${pwd}:/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 ./public/[M+H]+/myout" ``` 
 
 ## CFM-ID 2 and 3 Image ##
 Go to top directory
-```  docker build -t cfmid:dev -f .\docker\DevBuild_Dockerfile . ```
+```  docker build -t cfmid:v2 -f .\docker\CFMID2and3_Dockerfile . ```
