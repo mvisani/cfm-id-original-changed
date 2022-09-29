@@ -14,7 +14,7 @@ ARG MODEL_DIR="/trained_models_cfmid4.0"
 ############################################################################################
 # DevTools for debug
 ############################################################################################
-RUN	apk update && apk add --no-cache gdb valgrind g++ gcc make wget tar boost-dev;
+RUN	apk update && apk add --no-cache gdb valgrind g++ gcc make wget tar boost-dev cmake;
 
 ############################################################################################
 # Installs an LP Solver
