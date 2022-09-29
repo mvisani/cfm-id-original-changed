@@ -128,15 +128,16 @@ To predict ESI-MS/MS [M-H]- spectra
 
     docker run --rm=true -v ${pwd}:/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt 1 /cfmid/public/[M-H]-/myout"
 
-#### For NPS-MS 
+#### For NPS-MS
 
 To predict ESI-MS/MS [M+H]+ spectra on Linux  
 
     docker run --rm=true -v $(pwd):/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_npsms/[M+H]+/param_output.log /trained_models_npsms/[M+H]+/param_config.txt 1 /cfmid/public/[M+H]+/myout"
 
-To predict ESI-MS/MS [M+H]+ spectra on Windows   
+To predict ESI-MS/MS [M+H]+ spectra on Windows
 
     docker run --rm=true -v ${pwd}:/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_npsms/[M+H]+/param_output.log /trained_models_npsms/[M+H]+/param_config.txt 1 /cfmid/public/[M+H]+/myout"
+
 ## cfm-id ##
 
 Given an input spectrum and a list of candidate smiles (or inchi) strings, **cfm-id** computes the predicted spectrum for each candidate and compares it to the input spectrum. It returns a ranking of the candidates according to how closely they match. The spectrum prediction is done using a pre-trained CFM model.
@@ -430,25 +431,48 @@ Build or obtain your CFM-ID Docker image, and convert it to a Singularity image 
 
 Run the Singularity container from the SIF file:
 
+```bash
   singularity exec --bind output:/out cfmid_2.0.0.1.sif cfm-predict \''CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1'\' 0.001 /out/param_output0.log /out/param_config.txt 1 /out/positive/myout.txt
+```
 
 ### CFM-ID 2 Wiki ###
 
 For now ,please refer to <https://sourceforge.net/p/cfm-id/wiki/Home/>
 
-# Build Docker Image #
+## Build Docker Image
 
+### CFM-ID 4 Image
 
-## CFM-ID 4 Image ##
 Go to top directory
-```  docker build -t cfmid:lastest -f .\docker\CFMID4_Dockerfile . ```
 
-## Dev Build ##
+```bash
+docker build -t cfmid:lastest -f .\docker\CFMID4_Dockerfile .
+```
+
+## CFM-ID 2 and 3 Image
+
 Go to top directory
-```  docker build -t cfmid:dev -f .\docker\DevBuild_Dockerfile . ```
 
-``` docker run --rm=true -v ${pwd}:/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 ./public/[M+H]+/myout" ``` 
+```bash  
+docker build -t cfmid:v2 -f .\docker\CFMID2and3_Dockerfile .
+```
 
-## CFM-ID 2 and 3 Image ##
+### Dev Build
+
 Go to top directory
-```  docker build -t cfmid:v2 -f .\docker\CFMID2and3_Dockerfile . ```
+
+```bash  
+docker build -t cfmid:dev -f .\docker\DevEnv_Dockerfile .
+```
+
+### Dev Container
+
+Go to top directory
+
+```bash  
+docker build -t cfmid:devbuild -f .\docker\DevBuild_Dockerfile .
+```
+
+```bash 
+docker run --rm=true -v ${pwd}:/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 ./public/[M+H]+/myout"
+```
