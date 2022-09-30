@@ -1,6 +1,10 @@
 
 cfm/\.idea/
 
+cfm/\.vscode/
+
+cfm/\.devcontainer/
+
 cfm/bin/
 
 cfm/build/
@@ -8,8 +12,6 @@ cfm/build/
 supplementary_material/
 
 cfm/cmake-build-debug/
-
-cfm/\.vscode/
 
 cfm/data/
 
