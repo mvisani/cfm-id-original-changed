@@ -1,4 +1,4 @@
-FROM alpine:3.14
+FROM ubuntu:20.04
 LABEL author="Fei Wang" 
 LABEL name="CFM-ID 4 Dev ENV Image"
 
@@ -11,35 +11,14 @@ ARG BUILD_CFM_TRAIN="ON"
 ARG BUILD_CFM_TEST="ON"
 ARG MODEL_DIR="/trained_models_cfmid4.0"
 
+## Suppress prompting from apt by setting the DEBIAN_FRONTEND variable,
+ARG DEBIAN_FRONTEND=noninteractive
+
 ############################################################################################
 # DevTools for debug
 ############################################################################################
-RUN	apk update && apk add --no-cache gdb valgrind g++ gcc make wget tar boost-dev cmake;
+RUN	apt-get update && apt-get install -y gdb valgrind g++ gcc make wget tar libboost-all-dev cmake build-essential libopenmpi-dev;
 
-############################################################################################
-# Installs an LP Solver
-############################################################################################
-RUN	cd /tmp;\
-	wget -O lp_solve_src.tar.gz 'https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download' ;\
-	tar xvzf lp_solve_src.tar.gz;\
-	rm lp_solve_src.tar.gz;
-
-WORKDIR /tmp/lp_solve_5.5
-#Patch build
-# Copy headers
-RUN	mkdir -p /usr/local/include/lp_solve;\
-	cp ./lp_Hash.h /usr/local/include/lp_solve/lp_Hash.h;\
-	cp ./lp_SOS.h /usr/local/include/lp_solve/lp_SOS.h;\
-	cp ./lp_lib.h /usr/local/include/lp_solve/lp_lib.h;\
-	cp ./lp_matrix.h /usr/local/include/lp_solve/lp_matrix.h;\
-	cp ./lp_mipbb.h /usr/local/include/lp_solve/lp_mipbb.h;\
-	cp ./lp_types.h /usr/local/include/lp_solve/lp_types.h;\
-	cp ./lp_utils.h /usr/local/include/lp_solve/lp_utils.h;\
-	cd ./lpsolve55 && sh ccc;\
-	mkdir -p /usr/local/lib/lp_solve;\
-	cp ./bin/ux64/liblpsolve55.so /usr/local/lib/liblpsolve55.so;\
-	cp ./bin/ux64/liblpsolve55.a /usr/local/lib/liblpsolve55.a;\
- 	rm -rf /tmp/lp_solve_5.5;
 
 ############################################################################################
 # Build RdKit
@@ -60,27 +39,25 @@ RUN mkdir build;\
 	make install -j 12;\
 	mkdir -p /usr/local/include/rdkit/External/INCHI-API/;\
 	cp ../External/INCHI-API/*.h /usr/local/include/rdkit/External/INCHI-API/;\
+	cp /tmp;\
 	rm -rf /tmp/rdkit-Release_${RDKit_VERSION};
 
 ############################################################################################
-# Build MPICH
+# Installs an LP Solver 5.5.2.11
 ############################################################################################
-# Source is available at http://www.mpich.org/static/downloads/
-
-# Build Options:
-# See installation guide of target MPICH version
-# Ex: http://www.mpich.org/static/downloads/3.2/mpich-3.2-installguide.pdf
-# These options are passed to the steps below
-ARG MPICH_VERSION="3.2"
-ARG MPICH_CONFIGURE_OPTIONS="--disable-fortran"
-ARG MPICH_MAKE_OPTIONS
-
-# Download, build, and install MPICH
-RUN mkdir /tmp/mpich-src
-WORKDIR /tmp/mpich-src
-RUN wget http://www.mpich.org/static/downloads/${MPICH_VERSION}/mpich-${MPICH_VERSION}.tar.gz \
-      && tar xfz mpich-${MPICH_VERSION}.tar.gz  \
-      && cd mpich-${MPICH_VERSION}  \
-      && ./configure ${MPICH_CONFIGURE_OPTIONS}  \
-      && make ${MPICH_MAKE_OPTIONS} && make install -j 12\
-      && rm -rf /tmp/mpich-src;
+RUN cd /tmp; \
+	wget -O lp_solve_dev_ux64.tar.gz 'https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_dev_ux64.tar.gz/download' ;\
+	mkdir lp_solve_dev_ux64;\
+	tar xvzf lp_solve_dev_ux64.tar.gz -C lp_solve_dev_ux64;\
+	rm lp_solve_dev_ux64.tar.gz;\
+	mkdir -p /usr/local/include/lp_solve;\
+	cp /tmp/lp_solve_dev_ux64/lp_Hash.h /usr/local/include/lp_solve/lp_Hash.h;\
+	cp /tmp/lp_solve_dev_ux64/lp_SOS.h /usr/local/include/lp_solve/lp_SOS.h;\
+	cp /tmp/lp_solve_dev_ux64/lp_lib.h /usr/local/include/lp_solve/lp_lib.h;\
+	cp /tmp/lp_solve_dev_ux64/lp_matrix.h /usr/local/include/lp_solve/lp_matrix.h;\
+	cp /tmp/lp_solve_dev_ux64/lp_mipbb.h /usr/local/include/lp_solve/lp_mipbb.h;\
+	cp /tmp/lp_solve_dev_ux64/lp_types.h /usr/local/include/lp_solve/lp_types.h;\
+	cp /tmp/lp_solve_dev_ux64/lp_utils.h /usr/local/include/lp_solve/lp_utils.h;\
+	cp /tmp/lp_solve_dev_ux64/liblpsolve55.so /usr/local/lib/liblpsolve55.so;\
+	cp /tmp/lp_solve_dev_ux64/liblpsolve55.a /usr/local/lib/liblpsolve55.a;\
+	rm -rf /tmp/lp_solve_dev_ux64;

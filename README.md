@@ -462,17 +462,17 @@ docker build -t cfmid:v2 -f .\docker\CFMID2and3_Dockerfile .
 Go to top directory
 
 ```bash  
-docker build -t cfmid:dev -f .\docker\DevEnv_Dockerfile .
+docker build -t cfmid:dev-f .\docker\DevBuild_Dockerfile .
+```
+```bash 
+docker run --rm=true -v ${pwd}:/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 ./public/[M+H]+/myout"
 ```
 
-### Dev Container
+### Dev Environment Container
 
 Go to top directory
 
 ```bash  
-docker build -t cfmid:devbuild -f .\docker\DevBuild_Dockerfile .
+docker build -t cfmid:devenv -f .\docker\DevEnv_Dockerfile .
 ```
 
-```bash 
-docker run --rm=true -v ${pwd}:/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cfm-predict 'CC(C)NCC(O)COC1=CC=C(CCOCC2CC2)C=C1' 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt 1 ./public/[M+H]+/myout"
-```

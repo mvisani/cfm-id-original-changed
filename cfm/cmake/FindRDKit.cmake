@@ -51,6 +51,7 @@ else ()
                     /usr/local/rdkit/include
                     /usr/local/rdkit/Code
                     /opt/rdkit/Code
+                    /opt/rdkit/include
                     ~/rdkit/Code
                     )
             find_path(RDKIT_INCLUDE_EXT_DIR INCHI-API/inchi.h
@@ -65,13 +66,14 @@ else ()
                     /usr/local/rdkit/include
                     /usr/local/rdkit/Code
                     /opt/rdkit/Code
+                    /opt/rdkit/include
+                    /opt/rdkit/External
                     ~/rdkit/Code
                     /usr/include/rdkit/External
                     /usr/local/include/rdkit/External
                     /usr/local/rdkit/External
                     /usr/local/rdkit/External
                     ~/rdkit/External
-                    /opt/rdkit/External/
                     )
         endif ()
         if (RDKIT_INCLUDE_DIR)

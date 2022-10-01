@@ -37,6 +37,7 @@ RUN	apk update && apk add --no-cache g++ gcc make;\
 	mkdir -p /usr/local/lib/lp_solve;\
 	cp ./bin/ux64/liblpsolve55.so /usr/local/lib/liblpsolve55.so;\
 	cp ./bin/ux64/liblpsolve55.a /usr/local/lib/liblpsolve55.a;\
+	cd /tmp;\
  	rm -rf /tmp/lp_solve_5.5;\
 	apk del g++ gcc make;
 
@@ -62,6 +63,7 @@ RUN apk add --no-cache g++ gcc make cmake boost-dev;\
 	make install -j 12;\
 	mkdir -p /usr/local/include/rdkit/External/INCHI-API/;\
 	cp ../External/INCHI-API/*.h /usr/local/include/rdkit/External/INCHI-API/;\
+	cd /tmp;\
 	rm -rf /tmp/rdkit-Release_${RDKit_VERSION};\
 	apk del g++ gcc make cmake boost-dev;\
 	apk add --no-cache boost-serialization boost-regex;
@@ -79,7 +81,7 @@ RUN	apk update && apk add --no-cache wget tar g++ gcc make;\
       ./configure; \
       make install -j 6;\
 	  cd /tmp;\
-	  rm -rf /tmp/mpich-src;\
+	  rm -rf /tmp/liblbfgs;\
 	  apk del wget tar g++ gcc make;
 
 ############################################################################################
@@ -104,6 +106,7 @@ RUN apk update && apk add --no-cache wget tar g++ gcc make;\
       && cd mpich-${MPICH_VERSION}  \
       && ./configure ${MPICH_CONFIGURE_OPTIONS}  \
       && make ${MPICH_MAKE_OPTIONS} && make install -j 6\
+	  && cd /tmp\
       && rm -rf /tmp/mpich-src\
 	  && apk del wget tar g++ gcc make;
 

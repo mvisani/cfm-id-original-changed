@@ -11,7 +11,7 @@ cfm/build/
 
 supplementary_material/
 
-cfm/cmake-build-debug/
+cfm/cmake-build-*/
 
 cfm/data/
 
@@ -19,16 +19,10 @@ data_set/
 
 jobs/
 
-cfm/cmake-build-release/
-
 cfm/debug/
-
-cfm/cmake-build-relwithdebinfo/
 
 cfm/\.vs/
 
 cfm/CMakeSettings\.json
 
 \.vs/
-
-cfm/cmake-build-debug-remote/

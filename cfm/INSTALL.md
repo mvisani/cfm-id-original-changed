@@ -37,13 +37,13 @@ Download RDKit_2017_09_3.tgz from <https://github.com/rdkit/rdkit/archive/Releas
 *NOTE:Newer RDKit may work but we have not test it yet*
 
 ```bash
-   wget https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;
-   tar -zxvf Release_2017_09_3.tar.gz
-   cd ./Release_2017_09_3
-   mkdir build
-   cd build
-   cmake .. -DRDK_PGSQL_STATIC=OFF -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_CPP_TESTS=OFF -DRDK_BUILD_DESCRIPTORS3D=OFF -DRDK_INSTALL_STATIC_LIBS=OFF   -DRDK_INSTALL_INTREE=ON -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_OPTIMIZE_NATIVE=ON -DCMAKE_CXX_STANDARD=11 -DCMAKE_BUILD_TYPE=Release
-   make install -j8
+wget https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;
+tar -zxvf Release_2017_09_3.tar.gz
+cd ./Release_2017_09_3
+mkdir build
+cd build
+cmake .. -DRDK_PGSQL_STATIC=OFF -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_CPP_TESTS=OFF -DRDK_BUILD_DESCRIPTORS3D=OFF -DRDK_INSTALL_STATIC_LIBS=OFF-DRDK_INSTALL_INTREE=ON -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_OPTIMIZE_NATIVE=ON -DCMAKE_CXX_STANDARD=11 -DCMAKE_BUILD_TYPE=Release
+make install -j8
 ```
 
 Note that ```-DRDK_INSTALL_INTREE=ON``` will install RDKit lib within its source file, while ```-DRDK_INSTALL_INTREE=OFF``` will install RDKit in the ```/usr/local/```. However, RDKit will not automaticlly install  InChI Extension in the  ```/usr/local/```. You can move InChI Extension with:
@@ -55,22 +55,65 @@ cp  ../External/INCHI-API/*.h  /usr/local/include/rdkit/External/INCHI-API/;\
 
 ### Get LPSolve library
 
-You may be able to use one of the pre-compiled dev versions: <https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_dev_ux64.tar.gz/download>
+You may be able to use one of the pre-compiled dev versions: <https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_dev_ux64.tar.gz/download> .
 
-If you wish to build your own, download compile the source code for LPSolve. Download lp_solve_5.5.2.5_source.tar.gz from <https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5>
+* NOTE : Prebuild library does not work on Apline linux because Apline does not use glibc (if you have no idea what this is, this most likey does not apply to you)
 
 ```bash
-    tar -zxvf lp_solve_5.5.2.5_source.tar.gz
-    cd lp_solve_5.5/lpsolve55
-    ./ccc
+cd /tmp;
+wget -O lp_solve_dev_ux64.tar.gz 'https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_dev_ux64.tar.gz/download' ;
+mkdir lp_solve_dev_ux64
+tar xvzf lp_solve_dev_ux64.tar.gz -C lp_solve_dev_ux64;
+rm lp_solve_dev_ux64.tar.gz;
+
+
+sudo mkdir -p /usr/local/include/lp_solve;
+sudo cp /tmp/lp_solve_dev_ux64/lp_Hash.h /usr/local/include/lp_solve/lp_Hash.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_SOS.h /usr/local/include/lp_solve/lp_SOS.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_lib.h /usr/local/include/lp_solve/lp_lib.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_matrix.h /usr/local/include/lp_solve/lp_matrix.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_mipbb.h /usr/local/include/lp_solve/lp_mipbb.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_types.h /usr/local/include/lp_solve/lp_types.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_utils.h /usr/local/include/lp_solve/lp_utils.h;
+sudo cp /tmp/lp_solve_dev_ux64/liblpsolve55.so /usr/local/lib/liblpsolve55.so;
+sudo cp /tmp/lp_solve_dev_ux64/liblpsolve55.a /usr/local/lib/liblpsolve55.a;
+rm -rf /tmp/lp_solve_dev_ux64;
 ```
 
-This should create libs in e.g. lp_solve_5.5/lpsolve55/bin/ux64.
-If you encounter a build error with ```./ccc```, please use our  patched version at: <https://bitbucket.org/wishartlab/cfm-id-code/downloads/lpsolve55_patched_ccc>
+If you wish to build your own, download compile the source code for LPSolve. Download lp_solve_5.5.2.11_source.tar.gz from <https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11>
+
+```bash
+cd /tmp;
+wget -O lp_solve_src.tar.gz 'https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz/download' ;
+tar xvzf lp_solve_src.tar.gz;
+rm lp_solve_src.tar.gz;
+
+
+cd /tmp/lp_solve_5.5;
+sudo mkdir -p /usr/local/include/lp_solve;
+cp ./lp_Hash.h /usr/local/include/lp_solve/lp_Hash.h;
+cp ./lp_SOS.h /usr/local/include/lp_solve/lp_SOS.h;
+cp ./lp_lib.h /usr/local/include/lp_solve/lp_lib.h;
+cp ./lp_matrix.h /usr/local/include/lp_solve/lp_matrix.h;
+cp ./lp_mipbb.h /usr/local/include/lp_solve/lp_mipbb.h;
+cp ./lp_types.h /usr/local/include/lp_solve/lp_types.h;
+cp ./lp_utils.h /usr/local/include/lp_solve/lp_utils.h;
+cd ./lpsolve55 && sh ccc;
+sudo mkdir -p /usr/local/lib/lp_solve;
+cp ./bin/ux64/liblpsolve55.so /usr/local/lib/liblpsolve55.so;
+cp ./bin/ux64/liblpsolve55.a /usr/local/lib/liblpsolve55.a;
+rm -rf /tmp/lp_solve_5.5;
+```
 
 ### Get MPI library (optional)
 
 If Compiling the cfm-train and cfm-test executables, Install a version of MPI. Current CFM-ID are comptable with MPI-3.2
+
+If library is not inistalled, on ubuntu you could also use
+
+```Bash
+sudo apt-get install libopenmpi-dev 
+```
 
 ### Setup Libraries
 
@@ -84,14 +127,17 @@ if your libaray installation is not under the stanard ```/usr/``` directory, you
 
    Then reload by  ```source ~/.bashrc```
 2. go to ```/etc/ld.so.conf.d``` add ```*.conf``` for each library Boost, RDKit and LPSolve library locations
-    > boost.conf
-      ~/boost_1_71_0/lib
-      rdkit.conf
-      ~/RDKit_2017_09_3/lib
-      lp_solve.conf
-      ~/lp_solve_5.5/lpsolve55/bin/ux64
 
+```
+> boost.conf
+~/boost_1_71_0/lib
+rdkit.conf
+~/RDKit_2017_09_3/lib
+lp_solve.conf
+~/lp_solve_5.5/lpsolve55/bin/ux64
+```
    Then reload ld by  ```sudo ldconfig```
+
 
 ### Build CFM-ID
 
