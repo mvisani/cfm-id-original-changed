@@ -5,7 +5,8 @@
 * [COMPILING FOR WINDOWS](#compling-for-windows)
 * [Build On ComputeCanada Cedar Cluster](#build-on-computecanada-cedar-cluster)
 
-## COMPILING FOR LINUX
+## COMPILING FOR LINUX or WSL on Windows
+For WSL check out [https://learn.microsoft.com/en-us/windows/wsl/install]
 
 ### Install Cmake and GCC
 
