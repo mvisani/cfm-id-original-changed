@@ -18,6 +18,8 @@
 #include "MILP.h"
 #include "lp_lib.h"
 #include <GraphMol/RingInfo.h>
+#include <GraphMol/RWMol.h>
+#include <GraphMol/MolOps.h>
 
 //#ifndef __DEBUG_CONSTRAINTS__
 //#define __DEBUG_CONSTRAINTS__
@@ -30,13 +32,18 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     REAL *row = nullptr;
     lprec *lp;
 
+    // use
+
+    auto kekulized_mol = RDKit::RWMol(*mol);
+    RDKit::MolOps::Kekulize(kekulized_mol);
+
     // Variables are: num electron pairs
     // added per bond-> i.e. 1 = single, 2 = double, 3 = triple,
     // lone pair added per bond due to beginning atom,
     // lone pair added per bond due to end atom (at most one total),
     // place for charge due to H loss per atom (at most one total)
-    int num_bonds = mol->getNumBonds();
-    int num_atoms = mol->getNumAtoms();
+    int num_bonds = kekulized_mol.getNumBonds();
+    int num_atoms = kekulized_mol.getNumAtoms();
     Ncol = num_bonds * 3 + num_atoms;
     lp = make_lp(0, Ncol);
     if (lp == nullptr)
@@ -56,10 +63,10 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
         //All bonds must be at most TRIPLE bonds ( <= 3 )
         //except broken bonds ( <= 0 ) and ring bonds ( <= 2 )
-        for (i = 0; i < num_bonds && ret == 0; i++) {
+        for (i = 0; i < num_bonds; i++) {
             set_int(lp, i + 1, TRUE); //sets variable to integer
 
-            RDKit::Bond *bond = mol->getBondWithIdx(i);
+            RDKit::Bond *bond = kekulized_mol.getBondWithIdx(i);
             int limit = 0;      //bonds that are broken or in the other fragment are limited to 0
             int end_lp_limit = 0, begin_lp_limit = 0;    //bonds for which there is no lone pair to donate (or broken, or in other fragment) are limited to 0
             bond->getProp("Broken", broken);
@@ -68,10 +75,11 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             int min_limit = 0;
             if (!broken && fragidx == fragmentidx) {
                 limit = 3;
-                min_limit = 1;
+                min_limit = int(bond->getBondTypeAsDouble());
                 min_single_bonds++;
                 bond->getProp("NumUnbrokenRings", numunbroken);
-                if (numunbroken > 0) limit = 2;
+                if (numunbroken > 0)
+                    limit = 2;
                 else {
                     begin_lp_limit = allow_lp_q && getAtomLPLimit(begin_atom);
                     end_lp_limit = allow_lp_q && getAtomLPLimit(bond->getEndAtom());
@@ -127,7 +135,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
         }
 
         //Add constraints for neighbouring ring bonds (can't have two double in a row)
-        RDKit::RingInfo *rinfo = mol->getRingInfo();
+        RDKit::RingInfo *rinfo = kekulized_mol.getRingInfo();
         RDKit::RingInfo::VECT_INT_VECT brings = rinfo->bondRings();
         RDKit::RingInfo::VECT_INT_VECT::iterator bit = brings.begin();
         for (int ringidx = 0; bit != brings.end() && ret == 0; ++bit, ringidx++) {
@@ -145,7 +153,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             for (it = bit->begin(); it != bit->end(); ++it) ring_bond_flags[*it] = 1;
 
             //Traverse around the ring, creating the constraints
-            RDKit::Bond *bond = mol->getBondWithIdx(*(bit->begin())); //Starting Bond
+            RDKit::Bond *bond = kekulized_mol.getBondWithIdx(*(bit->begin())); //Starting Bond
             RDKit::Bond *start_bond = bond, *prev_bond = bond;
             RDKit::Atom *atom = bond->getBeginAtom();
             int first_flag = 1;
@@ -166,7 +174,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
         int numlp = 0;
         std::vector<int> lp_indexes(num_atoms, -1);
         for (i = 0; i < num_atoms && ret == 0; i++) {
-            RDKit::Atom *atom = mol->getAtomWithIdx(i);
+            RDKit::Atom *atom = kekulized_mol.getAtomWithIdx(i);
             atom->getProp("FragIdx", fragidx);
             atom->getProp("OrigValence", origval);
             int ionic_q;
@@ -191,7 +199,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
             //Base valence constraints
             RDKit::ROMol::OEDGE_ITER cbond_beg,cbond_end;
-		    boost::tie(cbond_beg, cbond_end) = mol->getAtomBonds( atom );
+		    boost::tie(cbond_beg, cbond_end) = kekulized_mol.getAtomBonds( atom );
             //RDKit::ROMol::OEDGE_ITER it = ip.first;
             int j = 0;
             if (hloss_allowed) j = 1;
