@@ -24,14 +24,14 @@ FeatureVector *getFeaturesTestIonicFeaturesFV(int break_idx, int ionic_idx, bool
     Break *brk = &breaks[break_idx];
 
     node->applyBreak(*brk, ionic_idx );	//Break specified bond
-    node->generateChildrenOfBreak(*brk, false);
+    node->generateChildrenOfBreak(*brk);
     FragmentTreeNode *child = &(node->children[0]);
 
     if( rebreak_child ){
         std::vector<Break> child_breaks;
         child->generateBreaks(child_breaks, true, false);
         child->applyBreak(child_breaks[0], 0 );
-        child->generateChildrenOfBreak(child_breaks[0], false);
+        child->generateChildrenOfBreak(child_breaks[0]);
         child = &(child->children[0]);
     }
 

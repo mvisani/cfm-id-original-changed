@@ -70,7 +70,7 @@ getFeatureVector(std::string smiles_or_inchi, std::vector<std::string> &fnames, 
     //std::cout << breaks.size() << std::endl;
 
     node->applyBreak(breaks[break_id], ion_idx);
-    node->generateChildrenOfBreak(breaks[break_id], false);
+    node->generateChildrenOfBreak(breaks[break_id]);
     FragmentTreeNode *child = &(node->children[0]);
     Transition transition(-1, -1, child->nl, child->ion);
 

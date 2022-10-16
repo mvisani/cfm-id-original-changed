@@ -18,30 +18,24 @@
 #ifndef __MILP_H__
 #define __MILP_H__
 
-#include <GraphMol/RWMol.h>
+#include <GraphMol/ROMol.h>
 #include <vector>
-#include <GraphMol/MolOps.h>
 
 class MILP {
 
 public:
     MILP(RDKit::ROMol *a_mol, int a_fragmentidx, int a_broken_ringidx, bool a_verbose)
-            : fragmentidx(a_fragmentidx), broken_ringidx(a_broken_ringidx), verbose(a_verbose) {
-        this->mol = std::unique_ptr<RDKit::RWMol>(new RDKit::RWMol(*a_mol));
-        RDKit::MolOps::Kekulize(*mol);
-    };
+            : mol(a_mol), fragmentidx(a_fragmentidx), broken_ringidx(a_broken_ringidx), verbose(a_verbose) {};
 
     MILP(RDKit::ROMol *a_mol, int a_fragmentidx, bool a_verbose)
-            : fragmentidx(a_fragmentidx), broken_ringidx(-1), verbose(a_verbose) {
-        this->mol = std::unique_ptr<RDKit::RWMol>(new RDKit::RWMol(*a_mol));
-        RDKit::MolOps::Kekulize(*mol);
-    };
+            : mol(a_mol), fragmentidx(a_fragmentidx), broken_ringidx(-1), verbose(a_verbose) {};
 
-    int runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs, bool strict = false,
-                  int allow_change_distance = 1000);
+    int runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs);
+
+    int status;
 
 private:
-    std::unique_ptr<RDKit::RWMol> mol;
+    RDKit::ROMol *mol;
     int fragmentidx;
     int broken_ringidx;        //Store the idx of any broken rings (or -1 if there are none).
     bool verbose;

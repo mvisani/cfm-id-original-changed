@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_SUITE(FeaturesTestExtraFunctionalGroups)
         std::vector<Break> breaks;
         node->generateBreaks(breaks, false, false);
         node->applyBreak(breaks[0], 0);    //Break Bond 2
-        node->generateChildrenOfBreak(breaks[0], false);
+        node->generateChildrenOfBreak(breaks[0]);
 
         FragmentTreeNode *child = &(node->children[0]);
         Transition tmp_t(-1, -1, child->nl, child->ion);

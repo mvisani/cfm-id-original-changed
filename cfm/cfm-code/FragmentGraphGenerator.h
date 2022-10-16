@@ -82,8 +82,7 @@ public:
     //Compute a FragmentGraph starting at the given node and computing to the depth given.
     //The output will be appended to the current_graph
     // num_rbreak_nrbonds defualt to a huge number
-    void compute(FragmentTreeNode &node, int remaining_depth, int parent_id, int remaining_ring_breaks,
-                 bool use_iterative_fg_gen);
+    void compute(FragmentTreeNode &node, int remaining_depth, int parent_id, int remaining_ring_breaks);
 
 protected:
     FeatureCalculator *fc;
@@ -137,7 +136,7 @@ public:
     //Compute a FragmentGraph starting at the given node and computing to the depth given.
     //The output will be appended to the current_graph
     void compute(FragmentTreeNode &node, int remaining_depth, int parentid, double parent_log_prob,
-                 int remaining_ring_breaks, bool use_iterative_fg_gen);
+                 int remaining_ring_breaks);
 
 private:
     Param *param;

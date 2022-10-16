@@ -161,8 +161,7 @@ bool FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 //Compute a FragmentGraph starting at the given node and computing to the depth given.
 //The output will be appended to the current_graph
 void
-FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parent_id, int remaining_ring_breaks,
-                                bool use_iterative_fg_gen) {
+FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parent_id, int remaining_ring_breaks) {
 
     if (current_graph->getNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
         || current_graph->getNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
@@ -222,7 +221,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 
             auto current_child_size = node.children.size();
             node.applyBreak(brk, ifrag_idx);
-            node.generateChildrenOfBreak(brk, use_iterative_fg_gen);
+            node.generateChildrenOfBreak(brk);
             auto added_child_count = node.children.size() - current_child_size;
             // if this is ring break
             // update control vars
@@ -245,7 +244,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
     }
     for (int child_idx = 0; child_idx < node.children.size(); ++child_idx){
         compute(node.children[child_idx], child_remaining_depth_vector[child_idx], id,
-                child_remaining_ring_breaks_vector[child_idx], false);
+                child_remaining_ring_breaks_vector[child_idx]);
     }
     node.children = std::vector<FragmentTreeNode>();
 }
@@ -255,7 +254,7 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int
 //The output will be appended to the current_graph
 void
 LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parentid, double parent_log_prob,
-                                      int remaining_ring_breaks, bool use_iterative_fg_gen) {
+                                      int remaining_ring_breaks) {
 
     //Check Timeout
     if (parentid < 0) start_time = time(nullptr);
@@ -309,7 +308,7 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
         //Generate the children
         for (int iidx = 0; iidx < it->getNumIonicFragAllocations(); iidx++) {
             node.applyBreak(*it, iidx);
-            node.generateChildrenOfBreak(*it, use_iterative_fg_gen);
+            node.generateChildrenOfBreak(*it);
 
             // if this is ring break
             // update control vars
@@ -366,7 +365,7 @@ LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_dept
 
         if (max_child_prob >= log_prob_thresh) {
             compute(*itt, children_remaining_depth[child_idx],
-                    id, max_child_prob, children_remaining_ring_breaks[child_idx], false);
+                    id, max_child_prob, children_remaining_ring_breaks[child_idx]);
         }
     }
 
