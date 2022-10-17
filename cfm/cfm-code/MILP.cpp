@@ -42,8 +42,8 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     // lone pair added per bond due to beginning atom,
     // lone pair added per bond due to end atom (at most one total),
     // place for charge due to H loss per atom (at most one total)
-    int num_bonds = kekulized_mol.getNumBonds();
-    int num_atoms = kekulized_mol.getNumAtoms();
+    int num_bonds = (int)kekulized_mol.getNumBonds();
+    int num_atoms = (int)kekulized_mol.getNumAtoms();
     Ncol = num_bonds * 3 + num_atoms;
     lp = make_lp(0, Ncol);
     if (lp == nullptr)
@@ -76,6 +76,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             if (!broken && fragidx == fragmentidx) {
                 limit = 3;
                 min_limit = int(bond->getBondTypeAsDouble());
+                //min_limit = 1;
                 min_single_bonds++;
                 bond->getProp("NumUnbrokenRings", numunbroken);
                 if (numunbroken > 0)
