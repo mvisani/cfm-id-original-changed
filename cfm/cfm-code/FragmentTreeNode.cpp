@@ -1044,8 +1044,12 @@ void FragmentTreeNode::undoBreak(Break &brk, int ionic_allocation_idx) {
         broken_bond->getBeginAtom()->setProp("Root", 0);
         broken_bond->getEndAtom()->setProp("Root", 0);
 
-        if (brk.isRingBreak())
+        if (brk.isRingBreak()){
             broken_bond->getEndAtom()->setProp("OtherRoot", 0);
+            broken_bond->getEndAtom()->setProp("CurrentRingBreakRoot", 0);
+            broken_bond->getBeginAtom()->setProp("CurrentRingBreakRoot", 0);
+        }
+
     }
 
     //Un-assign fragment indexes for any ionic fragments (which are otherwise always FragIdx=0)
