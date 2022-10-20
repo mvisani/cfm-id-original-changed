@@ -30,7 +30,7 @@ public:
     MILP(RDKit::ROMol *a_mol, int a_fragmentidx, bool a_verbose)
             : mol(a_mol), fragmentidx(a_fragmentidx), broken_ringidx(-1), verbose(a_verbose) {};
 
-    int runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs);
+    int runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs, bool allow_rerangmenet);
 
     int status;
 

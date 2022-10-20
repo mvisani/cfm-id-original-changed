@@ -24,7 +24,7 @@
 //#ifndef __DEBUG_CONSTRAINTS__
 //#define __DEBUG_CONSTRAINTS__
 
-int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs) {
+int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs, bool allow_rerangmenet) {
     //Uses lp_solve: based on demonstration code provided.
     unsigned int numunbroken;
     int broken, fragidx, origval;
@@ -74,9 +74,17 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             begin_atom->getProp("FragIdx", fragidx);
             int min_limit = 0;
             if (!broken && fragidx == fragmentidx) {
-                limit = 3;
-                min_limit = int(bond->getBondTypeAsDouble());
-                //min_limit = 1;
+
+                if(!allow_rerangmenet){
+                    min_limit = int(bond->getBondTypeAsDouble());
+                    limit = 3;
+                }
+                else{
+                    min_limit = 1;
+                    limit = 3;
+                }
+
+
                 min_single_bonds++;
                 bond->getProp("NumUnbrokenRings", numunbroken);
                 if (numunbroken > 0)
@@ -284,8 +292,15 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
         set_maxim(lp);
         set_verbose(lp, IMPORTANT);
         ret = solve(lp);
-        if (ret == OPTIMAL) ret = 0;
-        else ret = 5;
+        if (ret == OPTIMAL){
+            ret = 0;
+            //std::cout << "OPTIMAL" << std::endl;
+        }
+        else {
+            ret = 5;
+            //std::cout << "NOT OPTIMAL" << std::endl;
+        }
+
     }
 
     //Extract Results
