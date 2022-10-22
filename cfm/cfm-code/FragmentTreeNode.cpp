@@ -379,6 +379,8 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 //(*rw_child_ion) = *child_ion;
                 RDKit::ROMol::AtomIterator ring_root_ai;
                 RDKit::ROMol::AtomIterator current_root_ai;
+
+
                 for (auto ai = rw_child_ion.beginAtoms(); ai != rw_child_ion.endAtoms(); ++ai) {
                     int is_ring_root = 0;
 
@@ -393,16 +395,19 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                         current_root_ai = ai;
                     }
                 }
+
                 // do this only if we can at least have a 3 member ring
                 auto ring_root_atom_idx = (*ring_root_ai)->getIdx();
                 auto current_root_atom_idx = (*current_root_ai)->getIdx();
 
+                double *distance_mat = RDKit::MolOps::getDistanceMat(rw_child_ion);
                 auto num_h_ring_root = (*ring_root_ai)->getNumExplicitHs();
                 auto num_h_current_root = (*current_root_ai)->getNumExplicitHs();
                 if(nullptr == rw_child_ion.getBondBetweenAtoms(ring_root_atom_idx, current_root_atom_idx)
                     && (ring_root_atom_idx != current_root_atom_idx)
                     && (num_h_ring_root > 1)
-                    && (num_h_current_root > 1)){
+                    && (num_h_current_root > 1)
+                    && distance_mat[ring_root_atom_idx * rw_child_ion.getNumAtoms() + current_root_atom_idx] > 4){
                     
                     // add a single bond between atom
                     rw_child_ion.addBond(*ring_root_ai, *current_root_ai, RDKit::Bond::BondType::SINGLE);

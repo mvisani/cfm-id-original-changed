@@ -77,13 +77,13 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
                 if(!allow_rerangmenet){
                     min_limit = int(bond->getBondTypeAsDouble());
-                    limit = 3;
+                    limit = std::min(min_limit + 1, 3);
+                    //limit = 3;
                 }
                 else{
                     min_limit = 1;
                     limit = 3;
                 }
-
 
                 min_single_bonds++;
                 bond->getProp("NumUnbrokenRings", numunbroken);
