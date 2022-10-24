@@ -40,7 +40,10 @@ RUN mkdir build;\
 	mkdir -p /usr/local/include/rdkit/External/INCHI-API/;\
 	cp ../External/INCHI-API/*.h /usr/local/include/rdkit/External/INCHI-API/;\
 	cp /tmp;\
-	rm -rf /tmp/rdkit-Release_${RDKit_VERSION};
+	rm -rf ./rdkit-Release_${RDKit_VERSION};
+
+RUN echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf;
+RUN ldconfig;
 
 ############################################################################################
 # Installs an LP Solver 5.5.2.11
@@ -61,3 +64,14 @@ RUN cd /tmp; \
 	cp /tmp/lp_solve_dev_ux64/liblpsolve55.so /usr/local/lib/liblpsolve55.so;\
 	cp /tmp/lp_solve_dev_ux64/liblpsolve55.a /usr/local/lib/liblpsolve55.a;\
 	rm -rf /tmp/lp_solve_dev_ux64;
+
+RUN apt-get install -y flex bison;\
+	cd /tmp; \
+    wget -O perf-5.10.0.tar.gz https://mirrors.edge.kernel.org/pub/linux/kernel/tools/perf/v5.10.0/perf-5.10.0.tar.gz;\
+	tar xvzf perf-5.10.0.tar.gz;\
+	cd ./perf-5.10.0/tools/perf;\
+	make;\
+	cp perf /usr/bin;\
+	cd /tmp;\
+	rm -rf ./perf-5.10.0;\
+	rm -rf ./perf.tar.gz;
