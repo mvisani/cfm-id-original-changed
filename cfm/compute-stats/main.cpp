@@ -92,8 +92,8 @@ int main(int argc, char *argv[]) {
                      "(off))"
                   << std::endl;
         std::cout << std::endl
-                  << "minimum intensity (opt):" << std::endl
-                  << "Filter out any peaks below this intensity (default = 0 (off))"
+                  << "minimum relative intensity (opt):" << std::endl
+                  << "Filter out any peaks below this relative intensity (default = 0, range 0-100)"
                   << std::endl;
         std::cout << std::endl
                   << "minimum peak cutoffs (opt) (default = 1))" << std::endl
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 14) {
         try {
             group_to_compute = boost::lexical_cast<bool>(argv[12]);
-        } catch (boost::bad_lexical_cast e) {
+        } catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid group_to_compute (Expecting numerical): "
                       << argv[13] << std::endl;
             exit(1);
@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 5) {
         try {
             num_spectra = boost::lexical_cast<int>(argv[4]);
-        } catch (boost::bad_lexical_cast e) {
+        } catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid num_spectra (Expecting numerical): " << argv[4]
                       << std::endl;
             exit(1);
@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 6) {
         try {
             ppm_mass_tol = boost::lexical_cast<double>(argv[5]);
-        } catch (boost::bad_lexical_cast e) {
+        } catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid ppm_mass_tol (Expecting numerical): " << argv[5]
                       << std::endl;
             exit(1);
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 7) {
         try {
             abs_mass_tol = boost::lexical_cast<double>(argv[6]);
-        } catch (boost::bad_lexical_cast e) {
+        } catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid abs_mass_tol (Expecting numerical): " << argv[6]
                       << std::endl;
             exit(1);
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]) {
     }
 
     double cumulative_intensity_thresh = 100;
-    double min_intensity = 0.0;
+    double min_relative_intensity = 0.0;
     int min_peak_cutoffs = 1, clean_target_spectra = 0;
     int max_peak_cutoffs = 1000000;
 
@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 9) {
         try {
             cumulative_intensity_thresh = boost::lexical_cast<double>(argv[8]);
-        } catch (boost::bad_lexical_cast e) {
+        } catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid cumulative_intensity_thresh (Expecting numerical): "
                       << argv[8] << std::endl;
             exit(1);
@@ -207,9 +207,9 @@ int main(int argc, char *argv[]) {
     }
     if (argc >= 10) {
         try {
-            min_intensity = boost::lexical_cast<double>(argv[9]);
-        } catch (boost::bad_lexical_cast e) {
-            std::cout << "Invalid min_intensity (Expecting numerical): "
+            min_relative_intensity = boost::lexical_cast<double>(argv[9]);
+        } catch (boost::bad_lexical_cast &e) {
+            std::cout << "Invalid min_relative_intensity (Expecting numerical): "
                       << argv[9] << std::endl;
             exit(1);
         }
@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 11) {
         try {
             min_peak_cutoffs = boost::lexical_cast<int>(argv[10]);
-        } catch (boost::bad_lexical_cast e) {
+        } catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid min_peak_cutoffs (Expecting int) " << argv[10]
                       << std::endl;
             exit(1);
@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 12) {
         try {
             max_peak_cutoffs = boost::lexical_cast<int>(argv[11]);
-        } catch (boost::bad_lexical_cast e) {
+        } catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid max_peak_cutoffs (Expecting int) " << argv[11]
                       << std::endl;
             exit(1);
@@ -236,7 +236,7 @@ int main(int argc, char *argv[]) {
     if (argc >= 13) {
         try {
             clean_target_spectra = boost::lexical_cast<bool>(argv[12]);
-        } catch (boost::bad_lexical_cast e) {
+        } catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid apply_cutoffs (Expecting 0 or 1): " << argv[12]
                       << std::endl;
             exit(1);
@@ -280,9 +280,9 @@ int main(int argc, char *argv[]) {
     std::ostream out(buf);
 
     // Out put configs
-    out << "Config: "  << std::endl;
+    out << "Config: " << std::endl;
     out << "cumulative_intensity_thresh " << cumulative_intensity_thresh << std::endl;
-    out << "min_intensity " << min_intensity << std::endl;
+    out << "min_relative_intensity " << min_relative_intensity << std::endl;
     out << "peak_cutoffs(min, max) " << min_peak_cutoffs << " " << max_peak_cutoffs << std::endl;
     out << "clean_target_spectra " << clean_target_spectra << std::endl;
     out << "quantise_spectra_dec_pl " << quantise_spectra_dec_pl << std::endl << std::endl;
@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
     // levels)
     std::vector<double> rscores(data.size(), 0.0), pscores(data.size(), 0.0),
             jscores(data.size(), 0.0), wjscores(data.size(), 0.0),
-            dscores(data.size(),0.0), wdscores(data.size());
+            dscores(data.size(), 0.0), wdscores(data.size());
 
     std::vector<double> wrscores(data.size(), 0.0), wpscores(data.size(), 0.0),
             adscores(data.size(), 0.0);
@@ -344,17 +344,24 @@ int main(int argc, char *argv[]) {
                 } // If it's not in the MSP, we failed to predict/enumerate it
             } else {
                 std::string pred_spec_file =
-                        predicted_spec_dir + "/" + mit->getId() + ".log";
-                mit->readInSpectraFromFile(pred_spec_file, true);
+                        predicted_spec_dir + "/" + mit->getId();
+                if (boost::filesystem::exists( pred_spec_file + ".log" ) )
+                    mit->readInSpectraFromFile(pred_spec_file + ".log" , true);
+                else if (boost::filesystem::exists( pred_spec_file + ".txt" ) )
+                    mit->readInSpectraFromFile(pred_spec_file + ".txt" , true);
+                else
+                    std::cerr << "Can not open " << pred_spec_file + ".txt" << " or " << pred_spec_file + ".log" << std::endl;
+
             }
             if (quantise_spectra_dec_pl >= 0) {
                 mit->quantisePredictedSpectra(quantise_spectra_dec_pl);
                 mit->quantiseMeasuredSpectra(quantise_spectra_dec_pl);
             }
             //if (apply_cutoffs)
-            // mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_intensity);
+            // mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_relative_intensity);
             //else
-            mit->postprocessPredictedSpectra(cumulative_intensity_thresh, min_peak_cutoffs, max_peak_cutoffs, min_intensity);
+            mit->postprocessPredictedSpectra(cumulative_intensity_thresh, min_peak_cutoffs, max_peak_cutoffs,
+                                             min_relative_intensity);
 
             //num_spectra = mit->GetNumSpectra();
             if (clean_target_spectra)
@@ -399,7 +406,7 @@ int main(int argc, char *argv[]) {
             odpscores[idx] += norm * energy_odpscores[idx];
             out << mit->getId() << "\t" << energy_rscores[idx] << "\t"
                 << energy_pscores[idx] << "\t" << energy_wrscores[idx] << "\t"
-                << energy_wpscores[idx] << "\t" << energy_jscores[idx] << "\t" <<  energy_wjscores[idx]  <<  "\t"
+                << energy_wpscores[idx] << "\t" << energy_jscores[idx] << "\t" << energy_wjscores[idx] << "\t"
                 << energy_dscores[idx] << "\t" << energy_wdscores[idx] << "\t"
                 << energy_dpscores[idx] << "\t" << energy_odpscores[idx] << std::endl;
             idx++;
@@ -504,7 +511,7 @@ void reportMeanStd(std::ostream &out, std::vector<double> &scores) {
 
     using namespace boost::accumulators;
     accumulator_set<double, stats<tag::variance> > acc;
-    for(auto & score : scores)
+    for (auto &score : scores)
         acc(score);
 
     out << mean(acc) << " " << sqrt(variance(acc)) << std::endl;

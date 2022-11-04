@@ -85,21 +85,21 @@ int main(int argc, char *argv[]) {
     bool merge_candidate_spectra = false;
     if (argc > 4) {
         try { num_highest = boost::lexical_cast<int>(argv[4]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid num_highest: " << argv[4] << std::endl;
             exit(1);
         }
     }
     if (argc > 5) {
         try { ppm_mass_tol = boost::lexical_cast<float>(argv[5]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid ppm_tol: " << argv[5] << std::endl;
             exit(1);
         }
     }
     if (argc > 6) {
         try { abs_mass_tol = boost::lexical_cast<float>(argv[6]); }
-        catch (boost::bad_lexical_cast e) {
+        catch (boost::bad_lexical_cast &e) {
             std::cout << "Invalid abs_tol: " << argv[6] << std::endl;
             exit(1);
         }
@@ -206,7 +206,6 @@ int main(int argc, char *argv[]) {
                 candidates.push_back(PrecomputedCandidate(id, smiles_or_inchi, &msps[spectrum_filename]));
             } else
                 candidates.push_back(PrecomputedCandidate(id, smiles_or_inchi, spectrum_filename));
-
         }
         ifs.close();
 

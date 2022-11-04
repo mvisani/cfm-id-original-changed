@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <ostream>
+#include <set>
 #include "Config.h"
 
 typedef std::pair<int, double> annotation_t; //<Fragment Id, Score>
@@ -33,8 +34,8 @@ public:
 
     Peak(double a_mass, double an_intensity) :
             mass(a_mass), intensity(an_intensity){};
-    double mass;
-    double intensity;
+    double mass = 0.0;
+    double intensity = 0.0;
     std::vector<annotation_t> annotations;
 };
 
@@ -91,11 +92,11 @@ public:
     void updateAnnotationId(int peak_idx, int annot_idx,
                             int new_id) { peaks[peak_idx].annotations[annot_idx].first = new_id; }
 
-    const std::vector<Peak> *getPeaks() const { return &peaks; };
+                            const std::vector<Peak> *getPeaks() const { return &peaks; };
 
     bool isNormalizedAndSorted() const { return is_normalized && is_sorted; };
 
-    void postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_intensity = 0.0);
+    void postProcess(double perc_thresh, int min_peaks, int max_peaks, double min_relative_intensity_prec = 0.0);
 
     void normalizeAndSort();
 
@@ -113,11 +114,18 @@ public:
 
     void quantisePeaksByMass(int num_dec_places);
 
+    void convertToLogScale();
+
+    void convertToLinearScale();
+
+    void getDisplayedFragmentIds(std::set<int> & ids, bool normalize_to_max = true) const;
 
 private:
     std::vector<Peak> peaks;
     bool is_normalized;
     bool is_sorted;
+
+    double getMaxIntensity() const;
 };
 
 

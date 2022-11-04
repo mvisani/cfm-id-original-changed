@@ -257,6 +257,8 @@ public:
     // extra details)
     virtual void writeFragmentsOnly(std::ostream &out) const;
 
+    virtual void writeFragmentsOnlyForIds(std::ostream &out, std::set<int> & ids) const;
+
     // Write the FragmentGraph to file (formerly the transition output - without
     // feature details)
     void writeFullGraph(std::ostream &out) const;
@@ -392,6 +394,8 @@ public:
     void writeFragmentsOnly(std::ostream &out) const;
 
     void writeFullGraph(std::ostream &out) const;
+
+    void writeFragmentsOnlyForIds(std::ostream &out, std::set<int> & ids) const;
 
     // Alternative graph builder used to build fragments from fragments and
     // transitions of an existing graph

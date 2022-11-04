@@ -51,6 +51,7 @@ else ()
                     /usr/local/rdkit/include
                     /usr/local/rdkit/Code
                     /opt/rdkit/Code
+                    /opt/rdkit/include
                     ~/rdkit/Code
                     )
             find_path(RDKIT_INCLUDE_EXT_DIR INCHI-API/inchi.h
@@ -65,13 +66,14 @@ else ()
                     /usr/local/rdkit/include
                     /usr/local/rdkit/Code
                     /opt/rdkit/Code
+                    /opt/rdkit/include
+                    /opt/rdkit/External
                     ~/rdkit/Code
                     /usr/include/rdkit/External
                     /usr/local/include/rdkit/External
                     /usr/local/rdkit/External
                     /usr/local/rdkit/External
                     ~/rdkit/External
-                    /opt/rdkit/External/
                     )
         endif ()
         if (RDKIT_INCLUDE_DIR)
@@ -113,6 +115,8 @@ else ()
                     HINTS ${RDKIT_LIBRARY_DIR})
             find_library(DEPICTOR_LIB NAMES Depictor RDKitDepictor
                     HINTS ${RDKIT_LIBRARY_DIR})
+            find_library(DESCIPTORS_LIB NAMES Descriptors RDKitDescriptors
+                    HINTS ${RDKIT_LIBRARY_DIR})
             find_library(CHEMTRANS_LIB NAMES ChemTransforms RDKitChemTransforms
                     HINTS ${RDKIT_LIBRARY_DIR})
             find_library(GRAPHMOL_LIB NAMES GraphMol RDKitGraphMol
@@ -151,7 +155,7 @@ else ()
                     ${DEPICTOR_LIB} ${CHEMTRANS_LIB} ${GRAPHMOL_LIB} ${RDGEOMETRYLIB_LIB}
                     ${RDGENERAL_LIB} ${SUBSTRUCT_LIB} ${GASTEIGER_LIB}
                     ${DATASTRUCT_LIB} ${SUBGRAPH_LIB} ${FINGERPRINT_LIB}
-                    ${INCHI_LIB} ${RDINCHI_LIB} ${OPT} ${FF} ${FFHELP} ${CATALOG} ${FRAGCAT})
+                    ${INCHI_LIB} ${RDINCHI_LIB} ${DESCIPTORS_LIB} ${OPT} ${FF} ${FFHELP} ${CATALOG} ${FRAGCAT})
         endif ()
         if (RDKIT_LIBRARIES)
             message(STATUS "Found RDKit library files at ${RDKIT_LIBRARIES}")

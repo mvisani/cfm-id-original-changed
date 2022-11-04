@@ -24,6 +24,7 @@
 #include <GraphMol/BondIterators.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
 #include <GraphMol/SmilesParse/SmilesWrite.h>
+#include <GraphMol/new_canon.h>
 #include <INCHI-API/inchi.h>
 
 
@@ -49,14 +50,24 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
 
     //Create the RDKit mol - this will be the ion
     RDKit::RWMol *rwmol;
+
     if (smiles_or_inchi.substr(0, 6) == "InChI=") {
         RDKit::ExtraInchiReturnValues rv;
         rwmol = RDKit::InchiToMol(smiles_or_inchi, rv);
     } else
         rwmol = RDKit::SmilesToMol(smiles_or_inchi);
 
-    //This is dirty, but for some reason RDKit doesn't throw the exception...
-    if (!rwmol) throw RDKit::SmilesParseException("Error occurred - assuming Smiles Parse  Exception");
+    // This is hacky way to get mol Canonicalized
+    rwmol = RDKit::SmilesToMol(RDKit::MolToSmiles(*rwmol));
+    // Canonical Rank Atoms
+    /*std::vector<unsigned int> atomRanks;
+    bool breakTies = true;
+    bool doIsomericSmiles = false;
+    RDKit::Canon::rankMolAtoms(*rwmol, atomRanks, doIsomericSmiles, doIsomericSmiles);*/
+
+    // This is dirty, but for some reason RDKit doesn't throw the exception...
+    if (!rwmol)
+        throw RDKit::SmilesParseException("Error occurred - assuming Smiles Parse  Exception");
 
     //Remove stereochemistry
     RDKit::MolOps::removeStereochemistry(*rwmol);
@@ -78,16 +89,22 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
     RDKit::RingInfo *rinfo = rwmol->getRingInfo();
     RDKit::ROMol::AtomIterator ai;
 
+    labelNitroGroup(rwmol);
     for (ai = rwmol->beginAtoms(); ai != rwmol->endAtoms(); ++ai) {
         (*ai)->setProp("FragIdx", 0);
         (*ai)->setProp("NumUnbrokenRings", rinfo->numAtomRings((*ai)->getIdx()));
         // keep track of root of ring break
         // we need this for cyclization
         (*ai)->setProp("CurrentRingBreakRoot", 0);
+        // set origValence
+        auto orig_val = getValence(*ai);
+        //std::cout << "[DEBUG][ID " <<  (*ai)->getIdx() << "]" << (*ai)->getSymbol() << " " << orig_val << std::endl;
+        (*ai)->setProp("OrigValence", orig_val);
+
     }
     int num_ionic = addIonicChargeLabels(rwmol);
     if (num_frags - num_ionic != 1) {
-        std::cout << "Unsupported input molecule: Too many starting fragments in " << smiles_or_inchi << std::endl;
+        std::cerr << "Unsupported input molecule: Too many starting fragments in " << smiles_or_inchi << std::endl;
         throw FragmentGraphGenerationException();
     }
 
@@ -106,7 +123,8 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
     //Ionize the molecule
     applyIonization(rwmol, ionization_mode);
 
-    return (new FragmentTreeNode(romol_ptr_t(rwmol), num_ep, 0, fh, e_loc));
+    auto start_node = new FragmentTreeNode(romol_ptr_t(rwmol), num_ep, 0, fh, e_loc);
+    return start_node;
 }
 
 int FragmentGraphGenerator::countExtraElectronPairs(RDKit::RWMol *rwmol, std::vector<int> &output_e_loc) {
@@ -143,10 +161,7 @@ bool FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 //Compute a FragmentGraph starting at the given node and computing to the depth given.
 //The output will be appended to the current_graph
 void
-FragmentGraphGenerator::compute(FragmentTreeNode &node,
-        int remaining_depth,
-        int parent_id,
-        int remaining_ring_breaks) {
+FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parent_id, int remaining_ring_breaks) {
 
     if (current_graph->getNumFragments() > MAX_FRAGMENTS_PER_MOLECULE
         || current_graph->getNumTransitions() > MAX_TRANSITIONS_PER_MOLECULE) {
@@ -191,53 +206,54 @@ FragmentGraphGenerator::compute(FragmentTreeNode &node,
         h_loss_allowed = !(current_graph->includesHLossesPrecursorOnly()) && current_graph->includesHLosses();
     node.generateBreaks(breaks, h_loss_allowed, current_graph->allowCyclization());
 
+    //Generate Child Node for this breaks
     bool ring_can_break = (remaining_ring_breaks > 0);
-    for (auto it = breaks.begin(); it != breaks.end(); ++it) {
-        if (it->isRingBreak() && !ring_can_break)
+
+    std::vector<int> child_remaining_depth_vector;
+    std::vector<int> child_remaining_ring_breaks_vector;
+
+    for (auto & brk : breaks) {
+        if (brk.isRingBreak() && !ring_can_break)
             continue;
 
-        CreateChildNodes(node, remaining_depth, remaining_ring_breaks,
-                         id, &(*it));
-        node.children = std::vector<FragmentTreeNode>();
-    }
-}
+        // Creat Child for this Break
+        for (int ifrag_idx = 0; ifrag_idx < brk.getNumIonicFragAllocations(); ifrag_idx++) {
 
-void
-FragmentGraphGenerator::CreateChildNodes(FragmentTreeNode &node, int remaining_depth,
-        int remaining_ring_breaks,
-        int id, Break *brk) {
+            auto current_child_size = node.children.size();
+            node.applyBreak(brk, ifrag_idx);
+            node.generateChildrenOfBreak(brk);
+            auto added_child_count = node.children.size() - current_child_size;
+            // if this is ring break
+            // update control vars
+            int child_remaining_depth = remaining_depth - 1;
+            int child_remaining_ring_breaks = remaining_ring_breaks;
 
-    for (int ifrag_idx = 0; ifrag_idx < brk->getNumIonicFragAllocations(); ifrag_idx++) {
+            if (brk.isRingBreak() && remaining_ring_breaks > 0) {
+                child_remaining_depth++;
+                child_remaining_ring_breaks--;
+            }
+            std::vector<int> current_brk_child_depths(added_child_count,child_remaining_depth);
+            child_remaining_depth_vector.insert(child_remaining_depth_vector.end(),
+                                                      current_brk_child_depths.begin(), current_brk_child_depths.end());
 
-        node.applyBreak(*brk, ifrag_idx);
-        node.generateChildrenOfBreak(*brk);
-
-        // if this is ring break
-        // update control vars
-        int child_remaining_ring_breaks = remaining_ring_breaks;
-        int child_remaining_depth = remaining_depth - 1;
-        if (brk->isRingBreak() && remaining_ring_breaks > 0) {
-            child_remaining_depth++;
-            child_remaining_ring_breaks--;
+            std::vector<int> current_brk_child_remaining_rings(added_child_count,child_remaining_ring_breaks);
+            child_remaining_ring_breaks_vector.insert(child_remaining_ring_breaks_vector.end(),
+                                                      current_brk_child_remaining_rings.begin(), current_brk_child_remaining_rings.end());
+            node.undoBreak(brk, ifrag_idx);
         }
-
-        //Recur over children
-        auto itt = node.children.begin();
-        for (; itt != node.children.end(); ++itt)
-            compute(*itt, child_remaining_depth, id, child_remaining_ring_breaks);
-
-        //Undo and remove children
-        node.undoBreak(*brk, ifrag_idx);
     }
+    for (int child_idx = 0; child_idx < node.children.size(); ++child_idx){
+        compute(node.children[child_idx], child_remaining_depth_vector[child_idx], id,
+                child_remaining_ring_breaks_vector[child_idx]);
+    }
+    node.children = std::vector<FragmentTreeNode>();
 }
 
 
 //Compute a FragmentGraph starting at the given node and computing to the depth given.
 //The output will be appended to the current_graph
 void
-LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth,
-                                      int parentid,
-                                      double parent_log_prob,
+LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parentid, double parent_log_prob,
                                       int remaining_ring_breaks) {
 
     //Check Timeout
@@ -370,15 +386,15 @@ void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization
                                                                                                        rad_side,
                                                                                                        is_neg);
     if (boost::get<0>(alreadyq_oktogo) && !boost::get<1>(alreadyq_oktogo)) {
-        std::cout << "Could not ionize - already charged molecule and didn't know what to do here" << std::endl;
+        std::cerr << "Could not ionize - already charged molecule and didn't know what to do here" << std::endl;
         throw IonizationException();
     } else if (!boost::get<0>(alreadyq_oktogo)) {
         std::pair<int, int> qidx_ridx = FragmentTreeNode::findChargeLocation(*rwmol, 0, rad_side, is_neg);
         if (qidx_ridx.first < 0) {
-            std::cout << "Could not ionize - no location found for charge" << std::endl;
+            std::cerr << "Could not ionize - no location found for charge" << std::endl;
             throw IonizationException();
         } else if (qidx_ridx.second < 0 && rad_side >= 0) {
-            std::cout << "Could not ionize - no location found for radical" << std::endl;
+            std::cerr << "Could not ionize - no location found for radical" << std::endl;
             throw IonizationException();
         }
         try {
@@ -387,7 +403,7 @@ void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization
                     *rwmol);    //Re-sanitize...sometimes RDKit only throws the exception the second time...
         }
         catch (RDKit::MolSanitizeException e) {
-            std::cout << "Could not ionize - sanitization failure" << std::endl;
+            std::cerr << "Could not ionize - sanitization failure" << std::endl;
             throw IonizationException();
         }
     }

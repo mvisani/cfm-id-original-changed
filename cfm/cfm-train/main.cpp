@@ -25,7 +25,6 @@
 
 #include "EmModel.h"
 #include "EmNNModel.h"
-#include "Version.h"
 
 void parseInputFile(std::vector<MolData> &data, std::string &input_filename, int mpi_rank, int mpi_nump, config_t *cfg);
 
@@ -278,15 +277,20 @@ int main(int argc, char *argv[]) {
     if (spectra_in_msp)
         msp = new MspReader(peakfile_dir_or_msp.c_str(), "");
     
-    for (auto mit = data.begin(); mit != data.end(); ++mit) {
+    for (auto & mit : data ){
         if (!no_train) {
             if (spectra_in_msp)
-                mit->readInSpectraFromMSP(*msp);
+                mit.readInSpectraFromMSP(*msp);
             else {
-                std::string spec_file = peakfile_dir_or_msp + "/" + mit->getId() + ".txt";
-                mit->readInSpectraFromFile(spec_file);
+                std::string spec_file = peakfile_dir_or_msp + "/" + mit.getId() + ".txt";
+                mit.readInSpectraFromFile(spec_file);
             }
-            mit->removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
+
+            auto remove_msg = mit.removePeaksWithNoFragment(cfg.abs_mass_tol, cfg.ppm_mass_tol);
+            std::ofstream eout;
+            eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
+            eout << "ID: " << mit.getId() << " Remove Peaks With No Fragment. " << remove_msg << std::endl;
+            eout.close();
         }
     }
 
@@ -344,7 +348,7 @@ int main(int argc, char *argv[]) {
 
             //Predicted spectrum
             for (auto e = start_energy; e < cfg.spectrum_depths.size(); ++e)
-                mit->computePredictedSpectra(*param, false, e);
+                mit->computePredictedSpectra(*param, false, e, 1, 30, 100, cfg.use_log_scale_peak);
 
             if (spectra_in_msp)
                 mit->writePredictedSpectraToMspFileStream(*out_pred_msp);

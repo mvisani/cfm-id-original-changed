@@ -159,8 +159,8 @@ float Param::computeTheta(const FeatureVector &fv, int energy) {
     //Check Feature Length
     int len = fv.getTotalLength();
     if (len != expected_num_input_features) {
-        std::cout << "Expecting feature vector of length " << expected_num_input_features;
-        std::cout << " but found " << len << std::endl;
+        std::cerr << "Expecting feature vector of length " << expected_num_input_features;
+        std::cerr << " but found " << len << std::endl;
         throw (ParamFeatureMismatchException());
     }
 

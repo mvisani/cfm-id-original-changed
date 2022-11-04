@@ -19,6 +19,6 @@
 void
 IonFingerPrintFeature::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
-    unsigned int morgan_radius = 2;
+    int morgan_radius = 2;
     addMorganFingerPrintFeatures(fv,ion,size, morgan_radius);
 }

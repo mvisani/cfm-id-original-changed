@@ -79,8 +79,14 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_no_progress_count = 3;
     cfg.collected_all_used_idx = false;
     cfg.em_max_iterations = DEFAULT_EM_MAX_ITERATIONS;
-    cfg.allow_intermediate_peak = false;
+    cfg.allow_intermediate_peak = true;
     cfg.allow_cyclization = false;
+    cfg.use_log_scale_peak = false;
+    cfg.use_iterative_fg_gen = false;
+    cfg.default_predicted_peak_min = 1;
+    cfg.default_predicted_peak_max = 30;
+    cfg.default_predicted_min_intensity = 0.0;
+    cfg.default_postprocessing_energy = 80.0;
 }
 
 void initConfig(config_t &cfg, std::string &filename, bool report_all) {
@@ -162,7 +168,13 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         else if (name == "em_max_iterations") cfg.em_max_iterations = (int) value;
         else if (name == "allow_intermediate_peak") cfg.allow_intermediate_peak = (bool) value;
         else if (name == "allow_cyclization") cfg.allow_cyclization = (bool) value;
-        else std::cout << "Warning: Unknown paramater configuration identifier " << name << std::endl;
+        else if (name == "use_log_scale_peak") cfg.use_log_scale_peak = (bool) value;
+        else if (name == "use_iterative_fg_gen") cfg.use_iterative_fg_gen = (bool) value;
+        else if (name == "default_predicted_peak_min") cfg.default_predicted_peak_min = (int) value;
+        else if (name == "default_predicted_peak_max") cfg.default_predicted_peak_max = (int) value;
+        else if (name == "default_predicted_min_intensity") cfg.default_predicted_min_intensity = (double) value;
+        else if (name == "default_postprocessing_energy") cfg.default_postprocessing_energy = (double) value;
+        else std::cout << "Warning: Unknown parameter configuration identifier " << name << std::endl;
     }
     ifs.close();
 
@@ -218,7 +230,14 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             std::cout << std::endl;
         }
         if (cfg.allow_intermediate_peak)
-            std::cout << "Allow intermeidate peaks" << std::endl;
+            std::cout << "Allow intermediate peaks" << std::endl;
+        if (cfg.allow_cyclization)
+            std::cout << "Allow cyclization" << std::endl;
+        if (cfg.use_log_scale_peak)
+            std::cout << "Use log scale peak" << std::endl;
+        if (cfg.use_iterative_fg_gen)
+            std::cout << "Use iterative fragmentation graph generation" << std::endl;
+
         if (cfg.param_init_type == PARAM_RANDOM_INIT) std::cout << "Using Random Parameter Initialisation" << std::endl;
         else if (cfg.param_init_type == PARAM_FULL_ZERO_INIT) std::cout << "Using Full Zero Initialisation" << std::endl;
         else if (cfg.param_init_type == PARAM_ZERO_INIT) std::cout << "Using Zero Initialisation (non-zero Bias)" << std::endl;
@@ -361,7 +380,9 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         }
         if (cfg.fragraph_compute_timeout_in_secs > 0)
             std::cout << "Timeout set on fragment graph computation to " << cfg.fragraph_compute_timeout_in_secs
-                      << " mins" << std::endl;
+                      << " seconds" << std::endl;
+        if (cfg.use_log_scale_peak)
+            std::cout << "Use log scale peaks" << std::endl;
     }
 }
 

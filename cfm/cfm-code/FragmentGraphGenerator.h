@@ -60,9 +60,9 @@ class FragmentGraphTimeoutException : public std::exception {
 class FragmentGraphGenerator {
 public:
     //Constructor
-    FragmentGraphGenerator() : verbose(0), mols_to_fv(false) { fh = new FeatureHelper(); };
+    FragmentGraphGenerator() : verbose(0), mols_to_fv(false), fc(nullptr), fh(nullptr) {};
 
-    FragmentGraphGenerator(int a_verbose) : verbose(a_verbose), mols_to_fv(false) { fh = new FeatureHelper(); };
+    FragmentGraphGenerator(int a_verbose) : verbose(a_verbose), mols_to_fv(false), fc(nullptr), fh(nullptr) {};
 
     //Constructor to use if the transition molecules are to be replaced by a feature vector as
     //soon as they are created (for less memory usage).
@@ -70,7 +70,7 @@ public:
             fc(a_fc), verbose(0), mols_to_fv(a_mols_to_fv) { fh = new FeatureHelper(fc); };
 
     //Destructor
-    ~FragmentGraphGenerator() { delete fh; };
+    virtual  ~FragmentGraphGenerator() { delete fh; };
 
     //Start a graph. Compute can then add to this graph, but it is the caller's
     //responsibility to delete it
@@ -103,8 +103,6 @@ private:
     static int countExtraElectronPairs(RDKit::RWMol *rwmol, std::vector<int> &output_e_loc);
 
     static void applyIonization(RDKit::RWMol *rwmol, int ionization_mode);
-
-    void CreateChildNodes(FragmentTreeNode &node, int remaining_depth, int remaining_ring_breaks, int id, Break *brk);
 };
 
 //Class to be used if a graph is to be pruned as it's created 
@@ -126,14 +124,19 @@ public:
         fh = new FeatureHelper(fc);
     };
 
+    // LikelyFragmentGraphGenerator need to delete its fc
+    virtual ~LikelyFragmentGraphGenerator() {
+        delete fc;
+    };
+
     //Start a graph. Compute can then add to this graph, but it is the caller's
     //responsibility to delete it
     FragmentGraph *createNewGraph(config_t *cfg);
 
     //Compute a FragmentGraph starting at the given node and computing to the depth given.
     //The output will be appended to the current_graph
-    void compute(FragmentTreeNode &startnode, int remaining_depth, int parentid,
-                 double parent_log_prob, int remaining_ring_breaks);
+    void compute(FragmentTreeNode &node, int remaining_depth, int parentid, double parent_log_prob,
+                 int remaining_ring_breaks);
 
 private:
     Param *param;

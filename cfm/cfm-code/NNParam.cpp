@@ -164,8 +164,8 @@ float NNParam::computeTheta(const FeatureVector &fv, int energy, azd_vals_t &z_v
     //Check Feature Length
     int fv_length = fv.getTotalLength();
     if( fv_length != expected_num_input_features ){
-        std::cout << "Expecting feature vector of length " << expected_num_input_features;
-        std::cout << " but found " << fv_length << std::endl;
+        std::cerr << "Expecting feature vector of length " << expected_num_input_features;
+        std::cerr << " but found " << fv_length << std::endl;
         throw( ParamFeatureMismatchException() );
     }
     int energy_offset = getNumWeightsPerEnergyLevel() * energy;

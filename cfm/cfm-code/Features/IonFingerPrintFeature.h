@@ -22,7 +22,7 @@
 class IonFingerPrintFeature : public FingerPrintFeature  {
 public:
     IonFingerPrintFeature() {
-        size =  512;
+        size =  1024;
         name = "IonFingerPrintFeature";
     };
 

@@ -116,6 +116,7 @@ static const int MAX_BREAKABLE_RING_SIZE = 8;
 static const int NO_OUTPUT_MODE = 0;
 static const int MSP_OUTPUT_MODE = 1;
 static const int MGF_OUTPUT_MODE = 2;
+static const int SINGLE_TXT_OUTPUT_MODE = 3;
 
 //Maximum additional electron pairs to either side during fragmentation
 static const int MAX_E_MOVE = 4;
@@ -247,6 +248,15 @@ struct config_t {
     bool collected_all_used_idx;
     bool allow_intermediate_peak;
     bool allow_cyclization;
+
+    bool use_log_scale_peak;
+    bool use_iterative_fg_gen;
+
+    //default post-processing settings
+    int default_predicted_peak_min;
+    int default_predicted_peak_max;
+    double default_predicted_min_intensity;
+    double default_postprocessing_energy;
 };
 
 void initDefaultConfig(config_t &cfg);
