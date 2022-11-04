@@ -52,16 +52,22 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
     int f0_max_limit = std::min(total_free_epairs, orig_epairs.first + MAX_E_MOVE);
     int f1_max_limit = std::min(total_free_epairs, orig_epairs.second + MAX_E_MOVE);
 
-    int rerangmenet_configs[2] = {0,1};
+    int rerangmenet_configs[1] = {1};
+    //int rerangmenet_configs[1] = {0};
     //Compute the max electron assignment for F0
-    for(auto & rerangmenet_config : rerangmenet_configs){
+
         MILP f0_solver(ion.get(), 0, brk_ringidx, verbose);
-        f0_max_e = f0_solver.runSolver(f0_output_bmax, true, f0_max_limit, rerangmenet_config);
+        f0_max_e = f0_solver.runSolver(f0_output_bmax, true, f0_max_limit, true);
+        //if (f0_max_e < 0)
+        //    f0_max_e = f0_solver.runSolver(f0_output_bmax, true, f0_max_limit, true);
 
         //Compute the max electron assignment for F1
         if (brk.getBondIdx() != -1) {
             MILP f1_solver(ion.get(), 1, brk_ringidx, verbose);
-            f1_max_e = f1_solver.runSolver(f1_output_bmax, true, f1_max_limit, rerangmenet_config);
+            f1_max_e = f1_solver.runSolver(f1_output_bmax, true, f1_max_limit, true);
+            //if (f0_max_e < 0)
+            //    f1_max_e = f1_solver.runSolver(f1_output_bmax, true, f1_max_limit, true);
+
             unsigned int N = f0_output_bmax.size() - 2;
             for (unsigned int i = 0; i < N; i++)
                 f0_output_bmax[i] += f1_output_bmax[i];
@@ -89,7 +95,7 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
                 }
             }
         }
-    }
+
 
 }
 
@@ -100,7 +106,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
     int is_radical, is_negative;
     ion->getProp("isRadical", is_radical);
     ion->getProp("isNegative", is_negative);
-    RDKit::PeriodicTable *pt = RDKit::PeriodicTable::getTable();
+    //RDKit::PeriodicTable *pt = RDKit::PeriodicTable::getTable();
     int number_child_added = 0;
     //std::cout << "[DEBUG][addChild]" << RDKit::MolToSmiles( rwmol ) << std::endl;
 
@@ -109,7 +115,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
 
     //Set the correct bond orders on the fragments
     int broken, fragidx;
-    int numbonds = rwmol.getNumBonds();
+    int numbonds = (int) rwmol.getNumBonds();
     int remaining_e[2] = {e_f0, e_to_allocate - e_f0};
     int allocated_e[2] = {e_f0, e_to_allocate - e_f0};
     std::vector<std::pair<int, int> > broken_specs;
@@ -118,7 +124,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
         bond->getProp("Broken", broken);
         if (broken) {
             //Save the bond to remove at the end, removing it now causes problems with the iteration/indexing
-            broken_specs.push_back(std::pair<int, int>(bond->getBeginAtomIdx(), bond->getEndAtomIdx()));
+            broken_specs.emplace_back(bond->getBeginAtomIdx(), bond->getEndAtomIdx());
             continue;
         }
         bond->setIsAromatic(false);
@@ -159,9 +165,10 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
         return 0;
 
     //Remove the broken bonds
-    std::vector<std::pair<int, int> >::iterator itr = broken_specs.begin();
+    auto itr = broken_specs.begin();
     for (; itr != broken_specs.end(); ++itr)
         rwmol.removeBond(itr->first, itr->second);
+
 
     //Fill in the Hydrogens
     int orig_val;
@@ -174,7 +181,6 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
         atom->setIsAromatic(false);
 
         atom->getProp("OrigValence", orig_val);
-        int fragidx;
         atom->getProp("FragIdx", fragidx);
 
         //Ionic fragments must retain their charge and not attract hydrogens (for simplicity)
@@ -223,7 +229,6 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
         bool qloc_found = false;
         for (unsigned int i = 0; i < rwmol.getNumAtoms(); i++) {
             RDKit::Atom *atom = rwmol.getAtomWithIdx(i);
-            int fragidx;
             atom->getProp("FragIdx", fragidx);
             if (fragidx == (1 - charge_frag) && atom->getFormalCharge() == 0 && atom->getTotalNumHs() > 0) {
                 atom->setFormalCharge(-1);
@@ -335,8 +340,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             }
 
             child_ion->setProp("HadRingBreak", 1);
-            children.push_back(
-                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, true));
+            children.emplace_back(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, true);
             number_child_added++;
         }
         else if (mols.size() == 2) {
@@ -356,8 +360,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 createChildIonElectronLocRecord(child_e_loc, child_ion);
                 child_ion->setProp("HadRingBreak", 0);
                 //std::cout << "[DEBUG][Child Ion]" << RDKit::MolToSmiles( *child_ion ) << std::endl;
-                children.push_back(
-                        FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false));
+                children.emplace_back(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false);
                 number_child_added++;
                 /*
                 for (auto ai = child_ion->beginAtoms(); ai != child_ion->endAtoms(); ++ai) {
@@ -425,7 +428,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                     // sanitize the modified mol
                     try {
                         RDKit::MolOps::sanitizeMol(rw_child_ion);
-                    } catch (RDKit::MolSanitizeException e) {
+                    } catch (RDKit::MolSanitizeException &e) {
                     std::cout << "Could not sanitize " << std::endl;
                         throw e;
                     }
@@ -447,7 +450,6 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             bool set_flags[2] = {false, false};
             for (int mol_idx = 0; mol_idx < mols.size(); mol_idx++) {
                 int q = RDKit::MolOps::getFormalCharge(*mols[mol_idx].get());
-                int fragidx;
                 mols[mol_idx]->getAtomWithIdx(0)->getProp("FragIdx", fragidx);
                 if (set_flags[fragidx]) acc_mols[fragidx].reset(RDKit::combineMols(*acc_mols[fragidx], *mols[mol_idx]));
                 else {
@@ -476,7 +478,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
 
     //For Hydrogen loss only, remove the added hydrogens (should be just the last atom, but doesn't assume...)
     if (brk.getBondIdx() == -1 && !brk.isRingBreak()) {
-        for (int i = rwmol.getNumAtoms() - 1; i >= 0; i--) {
+        for (int i = (int) rwmol.getNumAtoms() - 1; i >= 0; i--) {
             RDKit::Atom *atom = rwmol.getAtomWithIdx(i);
             if (atom->getSymbol() == "H"){
                 rwmol.removeAtom(atom);
@@ -518,8 +520,8 @@ FragmentTreeNode::findChargeLocation(RDKit::RWMol &rwmol, int charge_side, int r
             if ((*bi)->getBondTypeAsDouble() > 1.5
                 && (*bi)->getBeginAtom()->getSymbol() == "C"    //Must be between C atoms
                 && (*bi)->getEndAtom()->getSymbol() == "C") {
-                qidx_ridx.first = (*bi)->getBeginAtomIdx();
-                qidx_ridx.second = (*bi)->getEndAtomIdx();
+                qidx_ridx.first = (int)(*bi)->getBeginAtomIdx();
+                qidx_ridx.second = (int)(*bi)->getEndAtomIdx();
                 return qidx_ridx;
             }
         }

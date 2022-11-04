@@ -28,7 +28,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     //Uses lp_solve: based on demonstration code provided.
     unsigned int numunbroken;
     int broken, fragidx, origval;
-    int Ncol, *colno = nullptr, i, ret = 0, output_max_e = 0;
+    int Ncol, *colno = nullptr, i = 0, ret = 0, output_max_e = -1;
     REAL *row = nullptr;
     lprec *lp;
 
@@ -63,8 +63,8 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
         //All bonds must be at most TRIPLE bonds ( <= 3 )
         //except broken bonds ( <= 0 ) and ring bonds ( <= 2 )
-        for (i = 0; i < num_bonds; i++) {
-            set_int(lp, i + 1, TRUE); //sets variable to integer
+        for (i = 0; i < num_bonds && ret == 0; i++) {
+            //set_int(lp, i + 1, TRUE); //sets variable to integer
 
             RDKit::Bond *bond = kekulized_mol.getBondWithIdx(i);
             int limit = 0;      //bonds that are broken or in the other fragment are limited to 0
@@ -218,7 +218,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
                 RDKit::Bond *cbond = (*mol)[*cbond_beg].get();
                 int cbond_broken;
                 cbond->getProp("Broken", cbond_broken);
-                if(cbond_broken) 
+                if(cbond_broken)
                     continue;
 
                 colno[j] = cbond->getIdx() + 1; //variable idx i.e. bond
@@ -287,6 +287,11 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             ret = 4;
     }
 
+    if (ret == 0){
+        for(int i = 0; i < Ncol; i++){
+            set_int(lp, i+1, TRUE);
+        }
+    }
     //Run optimization
     if (ret == 0) {
         set_maxim(lp);
@@ -310,7 +315,10 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
         for (int j = 0; j < Ncol; j++) output_bmax[j] = (int) row[j];
         int obj = get_objective(lp);
         output_max_e = obj - min_single_bonds;
-    } else for (int j = 0; j < Ncol; j++) output_bmax[j] = 0;
+    } else {
+        for (int j = 0; j < Ncol; j++)
+            output_bmax[j] = 0;
+    }
 
     //Combine the lone pair results
     for (int j = 0; j < num_bonds; j++) output_bmax[j + num_bonds] += output_bmax[j + 2 * num_bonds];
