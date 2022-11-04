@@ -100,9 +100,9 @@ int main(int argc, char *argv[])
 	if(!to_stdout){
 		std::cout << std::endl << "Output written to " << output_filename << std::endl;
 		std::cout << "Depth " << max_depth << ": " << moldata.getNumFragments() << " Fragments, "
-			<< moldata.getNumTransitions() << " Transitions";
-		std::cout << ". Time Elaspsed = " << (after - before) << " Seconds" << std::endl;
+			<< moldata.getNumTransitions() << " Transitions. ";
 	}
+    std::cout << "Time Elaspsed = " << (after - before) << " Seconds" << std::endl;
 
 	return(0);    
 }

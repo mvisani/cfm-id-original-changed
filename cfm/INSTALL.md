@@ -353,8 +353,8 @@ cmake .. -DRDK_PGSQL_STATIC=OFF \
      -DCMAKE_CXX_STANDARD=11 \
      -DCMAKE_BUILD_TYPE=Release \
      -DRDK_INSTALL_INTREE=ON \
-     -DBOOST_ROOT=$BOOST_ROOT \
-     -DBoost_NO_BOOST_CMAKE=ON;
+     -DBoost_NO_BOOST_CMAKE=ON\
+     -DBOOST_ROOT=$BOOST_ROOT;
 make install
 ```
 

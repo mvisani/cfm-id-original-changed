@@ -39,7 +39,7 @@ RUN cd /tmp/rdkit-Release_${RDKit_VERSION};\
 	make install -j 12;\
 	mkdir -p /usr/local/include/rdkit/External/INCHI-API/;\
 	cp ../External/INCHI-API/*.h /usr/local/include/rdkit/External/INCHI-API/;\
-	cp /tmp;\
+	cd /tmp;\
 	rm -rf ./rdkit-Release_${RDKit_VERSION};
 
 RUN echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf;
@@ -65,6 +65,9 @@ RUN cd /tmp; \
 	cp /tmp/lp_solve_dev_ux64/liblpsolve55.a /usr/local/lib/liblpsolve55.a;\
 	rm -rf /tmp/lp_solve_dev_ux64;
 
+############################################################################################
+# Installs perf
+############################################################################################
 RUN apt-get install -y flex bison;\
 	cd /tmp; \
     wget -O perf-5.10.0.tar.gz https://mirrors.edge.kernel.org/pub/linux/kernel/tools/perf/v5.10.0/perf-5.10.0.tar.gz;\
@@ -74,4 +77,4 @@ RUN apt-get install -y flex bison;\
 	cp perf /usr/bin;\
 	cd /tmp;\
 	rm -rf ./perf-5.10.0;\
-	rm -rf ./perf.tar.gz;
+	rm -rf ./perf-5.10.0.tar.gz;

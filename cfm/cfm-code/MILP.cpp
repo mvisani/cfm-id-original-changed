@@ -57,7 +57,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
         //All bonds must be at most TRIPLE bonds ( <= 3 )
         //except broken bonds ( <= 0 ) and ring bonds ( <= 2 )
         for (i = 0; i < num_bonds && ret == 0; i++) {
-            set_int(lp, i + 1, TRUE); //sets variable to integer
+            //set_int(lp, i + 1, TRUE); //sets variable to integer
 
             RDKit::Bond *bond = mol->getBondWithIdx(i);
             int limit = 0;      //bonds that are broken or in the other fragment are limited to 0
@@ -201,7 +201,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
                 RDKit::Bond *cbond = (*mol)[*cbond_beg].get();
                 int cbond_broken;
                 cbond->getProp("Broken", cbond_broken);
-                if(cbond_broken) 
+                if(cbond_broken)
                     continue;
 
                 colno[j] = cbond->getIdx() + 1; //variable idx i.e. bond
@@ -270,6 +270,11 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             ret = 4;
     }
 
+    if (ret == 0){
+        for(int i = 0; i < Ncol; i++){
+            set_int(lp, i+1, TRUE);
+        }
+    }
     //Run optimization
     if (ret == 0) {
         set_maxim(lp);
