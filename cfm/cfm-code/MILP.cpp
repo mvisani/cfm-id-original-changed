@@ -77,13 +77,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
                 if(!allow_rerangmenet){
                     min_limit = int(bond->getBondTypeAsDouble());
-                    //limit = std::min(min_limit + 1, 3);
-                    //limit = 3;
-
-                    if (min_limit >= 3)
-                        limit = min_limit;
-                    else
-                        limit = std::min(min_limit + 1, 2);
+                    limit = std::min(min_limit, 2);
                 }
                 else{
                     min_limit = 1;
@@ -299,14 +293,15 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
     //Run optimization
     //std::cout << "LPSOVLE"  << std::endl;
-
     if (ret == 0) {
         set_maxim(lp);
+        set_verbose(lp, IMPORTANT);
         //write_lp(lp, "lp_solve_debug.lp");
         //write_mps(lp, "lp_solve_debug.mps");
-        set_verbose(lp, IMPORTANT);
         //set_presolve(lp, PRESOLVE_ROWS, get_presolveloops(lp));
+        //std::cout << get_Ncolumns(lp) << " " << get_Norig_columns(lp) << std::endl;
         ret = solve(lp);
+
         if (ret == OPTIMAL){
             ret = 0;
             //std::cout << "OPTIMAL" << std::endl;
