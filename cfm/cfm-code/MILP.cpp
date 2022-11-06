@@ -77,8 +77,13 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
                 if(!allow_rerangmenet){
                     min_limit = int(bond->getBondTypeAsDouble());
-                    limit = std::min(min_limit + 1, 3);
+                    //limit = std::min(min_limit + 1, 3);
                     //limit = 3;
+
+                    if (min_limit >= 3)
+                        limit = min_limit;
+                    else
+                        limit = std::min(min_limit + 1, 2);
                 }
                 else{
                     min_limit = 1;
@@ -157,7 +162,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
             //Create a vector of flags indicating bonds included in the ring
             std::vector<int> ring_bond_flags(num_bonds);
-            for (int i = 0; i < num_bonds; i++) ring_bond_flags[i] = 0;
+            for (int k = 0; k < num_bonds; k++) ring_bond_flags[k] = 0;
             RDKit::RingInfo::INT_VECT::iterator it;
             for (it = bit->begin(); it != bit->end(); ++it) ring_bond_flags[*it] = 1;
 
@@ -180,7 +185,6 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
         }
 
         //Add atom valence constraints to neighbouring bonds
-        int numlp = 0;
         std::vector<int> lp_indexes(num_atoms, -1);
         for (i = 0; i < num_atoms && ret == 0; i++) {
             RDKit::Atom *atom = kekulized_mol.getAtomWithIdx(i);
@@ -288,14 +292,20 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     }
 
     if (ret == 0){
-        for(int i = 0; i < Ncol; i++){
-            set_int(lp, i+1, TRUE);
+        for(int col_idx = 0; col_idx < Ncol; col_idx++){
+            set_int(lp, col_idx+1, TRUE);
         }
     }
+
     //Run optimization
+    //std::cout << "LPSOVLE"  << std::endl;
+
     if (ret == 0) {
         set_maxim(lp);
+        //write_lp(lp, "lp_solve_debug.lp");
+        //write_mps(lp, "lp_solve_debug.mps");
         set_verbose(lp, IMPORTANT);
+        //set_presolve(lp, PRESOLVE_ROWS, get_presolveloops(lp));
         ret = solve(lp);
         if (ret == OPTIMAL){
             ret = 0;
@@ -311,9 +321,15 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
     //Extract Results
     output_bmax.resize(Ncol);
     if (ret == 0) {
+
         get_variables(lp, row);
-        for (int j = 0; j < Ncol; j++) output_bmax[j] = (int) row[j];
+        for (int j = 0; j < Ncol; j++) {
+            output_bmax[j] = (int) row[j];
+            //std::cout << "Column " << j << " has value " <<  (int) row[j] << std::endl;
+        }
         int obj = get_objective(lp);
+        //std::cout << "obj value " <<  obj << std::endl;
+
         output_max_e = obj - min_single_bonds;
     } else {
         for (int j = 0; j < Ncol; j++)
