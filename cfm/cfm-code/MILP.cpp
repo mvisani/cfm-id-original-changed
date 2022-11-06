@@ -24,7 +24,7 @@
 //#ifndef __DEBUG_CONSTRAINTS__
 //#define __DEBUG_CONSTRAINTS__
 
-int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs, bool allow_rerangmenet) {
+int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free_pairs, bool allow_rearrangement) {
     //Uses lp_solve: based on demonstration code provided.
     unsigned int numunbroken;
     int broken, fragidx, origval;
@@ -75,7 +75,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
             int min_limit = 0;
             if (!broken && fragidx == fragmentidx) {
 
-                if(!allow_rerangmenet){
+                if(!allow_rearrangement){
                     min_limit = int(bond->getBondTypeAsDouble());
                     limit = std::min(min_limit, 2);
                 }
