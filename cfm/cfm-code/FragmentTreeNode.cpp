@@ -413,11 +413,16 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 auto ring_root_atom_idx = (*ring_root_ai)->getIdx();
                 auto current_root_atom_idx = (*current_root_ai)->getIdx();
 
-                double *distance_mat = RDKit::MolOps::getDistanceMat(rw_child_ion);
+                // TODO: Double check if this works
                 auto num_h_ring_root = (*ring_root_ai)->getNumExplicitHs();
                 auto num_h_current_root = (*current_root_ai)->getNumExplicitHs();
-                if(nullptr == rw_child_ion.getBondBetweenAtoms(ring_root_atom_idx, current_root_atom_idx)
-                    && (ring_root_atom_idx != current_root_atom_idx)
+                // get distance matrix
+                double* dist_matrix = RDKit::MolOps::getDistanceMat(rw_child_ion, false, false);
+                int num_atoms = rw_child_ion.getNumAtoms();
+                int distance = dist_matrix[ring_root_atom_idx * num_atoms + current_root_atom_idx];
+
+                if(distance > 3
+                    && distance < 6
                     && (num_h_ring_root > 1)
                     && (num_h_current_root > 1)
                     && distance_mat[ring_root_atom_idx * rw_child_ion.getNumAtoms() + current_root_atom_idx] > 4){
@@ -439,7 +444,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                     try {
                         RDKit::MolOps::sanitizeMol(rw_child_ion);
                     } catch (RDKit::MolSanitizeException &e) {
-                    std::cout << "Could not sanitize " << std::endl;
+                        std::cout << "Could not sanitize " << std::endl;
                         throw e;
                     }
 
