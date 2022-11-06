@@ -52,21 +52,28 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
     int f0_max_limit = std::min(total_free_epairs, orig_epairs.first + MAX_E_MOVE);
     int f1_max_limit = std::min(total_free_epairs, orig_epairs.second + MAX_E_MOVE);
 
-    int rerangmenet_configs[1] = {1};
-    //int rerangmenet_configs[1] = {0};
-    //Compute the max electron assignment for F0
 
+    // only do rerangement if we can not find optimal solution
+    int rerangmenet_configs[2] = {0,1};
+    bool f0_rerangmenet = false;
+    bool f1_rerangmenet = false;
+
+    for (auto rerangmenet_config : rerangmenet_configs){
+
+        // if rerangmenet_config is true and none of f0 and f1 flag are true, skip
+        if (rerangmenet_config && !(f0_rerangmenet || f1_rerangmenet))
+            break;
+
+        //Compute the max electron assignment for F0
         MILP f0_solver(ion.get(), 0, brk_ringidx, verbose);
-        f0_max_e = f0_solver.runSolver(f0_output_bmax, true, f0_max_limit, true);
-        //if (f0_max_e < 0)
-        //    f0_max_e = f0_solver.runSolver(f0_output_bmax, true, f0_max_limit, true);
-
+        f0_max_e = f0_solver.runSolver(f0_output_bmax, true, f0_max_limit, f0_rerangmenet && rerangmenet_config);
+        f0_rerangmenet = f0_max_e != f0_max_limit;
+        
         //Compute the max electron assignment for F1
-        if (brk.getBondIdx() != -1) {
+        if (brk.getBondIdx() != -1 && !brk.isRingBreak()) {
             MILP f1_solver(ion.get(), 1, brk_ringidx, verbose);
-            f1_max_e = f1_solver.runSolver(f1_output_bmax, true, f1_max_limit, true);
-            //if (f0_max_e < 0)
-            //    f1_max_e = f1_solver.runSolver(f1_output_bmax, true, f1_max_limit, true);
+            f1_max_e = f1_solver.runSolver(f1_output_bmax, true, f1_max_limit, f1_rerangmenet && rerangmenet_config);
+            f1_rerangmenet = f1_max_e != f1_max_limit;
 
             unsigned int N = f0_output_bmax.size() - 2;
             for (unsigned int i = 0; i < N; i++)
@@ -95,8 +102,7 @@ void FragmentTreeNode::generateChildrenOfBreak(Break &brk) {
                 }
             }
         }
-
-
+    }
 }
 
 int
