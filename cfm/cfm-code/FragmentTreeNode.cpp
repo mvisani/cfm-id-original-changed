@@ -416,6 +416,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 // TODO: Double check if this works
                 auto num_h_ring_root = (*ring_root_ai)->getNumExplicitHs();
                 auto num_h_current_root = (*current_root_ai)->getNumExplicitHs();
+
                 // get distance matrix
                 double* dist_matrix = RDKit::MolOps::getDistanceMat(rw_child_ion, false, false);
                 int num_atoms = rw_child_ion.getNumAtoms();
@@ -424,8 +425,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 if(distance > 3
                     && distance < 6
                     && (num_h_ring_root > 1)
-                    && (num_h_current_root > 1)
-                    && distance_mat[ring_root_atom_idx * rw_child_ion.getNumAtoms() + current_root_atom_idx] > 4){
+                    && (num_h_current_root > 1)){
                     
                     // add a single bond between atom
                     rw_child_ion.addBond(*ring_root_ai, *current_root_ai, RDKit::Bond::BondType::SINGLE);
