@@ -279,7 +279,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 float
 EmModel::getTimeDifference(const std::chrono::system_clock::time_point &before,
                            const std::chrono::system_clock::time_point &after) const {
-    auto count = std::chrono::duration_cast<std::chrono::seconds>(after - before).count();
+    auto count = std::chrono::duration_cast<std::chrono::milliseconds>(after - before).count();
     return count / 1000.0f;
 }
 
@@ -402,6 +402,8 @@ void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocat
                                      cfg->default_predicted_peak_max, cfg->default_postprocessing_energy,
                                      cfg->default_predicted_min_intensity,
                                      cfg->use_log_scale_peak);
+
+    //moldata->computePredictedSpectra(*param, false, energy_level,1, 100, 80, 0, false);
 
     //moldata->postprocessPredictedSpectra(80, 1, 30);
     dice += dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),

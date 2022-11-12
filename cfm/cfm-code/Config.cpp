@@ -234,9 +234,15 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
         if (cfg.allow_cyclization)
             std::cout << "Allow cyclization" << std::endl;
         if (cfg.use_log_scale_peak)
-            std::cout << "Use log scale peak" << std::endl;
+            std::cout << "Using log scale peak" << std::endl;
         if (cfg.use_iterative_fg_gen)
-            std::cout << "Use iterative fragmentation graph generation" << std::endl;
+            std::cout << "Using iterative fragmentation graph generation" << std::endl;
+
+        std::cout << "Predicted peak num limited to [" << cfg.default_predicted_peak_min << ","
+            << cfg.default_predicted_peak_max << "]" << std::endl;
+
+        std::cout << "Predicted peak min intensity " << cfg.default_predicted_min_intensity << "%" << std::endl;
+        std::cout << "Postprocessing energy " << cfg.default_postprocessing_energy << "%" << std::endl;
 
         if (cfg.param_init_type == PARAM_RANDOM_INIT) std::cout << "Using Random Parameter Initialisation" << std::endl;
         else if (cfg.param_init_type == PARAM_FULL_ZERO_INIT) std::cout << "Using Full Zero Initialisation" << std::endl;

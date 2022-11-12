@@ -348,7 +348,8 @@ int main(int argc, char *argv[]) {
 
             //Predicted spectrum
             for (auto e = start_energy; e < cfg.spectrum_depths.size(); ++e)
-                mit->computePredictedSpectra(*param, false, e, 1, 30, 100, cfg.use_log_scale_peak);
+                mit->computePredictedSpectra(*param, false, e, 1, 1000, 100, 0.0,
+                                             cfg.use_log_scale_peak);
 
             if (spectra_in_msp)
                 mit->writePredictedSpectraToMspFileStream(*out_pred_msp);

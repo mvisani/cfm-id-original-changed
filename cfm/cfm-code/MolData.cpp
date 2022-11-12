@@ -506,7 +506,7 @@ MolData::computePredictedSpectra(Param &param, bool use_existing_thetas, int ene
 
 void
 MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas, int min_peaks,
-                                             int max_peaks, double perc_thresh, double min_relative_intensity,bool force_linear_scale)  {
+                                             int max_peaks, double perc_thresh, double min_relative_intensity, bool force_linear_scale)  {
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
