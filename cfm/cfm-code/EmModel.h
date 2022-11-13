@@ -93,9 +93,7 @@ protected:
     void getSubSampledTransitions(MolData &moldata, int sampling_method, unsigned int energy,
                                   std::set<int> &selected_trans_id) const;
     void
-    computeMetrics(int energy_level, std::vector<MolData, std::allocator<MolData>>::iterator &moldata,
-                   double &dice, double &dp, double &precision, double &recall, bool use_org_spectrum,
-                   bool run_prediction);
+    computeMetrics(const Spectrum *p, const Spectrum *q, double &dice, double &dp, double &precision, double &recall);
 
     double getUpdatedLearningRate(double learning_rate, int iter) const;
 

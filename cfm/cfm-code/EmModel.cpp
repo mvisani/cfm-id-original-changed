@@ -91,20 +91,54 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
     int sampling_method = cfg->ga_sampling_method;
     int em_no_progress_count = 0;
 
-    for (auto &mol_data : molDataSet) {
+    int num_training_mols = 0, num_val_mols = 0;
+
+    double max_pob_dice = 0.0, max_pob_dp = 0.0, max_pob_precision = 0.0, max_pob_recall = 0.0;
+
+    for (auto &mol_data: molDataSet) {
         if (mol_data.hasEmptySpectrum(energy_level) && mol_data.getGroup() != validation_group)
             std::cout << "Warning: No peaks with explanatory fragment found for "
                       << mol_data.getId() << ", ignoring this input molecule." << std::endl;
 
+        // compute reachable mectirs with curret fgs
+        if(mol_data.getGroup() != validation_group) {
+            computeMetrics(mol_data.getOrigSpectrum(energy_level), mol_data.getSpectrum(energy_level),
+                           max_pob_dice, max_pob_dp, max_pob_precision, max_pob_recall);
+            num_training_mols += 1;
+        }else{
+            num_val_mols += 1;
+        }
         if (cfg->use_log_scale_peak)
             mol_data.convertSpectraToLogScale();
     }
+    MPI_Barrier(MPI_COMM_WORLD); // All threads wait for master
+
+    num_training_mols = comm->collectSumInMaster(num_training_mols);
+    num_val_mols = comm->collectSumInMaster(num_val_mols);
+
+    max_pob_dice = comm->collectQInMaster((float) max_pob_dice);
+    max_pob_dp = comm->collectQInMaster((float) max_pob_dp);
+    max_pob_precision = comm->collectQInMaster((float) max_pob_precision);
+    max_pob_recall = comm->collectQInMaster((float) max_pob_recall);
+
+    if (comm->isMaster()) {
+        std::string pre_train_str = "";
+        pre_train_str += "[Pre-Train][Max Possible Metrics for Current Fragmentation Setting]\n";
+        pre_train_str += "Dice=" + std::to_string(max_pob_dice / num_training_mols)
+                        + " DotProduct=" + std::to_string(max_pob_dp / num_training_mols)
+                        + " Precision=" + std::to_string(max_pob_precision / num_training_mols / 100.0f)
+                        + " Recall=" + std::to_string(max_pob_recall / num_training_mols / 100.0f);
+
+        writeStatus(pre_train_str.c_str());
+        comm->printToMasterOnly(pre_train_str.c_str());
+    }
+
 
     while (iter < cfg->em_max_iterations) {
         std::string iter_out_param_filename =
                 out_param_filename + "_" + std::to_string(iter);
 
-        std::string msg = "EM Iteration " + std::to_string(iter);
+        std::string msg = "[Training]EM Iteration " + std::to_string(iter);
         if (comm->isMaster())
             writeStatus(msg.c_str());
         comm->printToMasterOnly(msg.c_str());
@@ -184,31 +218,33 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         // validation Q value
         double val_q = 0.0;
 
-        int molidx = 0, num_val_mols = 0, num_training_mols = 0;
-        double train_dice = 0.0, train_dp = 0.0,  train_precision  = 0.0, train_recall = 0.0;
+        int molidx = 0;
+        double train_dice = 0.0, train_dp = 0.0, train_precision = 0.0, train_recall = 0.0;
         double val_dice = 0.0, val_dp = 0.0, val_precision = 0.0, val_recall = 0.0;
 
-        double pruned_train_dice = 0.0, pruned_train_dp = 0.0,  pruned_train_precision  = 0.0, pruned_train_recall = 0.0;
-        double pruned_val_dice = 0.0, pruned_val_dp = 0.0, pruned_val_precision = 0.0, pruned_val_recall = 0.0;
-
+        double pruned_train_dice = 0.0, pruned_train_dp = 0.0, pruned_train_precision = 0.0, pruned_train_recall = 0.0;
 
         for (mol_it = molDataSet.begin(); mol_it != molDataSet.end(); ++mol_it, molidx++) {
 
-            if (mol_it->getGroup() == validation_group && !cfg->disable_cross_val_metrics) {
-                num_val_mols++;
-                val_q += computeLogLikelihoodLoss(molidx, *mol_it, suft, energy_level);
-                computeMetrics(energy_level, mol_it, val_dice,
-                               val_dp, val_precision, val_recall, true, true);
-                computeMetrics(energy_level, mol_it,  pruned_val_dice,
-                               pruned_val_dp, pruned_val_precision, pruned_val_recall, false, false);
+            // run preduiction
+            mol_it->computePredictedSpectra(*param, false, energy_level, cfg->default_predicted_peak_min,
+                                            cfg->default_predicted_peak_max, cfg->default_postprocessing_energy,
+                                            cfg->default_predicted_min_intensity,
+                                            cfg->use_log_scale_peak);
 
+            if (mol_it->getGroup() == validation_group && !cfg->disable_cross_val_metrics) {
+                //num_val_mols++;
+                val_q += computeLogLikelihoodLoss(molidx, *mol_it, suft, energy_level);
+
+                computeMetrics(mol_it->getOrigSpectrum(energy_level), mol_it->getPredictedSpectrum(energy_level), val_dice,
+                               val_dp, val_precision, val_recall);
             } else {
-                num_training_mols++;
+                //num_training_mols++;
                 if (!cfg->disable_training_metrics) {
-                    computeMetrics(energy_level, mol_it, train_dice,
-                                   train_dp, train_precision, train_recall, true, true);
-                    computeMetrics(energy_level, mol_it, pruned_train_dice,
-                                   pruned_train_dp, pruned_train_precision, pruned_train_recall, false, false);
+                    computeMetrics(mol_it->getOrigSpectrum(energy_level),  mol_it->getPredictedSpectrum(energy_level), train_dice,
+                                   train_dp, train_precision, train_recall);
+                    computeMetrics(mol_it->getSpectrum(energy_level),  mol_it->getPredictedSpectrum(energy_level), pruned_train_dice,
+                                   pruned_train_dp, pruned_train_precision, pruned_train_recall);
                 }
             }
         }
@@ -222,18 +258,21 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         if (comm->isMaster())
             writeStatus(q_time_msg.c_str());
 
-        num_training_mols = comm->collectSumInMaster(num_training_mols);
 
         if (!cfg->disable_training_metrics) {
             train_dice = comm->collectQInMaster((float) train_dice);
             train_dp = comm->collectQInMaster((float) train_dp);
             train_precision = comm->collectQInMaster((float) train_precision);
             train_recall = comm->collectQInMaster((float) train_recall);
+            pruned_train_dice = comm->collectQInMaster((float) pruned_train_dice);
+            pruned_train_dp = comm->collectQInMaster((float) pruned_train_dp);
+            pruned_train_precision = comm->collectQInMaster((float) pruned_train_precision);
+            pruned_train_recall = comm->collectQInMaster((float) pruned_train_recall);
         }
 
         if (!cfg->disable_cross_val_metrics) {
             val_q = comm->collectQInMaster((float) val_q);
-            num_val_mols = comm->collectSumInMaster((float) num_val_mols);
+            //num_val_mols = comm->collectSumInMaster((float) num_val_mols);
             val_dice = comm->collectQInMaster((float) val_dice);
             val_dp = comm->collectQInMaster((float) val_dp);
             val_precision = comm->collectQInMaster((float) val_precision);
@@ -244,7 +283,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double loss_ratio = fabs((loss - prev_loss) / loss);
         if (comm->isMaster()) {
             std::string qdif_str = "";
-            qdif_str += "[M-Step][Traing Loss]          ";
+            qdif_str += "[M-Step][Traning Loss]       ";
             qdif_str += "Total=" + std::to_string(loss) + " Mean=" + std::to_string(loss / num_training_mols);
 
             if (prev_loss != -DBL_MAX)
@@ -253,37 +292,31 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 qdif_str += " Best=" + std::to_string(best_loss);
 
             if (!cfg->disable_cross_val_metrics) {
-                qdif_str += "\n[M-Step][Validation Loss]";
-                qdif_str += " Total=" + std::to_string(val_q)
-                            + "Mean=" + std::to_string(val_q / num_val_mols);
+                qdif_str += "\n[M-Step][Validation Loss] ";
+                qdif_str += "Total=" + std::to_string(val_q)
+                            + " Mean=" + std::to_string(val_q / num_val_mols);
             }
 
             if (!cfg->disable_training_metrics) {
-                qdif_str += "\n[M-Step][Training Metric]                   ";
+                qdif_str += "\n[M-Step][Training Metric]          ";
                 qdif_str += "Dice=" + std::to_string(train_dice / num_training_mols)
                             + " DotProduct=" + std::to_string(train_dp / num_training_mols)
-                            + " Precision=" + std::to_string(train_precision / num_training_mols /100.0f)
-                            + " Recall=" + std::to_string(train_recall / num_training_mols /100.0f);
+                            + " Precision=" + std::to_string(train_precision / num_training_mols / 100.0f)
+                            + " Recall=" + std::to_string(train_recall / num_training_mols / 100.0f);
 
-                qdif_str += "\n[M-Step][Training Metric vs Pruned Spectrum]";
+                qdif_str += "\n[M-Step][Training Metric (Pruned)] ";
                 qdif_str += "Dice=" + std::to_string(pruned_train_dice / num_training_mols)
                             + " DotProduct=" + std::to_string(pruned_train_dp / num_training_mols)
-                            + " Precision=" + std::to_string(pruned_train_precision / num_training_mols /100.0f)
-                            + " Recall=" + std::to_string(pruned_train_recall / num_training_mols /100.0f);
+                            + " Precision=" + std::to_string(pruned_train_precision / num_training_mols / 100.0f)
+                            + " Recall=" + std::to_string(pruned_train_recall / num_training_mols / 100.0f);
             }
 
             if (!cfg->disable_cross_val_metrics) {
-                qdif_str += "\n[M-Step][Validation Metric]                 ";
-                qdif_str +=  "Dice=" + std::to_string(val_dice / num_val_mols)
+                qdif_str += "\n[M-Step][Validation Metric]        ";
+                qdif_str += "Dice=" + std::to_string(val_dice / num_val_mols)
                             + " DotProduct=" + std::to_string(val_dp / num_val_mols)
-                            + " Precision=" + std::to_string(val_precision / num_val_mols /100.0f)
-                            + " Recall=" += std::to_string(val_recall / num_val_mols /100.0f);
-
-                qdif_str += "\n[M-Step][Validation vs Pruned Spectrum]     ";
-                qdif_str +=  "Dice=" + std::to_string(pruned_val_dice / num_val_mols)
-                             + " DotProduct=" + std::to_string(pruned_val_dp / num_val_mols)
-                             + " Precision=" + std::to_string(pruned_val_precision / num_val_mols /100.0f)
-                             + " Recall=" += std::to_string(pruned_val_recall / num_val_mols /100.0f);
+                            + " Precision=" + std::to_string(val_precision / num_val_mols / 100.0f)
+                            + " Recall=" += std::to_string(val_recall / num_val_mols / 100.0f);
             }
 
             writeStatus(qdif_str.c_str());
@@ -388,43 +421,18 @@ EmModel::computeAndSyncLoss(std::vector<MolData> &data, suft_counts_t &suft, uns
     return loss;
 }
 
-void EmModel::computeMetrics(int energy_level, std::vector<MolData, std::allocator<MolData>>::iterator &moldata,
-                             double &dice, double &dp, double &precision, double &recall, bool use_org_spectrum,
-                             bool run_prediction) {
+void EmModel::computeMetrics(const Spectrum *p, const Spectrum *q, double &dice, double &dp, double &precision, double &recall) {
 
     Comparator *dice_cmp = new Dice(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *dotproduct_cmp = new DotProduct(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *p_cmp = new Precision(cfg->ppm_mass_tol, cfg->abs_mass_tol);
     Comparator *r_cmp = new Recall(cfg->ppm_mass_tol, cfg->abs_mass_tol);
 
-    if (run_prediction)
-        moldata->computePredictedSpectra(*param, false, energy_level, cfg->default_predicted_peak_min,
-                                         cfg->default_predicted_peak_max, cfg->default_postprocessing_energy,
-                                         cfg->default_predicted_min_intensity,
-                                         cfg->use_log_scale_peak);
-    if (use_org_spectrum) {
-        dice += dice_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
-                                       moldata->getPredictedSpectrum(energy_level));
-        dp += dotproduct_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
-                                           moldata->getPredictedSpectrum(energy_level));
+    dice += dice_cmp->computeScore(p,q);
+    dp += dotproduct_cmp->computeScore(p,q);
+    precision += p_cmp->computeScore(p,q);
+    recall += r_cmp->computeScore(p,q);
 
-        precision += p_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
-                                         moldata->getPredictedSpectrum(energy_level));
-        recall += r_cmp->computeScore(moldata->getOrigSpectrum(energy_level),
-                                      moldata->getPredictedSpectrum(energy_level));
-    }
-    else{
-        dice += dice_cmp->computeScore(moldata->getSpectrum(energy_level),
-                                       moldata->getPredictedSpectrum(energy_level));
-        dp += dotproduct_cmp->computeScore(moldata->getSpectrum(energy_level),
-                                           moldata->getPredictedSpectrum(energy_level));
-
-        precision += p_cmp->computeScore(moldata->getSpectrum(energy_level),
-                                         moldata->getPredictedSpectrum(energy_level));
-        recall += r_cmp->computeScore(moldata->getSpectrum(energy_level),
-                                      moldata->getPredictedSpectrum(energy_level));
-    }
-    //std::cout << "Dice: " << dice << " DP: " << dp << " Precision: " << precision << " Recall: " << recall << std::endl;
     delete dice_cmp;
     delete dotproduct_cmp;
     delete p_cmp;
@@ -574,7 +582,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             }
 
             if (num_trans > 0)
-                for (auto &grad : grads)
+                for (auto &grad: grads)
                     grad /= num_trans;
 
             comm->collectGradsInMasterOrigMpi(grads);
@@ -694,14 +702,14 @@ int EmModel::computeAndAccumulateGradient(float *grads, int mol_idx, MolData &mo
 
         // Calculate the denominator of the sum terms
         double denom = 1.0;
-        for (auto trans_id : sampled_ids)
+        for (auto trans_id: sampled_ids)
             denom += exp(mol_data.getThetaForIdx(energy, trans_id));
 
         // Complete the innermost sum terms	(sum over j')
         //std::map<unsigned int, double> sum_terms;
         std::vector<double> sum_terms(mol_data.getFeatureVectorForIdx(0)->getTotalLength());
 
-        for (auto trans_id : sampled_ids) {
+        for (auto trans_id: sampled_ids) {
             const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
 
             for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it) {
@@ -713,7 +721,7 @@ int EmModel::computeAndAccumulateGradient(float *grads, int mol_idx, MolData &mo
 
         // Accumulate the transition (i \neq j) terms of the gradient (sum over j)
         double nu_sum = 0.0;
-        for (auto trans_id : sampled_ids) {
+        for (auto trans_id: sampled_ids) {
             double nu = (*suft_values)[trans_id + suft_offset];
             nu_sum += nu;
             const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
@@ -744,7 +752,7 @@ void EmModel::collectUsedIdx(MolData &mol_data, std::set<unsigned int> &used_idx
     // Iterate over from_id (i)
     for (auto frag_trans_map = mol_data.getFromIdTMap()->begin(); frag_trans_map != mol_data.getFromIdTMap()->end();
          ++frag_trans_map) {
-        for (auto trans_id : *frag_trans_map) {
+        for (auto trans_id: *frag_trans_map) {
             const FeatureVector *fv = mol_data.getFeatureVectorForIdx(trans_id);
             for (auto fv_it = fv->getFeatureBegin(); fv_it != fv->getFeatureEnd(); ++fv_it)
                 used_idxs.insert(*fv_it + grad_offset);
@@ -767,10 +775,10 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
         case USE_DIFFERENCE_SAMPLING_BFS_CO:
         case USE_DIFFERENCE_SAMPLING_BFS: {
             moldata.computePredictedSpectra(*param, true, energy,
-                                            cfg->default_predicted_peak_min,
-                                            cfg->default_predicted_peak_max,
-                                            cfg->default_postprocessing_energy,
-                                            cfg->default_predicted_min_intensity,
+                                            1,
+                                            1000,
+                                            100,
+                                            0.0,
                                             cfg->use_log_scale_peak);
 
             std::set<unsigned int> selected_weights;
@@ -810,7 +818,7 @@ double EmModel::computeLogLikelihoodLoss(int molidx, MolData &moldata, suft_coun
 
         // Calculate the denominator of the sum terms
         double denom = 1.0;
-        for (const auto &itt : *it)
+        for (const auto &itt: *it)
             denom += exp(moldata.getThetaForIdx(energy, itt));
 
         // Accumulate the transition (i \neq j) terms of the gradient (sum over j)

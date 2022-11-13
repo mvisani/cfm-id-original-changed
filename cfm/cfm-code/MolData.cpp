@@ -392,12 +392,12 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
     std::string line;
     std::ifstream ifs(peak_filename.c_str(), std::ifstream::in);
     if (!ifs)
-        std::cout << "Warning: Could not open file " << peak_filename << std::endl;
+        std::cerr << "Warning: Could not open file " << peak_filename << std::endl;
     int first = 1;
     while (ifs.good()) {
         getline(ifs, line);
         // 1.empty line separates peaks and annotations
-        // 2. we need at least 4 char for peak: n space n newline
+        // 2.we need at least 4 char for peak: n space n newline
         if (line.length() < 2)
             break;
         // in case we are seen version string
@@ -423,10 +423,10 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
         ss >> mass >> intensity;
         curr_spec->push_back(Peak(mass, intensity));
     }
+    ifs.close();
 
     for (auto & spec : *spec_dest)
         spec.normalizeAndSort();
-    ifs.close();
 
     //once finished, copy spectrum to orig spectrum
     //because we already  sort and normalized
