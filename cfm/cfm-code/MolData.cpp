@@ -423,12 +423,12 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
         ss >> mass >> intensity;
         curr_spec->push_back(Peak(mass, intensity));
     }
-    std::vector<Spectrum>::iterator it = spec_dest->begin();
-    for (; it != spec_dest->end(); ++it)
-        it->normalizeAndSort();
+
+    for (auto & spec : *spec_dest)
+        spec.normalizeAndSort();
     ifs.close();
 
-    //once finished, copy specturm to orig spectrum
+    //once finished, copy spectrum to orig spectrum
     //because we already  sort and normalized
     orig_spectra.clear();
     for (const auto &spec : spectra)
@@ -519,13 +519,13 @@ MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, boo
         for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
              energy++) {
             createSpeactraSingleEnergry(energy);
-            if(force_linear_scale && cfg->use_log_scale_peak)
+            if(force_linear_scale)
                 predicted_spectra[energy].convertToLinearScale();
         }
     } else {
 
         createSpeactraSingleEnergry(energy_level);
-        if(force_linear_scale && cfg->use_log_scale_peak)
+        if(force_linear_scale)
             predicted_spectra[energy_level].convertToLinearScale();
     }
 
