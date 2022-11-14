@@ -283,7 +283,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         double loss_ratio = fabs((loss - prev_loss) / loss);
         if (comm->isMaster()) {
             std::string qdif_str = "";
-            qdif_str += "[M-Step][Traning Loss]       ";
+            qdif_str += "[M-Step][Traning Loss]    ";
             qdif_str += "Total=" + std::to_string(loss) + " Mean=" + std::to_string(loss / num_training_mols);
 
             if (prev_loss != -DBL_MAX)
