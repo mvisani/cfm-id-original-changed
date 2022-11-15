@@ -53,7 +53,6 @@ Transition::Transition(int a_from_id, int a_to_id, const romol_ptr_t &a_nl, cons
     to_id = a_to_id;
     from_id = a_from_id;
     nl_smiles = RDKit::MolToSmiles(*(nl.mol.get()));
-    ion_smiles = RDKit::MolToSmiles(*(ion.mol.get()));
 
 }
 
@@ -61,7 +60,6 @@ Transition::Transition(int a_from_id, int a_to_id, const RootedROMol &a_nl, cons
         :
         to_id(a_to_id), from_id(a_from_id), nl(a_nl), ion(an_ion) {
     nl_smiles = RDKit::MolToSmiles(*(nl.mol.get()));
-    ion_smiles = RDKit::MolToSmiles(*(ion.mol.get()));
 
 }
 
@@ -195,7 +193,7 @@ FragmentGraph::addToGraphWithThetas(const FragmentTreeNode &node, const std::vec
 
     } else if (parent_frag_id >= 0 && existing_trans_id >= 0 &&
                (node.depth == fragments[frag_id]->getDepth())) {
-        // if those transitions does exists, create a duplication
+        // if those transitions does exist, create a duplication
         int trans_idx = transitions.size();
         transitions.push_back(std::make_shared<Transition>());
         auto trans = transitions.back();
@@ -388,7 +386,7 @@ void FragmentGraph::writeFullGraph(std::ostream &out) const {
         if (!transition->isDuplicate()) {
             out << transition->getFromId() << " ";
             out << transition->getToId() << " ";
-            out << *(transition->getIonSmiles()) << " ";
+            out << *fragments[transition->getToId()]->getIonSmiles() << " ";
             out << *(transition->getNLSmiles()) << " ";
             out << std::endl;
         }

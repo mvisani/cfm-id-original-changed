@@ -87,7 +87,9 @@ public:
     int getDepth() const { return depth; };
 
 protected:
+
     int id;
+    // RootedROMol *ion = nullptr;
     std::string reduced_smiles; // Reduced version of the smiles string (just backbone)
     std::string ion_smiles; // Full ion smiles (for writing out if called for)
     double mass;
@@ -148,7 +150,6 @@ public:
     void setToId(const int id) { to_id = id; };
 
     const std::string *getNLSmiles() const { return &nl_smiles; };
-    const std::string *getIonSmiles() const { return  &ion_smiles; };
 
     const RootedROMol *getNeutralLoss() const { return &nl; };
 
@@ -180,7 +181,6 @@ public:
         from_id = old.from_id;
         to_id = old.to_id;
         nl_smiles = old.nl_smiles;
-        ion_smiles = old.ion_smiles;
         if(old.feature_vector != nullptr)
             feature_vector = new FeatureVector(*old.feature_vector);
         is_duplicate = true;
@@ -190,11 +190,17 @@ public:
 private:
     int from_id;
     int to_id;
+    // we should ONLY keep nl smiles
+    // since ion could be re-used from an older fragments
     std::string nl_smiles;
-    std::string ion_smiles;
-
     RootedROMol nl;
+
+    // This is a BUG  .... need fix
+    // TODO:fix this
+    // if we are using ion
+    // this should be a re-used ion
     RootedROMol ion;
+
     // We store the ion on the transition to
     // allow for different roots - the fragment stores
     // only an unrooted shared pointer.
