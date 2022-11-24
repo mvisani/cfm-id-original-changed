@@ -104,8 +104,14 @@ BOOST_AUTO_TEST_SUITE(EMTests)
         }
 
         //Predict the output spectra
-        data[0].computePredictedSpectra(*final_params);
-        data[0].postprocessPredictedSpectra(100.0, 0, 1000);
+        data[0].computePredictedSpectra(*final_params, true, -1,
+                                        1,
+                                        1000,
+                                        100,
+                                        0.0,
+                                        -1,
+                                        false);
+        //data[0].postprocessPredictedSpectra(100.0, 0, 1000, 0, 0);
 
         //Compare the original and predicted spectra - should be able to overfit
         //very close to the actual values since training on same (and only same) mol
@@ -184,8 +190,14 @@ BOOST_AUTO_TEST_SUITE(EMTests)
         }
 
         //Predict the output spectra
-        data[0].computePredictedSpectra(*final_params);
-        data[0].postprocessPredictedSpectra(100.0, 0);
+        data[0].computePredictedSpectra(*final_params, true, -1,
+                                        1,
+                                        1000,
+                                        100,
+                                        0.0,
+                                        -1,
+                                        false);
+        //data[0].postprocessPredictedSpectra(100.0, 0, 1000, 0, 0);
 
         //Compare the original and predicted spectra - should be able to overfit
         //very close to the actual values since training on same (and only same) mol
@@ -247,8 +259,14 @@ BOOST_AUTO_TEST_SUITE(EMTests)
         final_params = new Param(param_filename);
 
         //Predict the output spectra
-        data[0].computePredictedSpectra(*final_params);
-        data[0].postprocessPredictedSpectra(100.0, 0, 1000);
+        data[0].computePredictedSpectra(*final_params, true, -1,
+                                        1,
+                                        1000,
+                                        100,
+                                        0.0,
+                                        -1,
+                                        false);
+        //data[0].postprocessPredictedSpectra(100.0, 0, 1000, 0, 0);
 
         const Spectrum *orig_spec = data[0].getSpectrum(0);
         const Spectrum *predicted_spec = data[0].getPredictedSpectrum(0);

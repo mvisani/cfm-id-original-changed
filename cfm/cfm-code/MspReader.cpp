@@ -128,7 +128,7 @@ void MspReader::writeLibraryToMspFile(const char *filename, std::string & smiles
     for (auto it = library.begin(); it != library.end(); ++it) {
         auto its = it->second.begin();
         for (int energy = 0; its != it->second.end(); ++its, energy++)
-            its->outputToMspStream(out, it->first, ionization_mode, energy, smiles_or_inchi);
+            its->outputToMspStream(out, it->first, ionization_mode, energy, smiles_or_inchi, 0);
     }
     out.close();
 

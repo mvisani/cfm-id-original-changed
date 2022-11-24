@@ -229,7 +229,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             // run preduiction
             mol_it->computePredictedSpectra(*param, false, energy_level, cfg->default_predicted_peak_min,
                                             cfg->default_predicted_peak_max, cfg->default_postprocessing_energy,
-                                            cfg->default_predicted_min_intensity,
+                                            cfg->default_predicted_min_intensity,  cfg->default_mz_decimal_place,
                                             cfg->use_log_scale_peak);
 
             if (mol_it->getGroup() == validation_group && !cfg->disable_cross_val_metrics) {
@@ -779,6 +779,7 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
                                             1000,
                                             100,
                                             0.0,
+                                            cfg->default_mz_decimal_place,
                                             cfg->use_log_scale_peak);
 
             std::set<unsigned int> selected_weights;

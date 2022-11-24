@@ -326,7 +326,8 @@ int main(int argc, char *argv[]) {
                 fgen = new LikelyFragmentGraphGenerator(param, &cfg, prob_thresh_for_prune);
 
             mol_data.computeLikelyFragmentGraphAndSetThetas(*fgen, do_annotate);
-            mol_data.computePredictedSpectra(*nn_param, true, -1, min_peaks, max_peaks, postprocessing_energy, min_peak_intensity, cfg.use_log_scale_peak);
+            mol_data.computePredictedSpectra(*nn_param, true, -1, min_peaks, max_peaks, postprocessing_energy,
+                                             min_peak_intensity, cfg.default_mz_decimal_place, cfg.use_log_scale_peak);
             //Predict the spectra (and post-process, use existing thetas)
         }
         catch (RDKit::MolSanitizeException &e) {

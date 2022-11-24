@@ -107,7 +107,6 @@ static const int NN_PARAM_VAR_SCALING_INIT = 5;
 static const int PARAM_DEFAULT_INIT = PARAM_RANDOM_INIT;
 
 static const int DEFAULT_ALLOW_FRAG_DETOURS = 1;
-static const int DEFAULT_DO_PRELIM_BFS = 1;
 static const int DEFAULT_MAX_RING_BREAKS = 2;
 
 static const int MAX_BREAKABLE_RING_SIZE = 8;
@@ -146,7 +145,6 @@ static const int DEFAULT_OBS_FUNCTION = NORMAL_OBS_FUNCTION;
 static const int DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS = -1;    //-1 is no timeout.
 
 //Random Sample settings
-static const int DEFAULT_NOT_USE_GRAPH_PRUNING = 0;
 static const int DEFAULT_USE_BEST_Q_IN_GA = 0;
 static const int USE_NO_SAMPLING = 0;
 static const int USE_RANDOM_SAMPLING = 1;
@@ -255,8 +253,11 @@ struct config_t {
     //default post-processing settings
     int default_predicted_peak_min;
     int default_predicted_peak_max;
+    int default_mz_decimal_place;
     double default_predicted_min_intensity;
     double default_postprocessing_energy;
+
+
 };
 
 void initDefaultConfig(config_t &cfg);

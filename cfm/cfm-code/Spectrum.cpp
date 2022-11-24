@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <cmath>
 
-void Spectrum::outputToStream(std::ostream &out, bool do_annotate, bool normalize_to_max) const {
+void Spectrum::outputToStream(std::ostream &out, bool do_annotate, int mz_precision, bool normalize_to_max) const {
 
     double max_intensity = normalize_to_max ? getMaxIntensity() : -1.0;
 
@@ -32,7 +32,7 @@ void Spectrum::outputToStream(std::ostream &out, bool do_annotate, bool normaliz
         double display_intensity_value = normalize_to_max ? peak.intensity / max_intensity * 100.0 : peak.intensity;
         int display_intensity = std::floor(display_intensity_value * 100 + 0.5);
         if (display_intensity > 0) {
-            out << std::fixed << std::setprecision(5) << peak.mass << " " << std::setprecision(2)
+            out << std::fixed << std::setprecision(mz_precision) << peak.mass << " " << std::setprecision(2)
             << display_intensity / 100.0;
 
             if (do_annotate) {
@@ -72,8 +72,8 @@ void Spectrum::getDisplayedFragmentIds(std::set<int> & ids, bool normalize_to_ma
         }
 
 }
-void Spectrum::outputToMspStream(std::ostream &out, std::string id,
-                                 int ionization_mode, int energy, std::string &smiles_or_inchi) const {
+void Spectrum::outputToMspStream(std::ostream &out, std::string id, int ionization_mode, int energy,
+                                 std::string &smiles_or_inchi, int mz_precision) const {
 
     if (ionization_mode == POSITIVE_EI_IONIZATION_MODE)
         out << "Name: +ve in-silico MS by ";
@@ -86,14 +86,12 @@ void Spectrum::outputToMspStream(std::ostream &out, std::string id,
     out << "Smiles/Inchi:" << smiles_or_inchi << std::endl;
     out << "Comment: Energy" << energy << std::endl;
     out << "Num peaks: " << peaks.size() << std::endl;
-    outputToStream(out, false);
+    outputToStream(out, false, mz_precision, true);
     out << std::endl;
 }
 
-void Spectrum::outputToMgfStream(std::ostream &out, std::string id,
-                                 int ionization_mode,
-                                 int energy,
-                                 double mw, std::string &smiles_or_inchi) const {
+void Spectrum::outputToMgfStream(std::ostream &out, std::string id, int ionization_mode, int energy, double mw,
+                                 std::string &smiles_or_inchi, int mz_precision) const {
 
     out << "BEGIN IONS" << std::endl;
     out << "PEPMASS=" << std::setprecision(10) << mw << std::endl;
@@ -111,7 +109,7 @@ void Spectrum::outputToMgfStream(std::ostream &out, std::string id,
         out << "[M-H]-;In-silico MS/MS by ";
     out << APP_STRING << " " << PROJECT_VER << ";"
     << smiles_or_inchi << ";" << std::endl;
-    outputToStream(out, false);
+    outputToStream(out, false, mz_precision, true);
     out << "END IONS" << std::endl;
 }
 

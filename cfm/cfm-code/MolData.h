@@ -168,12 +168,12 @@ public:
 
     // compute predicted Spectra
     // if engry < -1 , compute all  Spectra
-    void computePredictedSpectra(Param &param, bool use_existing_thetas = false,
-                                 int energy_level = -1, int min_peaks = 1, int max_peaks = 30,
-                                 double perc_thresh = 100.0, double min_relative_intensity = 0.0, bool force_linear_scale = false);
+    void computePredictedSpectra(Param &param, bool use_existing_thetas, int energy_level, int min_peaks, int max_peaks,
+                                 double perc_thresh, double min_relative_intensity, int quantise_peaks_decimal_place,
+                                 bool log_to_linear);
 
-    void postprocessPredictedSpectra(double perc_thresh = 80.0, int min_peaks = 1, int max_peaks = 30,
-                                     double min_relative_intensity_prec = 0.0);
+    void postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks,
+                                     double min_relative_intensity_prec, int quantise_peaks_decimal_place);
 
     void quantisePredictedSpectra(int num_dec_places);
 
@@ -288,10 +288,6 @@ protected
     void computeGraphWithGenerator(FragmentGraphGenerator &fgen);
 
     void getEnumerationSpectraMasses(std::vector<double> &output_masses);
-
-    void computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas, int min_peaks,
-                                             int max_peaks, double perc_thresh, double min_relative_intensity,
-                                             int quantise_peaks_by_mass = 0, bool log_to_linear = false);
 
     void translatePeaksFromMsgToSpectra(Spectrum &out_spec, Message *msg);
 

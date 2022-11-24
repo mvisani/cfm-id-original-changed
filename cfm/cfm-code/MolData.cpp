@@ -497,15 +497,8 @@ bool MolData::hasEmptySpectrum(int energy_level) const {
 
 void
 MolData::computePredictedSpectra(Param &param, bool use_existing_thetas, int energy_level, int min_peaks, int max_peaks,
-                                 double perc_thresh, double min_relative_intensity,bool force_linear_scale) {
-    computePredictedSingleEnergySpectra(param, energy_level, use_existing_thetas, min_peaks, max_peaks, perc_thresh,
-                                        min_relative_intensity, false, force_linear_scale);
-}
-
-void
-MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas, int min_peaks,
-                                             int max_peaks, double perc_thresh, double min_relative_intensity,
-                                             int quantise_peaks_by_mass, bool log_to_linear) {
+                                 double perc_thresh, double min_relative_intensity, int quantise_peaks_decimal_place,
+                                 bool log_to_linear) {
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
@@ -528,21 +521,9 @@ MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, boo
             predicted_spectra[energy_level].convertToLinearScale();
     }
 
-    postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_relative_intensity);
-
-    if (quantise_peaks_by_mass) {
-        if(energy_level != -1){
-            predicted_spectra[energy_level].normalizeAndSort();
-            predicted_spectra[energy_level].quantisePeaksByMass(quantise_peaks_by_mass);
-        }else {
-            for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
-                 energy++) {
-                predicted_spectra[energy].normalizeAndSort();
-                predicted_spectra[energy].quantisePeaksByMass(quantise_peaks_by_mass);
-            }
-        }
-    }
+    postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_relative_intensity, quantise_peaks_decimal_place);
 }
+
 
 void MolData::createSpeactraSingleEnergry(unsigned int energy_level) {
     predicted_spectra[energy_level].clear();
@@ -636,7 +617,7 @@ void MolData::writePredictedSpectraToFile(std::string &filename) {
 void MolData::writePredictedSpectraToMspFileStream(std::ostream &out) {
     for (unsigned int energy = 0; energy < getNumPredictedSpectra(); energy++) {
         const Spectrum *spec = getPredictedSpectrum(energy);
-        spec->outputToMspStream(out, id, cfg->ionization_mode, energy, smiles_or_inchi);
+        spec->outputToMspStream(out, id, cfg->ionization_mode, energy, smiles_or_inchi, cfg->default_mz_decimal_place);
     }
 }
 
@@ -645,7 +626,7 @@ void MolData::writePredictedSpectraToMgfFileStream(std::ostream &out) {
 
     for (unsigned int energy = 0; energy < getNumPredictedSpectra(); energy++) {
         const Spectrum *spec = getPredictedSpectrum(energy);
-        spec->outputToMgfStream(out, id, cfg->ionization_mode, energy, parent_ion_mw, smiles_or_inchi);
+        spec->outputToMgfStream(out, id, cfg->ionization_mode, energy, parent_ion_mw, smiles_or_inchi, cfg->default_mz_decimal_place);
     }
 }
 
@@ -778,7 +759,7 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
     std::set<int> frag_ids;
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
         out << "energy" << energy << std::endl;
-        it->outputToStream(out, do_annotate);
+        it->outputToStream(out, do_annotate, cfg->default_mz_decimal_place, false);
         it->getDisplayedFragmentIds(frag_ids);
     }
 
@@ -790,13 +771,17 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
 }
 
 void
-MolData::postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks, double min_relative_intensity_prec) {
+MolData::postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks,
+                                     double min_relative_intensity_prec, int quantise_peaks_decimal_place) {
 
     for (auto &predicted_spectrum : predicted_spectra) {
-        predicted_spectrum.quantisePeaksByMass(10);
+        //predicted_spectrum.quantisePeaksByMass(10);
+        if (quantise_peaks_decimal_place > -1)
+            predicted_spectrum.quantisePeaksByMass(quantise_peaks_decimal_place);
         predicted_spectrum.postProcess(perc_thresh, min_peaks, max_peaks, min_relative_intensity_prec);
         predicted_spectrum.normalizeAndSort();
         predicted_spectrum.sortAndNormalizeAnnotations();
+
     }
 }
 

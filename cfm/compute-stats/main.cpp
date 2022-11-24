@@ -360,8 +360,9 @@ int main(int argc, char *argv[]) {
             //if (apply_cutoffs)
             // mit->postprocessPredictedSpectra(cumulative_intensity_thresh, 5, 30, min_relative_intensity);
             //else
+            // skip quantisePredictedSpectra since it is already doen
             mit->postprocessPredictedSpectra(cumulative_intensity_thresh, min_peak_cutoffs, max_peak_cutoffs,
-                                             min_relative_intensity);
+                                             min_relative_intensity, -1);
 
             //num_spectra = mit->GetNumSpectra();
             if (clean_target_spectra)

@@ -114,8 +114,8 @@ void EMTestSelfProduction::runTest() {
 
         //Predict the output spectra
         Param param(param_filename);
-        data[0].computePredictedSpectra(param);
-        data[0].postprocessPredictedSpectra(100.0, 0, 100000);
+        data[0].computePredictedSpectra(param, false, 0, 0, 0, 0, 0, -1, false);
+        data[0].postprocessPredictedSpectra(100.0, 0, 100000, 0, 0);
 
         //Compare the original and predicted spectra - should be able to overfit
         //very close to the actual values since training on same (and only same) mol
@@ -194,8 +194,8 @@ void EMTestSingleEnergySelfProduction::runTest() {
     }
 
     //Predict the output spectra
-    data[0].computePredictedSpectra(*final_params);
-    data[0].postprocessPredictedSpectra(100.0, 0, 1000);
+    data[0].computePredictedSpectra(*final_params, false, 0, 0, 0, 0, 0, -1, false);
+    data[0].postprocessPredictedSpectra(100.0, 0, 1000, 0, 0);
 
     //Compare the original and predicted spectra - should be able to overfit
     //very close to the actual values since training on same (and only same) mol
@@ -298,8 +298,8 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     }
 
     //Predict the output spectra
-    data[0].computePredictedSpectra(*final_params);
-    data[0].postprocessPredictedSpectra(100.0, 0);
+    data[0].computePredictedSpectra(*final_params, false, 0, 0, 0, 0, 0, -1, false);
+    data[0].postprocessPredictedSpectra(100.0, 0, 0, 0, 0);
 
     //Compare the original and predicted spectra - should be able to overfit
     //very close to the actual values since training on same (and only same) mol
@@ -381,8 +381,8 @@ void EMTestSingleEnergyIsotopeSelfProduction::runTest() {
     final_params = new Param(param_filename);
 
     //Predict the output spectra
-    data[0].computePredictedSpectra(*final_params);
-    data[0].postprocessPredictedSpectra(100.0, 0, 1000);
+    data[0].computePredictedSpectra(*final_params, false, 0, 0, 0, 0, 0, -1, false);
+    data[0].postprocessPredictedSpectra(100.0, 0, 1000, 0, 0);
 
     //Compare the original and predicted spectra - should be able to overfit
     //very close to the actual values since training on same (and only same) mol

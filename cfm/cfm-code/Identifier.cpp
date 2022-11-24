@@ -106,6 +106,7 @@ Identifier::rankCandidatesForSpecMatch(std::vector<Candidate> &candidates, const
                                                 cfg->default_predicted_peak_max,
                                                 cfg->default_postprocessing_energy,
                                                 cfg->default_predicted_min_intensity,
+                                                cfg->default_mz_decimal_place,
                                                 cfg->use_log_scale_peak);
             
             if (output_all_scores)
@@ -195,7 +196,12 @@ void Identifier::rankPrecomputedCandidatesForSpecMatch(std::vector<PrecomputedCa
             moldata.readInSpectraFromFile(it->getSpectrumFilename()->c_str(), true);
             
             if(preprocess_candidates)
-                moldata.postprocessPredictedSpectra();
+                moldata.postprocessPredictedSpectra(cfg->default_postprocessing_energy,
+                                                    cfg->default_predicted_peak_min,
+                                                    cfg->default_predicted_peak_max,
+                                                    cfg->default_predicted_min_intensity,
+                                                    cfg->default_mz_decimal_place);
+
             if(!merge_candidate_spectra){
                 for (unsigned int energy = 0; energy < target_spectra->size(); energy++)
                     score += cmp->computeScore(&((*target_spectra)[energy]), moldata.getPredictedSpectrum(energy));
