@@ -127,9 +127,7 @@ void MolData::computeFragmentGraphAndReplaceMolsWithFVs(FeatureCalculator *fc,
 }
 
 void MolData::computeLikelyFragmentGraphAndSetThetas(
-        LikelyFragmentGraphGenerator &fgen, double prob_thresh_for_prune,
-        bool retain_smiles) {
-
+        LikelyFragmentGraphGenerator &fgen, bool retain_smiles) {
     // Compute the fragment graph, replacing the transition molecules with feature
     // vectors
     fg = fgen.createNewGraph(cfg);
@@ -501,12 +499,13 @@ void
 MolData::computePredictedSpectra(Param &param, bool use_existing_thetas, int energy_level, int min_peaks, int max_peaks,
                                  double perc_thresh, double min_relative_intensity,bool force_linear_scale) {
     computePredictedSingleEnergySpectra(param, energy_level, use_existing_thetas, min_peaks, max_peaks, perc_thresh,
-                                        min_relative_intensity,force_linear_scale);
+                                        min_relative_intensity, false, force_linear_scale);
 }
 
 void
 MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas, int min_peaks,
-                                             int max_peaks, double perc_thresh, double min_relative_intensity, bool force_linear_scale)  {
+                                             int max_peaks, double perc_thresh, double min_relative_intensity,
+                                             int quantise_peaks_by_mass, bool log_to_linear) {
 
     // Compute the transition probabilities using this parameter set
     if (!use_existing_thetas)
@@ -519,33 +518,30 @@ MolData::computePredictedSingleEnergySpectra(Param &param, int energy_level, boo
         for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
              energy++) {
             createSpeactraSingleEnergry(energy);
-            if(force_linear_scale)
+            if(log_to_linear)
                 predicted_spectra[energy].convertToLinearScale();
         }
     } else {
 
         createSpeactraSingleEnergry(energy_level);
-        if(force_linear_scale)
+        if(log_to_linear)
             predicted_spectra[energy_level].convertToLinearScale();
     }
 
-
     postprocessPredictedSpectra(perc_thresh, min_peaks, max_peaks, min_relative_intensity);
 
-    //TODO: This should not be a default, fix this when we doing EI model
-    /*
-    else {
+    if (quantise_peaks_by_mass) {
         if(energy_level != -1){
             predicted_spectra[energy_level].normalizeAndSort();
-            predicted_spectra[energy_level].quantisePeaksByMass(10);
+            predicted_spectra[energy_level].quantisePeaksByMass(quantise_peaks_by_mass);
         }else {
             for (unsigned int energy = 0; energy < cfg->spectrum_depths.size();
                  energy++) {
                 predicted_spectra[energy].normalizeAndSort();
-                predicted_spectra[energy].quantisePeaksByMass(10);
+                predicted_spectra[energy].quantisePeaksByMass(quantise_peaks_by_mass);
             }
         }
-    }*/
+    }
 }
 
 void MolData::createSpeactraSingleEnergry(unsigned int energy_level) {

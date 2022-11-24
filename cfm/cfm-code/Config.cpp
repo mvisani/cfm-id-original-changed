@@ -79,7 +79,7 @@ void initDefaultConfig(config_t &cfg) {
     cfg.ga_no_progress_count = 3;
     cfg.collected_all_used_idx = false;
     cfg.em_max_iterations = DEFAULT_EM_MAX_ITERATIONS;
-    cfg.allow_intermediate_peak = true;
+    cfg.allow_intermediate_peak = false;
     cfg.allow_cyclization = false;
     cfg.use_log_scale_peak = false;
     cfg.use_iterative_fg_gen = false;
@@ -230,9 +230,9 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             std::cout << std::endl;
         }
         if (cfg.allow_intermediate_peak)
-            std::cout << "Allow intermediate peaks" << std::endl;
+            std::cout << "Allowing intermediate peaks" << std::endl;
         if (cfg.allow_cyclization)
-            std::cout << "Allow cyclization" << std::endl;
+            std::cout << "Allowing cyclization" << std::endl;
         if (cfg.use_log_scale_peak)
             std::cout << "Using log scale peak" << std::endl;
         if (cfg.use_iterative_fg_gen)

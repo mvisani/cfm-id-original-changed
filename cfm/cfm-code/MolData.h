@@ -156,9 +156,7 @@ public:
     // Replaces computeFragmentGraph, computeFeatureVectors and
     // computeTransitionThetas  below (delteMols = true), pruning according to
     // prob_thresh_for_prune value.
-    void computeLikelyFragmentGraphAndSetThetas(LikelyFragmentGraphGenerator &fgen,
-                                                double prob_thresh_for_prune,
-                                                bool retain_smiles = false);
+    void computeLikelyFragmentGraphAndSetThetas(LikelyFragmentGraphGenerator &fgen, bool retain_smiles);
 
     // Note that the following should be called in this order
     // since each one assumes all previous have already been called.E
@@ -292,7 +290,8 @@ protected
     void getEnumerationSpectraMasses(std::vector<double> &output_masses);
 
     void computePredictedSingleEnergySpectra(Param &param, int energy_level, bool use_existing_thetas, int min_peaks,
-                                             int max_peaks, double perc_thresh, double min_relative_intensity,bool force_linear_scale = false);
+                                             int max_peaks, double perc_thresh, double min_relative_intensity,
+                                             int quantise_peaks_by_mass = 0, bool log_to_linear = false);
 
     void translatePeaksFromMsgToSpectra(Spectrum &out_spec, Message *msg);
 

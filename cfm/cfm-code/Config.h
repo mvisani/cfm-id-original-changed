@@ -95,7 +95,7 @@ static const int POSITIVE_EI_IONIZATION_MODE = 3;
 static const int DEFAULT_IONIZATION_MODE = POSITIVE_ESI_IONIZATION_MODE;
 static const int DEFAULT_INCLUDE_ISOTOPES = 0;
 static const double DEFAULT_ISOTOPE_THRESH = 1.0;    //On a normalized scale where the highest peak has height 100.0
-static const int DEFAULT_INCLUDE_H_LOSSES = 1;        //For backwards compatibility with old ESI-MS/MS models
+static const int DEFAULT_INCLUDE_H_LOSSES = 0;       //For backwards compatibility with old ESI-MS/MS models
 static const int DEFAULT_INCLUDE_PRECURSOR_H_LOSSES_ONLY = 0;
 
 static const int PARAM_FULL_ZERO_INIT = 1;
