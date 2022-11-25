@@ -276,6 +276,7 @@ void Inference::createSpectrumMessage(Message &msg, int energy, Message &down_ms
                 double sq_mass_diff = mass_diff * mass_diff;
                 if (config->obs_function == UNIFORM_OBS_FUNCTION)
                     sq_mass_diff = 0.0;
+
                 //The down message is applied here to weight competing
                 //fragments for the same peak based on current probability
                 //estimates.

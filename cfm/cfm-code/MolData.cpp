@@ -771,7 +771,7 @@ void MolData::outputSpectra(std::ostream &out, const char *spec_type,
     std::set<int> frag_ids;
     for (int energy = 0; it != spectra_to_output->end(); ++it, energy++) {
         out << "energy" << energy << std::endl;
-        it->outputToStream(out, do_annotate, cfg->default_mz_decimal_place, false);
+        it->outputToStream(out, do_annotate, cfg->default_mz_decimal_place, true);
         it->getDisplayedFragmentIds(frag_ids);
     }
 
