@@ -70,7 +70,7 @@ void EMTestSelfProduction::runTest() {
     //Config
     config_t cfg;
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
-    initConfig(cfg, param_cfg_file);
+    initConfig(cfg, param_cfg_file, nullptr, false);
     cfg.lambda = 0.0000001;
     cfg.ga_converge_thresh = 0.00001;
     cfg.include_h_losses = true;
@@ -154,7 +154,7 @@ void EMTestSingleEnergySelfProduction::runTest() {
     //Config
     config_t orig_cfg;
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
-    initConfig(orig_cfg, param_cfg_file);
+    initConfig(orig_cfg, param_cfg_file, nullptr, false);
     orig_cfg.lambda = 0.0000001;
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;
@@ -229,7 +229,7 @@ void EMTestNNSingleEnergySelfProduction::runTest() {
     //Config
     config_t orig_cfg;
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
-    initConfig(orig_cfg, param_cfg_file);
+    initConfig(orig_cfg, param_cfg_file, nullptr, false);
     orig_cfg.lambda = 0.0000001;
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;
@@ -350,7 +350,7 @@ void EMTestSingleEnergyIsotopeSelfProduction::runTest() {
     //Config
     config_t orig_cfg;
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
-    initConfig(orig_cfg, param_cfg_file);
+    initConfig(orig_cfg, param_cfg_file, nullptr, false);
     orig_cfg.lambda = 0.0000001;
     orig_cfg.spectrum_depths.resize(1);
     orig_cfg.spectrum_weights.resize(1);
@@ -469,7 +469,7 @@ void EMTestMultiProcessor::runTest() {
     //Initialisation
     config_t cfg;
     std::string cfg_file = "tests/test_data/example_param_config.txt";
-    initConfig(cfg, cfg_file);
+    initConfig(cfg, cfg_file, nullptr, false);
     runMultiProcessorEMTest(cfg);
 
     passed = pass;
@@ -544,7 +544,7 @@ void EMTestBiasPreLearning::runTest() {
     //Config
     config_t orig_cfg;
     std::string param_cfg_file = "tests/test_data/example_param_config.txt";
-    initConfig(orig_cfg, param_cfg_file);
+    initConfig(orig_cfg, param_cfg_file, nullptr, false);
     orig_cfg.lambda = 0.0000001;
     orig_cfg.spectrum_depths[1] = 2;
     orig_cfg.spectrum_depths[2] = 2;

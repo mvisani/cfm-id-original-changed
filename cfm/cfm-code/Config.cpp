@@ -20,10 +20,11 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <iomanip> 
+#include <iomanip>
+#include <boost/filesystem/operations.hpp>
 
 
-void initDefaultConfig(config_t &cfg) {
+void initDefaultConfig(config_t &cfg, char *argv_zero) {
 
     cfg.lambda = DEFAULT_LAMBDA;
     cfg.ga_method = DEFAULT_USE_ADAM_FOR_GA;
@@ -88,15 +89,22 @@ void initDefaultConfig(config_t &cfg) {
     cfg.default_predicted_min_intensity = 0.0;
     cfg.default_postprocessing_energy = 80.0;
     cfg.default_mz_decimal_place = 5;
+
+    if (argv_zero == nullptr) {
+        cfg.isotope_pattern_file = "ISOTOPE.DAT";
+    }else{
+        auto exeuc_dir = boost::filesystem::system_complete(argv_zero).remove_filename();
+        cfg.isotope_pattern_file = exeuc_dir.append("ISOTOPE.DAT").string();
+    }
 }
 
-void initConfig(config_t &cfg, std::string &filename, bool report_all) {
+void initConfig(config_t &cfg, std::string &filename,char *argv_zero, bool report_all) {
 
     std::string line, name;
     double value;
     std::ifstream ifs(filename.c_str(), std::ifstream::in);
 
-    initDefaultConfig(cfg);
+    initDefaultConfig(cfg, argv_zero);
 
     //Read the config file into the paramater update config structure
     if (!ifs) std::cout << "Could not open file " << filename << std::endl;
@@ -223,8 +231,11 @@ void initConfig(config_t &cfg, std::string &filename, bool report_all) {
             std::cout << "Warning: Unknown Ionization Mode, reverting to default mode (positive)!" << std::endl;
             cfg.ionization_mode = DEFAULT_IONIZATION_MODE;
         }
-        if (cfg.include_isotopes)
+        if (cfg.include_isotopes) {
+            std::cout << "ISOTOPE.DAT file " << cfg.isotope_pattern_file << std::endl;
             std::cout << "Including fragment isotopes above intensity " << cfg.isotope_thresh << std::endl;
+        }
+
         else std::cout << "Not including fragment isotopes" << std::endl;
         if (cfg.include_h_losses || cfg.include_precursor_h_losses_only) {
             std::cout << "Including Hydrogen losses";

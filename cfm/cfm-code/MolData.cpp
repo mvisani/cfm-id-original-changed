@@ -33,9 +33,10 @@ probabilities using those thetas.
 #include <GraphMol/RDKitBase.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
 #include <GraphMol/Descriptors/MolDescriptors.h>
-#include <GraphMol/Descriptors/Crippen.h>
 #include <INCHI-API/inchi.h>
 #include <string>
+#include <regex>
+#include <boost/algorithm/string.hpp>
 
 double MolData::getMolecularWeight() const {
     romol_ptr_t mol = createMolPtr(smiles_or_inchi.c_str());
@@ -391,6 +392,10 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
     std::ifstream ifs(peak_filename.c_str(), std::ifstream::in);
     if (!ifs)
         std::cerr << "Warning: Could not open file " << peak_filename << std::endl;
+
+    // regex check
+    std::regex peak_list_regex("^([0-9]+)([.][0-9]+)?([\\s\\t]{1,})([0-9]+)([.][0-9]+)?");
+
     int first = 1;
     while (ifs.good()) {
         getline(ifs, line);
@@ -415,7 +420,14 @@ void MolData::readInSpectraFromFile(const std::string &peak_filename,
         }
         first = 0;
 
+
         // Otherwise allocate peak to the current spectrum
+        boost::trim(line);
+        if (!std::regex_match (line, peak_list_regex)) {
+            std::cerr << "Invalid peak "  << line <<  std::endl;
+            continue;
+        }
+
         std::stringstream ss(line);
         double mass, intensity;
         ss >> mass >> intensity;

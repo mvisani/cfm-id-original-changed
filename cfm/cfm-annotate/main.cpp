@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
 	//Initialise model configuration
 	config_t cfg;
-	initConfig( cfg, config_filename );
+    initConfig(cfg, config_filename, argv[0], false);
 
 	//Read in the input spectrum
 	MolData moldata( target_id.c_str(), smiles_or_inchi.c_str(), &cfg );

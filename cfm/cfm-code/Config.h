@@ -166,6 +166,7 @@ struct config_t {
     int ionization_mode;
     int include_isotopes;
     double isotope_thresh;
+    std::string isotope_pattern_file;
 
     // For sampling
     bool ga_reset_sampling;
@@ -257,12 +258,14 @@ struct config_t {
     double default_predicted_min_intensity;
     double default_postprocessing_energy;
 
-
 };
 
-void initDefaultConfig(config_t &cfg);
+//argv_zero: argv[0], use for extract binary folder
+void initDefaultConfig(config_t &cfg, char *argv_zero = nullptr);
 
-void initConfig(config_t &cfg, std::string &filename, bool report_all = false);
+//filename: config filename
+//argv_zero: argv[0], use for extract binary folder
+void initConfig(config_t &cfg, std::string &filename, char *argv_zero, bool report_all);
 
 void initDerivedConfig(config_t &cfg, int energy = -1);
 

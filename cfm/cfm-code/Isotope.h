@@ -61,8 +61,9 @@ class IsotopeCalculationException : public std::exception {
 class IsotopeCalculator {
 
 public:
-    IsotopeCalculator(double a_intensity_thresh) : verbose(0), intensity_thresh(a_intensity_thresh) {
-        init_data("ISOTOPE.DAT");
+    IsotopeCalculator(double a_intensity_thresh, std::string & isotope_pattern_file)
+            : verbose(false), intensity_thresh(a_intensity_thresh) {
+        init_data(isotope_pattern_file.c_str());
     };
 
     void computeIsotopeSpectrum(Spectrum &output, const romol_ptr_t mol, long charge);

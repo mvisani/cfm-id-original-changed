@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
             throw FileException("Could not find file: " + param_filename);
         exit(1);
     }
-    initConfig(cfg, config_filename);
+    initConfig(cfg, config_filename, argv[0], false);
 
     if (postprocessing_method == 1){
         postprocessing_energy = postprocessing_energy < 0 ? cfg.default_postprocessing_energy : postprocessing_energy;

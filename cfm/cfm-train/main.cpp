@@ -157,7 +157,8 @@ int main(int argc, char *argv[]) {
 
     if (mpi_rank == MASTER) std::cout << "Initialising Parameter Configuration..";
     config_t cfg;
-    initConfig(cfg, config_filename, mpi_rank == MASTER);
+    initConfig(cfg, config_filename, argv[0], mpi_rank == MASTER);
+
     if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
 
     if (mpi_rank == MASTER) std::cout << "Parsing input file...";
@@ -348,7 +349,7 @@ int main(int argc, char *argv[]) {
 
             //Predicted spectrum
             for (auto e = start_energy; e < cfg.spectrum_depths.size(); ++e)
-                mit->computePredictedSpectra(*param, false, e, 1, 1000, 100, 0.0, 10,
+                mit->computePredictedSpectra(*param, false, e, 1, 1000, 100, 0.0, cfg.default_mz_decimal_place,
                                              cfg.use_log_scale_peak);
 
             if (spectra_in_msp)

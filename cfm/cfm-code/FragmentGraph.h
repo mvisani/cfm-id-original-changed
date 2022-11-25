@@ -230,7 +230,7 @@ public:
               include_h_losses_precursor_only(cfg->include_precursor_h_losses_only),
               allow_cyclization(cfg->allow_cyclization) {
         if (include_isotopes)
-            isotope = new IsotopeCalculator(cfg->isotope_thresh);
+            isotope = new IsotopeCalculator(cfg->isotope_thresh, cfg->isotope_pattern_file);
     };
 
     ~FragmentGraph() {

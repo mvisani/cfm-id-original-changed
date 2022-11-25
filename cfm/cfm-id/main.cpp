@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
 
     //Initialise model configuration
     config_t cfg;
-    initConfig(cfg, config_filename);
+    initConfig(cfg, config_filename, argv[0], false);
 
     //If apply postprocessing or score_type unspecified, set default according to ionization mode
     if (apply_postprocessing == -1)
