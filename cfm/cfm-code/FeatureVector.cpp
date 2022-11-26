@@ -44,6 +44,15 @@ void FeatureVector::addFeatures(const std::vector<int> &values) {
     }
 }
 
+bool FeatureVector::equals(const FeatureVector & other_fv) const{
+    auto other_fv_fv = other_fv.fv;
+    bool equal = fv.size() == other_fv_fv.size()
+                 && std:: equal(fv.begin(),fv.end(),other_fv_fv.begin())
+                 && fv_idx == other_fv.fv_idx;
+    return equal;
+}
+
+
 // print debug info
 void FeatureVector::writeDebugInfo(std::ostream &out) const {
     //out<< "fv_vector_size: " << fv.size() << std::endl;

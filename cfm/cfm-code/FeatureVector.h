@@ -56,6 +56,8 @@ public:
 
     void writeDebugInfo(std::ostream &out) const;
 
+    bool equals(const FeatureVector & other_fv) const;
+
 private:
     std::vector<feature_t> fv;
     unsigned int fv_idx;
