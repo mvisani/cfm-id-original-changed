@@ -262,6 +262,7 @@ struct config_t {
     double default_predicted_min_intensity;
     double default_postprocessing_energy;
 
+    double intensity_msg_weight;
 };
 
 //argv_zero: argv[0], use for extract binary folder

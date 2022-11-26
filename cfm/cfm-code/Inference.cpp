@@ -273,16 +273,14 @@ void Inference::createSpectrumMessage(Message &msg, int energy, Message &down_ms
                 if (mass_diff > 3 * peak_sigma)
                     continue;
 
-                double sq_mass_diff = mass_diff * mass_diff;
-                if (config->obs_function == UNIFORM_OBS_FUNCTION)
-                    sq_mass_diff = 0.0;
+                double sq_mass_diff = mass_diff * mass_diff ?  config->obs_function == UNIFORM_OBS_FUNCTION : 0.0;
 
                 //The down message is applied here to weight competing
                 //fragments for the same peak based on current probability
                 //estimates.
                 peak_msg.addToIdx(j, norm - denom * sq_mass_diff + down_msg.getIdx(j));
             }
-            msg.addWeightedMessage(peak_msg, 0.01 * pk->intensity);
+            msg.addWeightedMessage(peak_msg, intensity_msg_weight * pk->intensity);
         }
     }
 }
@@ -318,16 +316,15 @@ void Inference::createSpectrumMessageWithIsotopes(Message &msg, int energy, Mess
                 double mass_diff = fabs(ipk->mass - pk->mass);
                 if (mass_diff > 3 * peak_sigma) continue;    //Disallow fragments from explaining distant peaks
                 //(problematic in the absence of a better explanation)
-                double sq_mass_diff = mass_diff * mass_diff;
-                if (config->obs_function == UNIFORM_OBS_FUNCTION) sq_mass_diff = 0.0;
+                double sq_mass_diff = mass_diff * mass_diff ?  config->obs_function == UNIFORM_OBS_FUNCTION : 0.0;
                 peak_msg.addToIdx(j,
-                                  norm - denom * sq_mass_diff + std::log(0.01 * ipk->intensity) + down_msg.getIdx(j));
+                                  norm - denom * sq_mass_diff + std::log(intensity_msg_weight* ipk->intensity) + down_msg.getIdx(j));
                 //The down message is applied here to weight competing
                 //fragments for the same peak based on current probability
                 //estimates.
             }
         }
-        msg.addWeightedMessage(peak_msg, 0.01 * pk->intensity);
+        msg.addWeightedMessage(peak_msg, intensity_msg_weight * pk->intensity);
         //msg.addWeightedMessage(peak_msg, 0.5* std::log(1.0 + pk->intensity));
     }
 

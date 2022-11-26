@@ -45,6 +45,8 @@ public:
             mol_depth = config->model_depth;
         else
             mol_depth = data->getFGHeight();
+
+        intensity_msg_weight = cfg->intensity_msg_weight;
     };
 
     void calculateBeliefs(beliefs_t &beliefs, int current_energy);    //Note: Only supports single energy mode
@@ -57,6 +59,7 @@ private:
     config_t *config;
     std::vector<Message> spec_messages;
     int mol_depth;
+    double intensity_msg_weight;
 
     void initTmpFactorProbSizes(factor_probs_t &tmp_log_probs, unsigned int num_frag, unsigned int num_trans,
                                 unsigned int model_depth);

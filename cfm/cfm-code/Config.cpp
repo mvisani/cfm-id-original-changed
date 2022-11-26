@@ -89,6 +89,7 @@ void initDefaultConfig(config_t &cfg, char *argv_zero) {
     cfg.default_predicted_min_intensity = 0.0;
     cfg.default_postprocessing_energy = 80.0;
     cfg.default_mz_decimal_place = 5;
+    cfg.intensity_msg_weight = 0.01;
 
     if (argv_zero == nullptr) {
         cfg.isotope_pattern_file = "ISOTOPE.DAT";
@@ -184,6 +185,7 @@ void initConfig(config_t &cfg, std::string &filename,char *argv_zero, bool repor
         else if (name == "default_predicted_min_intensity") cfg.default_predicted_min_intensity = (double) value;
         else if (name == "default_postprocessing_energy") cfg.default_postprocessing_energy = (double) value;
         else if (name == "default_mz_decimal_place") cfg.default_mz_decimal_place = (int) value;
+        else if (name == "intensity_msg_weight") cfg.intensity_msg_weight = (double) value;
         else std::cout << "Warning: Unknown parameter configuration identifier " << name << std::endl;
     }
     ifs.close();
@@ -269,6 +271,7 @@ void initConfig(config_t &cfg, std::string &filename,char *argv_zero, bool repor
         std::cout << "EM Restart Times: " << cfg.num_em_restarts << std::endl;
         std::cout << "Using EM Convergence Threshold " << cfg.em_converge_thresh << std::endl;
         std::cout << "Using Lambda " << cfg.lambda << std::endl;
+        std::cout << "Using Intensity Weight " << cfg.intensity_msg_weight << " During Inference" << std::endl;
 
 
         if (USE_MOMENTUM_FOR_GA == cfg.ga_method) {
