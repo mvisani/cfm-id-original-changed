@@ -147,9 +147,13 @@ static const int DEFAULT_FRAGGRAPH_COMPUTE_TIMEOUT_IN_SECS = -1;    //-1 is no t
 //Random Sample settings
 static const int DEFAULT_USE_BEST_Q_IN_GA = 0;
 static const int USE_NO_SAMPLING = 0;
+//Random selection
 static const int USE_RANDOM_SAMPLING = 1;
+//Random  walk selection
 static const int USE_GRAPH_RANDOM_WALK_SAMPLING = 2;
+//Selection child node base on intensity difference
 static const int USE_DIFFERENCE_SAMPLING_BFS_CO = 3;
+//Selection all node (full path) base on intensity difference
 static const int USE_DIFFERENCE_SAMPLING_BFS = 4;
 
 //Configuration

@@ -177,7 +177,6 @@ int main(int argc, char *argv[]) {
     while (mit != data.end()) {
         try {
             //If we're not training, only load the ones we'll be testing
-            if (!no_train) {
 
                 std::string fv_filename = fv_fragment_graphs_folder + "/" +
                                           boost::lexical_cast<std::string>(mit->getId()) + "_graph.fg";
@@ -226,7 +225,6 @@ int main(int argc, char *argv[]) {
                 }
                 success_count++;
                 mit++;
-            }
         }
         catch (std::exception &e) {
             std::ofstream eout;
@@ -337,7 +335,10 @@ int main(int argc, char *argv[]) {
             out_pred_msp = new std::ostream(pbuf);
         }
 
-        if (mpi_rank == MASTER) std::cout << "Generating Peak Predictions for Group " << group << "..." << std::endl;
+        if (mpi_rank == MASTER)
+            std::cout << "Generating Peak Predictions for Group "
+            << group << " from " << param_filename << std::endl;
+
         Param *param;
         if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION)
             param = new NNParam(param_filename);

@@ -22,8 +22,6 @@
 #include <boost/numeric/ublas/vector_sparse.hpp>
 #include <limits>
 
-// This is a hack
-//static const double A_BIG_DBL = 1000000000.0; //std::numeric_limits<double>::max();
 
 //Log Domain Double (converts null entry to -A_BIG_DBL)
 class logdbl {

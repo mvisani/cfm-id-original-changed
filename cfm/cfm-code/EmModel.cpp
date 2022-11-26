@@ -238,14 +238,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
                 computeMetrics(mol_it->getOrigSpectrum(energy_level), mol_it->getPredictedSpectrum(energy_level), val_dice,
                                val_dp, val_precision, val_recall);
-            } else {
-                //num_training_mols++;
-                if (!cfg->disable_training_metrics) {
-                    computeMetrics(mol_it->getOrigSpectrum(energy_level),  mol_it->getPredictedSpectrum(energy_level), train_dice,
+            } else if (mol_it->getGroup() != validation_group && !cfg->disable_training_metrics) {
+                computeMetrics(mol_it->getOrigSpectrum(energy_level),  mol_it->getPredictedSpectrum(energy_level), train_dice,
                                    train_dp, train_precision, train_recall);
-                    computeMetrics(mol_it->getSpectrum(energy_level),  mol_it->getPredictedSpectrum(energy_level), pruned_train_dice,
+                computeMetrics(mol_it->getSpectrum(energy_level),  mol_it->getPredictedSpectrum(energy_level), pruned_train_dice,
                                    pruned_train_dp, pruned_train_precision, pruned_train_recall);
-                }
             }
         }
 
@@ -271,6 +268,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         if (!cfg->disable_cross_val_metrics) {
+            // we need add lambda to validation loss
+            val_q += getRegularizationTerm(energy_level);
             val_q = comm->collectQInMaster((float) val_q);
             //num_val_mols = comm->collectSumInMaster((float) num_val_mols);
             val_dice = comm->collectQInMaster((float) val_dice);
@@ -774,12 +773,14 @@ void EmModel::getSubSampledTransitions(MolData &moldata, int sampling_method, un
         }
         case USE_DIFFERENCE_SAMPLING_BFS_CO:
         case USE_DIFFERENCE_SAMPLING_BFS: {
+            // we are going to need  to predict spectrum without any postprocessing
+            // apart from if we are using log scale
             moldata.computePredictedSpectra(*param, true, energy,
                                             1,
                                             1000,
                                             100,
                                             0.0,
-                                            cfg->default_mz_decimal_place,
+                                            -1,
                                             cfg->use_log_scale_peak);
 
             std::set<unsigned int> selected_weights;

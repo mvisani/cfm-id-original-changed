@@ -256,7 +256,7 @@ void initConfig(config_t &cfg, std::string &filename,char *argv_zero, bool repor
 
         std::cout << "Predicted peak min intensity " << cfg.default_predicted_min_intensity << "%" << std::endl;
         std::cout << "Postprocessing energy " << cfg.default_postprocessing_energy << "%" << std::endl;
-        std::cout << "Predicted peak mz decimal place " << cfg.default_mz_decimal_place << "%" << std::endl;
+        std::cout << "Predicted peak mz to " << cfg.default_mz_decimal_place << " decimal place " << std::endl;
 
         if (cfg.param_init_type == PARAM_RANDOM_INIT) std::cout << "Using Random Parameter Initialisation" << std::endl;
         else if (cfg.param_init_type == PARAM_FULL_ZERO_INIT) std::cout << "Using Full Zero Initialisation" << std::endl;
