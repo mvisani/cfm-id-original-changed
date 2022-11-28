@@ -30,7 +30,7 @@ void replaceUncommonWithX(std::string &symbol, bool use_full_symbol_set) {
     else
         ok_symbols = &OKSymbolsLess();
 
-    for (auto str : *ok_symbols) {
+    for (auto & str : *ok_symbols) {
         if (symbol == str) {
             return;
         }

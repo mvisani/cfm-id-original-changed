@@ -34,27 +34,33 @@ void NLRootMatrixSimpleFPN8D3::compute(FeatureVector &fv, const RootedROMol *ion
     unsigned int num_atoms = 8;
     unsigned int max_distance = 3;
     bool include_adjacency_matrix = false;
+    bool use_full_symbol_set = false;
 
-    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, max_distance, include_adjacency_matrix);
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, max_distance, include_adjacency_matrix, use_full_symbol_set);
 }
 
 void NLRootMatrixSimpleFPN10::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
     unsigned int num_atoms = 10;
     bool include_adjacency_matrix = false;
+    bool use_full_symbol_set = false;
 
-    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, num_atoms, include_adjacency_matrix);
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, num_atoms, include_adjacency_matrix, use_full_symbol_set);
 }
 
 void NLRootMatrixSimpleFPN16::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     bool include_adjacency_matrix = false;
     unsigned int num_atoms = 16;
-    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, num_atoms, include_adjacency_matrix);
+    bool use_full_symbol_set = false;
+
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, num_atoms, include_adjacency_matrix, use_full_symbol_set);
 }
 
 void NLRootMatrixSimpleFPN32::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
     bool include_adjacency_matrix = false;
     unsigned int num_atoms = 32;
-    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, num_atoms, include_adjacency_matrix);
+    bool use_full_symbol_set = false;
+
+    addAdjacentMatrixRepresentationFeature(fv, nl, num_atoms, num_atoms, include_adjacency_matrix, use_full_symbol_set);
 }

@@ -427,8 +427,8 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const RootedROMol *roMolPtr, std::
 
 void
 FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMol *roMolPtr,
-                                                    unsigned int num_atom,
-                                                    unsigned int depth, bool include_adjacency_matrix) const {
+                                                    unsigned int num_atom, unsigned int depth,
+                                                    bool include_adjacency_matrix, bool use_full_symbols_set) const {
     // Get visit order
     std::vector<unsigned int> visit_order;
     std::vector<unsigned int> distance;
@@ -439,7 +439,7 @@ FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, co
 
     // fv.writeDebugInfo();
     // add atoms information into FP
-    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, depth, false);
+    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, depth, use_full_symbols_set);
     addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
 
 }
@@ -591,7 +591,9 @@ void FingerPrintFeature::addAtomTypeSeqFeatures(std::vector<int> &tmp_fv, const 
                                                 const std::vector<unsigned int> &visit_order,
                                                 std::vector<unsigned int> &distance, int min_distance, int max_distance,
                                                 bool use_full_okay_symbol_set) const {
-    const unsigned int num_atom_types = 6;
+
+    unsigned int num_atom_types = use_full_okay_symbol_set ? OKsymbols().size() : OKSymbolsLess().size();
+
     for (int i = 0; i < num_atom; ++i) {
         std::vector<int> atom_type_feature(num_atom_types, 0);
         if (i < visit_order.size()) {
@@ -663,11 +665,14 @@ void FingerPrintFeature::addDistanceFeature(std::vector<int> &tmp_fv, unsigned i
 // for all the samples we have max atoms with a 5 atom group is 16
 // therefore  we need 50 features for arcs
 void FingerPrintFeature::addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMol *mol,
-                                                                unsigned int num_atom, unsigned int max_distance,
-                                                                bool include_adjacency_matrix) const {
+                                                                unsigned int num_atom,
+                                                                unsigned int max_distance,
+                                                                bool include_adjacency_matrix,
+                                                                bool use_full_symbols_set) const {
 
     std::vector<int> local_tmp_fv;
-    addAdjacentMatrixRepresentation(local_tmp_fv, mol, num_atom, max_distance, include_adjacency_matrix);
+    addAdjacentMatrixRepresentation(local_tmp_fv, mol, num_atom, max_distance,
+                                    include_adjacency_matrix, use_full_symbols_set);
     fv.addFeatures(local_tmp_fv);
 }
 

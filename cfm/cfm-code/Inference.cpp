@@ -318,7 +318,7 @@ void Inference::createSpectrumMessageWithIsotopes(Message &msg, int energy, Mess
                 double mass_diff = fabs(ipk->mass - pk->mass);
                 if (mass_diff > 3 * peak_sigma) continue;    //Disallow fragments from explaining distant peaks
                 //(problematic in the absence of a better explanation)
-                
+
                 double sq_mass_diff =  mass_diff * mass_diff;
                 if (config->obs_function == UNIFORM_OBS_FUNCTION)
                     sq_mass_diff  =  0.0;
@@ -331,7 +331,7 @@ void Inference::createSpectrumMessageWithIsotopes(Message &msg, int energy, Mess
             }
         }
         msg.addWeightedMessage(peak_msg, intensity_msg_weight * pk->intensity);
-        //msg.addWeightedMessage(peak_msg, 0.5* std::log(1.0 + pk->intensity));
+        //msg.addWeightedMessage(peak_msg, 0.01* std::log(1.0 + pk->intensity));
     }
 
 }

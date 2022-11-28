@@ -81,3 +81,23 @@ public:
 
     void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
+
+// Features use fingerprint encode NL fragmentation with more symbols
+class IonRootMatrixFPN10MoreSymbols : public FingerPrintFeature {
+public:
+    IonRootMatrixFPN10MoreSymbols() {
+        size = 440;
+        name = "IonRootMatrixFPN10MoreSymbols";
+    };
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
+};
+
+class IonRootMatrixFPN16MoreSymbols : public FingerPrintFeature {
+public:
+    IonRootMatrixFPN16MoreSymbols() {
+        size = 992;
+        name = "IonRootMatrixFPN16MoreSymbols";
+    };
+
+    void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
+};

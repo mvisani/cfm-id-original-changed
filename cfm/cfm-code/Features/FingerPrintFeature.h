@@ -47,9 +47,9 @@ protected:
     void addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMol *mol, unsigned int finger_print_size,
                                           unsigned int path_range, int radius) const;
 
-    void addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMol *mol,
-                                                unsigned int num_atom, unsigned int max_distance,
-                                                bool include_adjacency_matrix) const;
+    void addAdjacentMatrixRepresentationFeature(FeatureVector &fv, const RootedROMol *mol, unsigned int num_atom,
+                                                unsigned int max_distance, bool include_adjacency_matrix,
+                                                bool use_full_symbols_set) const;
 
     void addMorganFingerPrintFeatures(FeatureVector &fv, const RootedROMol *mol,
                                       unsigned int finger_print_size, int radius) const;
@@ -80,8 +80,8 @@ private:
                              bool limited_by_distance) const;
 
     void addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, const RootedROMol *roMolPtr,
-                                         unsigned int num_atom,
-                                         unsigned int depth, bool include_con_matrix) const;
+                                         unsigned int num_atom, unsigned int depth,
+                                         bool include_adjacency_matrix, bool use_full_symbols_set) const;
 
     void addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMol *roMolPtr,
                                            unsigned int num_atom, unsigned int max_distance) const;

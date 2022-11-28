@@ -124,6 +124,10 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new NLRootGeneralizedMatrixFPN10());
         cogs.push_back(new NLFingerPrintFeature());
         cogs.push_back(new IonFingerPrintFeature());
+        cogs.push_back(new NLRootMatrixFPN10MoreSymbols());
+        cogs.push_back(new IonRootMatrixFPN10MoreSymbols());
+        cogs.push_back(new NLRootMatrixFPN16MoreSymbols());
+        cogs.push_back(new IonRootMatrixFPN16MoreSymbols());
         //cogs.push_back(new NLRootEncodingMorganD3());
         //cogs.push_back(new IonRootEncodingMorganD3());
         initialised = true;
