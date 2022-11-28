@@ -337,7 +337,8 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             }
 
             child_ion->setProp("HadRingBreak", 1);
-            children.emplace_back(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, true);
+            auto next_node = FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, true);
+            children.push_back(next_node);
             number_child_added++;
         }
         else if (mols.size() == 2) {
@@ -357,7 +358,8 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 createChildIonElectronLocRecord(child_e_loc, child_ion);
                 child_ion->setProp("HadRingBreak", 0);
                 //std::cout << "[DEBUG][Child Ion]" << RDKit::MolToSmiles( *child_ion ) << std::endl;
-                children.emplace_back(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false);
+                auto next_node = FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false);
+                children.push_back(next_node);
                 number_child_added++;
                 /*
                 for (auto ai = child_ion->beginAtoms(); ai != child_ion->endAtoms(); ++ai) {
