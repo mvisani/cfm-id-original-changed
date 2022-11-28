@@ -90,8 +90,9 @@ private:
                            const std::vector<unsigned int> &visit_order) const;
 
     void addAtomTypeSeqFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol, unsigned int num_atom,
-                                const std::vector<unsigned int> &visit_order, std::vector<unsigned int> &distance,
-                                int min_distance, int max_distance) const;
+                                const std::vector<unsigned int> &visit_order,
+                                std::vector<unsigned int> &distance, int min_distance, int max_distance,
+                                bool use_full_okay_symbol_set) const;
 
     void addAtomTypeFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol, unsigned int num_atom,
                                  const std::vector<unsigned int> &visit_order,

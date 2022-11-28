@@ -26,11 +26,11 @@ BreakAtomPair::compute(FeatureVector &fv, const RootedROMol *ion, const RootedRO
 
     //Ion Symbol
     std::string ion_root_symbol = ion->root->getSymbol();
-    replaceUncommonWithX(ion_root_symbol);
+    replaceUncommonWithX(ion_root_symbol, false);
 
     //Neutral Loss Symbol
     std::string nl_root_symbol = nl->root->getSymbol();
-    replaceUncommonWithX(nl_root_symbol);
+    replaceUncommonWithX(nl_root_symbol, false);
 
     //Pairs
     symbol_pair_t pair(ion_root_symbol, nl_root_symbol);

@@ -34,6 +34,52 @@
 typedef std::pair<std::string, std::string> symbol_pair_t;
 
 // Base class to compute a feature - all features should inherit from this
+static const std::vector<std::string> &OKsymbols() {
+
+    static std::vector<std::string> x;
+    static bool initialised = false;
+
+    if (!initialised) {
+        x.emplace_back("Br");
+        x.emplace_back("C");
+        x.emplace_back("Cl");
+        x.emplace_back("F");
+        x.emplace_back("I");
+        x.emplace_back("N");
+        x.emplace_back("O");
+        x.emplace_back("P");
+        x.emplace_back("S");
+        x.emplace_back("Se");
+        x.emplace_back("Si");
+        x.emplace_back("X"); // For all other
+
+        initialised = true;
+    }
+    return x;
+}
+
+static const std::vector<std::string> & OKSymbolsLess() {
+
+    static std::vector<std::string> x;
+    static bool initialised = false;
+
+    if (!initialised) {
+        x.emplace_back("C");
+        x.emplace_back("N");
+        x.emplace_back("O");
+        x.emplace_back("P");
+        x.emplace_back("S");
+        x.emplace_back("X"); // For all other
+
+        initialised = true;
+    }
+    return x;
+}
+
+
+void replaceUncommonWithX(std::string &symbol, bool use_full_symbol_set);
+
+int getSymbolsIndex(const std::string &symbol, bool use_full_symbol_set);
 
 class Feature {
 
@@ -52,18 +98,6 @@ protected:
 class BreakFeature: public Feature{
 public:
     virtual void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const = 0;
-
-protected:
-
-    static const std::vector<std::string> &OKsymbols();
-
-    static const std::vector<std::string> &OKSymbolsLess();
-
-    void replaceUncommonWithX(std::string &symbol) const;
-
-    int getSymbolsLessIndex(const std::string &symbol) const;
-
-    unsigned int GetSizeOfOKSymbolsLess() const;
 };
 
 class FragmentFeature: public Feature{

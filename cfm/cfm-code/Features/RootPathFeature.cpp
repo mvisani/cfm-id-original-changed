@@ -35,7 +35,7 @@ void RootPathFeature::addPathsFromAtom(std::vector<path_t> &paths,
                                        bool with_bond) const {
     // Add the current symbol
     std::string symbol = atom->getSymbol();
-    replaceUncommonWithX(symbol);
+    replaceUncommonWithX(symbol, false);
     path_so_far.push_back(symbol);
 
     // Iterate until len is reached, then add the path
@@ -187,7 +187,7 @@ void RootPathFeature::addRootFeaturesWithBond(FeatureVector &fv,
                         num_symbol_type * feature_idx_offset + std::stoi(symbol);
             } else {
                 feature_idx_offset =
-                        num_symbol_type * feature_idx_offset + getSymbolsLessIndex(symbol);
+                        num_symbol_type * feature_idx_offset + getSymbolsIndex(symbol, false);
             }
         }
 

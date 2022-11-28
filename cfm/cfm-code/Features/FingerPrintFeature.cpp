@@ -265,7 +265,7 @@ std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol, const RDK
     }
 
     std::string symbol_str = atom->getSymbol();
-    replaceUncommonWithX(symbol_str);
+    replaceUncommonWithX(symbol_str, false);
     if (symbol_str.size() == 1)
         symbol_str += " ";
     atom_key += symbol_str;
@@ -360,7 +360,7 @@ void FingerPrintFeature::getBondAtomPairAtEachDistance(const RootedROMol *roMolP
             auto bi = mol.get()->getBondBetweenAtoms(curr->getIdx(), nbr_atom->getIdx());
             int bond_type = FeatureHelper::getBondTypeAsInt(bi);
             std::string nbr_atom_symbol = nbr_atom->getSymbol();
-            replaceUncommonWithX(nbr_atom_symbol);
+            replaceUncommonWithX(nbr_atom_symbol, false);
 
             std::string key = std::to_string(bond_type) + nbr_atom_symbol;
             if(curr_distance < dict.size())
@@ -439,7 +439,7 @@ FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, co
 
     // fv.writeDebugInfo();
     // add atoms information into FP
-    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, depth);
+    addAtomTypeSeqFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, depth, false);
     addDegreeFeatures(tmp_fv, roMolPtr, num_atom, visit_order);
 
 }
@@ -455,7 +455,7 @@ void FingerPrintFeature::updateBondAtomPairDict(const RootedROMol *rootedMol,
         int bond_type = FeatureHelper::getBondTypeAsInt(bi);
         //mol.get()->getBondBetweenAtoms(root->getIdx(), nbr_atom->getIdx())->getProp("OrigBondType", bond_type);
         std::string nbr_atom_symbol = nbr_atom->getSymbol();
-        replaceUncommonWithX(nbr_atom_symbol);
+        replaceUncommonWithX(nbr_atom_symbol, false);
 
         std::string key = std::to_string(bond_type) + nbr_atom_symbol;
         dict[key] += 1;
@@ -587,11 +587,10 @@ void FingerPrintFeature::getAdjMatrix(const RootedROMol *mol, unsigned int num_a
     }
 }
 
-void FingerPrintFeature::addAtomTypeSeqFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol,
-                                                unsigned int num_atom,
+void FingerPrintFeature::addAtomTypeSeqFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol, unsigned int num_atom,
                                                 const std::vector<unsigned int> &visit_order,
-                                                std::vector<unsigned int> &distance,
-                                                int min_distance, int max_distance) const {
+                                                std::vector<unsigned int> &distance, int min_distance, int max_distance,
+                                                bool use_full_okay_symbol_set) const {
     const unsigned int num_atom_types = 6;
     for (int i = 0; i < num_atom; ++i) {
         std::vector<int> atom_type_feature(num_atom_types, 0);
@@ -600,8 +599,8 @@ void FingerPrintFeature::addAtomTypeSeqFeatures(std::vector<int> &tmp_fv, const 
                 int atom_idx = visit_order[i];
                 // add atom types
                 std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
-                replaceUncommonWithX(symbol);
-                int atom_feature = getSymbolsLessIndex(symbol);
+                replaceUncommonWithX(symbol, use_full_okay_symbol_set);
+                int atom_feature = getSymbolsIndex(symbol, use_full_okay_symbol_set);
                 atom_type_feature[atom_feature] = 1;
             }
         }
@@ -619,8 +618,8 @@ void FingerPrintFeature::addAtomTypeFeatures(std::vector<int> &tmp_fv, const Roo
             int atom_idx = visit_order[i];
             // add atom types
             std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
-            replaceUncommonWithX(symbol);
-            int atom_feature = getSymbolsLessIndex(symbol);
+            replaceUncommonWithX(symbol, false);
+            int atom_feature = getSymbolsIndex(symbol, false);
             atom_type_feature[atom_feature + distance[i] * num_atom_types] = 1;
         }
     }
