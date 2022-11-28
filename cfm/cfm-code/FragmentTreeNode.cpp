@@ -298,8 +298,7 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
 
         //Separate the ion and nl mols and add the child node
         recordOrigAtomIdxs(rwmol);
-        std::vector<romol_ptr_t> mols = RDKit::MolOps::getMolFrags(rwmol, false);
-
+        std::vector<romol_ptr_t> mols = RDKit::MolOps::getMolFrags(rwmol, true);
 
         if(brk.isRingBreak()){
             romol_ptr_t child_ion, child_nl;
