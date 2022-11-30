@@ -77,7 +77,7 @@ int MILP::runSolver(std::vector<int> &output_bmax, bool allow_lp_q, int max_free
 
                 if(!allow_rearrangement){
                     min_limit = int(bond->getBondTypeAsDouble());
-                    limit = std::min(min_limit, 2);
+                    limit = std::max(min_limit, 2);
                 }
                 else{
                     min_limit = 1;
