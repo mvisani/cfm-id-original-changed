@@ -269,7 +269,8 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         if (!cfg->disable_cross_val_metrics) {
             // we need add lambda to validation loss
-            val_q += getRegularizationTerm(energy_level);
+            // Disable for now, it casuing some kind of crash
+            // val_q += getRegularizationTerm(energy_level);
             val_q = comm->collectQInMaster((float) val_q);
             //num_val_mols = comm->collectSumInMaster((float) num_val_mols);
             val_dice = comm->collectQInMaster((float) val_dice);
@@ -291,7 +292,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                 qdif_str += " Best=" + std::to_string(best_loss);
 
             if (!cfg->disable_cross_val_metrics) {
-                qdif_str += "\n[M-Step][Validation Loss] ";
+                qdif_str += "\n[M-Step][Validation Loss (Without L2 Reg)] ";
                 qdif_str += "Total=" + std::to_string(val_q)
                             + " Mean=" + std::to_string(val_q / num_val_mols);
             }
