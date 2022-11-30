@@ -72,7 +72,7 @@ void initDefaultConfig(config_t &cfg, char *argv_zero) {
     cfg.ga_reset_sampling = false;
     cfg.ga_sampling_max_selection = 100;
     cfg.ga_diff_sampling_peak_num = 30;
-    cfg.ga_diff_sampling_difference = 0.1;
+    cfg.ga_diff_sampling_difference = 0.01;
     cfg.disable_cross_val_metrics = false;
     cfg.disable_training_metrics = false;
     cfg.disable_cpu_usage_metrics = true;

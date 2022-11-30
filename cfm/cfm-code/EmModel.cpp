@@ -565,19 +565,21 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         // Compute the gradient
         std::fill(grads.begin(), grads.end(), 0.0);
-        auto mol_it = data.begin();
+
         std::clock_t c_start = clock();
         for (auto batch_idx = 0; batch_idx < num_batch; ++batch_idx) {
             double num_trans = 0;
-            for (int molidx = 0; mol_it != data.end(); ++mol_it, molidx++) {
-                if (minibatch_flags[molidx] == batch_idx && mol_it->getGroup() != validation_group) {
-                    // so now it should not crash anymore
-                    if (!mol_it->hasComputedGraph())
-                        continue;
+            int molidx = 0;
 
-                    num_trans += computeAndAccumulateGradient(&grads[0], molidx, *mol_it, suft,
+            for(auto & mol_it : data) {
+                if (minibatch_flags[molidx] == batch_idx && mol_it.getGroup() != validation_group) {
+                    // so now it should not crash anymore
+                    if (!mol_it.hasComputedGraph())
+                        continue;
+                    num_trans += computeAndAccumulateGradient(&grads[0], molidx, mol_it, suft,
                                                               sampling_method, energy);
                 }
+                molidx++;
             }
 
             if (num_trans > 0)
