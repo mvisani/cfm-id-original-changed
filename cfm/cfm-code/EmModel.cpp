@@ -565,8 +565,6 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         setMiniBatchFlags(minibatch_flags, num_batch);
 
         // Compute the gradient
-
-
         std::clock_t c_start = clock();
         for (auto batch_idx = 0; batch_idx < num_batch; ++batch_idx) {
             double num_trans = 0;
@@ -584,10 +582,11 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 molidx++;
             }
 
-            if (num_trans > 0)
+            /*if (num_trans > 0)
                 for (auto &grad: grads)
-                    grad /= num_trans;
+                    grad /= num_trans;*/
 
+            comm->collectSumInMaster(num_trans);
             comm->collectGradsInMasterOrigMpi(grads);
 
             // Step the parameters
@@ -595,6 +594,9 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 // update L2 only if lambda > 0
                 if (cfg->lambda > 0.0)
                     updateGradientForRegularizationTerm(&grads[0], energy);
+                if (num_trans > 0)
+                    for (auto &grad: grads)
+                        grad /= num_trans;
                 solver->adjustWeights(grads, ((MasterComms *) comm)->master_used_idxs, param);
             }
 

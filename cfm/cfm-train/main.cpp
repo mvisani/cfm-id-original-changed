@@ -74,8 +74,8 @@ int main(int argc, char *argv[]) {
              "spectra of different energy levels, or 'energy0', 'energy1', "
              "etc. e.g:energy0 65.02 40.086.11 60.0 energy1 65.02 100.0 .")
             ("group,g", po::value<int>(&min_group)->default_value(-1),
-                    "validation group for cross validation, if not provide cross validation"
-                    "will apply on every group (n-fold cross validation )")
+             "validation group for cross validation, if not provide cross validation"
+             "will apply on every group (n-fold cross validation )")
             ("num_fold,n", po::value<int>(&max_group)->default_value(0),
              "number for n-fold cross validation, if not provide, noy cross validation will be applied. "
              "If group number is set, this number will be igroned.")
@@ -88,10 +88,10 @@ int main(int argc, char *argv[]) {
              "Set to starting energy if want to start training part way through (single energy only -default 0)")
             ("start_repeat,r", po::value<int>(&start_repeat)->default_value(0),
              "Set to starting repeat if want to start training part way through (default 0)")
-            ("fv_fragment_graphs_folder,a",  po::value<std::string>(&fv_fragment_graphs_folder)->default_value(""),
+            ("fv_fragment_graphs_folder,a", po::value<std::string>(&fv_fragment_graphs_folder)->default_value(""),
              "Name of folder to write and read fragement cache data for training. If not specified will write to "
              "tmp_data/fv_fragment_graphs_folder")
-            ("no_train",po::value<bool>(&no_train)->default_value(false),"no training flag, defualt false");
+            ("no_train", po::value<bool>(&no_train)->default_value(false), "no training flag, defualt false");
 
     try {
         po::command_line_parser parser{argc, argv};
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
     status_filename = data_folder + '/' + status_filename;
     std::string enumrated_output_folder = data_folder + "/enumerated_output";
     std::string predicted_output_folder = data_folder + "/predicted_output";
-    if(fv_fragment_graphs_folder.empty())
+    if (fv_fragment_graphs_folder.empty())
         fv_fragment_graphs_folder = data_folder + "/fv_fragment_graphs";
 
     if (mpi_rank == MASTER) {
@@ -177,53 +177,51 @@ int main(int argc, char *argv[]) {
         try {
             //If we're not training, only load the ones we'll be testing
 
-                std::string fv_filename = fv_fragment_graphs_folder + "/" +
-                                          boost::lexical_cast<std::string>(mit->getId()) + "_graph.fg";
+            std::string fv_filename = fv_fragment_graphs_folder + "/" +
+                                      boost::lexical_cast<std::string>(mit->getId()) + "_graph.fg";
 
-                // if there is a cached/precomputed fv/graph file
-                if (boost::filesystem::exists(fv_filename)) {
+            // if there is a cached/precomputed fv_graph file
+            if (boost::filesystem::exists(fv_filename)) {
 
-                    std::ifstream fv_ifs;
-                    fv_ifs = std::ifstream(fv_filename.c_str(), std::ifstream::in | std::ios::binary);
-                    mit->readInFVFragmentGraphFromStream(fv_ifs);
-                    fv_ifs.close();
+                std::ifstream fv_ifs;
+                fv_ifs = std::ifstream(fv_filename.c_str(), std::ifstream::in | std::ios::binary);
+                mit->readInFVFragmentGraphFromStream(fv_ifs);
+                fv_ifs.close();
 
-                    std::ofstream eout;
-                    eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
-                    eout << "ID: " << mit->getId() << " is Loaded from cached file ";
-                    eout << " Num Frag = " << mit->getNumFragments();
-                    eout << " Num Trans = " << mit->getNumTransitions() << std::endl;
-                    eout.close();
+                std::ofstream eout;
+                eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
+                eout << "ID: " << mit->getId() << " is Loaded from cached file ";
+                eout << " Num Frag = " << mit->getNumFragments();
+                eout << " Num Trans = " << mit->getNumTransitions() << std::endl;
+                eout.close();
 
 
-                } else {
-                    time_t before, after;
-                    before = time(nullptr);
-                    mit->computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
+            } else {
+                time_t before, after;
+                before = time(nullptr);
+                mit->computeFragmentGraphAndReplaceMolsWithFVs(&fc, true);
 
-                    // write log
-                    std::ofstream eout;
-                    eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
-                    after = time(nullptr);
-                    eout << "ID: " << mit->getId() << " is Done. Time Elaspsed = " << (after - before) << " Seconds ";
-                    eout << " Num Frag = " << mit->getNumFragments();
-                    eout << " Num Trans = " << mit->getNumTransitions() << std::endl;
-                    eout.close();
+                // write log
+                std::ofstream eout;
+                eout.open(status_filename.c_str(), std::fstream::out | std::fstream::app);
+                after = time(nullptr);
+                eout << "ID: " << mit->getId() << " is Done. Time Elaspsed = " << (after - before) << " Seconds ";
+                eout << " Num Frag = " << mit->getNumFragments();
+                eout << " Num Trans = " << mit->getNumTransitions() << std::endl;
+                eout.close();
 
-                    if (!boost::filesystem::exists(fv_filename)) {
-                        std::string fv_tmp_filename = fv_filename + "_tmp";
-
-                        std::ofstream fv_out;
-                        fv_out.open(fv_tmp_filename.c_str(), std::ios::out | std::ios::binary);
-                        mit->writeFVFragmentGraphToStream(fv_out);
-                        fv_out.close();
-                        //rename file
-                        boost::filesystem::rename(fv_tmp_filename, fv_filename);
-                    }
-
+                if (!boost::filesystem::exists(fv_filename)) {
+                    //std::string fv_tmp_filename = fv_filename + "_tmp";
+                    std::ofstream fv_out;
+                    fv_out.open(fv_filename.c_str(), std::ios::out | std::ios::binary);
+                    mit->writeFVFragmentGraphToStream(fv_out);
+                    fv_out.close();
+                    //rename file
+                    // boost::filesystem::rename(fv_tmp_filename, fv_filename);
                 }
-                success_count++;
-                mit++;
+            }
+            success_count++;
+            mit++;
         }
         catch (std::exception &e) {
             std::ofstream eout;
@@ -266,7 +264,7 @@ int main(int argc, char *argv[]) {
             peakfile_dir_or_msp.replace(peakfile_dir_or_msp.size() - 7, 3, boost::lexical_cast<std::string>(mpi_rank));
         }
     }
-    
+
     //MSP Setup
     MspReader *msp = nullptr;
     std::ostream *out_enum_msp, *out_pred_msp;
@@ -274,8 +272,8 @@ int main(int argc, char *argv[]) {
     //Create the MSP lookup
     if (spectra_in_msp)
         msp = new MspReader(peakfile_dir_or_msp.c_str(), "");
-    
-    for (auto & mit : data ){
+
+    for (auto &mit: data) {
         if (!no_train) {
             if (spectra_in_msp)
                 mit.readInSpectraFromMSP(*msp);
@@ -336,7 +334,7 @@ int main(int argc, char *argv[]) {
 
         if (mpi_rank == MASTER)
             std::cout << "Generating Peak Predictions for Group "
-            << group << " from " << param_filename << std::endl;
+                      << group << " from " << param_filename << std::endl;
 
         Param *param;
         if (cfg.theta_function == NEURAL_NET_THETA_FUNCTION)
