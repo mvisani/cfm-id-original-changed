@@ -565,13 +565,14 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
         setMiniBatchFlags(minibatch_flags, num_batch);
 
         // Compute the gradient
-        std::fill(grads.begin(), grads.end(), 0.0);
+
 
         std::clock_t c_start = clock();
         for (auto batch_idx = 0; batch_idx < num_batch; ++batch_idx) {
             double num_trans = 0;
             int molidx = 0;
 
+            std::fill(grads.begin(), grads.end(), 0.0);
             for(auto & mol_it : data) {
                 if (minibatch_flags[molidx] == batch_idx && mol_it.getGroup() != validation_group) {
                     // so now it should not crash anymore
