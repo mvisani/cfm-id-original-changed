@@ -100,11 +100,11 @@ void MolData::computeGraphWithGenerator(FragmentGraphGenerator &fgen) {
         if (!cfg->allow_frag_detours)
             fg->removeDetours();
         delete startnode;
+        graph_computed = true;
     } catch (std::exception &e) {
         std::cerr << "Error Processing " << smiles_or_inchi << " " << e.what() << std::endl;
         graph_computed = false;
     }
-    graph_computed = false;
 }
 
 void MolData::computeFragmentGraph(FeatureCalculator *fc) {
