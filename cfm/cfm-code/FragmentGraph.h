@@ -205,6 +205,7 @@ private:
     // allow for different roots - the fragment stores
     // only an unrooted shared pointer.
     FeatureVector *feature_vector = nullptr; //storage for the feature vector pointer
+
     // while we compute the fragment graph (don't use this
     // directly - it will be moved up into the MolData)
     std::vector<double> tmp_thetas;
@@ -212,10 +213,12 @@ private:
     // while we compute the likely fragment graph
     //(as above, don't use directly, will be moved)
 
+    // a flag
     bool is_duplicate = false;
 };
 
 typedef std::shared_ptr<Transition> TransitionPtr;
+
 
 class FragmentGraph {
 public:
@@ -435,4 +438,6 @@ public:
 private:
     std::vector<EvidenceFragment> fragments;
 };
+
+
 #endif // __FRAGTREE_H__

@@ -3,8 +3,7 @@
 #
 # FragmentFingerPrintFeature.h
 #
-# Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see
+# Description: 	Classes for Fragment Finger Print Features
 param.cpp.
 #
 # Copyright (c) 2013,2018
