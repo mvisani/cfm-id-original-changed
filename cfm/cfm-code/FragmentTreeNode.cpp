@@ -866,7 +866,7 @@ void FragmentTreeNode::labelExtraBreakPropertiesInIon(romol_ptr_t &current_ion, 
 
     std::vector<int> history_so_far;
     if (parent_ion->hasProp(history_keyword)) {
-        parent_ion->setProp(history_keyword, history_so_far);
+        parent_ion->getProp(history_keyword, history_so_far);
     }
 
     if (brk.isIonicBreak())

@@ -25,6 +25,9 @@ void BreakHistoryFeature::compute(FeatureVector &fv, const RootedROMol *ion, con
 
     // we have seven bond types
     int occurs [7] = {0};
+
+    // we only need the size -1 events, the latest event is current break
+    // thus do not include it
     for(int i = 0 ; i < history_so_far.size() -1 ; ++i){
         // add occurs for each bond type
         occurs[history_so_far[i] - 1] += 1;
