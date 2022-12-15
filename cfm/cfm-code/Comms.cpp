@@ -226,21 +226,14 @@ void MasterComms::broadcastParamsWeights(Param *param) {
     }
 }
 
-int Comms::broadcastConverged(int converged) {
+int Comms::broadcastCountValue(int value) {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
-    MPI_Bcast(&converged, 1, MPI_INT, MASTER, MPI_COMM_WORLD);
-    return converged;
+    MPI_Bcast(&value, 1, MPI_INT, MASTER, MPI_COMM_WORLD);
+    return value;
 
 }
 
-int Comms::broadcastNumUsed(int num_used) {
-
-    MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
-    MPI_Bcast(&num_used, 1, MPI_INT, MASTER, MPI_COMM_WORLD);
-    return num_used;
-
-}
 
 float Comms::broadcastQ(float Q) {
 

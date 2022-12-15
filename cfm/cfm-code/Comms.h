@@ -52,9 +52,7 @@ public:
 
     bool isMaster() { return mpi_rank == MASTER; };
 
-    int broadcastConverged(int converged);
-
-    int broadcastNumUsed(int num_used);
+    int broadcastCountValue(int value);
 
     int collectSumInMaster(int partial);
 

@@ -497,7 +497,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
     // DBL_MIN is the smallest positive double
     // -DBL_MAX is the smallest negative double
-    double loss = 0.0, prev_loss = -DBL_MAX, Best_Loss = -DBL_MAX;
+    double loss = 0.0, prev_loss = -DBL_MAX, prev_best_loss = -DBL_MAX;
 
     std::vector<float> grads(param->getNumWeights(), 0.0);
 
@@ -538,16 +538,18 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                       "s]Collect Used Index, Time Used: " << getTimeDifferenceStr(before, after) + "s" << std::endl;
     }
 
-    int n = 0;
+    /*int used_idxs_count = 0;
     if (comm->isMaster())
-        n = ((MasterComms *) comm)->master_used_idxs.size();
-    comm->broadcastNumUsed(n);
+        used_idxs_count = ((MasterComms *) comm)->master_used_idxs.size();
+    used_idxs_count = comm->broadcastCountValue(used_idxs_count);*/
 
     int iter = 0;
     //double learn_mult = 1.0;
 
     int max_iteration = cfg->ga_max_iterations;
     int ga_no_progress_count = 0;
+    std::vector<float> current_best_weight;
+
     while (iter++ < max_iteration && ga_no_progress_count <= cfg->ga_no_progress_count) {
 
         auto before = std::chrono::system_clock::now();
@@ -583,10 +585,6 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 molidx++;
             }
 
-            /*if (num_trans > 0)
-                for (auto &grad: grads)
-                    grad /= num_trans;*/
-
             num_trans = comm->collectSumInMaster(num_trans);
             comm->collectGradsInMasterOrigMpi(grads);
 
@@ -605,9 +603,8 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             // comm->broadcastParamsWeights(param.get());
             comm->broadcastParamsWeightsOrigMpi(param.get());
         }
-
         // End of epoch
-        // compute loss
+
         std::clock_t c_end = clock();
         std::string cpu_usage_string = "";
         if (!cfg->disable_cpu_usage_metrics) {
@@ -622,37 +619,57 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                                + std::to_string(idle_cpu_time) + "/" + std::to_string(total_cpu_time) + "s";
         }
 
+        // compute loss
         loss = computeAndSyncLoss(data, suft, energy);
-
-        auto after = std::chrono::system_clock::now();
-
+        // print out, check progress and check if we need stop
         if (comm->isMaster()) {
+            auto after = std::chrono::system_clock::now();
+
+            auto loss_change_rate = 1.0 - loss/prev_best_loss;
+
             std::cout << iter << ".[T+" << getTimeDifferenceStr(start_time, after) << "s]" << "Loss=" <<
-                      loss << " Prev Loss=" << prev_loss
+                      loss << " Prev=" << prev_loss << " Best=" << prev_best_loss << " Change Rate=" << loss_change_rate
                       << " Time Escaped: " << getTimeDifferenceStr(before, after) << "s";
             if (!cfg->disable_cpu_usage_metrics) {
                 std::cout << cpu_usage_string;
             }
-            std::cout << std::endl;
+
             // let us roll Dropouts
             param->rollDropouts();
+
+            // compute if we need stop
+            if (loss_change_rate < cfg->ga_converge_thresh)
+                ga_no_progress_count++;
+            else
+                ga_no_progress_count = 0;
+
+            // we are doing ga, save best weight some where and check if we have getting better
+            if(prev_best_loss < loss) {
+                std::cout << " [Best Param]";
+                current_best_weight = *param->getWeightsPtr();
+                prev_best_loss = loss;
+            }
+            std::cout << std::endl;
         }
         comm->broadcastDropouts(param.get());
-
-        if ((fabs((loss - prev_loss) / loss) < cfg->ga_converge_thresh) || (prev_loss >= loss))
-            ga_no_progress_count++;
-        else
-            ga_no_progress_count = 0;
+        ga_no_progress_count = comm->broadcastCountValue(ga_no_progress_count);
     }
 
     if (comm->isMaster()) {
         if (iter == cfg->ga_max_iterations)
-            std::cout << "Gradient ascent did not converge" << std::endl;
+            std::cout << "[M-Step]Gradient ascent did not converge" << std::endl;
         else
-            std::cout << "Gradient ascent converged after " << iter - 1 << " iterations"
+            std::cout << "[M-Step]Gradient ascent converged after " << iter - 1 << " iterations"
                       << std::endl;
         delete solver;
+
+        param->setWeights(current_best_weight);
+        loss = prev_best_loss;
     }
+
+    // broadcast best weight in this run
+    comm->broadcastParamsWeightsOrigMpi(param.get());
+
     return loss;
 }
 
