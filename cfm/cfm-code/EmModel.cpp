@@ -325,16 +325,17 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         // first let us save the model
         // only save the one has best Q so far
-        if (best_loss < loss) {
-            best_loss = loss;
-            // Write the params
-            if (comm->isMaster()) {
+
+        // Write the params
+        if (comm->isMaster()) {
+            if (best_loss < loss) {
+                best_loss = loss;
                 std::string progress_str = "[M-Step] Found Better Q: "
-                                           + std::to_string(best_loss) + " Write to File";
+                                               + std::to_string(best_loss) + " Write to File";
                 comm->printToMasterOnly(progress_str.c_str());
-                writeParamsToFile(iter_out_param_filename);
                 writeParamsToFile(out_param_filename);
             }
+            writeParamsToFile(iter_out_param_filename);
         }
 
         // check if EM meet halt flag
