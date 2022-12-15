@@ -585,6 +585,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 molidx++;
             }
 
+            MPI_Barrier(MPI_COMM_WORLD);    //Wait for all threads
             num_trans = comm->collectSumInMaster(num_trans);
             comm->collectGradsInMasterOrigMpi(grads);
 

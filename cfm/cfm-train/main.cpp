@@ -358,7 +358,6 @@ int main(int argc, char *argv[]) {
             }
         }
         delete param;
-        if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
 
         if (spectra_in_msp) {
             of_emsp.close();
@@ -368,6 +367,7 @@ int main(int argc, char *argv[]) {
         }
 
         MPI_Barrier(MPI_COMM_WORLD);    //Wait for all threads
+        if (mpi_rank == MASTER) std::cout << "Done" << std::endl;
     }
 
     if (spectra_in_msp) delete msp;
