@@ -586,7 +586,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
                 for (auto &grad: grads)
                     grad /= num_trans;*/
 
-            comm->collectSumInMaster(num_trans);
+            num_trans = comm->collectSumInMaster(num_trans);
             comm->collectGradsInMasterOrigMpi(grads);
 
             // Step the parameters
