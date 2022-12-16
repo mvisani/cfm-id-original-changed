@@ -17,6 +17,8 @@ param.cpp.
 #########################################################################*/
 #include "FeatureHelper.h"
 
+#include <queue>
+
 #include <GraphMol/RWMol.h>
 #include <GraphMol/MolOps.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
@@ -197,7 +199,7 @@ void FeatureHelper::labelAtomsWithLonePairs(RDKit::RWMol *rwmol) {
     RDKit::PeriodicTable *pt = RDKit::PeriodicTable::getTable();
     RDKit::ROMol::AtomIterator ai;
     RDKit::MolOps::findSSSR(*rwmol);
-    
+    RDKit::RingInfo *rinfo = rwmol->getRingInfo();
     for (ai = rwmol->beginAtoms(); ai != rwmol->endAtoms(); ++ai) {
         std::string symbol = (*ai)->getSymbol();
         int nouter = pt->getNouterElecs(symbol.c_str());

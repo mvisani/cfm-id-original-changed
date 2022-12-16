@@ -54,7 +54,6 @@
 #include "Features/FragmentFunctionalGroupFeature.h"
 #include "Features/NLFingerPrintFeature.h"
 #include "Features/IonFingerPrintFeature.h"
-#include "Features/BreakHistoryFeature.h"
 
 
 #include <boost/algorithm/string/trim.hpp>
@@ -129,7 +128,8 @@ const boost::ptr_vector<BreakFeature> &FeatureCalculator::breakFeatureCogs() {
         cogs.push_back(new IonRootMatrixFPN10MoreSymbols());
         cogs.push_back(new NLRootMatrixFPN16MoreSymbols());
         cogs.push_back(new IonRootMatrixFPN16MoreSymbols());
-        cogs.push_back(new BreakHistoryFeature());
+        //cogs.push_back(new NLRootEncodingMorganD3());
+        //cogs.push_back(new IonRootEncodingMorganD3());
         initialised = true;
     }
     return cogs;
@@ -270,7 +270,7 @@ FeatureCalculator::computeFeatureVector(const RootedROMol *ion, const RootedROMo
     // Add the Bias Feature
     fv->addFeature(1.0);
 
-    // Compute all break features
+    // Compute all other features
     for (const auto &feature_idx : used_break_feature_idxs) {
         auto feature = &breakFeatureCogs()[feature_idx];
         try {
@@ -283,7 +283,6 @@ FeatureCalculator::computeFeatureVector(const RootedROMol *ion, const RootedROMo
         }
     }
 
-    // fragment features
     if(precursor_ion != nullptr) {
         for (const auto &feature_idx : used_fragement_feature_idxs) {
             auto feature = &fragmentFeatureCogs()[feature_idx];
@@ -309,18 +308,10 @@ FeatureCalculator::computeFeatureVector(const RootedROMol *ion, const RootedROMo
 }
 
 bool FeatureCalculator::includesFeature(const std::string &fname) {
-    for (auto & f_idx : used_break_feature_idxs) {
-        const Feature *cog = &(breakFeatureCogs()[f_idx]);
+    for (auto it = used_break_feature_idxs.begin(); it != used_break_feature_idxs.end(); ++it) {
+        const Feature *cog = &(breakFeatureCogs()[*it]);
         if (cog->getName() == fname)
             return true;
     }
-
-    for (auto & f_idx : used_fragement_feature_idxs) {
-        const Feature *cog = &(fragmentFeatureCogs()[f_idx]);
-        if (cog->getName() == fname)
-            return true;
-    }
-
-
     return false;
 }

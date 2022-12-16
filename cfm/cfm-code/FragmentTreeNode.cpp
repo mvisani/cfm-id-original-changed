@@ -104,7 +104,9 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
     int is_radical, is_negative;
     ion->getProp("isRadical", is_radical);
     ion->getProp("isNegative", is_negative);
+    //RDKit::PeriodicTable *pt = RDKit::PeriodicTable::getTable();
     int number_child_added = 0;
+    //std::cout << "[DEBUG][addChild]" << RDKit::MolToSmiles( rwmol ) << std::endl;
 
     //Array to record the total connected bond orders for each atom
     std::vector<int> ctd_bond_orders(rwmol.getNumAtoms(), 0);
@@ -335,10 +337,8 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             }
 
             child_ion->setProp("HadRingBreak", 1);
-
-            labelExtraBreakPropertiesInIon(child_ion, ion, brk);
-            auto child_node = FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, true);
-            children.push_back(child_node);
+            auto next_node = FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, true);
+            children.push_back(next_node);
             number_child_added++;
         }
         else if (mols.size() == 2) {
@@ -358,9 +358,8 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                 createChildIonElectronLocRecord(child_e_loc, child_ion);
                 child_ion->setProp("HadRingBreak", 0);
                 //std::cout << "[DEBUG][Child Ion]" << RDKit::MolToSmiles( *child_ion ) << std::endl;
-                labelExtraBreakPropertiesInIon(child_ion, ion, brk);
-                auto child_node = FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false);
-                children.push_back(child_node);
+                auto next_node = FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false);
+                children.push_back(next_node);
                 number_child_added++;
                 /*
                 for (auto ai = child_ion->beginAtoms(); ai != child_ion->endAtoms(); ++ai) {
@@ -441,10 +440,9 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
                     // create child ion ptr
                     romol_ptr_t cyclizated_child_ion = boost::make_shared<RDKit::ROMol>(RDKit::ROMol(rw_child_ion));
                     createChildIonElectronLocRecord(child_e_loc, cyclizated_child_ion);
-                    labelExtraBreakPropertiesInIon(child_ion, ion, brk);
-                    auto child_node = FragmentTreeNode(cyclizated_child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false);
-                    child_node.setCyclization(true);
-                    children.push_back(child_node);
+                    auto next_node = FragmentTreeNode(cyclizated_child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false);
+                    next_node.setCyclization(true);
+                    children.push_back(next_node);
                     number_child_added++;
                 }
             }
@@ -469,9 +467,8 @@ FragmentTreeNode::addChild(int e_f0, int e_to_allocate, std::vector<int> &output
             std::vector<int> child_e_loc;
             createChildIonElectronLocRecord(child_e_loc, child_ion);
             child_ion->setProp("HadRingBreak", 0);
-            labelExtraBreakPropertiesInIon(child_ion, ion, brk);
-            auto child_node = FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false);
-            children.push_back(child_node);
+            children.push_back(
+                    FragmentTreeNode(child_ion, child_nl, allocated_e[charge_frag], depth + 1, fh, child_e_loc, false));
             number_child_added++;
         }
 
@@ -853,35 +850,8 @@ void FragmentTreeNode::labelBreakPropertiesInNL(romol_ptr_t &current_nl, romol_p
             current_nl.get()->setProp("BrokenOrigBondType", bondtype);
         }
     }
+
 }
-
-
-void FragmentTreeNode::labelExtraBreakPropertiesInIon(romol_ptr_t &current_ion, romol_ptr_t &parent_ion, Break &brk) {
-
-    //set an empty history vector
-    //Let us try bond type first
-    //Ideally we should use all history
-    //A better yet still subopmtial way is to encode atom-bond-atom type
-    std::string history_keyword = "FragmentationBondHistory";
-
-    std::vector<int> history_so_far;
-    if (parent_ion->hasProp(history_keyword)) {
-        parent_ion->getProp(history_keyword, history_so_far);
-    }
-
-    if (brk.isIonicBreak())
-        history_so_far.push_back(6);
-    else if (brk.isHydrogenOnlyBreak())
-        history_so_far.push_back(7);
-    else {
-        RDKit::Bond *brokenbond = parent_ion.get()->getBondWithIdx(brk.getBondIdx());
-        int bondtype;
-        brokenbond->getProp("OrigBondType", bondtype);
-        history_so_far.push_back(bondtype);
-    }
-    current_ion->setProp(history_keyword, history_so_far);
-}
-
 
 void FragmentTreeNode::generateBreaks(std::vector<Break> &breaks, bool include_H_only_loss, bool include_cyclization) {
 

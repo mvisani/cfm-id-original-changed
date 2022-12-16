@@ -164,7 +164,6 @@ public:
     bool isCyclization() const { return is_cyclization; };
 
     void setCyclization(bool flag) { this->is_cyclization = flag; };
-
 private:
     // Helper class for feature labels that need to be added during fragment graph
     // computation
@@ -198,11 +197,6 @@ private:
     void labelBreakPropertiesInNL(romol_ptr_t &current_nl, romol_ptr_t &parent_ion,
                                   Break &brk);
 
-    // Utility function to store extra  properties of the break in the generated iom
-    void labelExtraBreakPropertiesInIon(romol_ptr_t &current_ion, romol_ptr_t &parent_ion,
-                                  Break &brk);
-
-
     // Utility function to label properties of the ion: is it negative? is it a
     // radical?
     void labelIonProperties();
@@ -221,7 +215,6 @@ private:
 
     static void recordOrigAtomIdxs(RDKit::RWMol &rwmol);
 
-    // Flags
     bool is_intermediate = false;
     bool is_cyclization = false;
 };
