@@ -338,9 +338,17 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             writeParamsToFile(iter_out_param_filename);
         }
 
-        // check if EM meet halt flag
-        updateTrainingParams(loss, prev_loss, loss_ratio, learning_rate, sampling_method, em_no_progress_count);
+        // check if EM meet halt flag and update lr, sampling methods and no progress count
+        if(comm->isMaster())
+            updateTrainingParams(loss, prev_loss, loss_ratio, learning_rate, sampling_method, em_no_progress_count);
+        MPI_Barrier(MPI_COMM_WORLD);  	//All threads wait
 
+        // Set them to all processor
+        em_no_progress_count = comm->broadcastIntValue(em_no_progress_count);
+        sampling_method = comm->broadcastIntValue(sampling_method);
+        learning_rate = comm->broadcastFloatValue(learning_rate);
+
+        //std::cerr << em_no_progress_count << std::endl;
         if (em_no_progress_count >= cfg->em_no_progress_count) {
 
             comm->printToMasterOnly(
@@ -356,11 +364,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         iter++;
     }
 
-    if (iter >= cfg->em_max_iterations)
+    /*if (iter >= cfg->em_max_iterations)
         comm->printToMasterOnly(("Warning: EM did not converge after " +
                                  std::to_string(iter) +
                                  " iterations.")
-                                        .c_str());
+                                        .c_str());*/
 
     return best_loss;
 }
@@ -417,7 +425,7 @@ EmModel::computeAndSyncLoss(std::vector<MolData> &data, suft_counts_t &suft, uns
     if (comm->isMaster() && cfg->lambda > 0.0)
         loss += getRegularizationTerm(energy);
     loss = comm->collectQInMaster(loss);
-    loss = comm->broadcastQ(loss);
+    loss = comm->broadcastFloatValue(loss);
 
     return loss;
 }
@@ -653,7 +661,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
             std::cout << std::endl;
         }
         comm->broadcastDropouts(param.get());
-        ga_no_progress_count = comm->broadcastCountValue(ga_no_progress_count);
+        ga_no_progress_count = comm->broadcastIntValue(ga_no_progress_count);
     }
 
     if (comm->isMaster()) {

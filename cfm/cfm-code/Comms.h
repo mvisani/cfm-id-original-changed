@@ -52,11 +52,11 @@ public:
 
     bool isMaster() { return mpi_rank == MASTER; };
 
-    int broadcastCountValue(int value);
+    int broadcastIntValue(int value);
 
     int collectSumInMaster(int partial);
 
-    float broadcastQ(float Q);
+    float broadcastFloatValue(float Q);
 
     float getTimeUsages(float time_used, MPI_Op op);
 

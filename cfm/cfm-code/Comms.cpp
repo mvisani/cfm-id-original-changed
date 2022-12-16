@@ -226,7 +226,7 @@ void MasterComms::broadcastParamsWeights(Param *param) {
     }
 }
 
-int Comms::broadcastCountValue(int value) {
+int Comms::broadcastIntValue(int value) {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
     MPI_Bcast(&value, 1, MPI_INT, MASTER, MPI_COMM_WORLD);
@@ -235,7 +235,7 @@ int Comms::broadcastCountValue(int value) {
 }
 
 
-float Comms::broadcastQ(float Q) {
+float Comms::broadcastFloatValue(float Q) {
 
     MPI_Barrier(MPI_COMM_WORLD);    //All threads wait
     MPI_Bcast(&Q, 1, MPI::DOUBLE, MASTER, MPI_COMM_WORLD);
