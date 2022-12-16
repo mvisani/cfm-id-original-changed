@@ -76,7 +76,7 @@ protected:
 
 
     //Simple gradient ascent
-    double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
+    double updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, float learning_rate,
                                           int sampling_method, unsigned int energy);
 
     double computeAndSyncLoss(std::vector<MolData> &data, suft_counts_t &suft, unsigned int energy);
@@ -95,11 +95,10 @@ protected:
     void
     computeMetrics(const Spectrum *p, const Spectrum *q, double &dice, double &dp, double &precision, double &recall);
 
-    double getUpdatedLearningRate(double learning_rate, int iter) const;
+    double gaGetUpdatedLearningRate(double learning_rate, int iter) const;
 
-    void updateTrainingParams(double loss, double prev_loss, double loss_ratio, float &learning_rate,
-                              int &sampling_method,
-                              int &count_no_progress) const;
+    void updateEmTrainingParams(double loss_change_rate, float &learning_rate, int &sampling_method,
+                                int &count_no_progress) const;
 
     float getUsedCupTime(clock_t c_start, clock_t c_end) const;
 

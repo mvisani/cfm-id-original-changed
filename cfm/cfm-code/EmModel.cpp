@@ -192,7 +192,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         // (M-step)
         before = std::chrono::system_clock::now();
         if (comm->isMaster())
-            std::cout << "[M-Step]Learning_Rate=" << learning_rate << std::endl;
+            std::cout << "[M-Step]Staring Learning Rate=" << learning_rate << std::endl;
         loss = updateParametersGradientAscent(molDataSet, suft, learning_rate, sampling_method, energy_level);
 
         // Write the params
@@ -280,14 +280,16 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         }
 
         // Check for convergence
-        double loss_ratio = fabs((loss - prev_loss) / loss);
+        //double loss_ratio = fabs((loss - prev_loss) / loss);
+        auto loss_change_rate = 1.0 - loss/prev_loss;
+
         if (comm->isMaster()) {
             std::string qdif_str = "";
             qdif_str += "[M-Step][Traning Loss]    ";
             qdif_str += "Total=" + std::to_string(loss) + " Mean=" + std::to_string(loss / num_training_mols);
 
             if (prev_loss != -DBL_MAX)
-                qdif_str += " Change Ratio= " + std::to_string(loss_ratio) + " Prev=" + std::to_string(prev_loss);
+                qdif_str += " Change Ratio= " + std::to_string(loss_change_rate) + " Prev=" + std::to_string(prev_loss);
             if (best_loss != -DBL_MAX)
                 qdif_str += " Best=" + std::to_string(best_loss);
 
@@ -340,13 +342,14 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         // check if EM meet halt flag and update lr, sampling methods and no progress count
         if(comm->isMaster())
-            updateTrainingParams(loss, prev_loss, loss_ratio, learning_rate, sampling_method, em_no_progress_count);
+            updateEmTrainingParams(loss_change_rate, learning_rate, sampling_method, em_no_progress_count);
         MPI_Barrier(MPI_COMM_WORLD);  	//All threads wait
 
         // Set them to all processor
         em_no_progress_count = comm->broadcastIntValue(em_no_progress_count);
+        // only useful if we reset it
         sampling_method = comm->broadcastIntValue(sampling_method);
-        learning_rate = comm->broadcastFloatValue(learning_rate);
+        //learning_rate = comm->broadcastFloatValue(learning_rate);
 
         //std::cerr << em_no_progress_count << std::endl;
         if (em_no_progress_count >= cfg->em_no_progress_count) {
@@ -393,10 +396,9 @@ float EmModel::getUsedCupTime(clock_t c_start, clock_t c_end) const {
 }
 
 void
-EmModel::updateTrainingParams(double loss, double prev_loss, double loss_ratio, float &learning_rate,
-                              int &sampling_method,
-                              int &count_no_progress) const {
-    if (loss_ratio < cfg->em_converge_thresh || prev_loss >= loss) {
+EmModel::updateEmTrainingParams(double loss_change_rate, float &learning_rate, int &sampling_method,
+                                int &count_no_progress) const {
+    if (loss_change_rate < cfg->em_converge_thresh) {
         if (cfg->ga_reset_sampling && sampling_method != cfg->ga_sampling_method2) {
             cfg->ga_reset_sampling = false;
             sampling_method = cfg->ga_sampling_method2;
@@ -500,7 +502,7 @@ void EmModel::recordSufficientStatistics(suft_counts_t &suft, int molidx, MolDat
     }
 }
 
-double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, double learning_rate,
+double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_counts_t &suft, float learning_rate,
                                                int sampling_method, unsigned int energy) {
 
     // DBL_MIN is the smallest positive double
@@ -558,6 +560,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
     int ga_no_progress_count = 0;
     std::vector<float> current_best_weight;
 
+    // yes yes ++ is evil but ...
     while (iter++ < max_iteration && ga_no_progress_count <= cfg->ga_no_progress_count) {
 
         auto before = std::chrono::system_clock::now();
@@ -566,7 +569,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
         // update learning rate
         if (comm->isMaster() && USE_NO_DECAY != cfg->ga_decay_method) {
-            learning_rate = getUpdatedLearningRate(learning_rate, iter);
+            learning_rate = gaGetUpdatedLearningRate(learning_rate, iter);
             solver->setLearningRate(learning_rate);
         }
 
@@ -638,7 +641,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
             std::cout << iter << ".[T+" << getTimeDifferenceStr(start_time, after) << "s]" << "Loss=" <<
                       loss << " Prev=" << prev_loss << " Best=" << prev_best_loss << " Change Rate=" << loss_change_rate
-                      << " Time Escaped: " << getTimeDifferenceStr(before, after) << "s";
+                      << " Time Escaped: " << getTimeDifferenceStr(before, after) << "s Learning Rate=" << learning_rate;
             if (!cfg->disable_cpu_usage_metrics) {
                 std::cout << cpu_usage_string;
             }
@@ -682,7 +685,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
     return loss;
 }
 
-double EmModel::getUpdatedLearningRate(double learning_rate, int iter) const {
+double EmModel::gaGetUpdatedLearningRate(double learning_rate, int iter) const {
 
     if (USE_NO_DECAY == cfg->ga_decay_method)
         return learning_rate;
@@ -690,7 +693,7 @@ double EmModel::getUpdatedLearningRate(double learning_rate, int iter) const {
     if (USE_DEFAULT_DECAY == cfg->ga_decay_method)
         learning_rate *= 1.0 / (1.0 + cfg->decay_rate * (iter - 1));
     else if (USE_EXP_DECAY == cfg->ga_decay_method)
-        learning_rate *= exp(-cfg->exp_decay_k * iter);
+        learning_rate *= exp(-cfg->exp_decay_k * (iter-1));
     else if (USE_STEP_DECAY == cfg->ga_decay_method)
         learning_rate *= pow(cfg->step_decay_drop, floor(iter / cfg->step_decay_epochs_drop));
 
