@@ -3,8 +3,7 @@
 #
 # BrokenOrigBondType.cpp
 #
-# Description: 	Classes for communicating data (e.g. parameters, partial
-#				gradients..etc) during parameter update - see param.cpp.
+# Description: 	Classes for  BrokenOrigBondType Features
 #
 # Copyright (c) 2013,2017
 # All rights reserved.

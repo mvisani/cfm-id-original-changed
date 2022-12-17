@@ -43,7 +43,7 @@ int getSymbolsIndex(const std::string &symbol, bool use_full_symbol_set) {
     int index = 0;
     const std::vector<std::string> *ok_symbols = nullptr;
     if(use_full_symbol_set)
-        ok_symbols =  &OKsymbols();
+        ok_symbols = &OKsymbols();
     else
         ok_symbols = &OKSymbolsLess();
 

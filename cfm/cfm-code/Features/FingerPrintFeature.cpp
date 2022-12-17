@@ -656,7 +656,7 @@ void FingerPrintFeature::addDistanceFeature(std::vector<int> &tmp_fv, unsigned i
         std::vector<int> features(max_features, 0);
 
         if (i < distance.size()) {
-            int dis = distance[i] > max_distance ? max_distance : distance[i];
+            auto dis = distance[i] > max_distance ? max_distance : distance[i];
             features[dis] = 1;
         }
         tmp_fv.insert(tmp_fv.end(), features.begin(), features.end());
