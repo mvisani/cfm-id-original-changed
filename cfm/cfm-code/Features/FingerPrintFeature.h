@@ -60,11 +60,12 @@ protected:
 private:
 
     void getAtomVisitOrderBFS(const RootedROMol *roMolPtr, std::vector<unsigned int> &visit_order,
-                                  std::vector<unsigned int> &visit_atom_distance, int num_atoms, int depth) const;
+                              std::vector<unsigned int> &visit_atom_distance, int num_atoms, int depth,
+                              bool use_full_symbols_set) const;
 
     std::string getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
-                                    std::map<unsigned int, unsigned int> &distances,
-                                    std::map<unsigned int, std::string> &labels) const;
+                                std::map<unsigned int, unsigned int> &distances,
+                                std::map<unsigned int, std::string> &labels, bool use_full_symbols_set) const;
 
     void getAtomDistanceToRoot(const RootedROMol *roMolPtr, std::map<unsigned int, unsigned int> &distances) const;
 
@@ -84,7 +85,7 @@ private:
                                          bool include_adjacency_matrix, bool use_full_symbols_set) const;
 
     void addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMol *roMolPtr,
-                                           unsigned int num_atom, unsigned int max_distance) const;
+                                       unsigned int max_distance) const;
 
     void addDegreeFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol, unsigned int num_atom,
                            const std::vector<unsigned int> &visit_order) const;
@@ -95,8 +96,8 @@ private:
                                 bool use_full_okay_symbol_set) const;
 
     void addAtomTypeFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol, unsigned int num_atom,
-                                 const std::vector<unsigned int> &visit_order,
-                                 const std::vector<unsigned int> &distance) const;
+                             const std::vector<unsigned int> &visit_order,
+                             const std::vector<unsigned int> &distance, bool use_full_symbols_set) const;
 
     void addAdjMatrixFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol, unsigned int num_atom,
                               std::vector<unsigned int> &visit_order, std::vector<unsigned int> &distance,
@@ -107,9 +108,8 @@ private:
     void addBondAtomPairToFeatures(std::vector<int> &tmp_fv, std::map<std::string, int> &dict,
                                        bool no_count) const;
 
-    void updateBondAtomPairDict(const RootedROMol *rootedMol,
-                                const RDKit::Atom *root,
-                                std::map<std::string, int>&dict) const;
+    void updateBondAtomPairDict(const RootedROMol *rootedMol, const RDKit::Atom *root,
+                                std::map<std::string, int> &dict, bool use_full_symbols_set) const;
 
     void
     getAdjMatrix(const RootedROMol *mol, unsigned int num_atom,
@@ -118,5 +118,6 @@ private:
                  int min_distance, int max_distance) const;
 
     void getBondAtomPairAtEachDistance(const RootedROMol *roMolPtr,
-                                       std::vector<std::map<std::string, int>> &dict) const;
+                                       std::vector<std::map<std::string, int>> &dict,
+                                       bool use_full_symbols_set) const;
 };

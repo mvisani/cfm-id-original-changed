@@ -242,7 +242,8 @@ void FingerPrintFeature::addMorganFingerPrintFeatures(FeatureVector &fv,
 
 std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol, const RDKit::Atom *atom,
                                                 std::map<unsigned int, unsigned int> &distances,
-                                                std::map<unsigned int, std::string> &labels) const {
+                                                std::map<unsigned int, std::string> &labels,
+                                                bool use_full_symbols_set) const {
     auto distance_to_root = distances[atom->getIdx()];
 
     // add bond and atom label
@@ -265,7 +266,7 @@ std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol, const RDK
     }
 
     std::string symbol_str = atom->getSymbol();
-    replaceUncommonWithX(symbol_str, false);
+    replaceUncommonWithX(symbol_str, use_full_symbols_set);
     if (symbol_str.size() == 1)
         symbol_str += " ";
     atom_key += symbol_str;
@@ -277,7 +278,7 @@ std::string FingerPrintFeature::getSortingLabel(const romol_ptr_t mol, const RDK
         // make sure we are not going back and not going in a loop
         if (child_distance_to_root > distance_to_root) {
             std::string child_key;
-            child_key = getSortingLabel(mol, nbr_atom, distances, labels);
+            child_key = getSortingLabel(mol, nbr_atom, distances, labels, use_full_symbols_set);
             children_keys.push_back(child_key);
         }
     }
@@ -329,7 +330,8 @@ void FingerPrintFeature::getAtomDistanceToRoot(const RootedROMol *roMolPtr,
 }
 
 void FingerPrintFeature::getBondAtomPairAtEachDistance(const RootedROMol *roMolPtr,
-                                                       std::vector<std::map<std::string, int>> &dict) const {
+                                                       std::vector<std::map<std::string, int>> &dict,
+                                                       bool use_full_symbols_set) const {
     // maybe a struct is a better idea
     // but this is a one off
     std::queue<const RDKit::Atom *> atom_queue;
@@ -360,7 +362,7 @@ void FingerPrintFeature::getBondAtomPairAtEachDistance(const RootedROMol *roMolP
             auto bi = mol.get()->getBondBetweenAtoms(curr->getIdx(), nbr_atom->getIdx());
             int bond_type = FeatureHelper::getBondTypeAsInt(bi);
             std::string nbr_atom_symbol = nbr_atom->getSymbol();
-            replaceUncommonWithX(nbr_atom_symbol, false);
+            replaceUncommonWithX(nbr_atom_symbol, use_full_symbols_set);
 
             std::string key = std::to_string(bond_type) + nbr_atom_symbol;
             if(curr_distance < dict.size())
@@ -371,7 +373,8 @@ void FingerPrintFeature::getBondAtomPairAtEachDistance(const RootedROMol *roMolP
 
 // Method to get atom visited order via BFS
 void FingerPrintFeature::getAtomVisitOrderBFS(const RootedROMol *roMolPtr, std::vector<unsigned int> &visit_order,
-                                              std::vector<unsigned int> &visit_atom_distance, int num_atoms, int depth) const {
+                                              std::vector<unsigned int> &visit_atom_distance, int num_atoms, int depth,
+                                              bool use_full_symbols_set) const {
 
     auto mol = roMolPtr->mol;
     auto root = roMolPtr->root;
@@ -381,7 +384,7 @@ void FingerPrintFeature::getAtomVisitOrderBFS(const RootedROMol *roMolPtr, std::
 
     // get labels for each atoms
     std::map<unsigned int, std::string> sorting_labels;
-    getSortingLabel(mol, root, distances_map, sorting_labels);
+    getSortingLabel(mol, root, distances_map, sorting_labels, use_full_symbols_set);
 
     // maybe a struct is a better idea
     // but this is a one off
@@ -432,7 +435,7 @@ FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, co
     // Get visit order
     std::vector<unsigned int> visit_order;
     std::vector<unsigned int> distance;
-    getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom, depth);
+    getAtomVisitOrderBFS(roMolPtr, visit_order, distance, num_atom, depth, false);
 
     if (include_adjacency_matrix)
         addAdjMatrixFeatures(tmp_fv, roMolPtr, num_atom, visit_order, distance, 0, depth, false);
@@ -444,9 +447,8 @@ FingerPrintFeature::addAdjacentMatrixRepresentation(std::vector<int> &tmp_fv, co
 
 }
 
-void FingerPrintFeature::updateBondAtomPairDict(const RootedROMol *rootedMol,
-                            const RDKit::Atom *root,
-                            std::map<std::string, int>&dict) const {
+void FingerPrintFeature::updateBondAtomPairDict(const RootedROMol *rootedMol, const RDKit::Atom *root,
+                                                std::map<std::string, int> &dict, bool use_full_symbols_set) const {
 
     auto mol = rootedMol->mol;
     for (auto itp = mol->getAtomNeighbors(root); itp.first != itp.second; ++itp.first) {
@@ -455,7 +457,7 @@ void FingerPrintFeature::updateBondAtomPairDict(const RootedROMol *rootedMol,
         int bond_type = FeatureHelper::getBondTypeAsInt(bi);
         //mol.get()->getBondBetweenAtoms(root->getIdx(), nbr_atom->getIdx())->getProp("OrigBondType", bond_type);
         std::string nbr_atom_symbol = nbr_atom->getSymbol();
-        replaceUncommonWithX(nbr_atom_symbol, false);
+        replaceUncommonWithX(nbr_atom_symbol, use_full_symbols_set);
 
         std::string key = std::to_string(bond_type) + nbr_atom_symbol;
         dict[key] += 1;
@@ -482,11 +484,11 @@ void FingerPrintFeature::addBondAtomPairToFeatures(std::vector<int> &tmp_fv, std
 }
 
 void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv, const RootedROMol *roMolPtr,
-                                                       unsigned int num_atom, unsigned int max_distance) const {
+                                                       unsigned int max_distance) const {
 
 
     auto mol = roMolPtr->mol;
-    auto root = roMolPtr->root;
+    bool use_full_symbols_set = false;
 
     auto symbols = OKSymbolsLess();
     const int num_bond_type = 7;
@@ -500,15 +502,15 @@ void FingerPrintFeature::addGenernalizedRepresentation(std::vector<int> &tmp_fv,
         }
     }
 
-    getBondAtomPairAtEachDistance(roMolPtr, dicts);
+    getBondAtomPairAtEachDistance(roMolPtr, dicts, use_full_symbols_set);
 
     int offset = 1;
     // 142 bits for atoms next to root
     for(int i = 0 ; i < offset ; ++i)
-        addBondAtomPairToFeatures(tmp_fv, dicts[i], false);
+        addBondAtomPairToFeatures(tmp_fv, dicts[i], use_full_symbols_set);
     //addBondAtomPairToFeatures(tmp_fv, dicts[1], false);
     for(int i = offset; i < max_distance; ++i)
-        addBondAtomPairToFeatures(tmp_fv, dicts[i], true);
+        addBondAtomPairToFeatures(tmp_fv, dicts[i], use_full_symbols_set);
 }
 
 void
@@ -612,7 +614,7 @@ void FingerPrintFeature::addAtomTypeSeqFeatures(std::vector<int> &tmp_fv, const 
 
 void FingerPrintFeature::addAtomTypeFeatures(std::vector<int> &tmp_fv, const RootedROMol *mol, unsigned int num_atom,
                                              const std::vector<unsigned int> &visit_order,
-                                             const std::vector<unsigned int> &distance) const {
+                                             const std::vector<unsigned int> &distance, bool use_full_symbols_set) const {
     const unsigned int num_atom_types = 6;
     std::vector<int> atom_type_feature(num_atom_types * 3, 0);
     for (int i = 0; i < num_atom; ++i) {
@@ -620,8 +622,8 @@ void FingerPrintFeature::addAtomTypeFeatures(std::vector<int> &tmp_fv, const Roo
             int atom_idx = visit_order[i];
             // add atom types
             std::string symbol = mol->mol->getAtomWithIdx(atom_idx)->getSymbol();
-            replaceUncommonWithX(symbol, false);
-            int atom_feature = getSymbolsIndex(symbol, false);
+            replaceUncommonWithX(symbol, use_full_symbols_set);
+            int atom_feature = getSymbolsIndex(symbol, use_full_symbols_set);
             atom_type_feature[atom_feature + distance[i] * num_atom_types] = 1;
         }
     }
@@ -680,6 +682,6 @@ void FingerPrintFeature::addGenernalizedRepresentationFeature(FeatureVector &fv,
                                                               unsigned int num_atom, unsigned int max_distance) const {
 
     std::vector<int> local_tmp_fv;
-    addGenernalizedRepresentation(local_tmp_fv, mol, num_atom, max_distance);
+    addGenernalizedRepresentation(local_tmp_fv, mol, max_distance);
     fv.addFeatures(local_tmp_fv);
 }
