@@ -276,6 +276,6 @@ void initDerivedConfig(config_t &cfg, int energy = -1);
 
 void initSingleEnergyConfig(config_t &se_cfg, config_t &cfg, int energy);
 
-void printSamplingConfig(const int sampling_method, config_t &cfg);
+void printSamplingConfig(const int &sampling_method, config_t &cfg);
 
 #endif // __CONFIG_H__

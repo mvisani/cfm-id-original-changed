@@ -409,7 +409,7 @@ void initConfig(config_t &cfg, std::string &filename,char *argv_zero, bool repor
     }
 }
 
-void printSamplingConfig(const int sampling_method, config_t &cfg) {
+void printSamplingConfig(const int &sampling_method, config_t &cfg) {
     switch (sampling_method) {
         case USE_RANDOM_SAMPLING:
             std::cout << "Random Sampling on transitions  with max selection cut off at "
