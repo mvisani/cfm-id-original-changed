@@ -291,7 +291,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             if (prev_loss != -DBL_MAX)
                 qdif_str += " Change Ratio= " + std::to_string(loss_change_rate) + " Prev=" + std::to_string(prev_loss);
             if (best_loss != -DBL_MAX)
-                qdif_str += " Best=" + std::to_string(best_loss);
+                qdif_str += " PrevBest=" + std::to_string(best_loss);
 
             if (!cfg->disable_cross_val_metrics) {
                 qdif_str += "\n[M-Step][Validation Loss (Without L2 Reg)] ";
@@ -641,7 +641,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data, suft_
 
             std::cout << iter << ".[T+" << getTimeDifferenceStr(start_time, after) << "s]" << "Loss=" <<
                       loss << " Prev=" << prev_loss << " Best=" << prev_best_loss << " Change Rate=" << loss_change_rate
-                      << " Time Escaped: " << getTimeDifferenceStr(before, after) << "s Learning Rate=" << learning_rate;
+                      << " Time Escaped=" << getTimeDifferenceStr(before, after) << "s Learning Rate=" << learning_rate;
             if (!cfg->disable_cpu_usage_metrics) {
                 std::cout << cpu_usage_string;
             }

@@ -61,7 +61,7 @@ static const int USE_STEP_DECAY = 3;
 
 // Decay
 static const float DEFAULT_DECAY_RATE = 0.1;
-static const float DEFAULT_EXP_DECAY_K = 0.01;
+static const float DEFAULT_EXP_DECAY_K = 0.001;
 static const float DEFAULT_STEP_DECAY_DROP = 0.5;
 static const int DEFAULT_STEP_DECAY_EPOCHS_DROP = 10;
 
