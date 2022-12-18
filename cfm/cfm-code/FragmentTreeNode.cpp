@@ -862,24 +862,26 @@ void FragmentTreeNode::labelExtraBreakPropertiesInIon(romol_ptr_t &current_ion, 
     //Let us try bond type first
     //Ideally we should use all history
     //A better yet still subopmtial way is to encode atom-bond-atom type
-    std::string history_keyword = "FragmentationBondHistory";
+    if (fh->getExecFlag(3)) {
+        std::string history_keyword = "FragmentationBondHistory";
 
-    std::vector<int> history_so_far;
-    if (parent_ion->hasProp(history_keyword)) {
-        parent_ion->getProp(history_keyword, history_so_far);
-    }
+        std::vector<int> history_so_far;
+        if (parent_ion->hasProp(history_keyword)) {
+            parent_ion->getProp(history_keyword, history_so_far);
+        }
 
-    if (brk.isIonicBreak())
-        history_so_far.push_back(6);
-    else if (brk.isHydrogenOnlyBreak())
-        history_so_far.push_back(7);
-    else {
-        RDKit::Bond *brokenbond = parent_ion.get()->getBondWithIdx(brk.getBondIdx());
-        int bondtype;
-        brokenbond->getProp("OrigBondType", bondtype);
-        history_so_far.push_back(bondtype);
+        if (brk.isIonicBreak())
+            history_so_far.push_back(6);
+        else if (brk.isHydrogenOnlyBreak())
+            history_so_far.push_back(7);
+        else {
+            RDKit::Bond *brokenbond = parent_ion.get()->getBondWithIdx(brk.getBondIdx());
+            int bondtype;
+            brokenbond->getProp("OrigBondType", bondtype);
+            history_so_far.push_back(bondtype);
+        }
+        current_ion->setProp(history_keyword, history_so_far);
     }
-    current_ion->setProp(history_keyword, history_so_far);
 }
 
 

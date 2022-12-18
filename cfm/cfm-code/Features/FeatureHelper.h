@@ -56,7 +56,8 @@ public:
                             fc->includesFeature("NLNeighbourMMFFAtomType");
 
             exec_flags[3] = fc->includesFeature("BrokenOrigBondType") ||
-                            fc->includesFeature("NeighbourOrigBondTypes");
+                            fc->includesFeature("NeighbourOrigBondTypes") ||
+                            fc->includesFeature("BreakHistoryFeature");
 
             exec_flags[4] = fc->includesFeature("IonFunctionalGroupFeatures") ||
                             fc->includesFeature("NLFunctionalGroupFeatures") ||
