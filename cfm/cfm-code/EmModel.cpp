@@ -378,7 +378,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                                      " iterations.")
                                             .c_str());*/
 
-        best_loss_btw_em_iter = std::max(best_loss_btw_em_iter, best_loss_btw_em_iter);
+        best_loss_btw_em_iter = std::max(best_loss_btw_em_iter, best_loss);
     }
 
     return best_loss_btw_em_iter;
