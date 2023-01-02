@@ -367,11 +367,11 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         iter++;
     }
 
-    /*if (iter >= cfg->em_max_iterations)
-        comm->printToMasterOnly(("Warning: EM did not converge after " +
+    if (iter >= cfg->em_max_iterations)
+        comm->printToMasterOnly(("Warning: EM still converging after " +
                                  std::to_string(iter) +
                                  " iterations.")
-                                        .c_str());*/
+                                        .c_str());
 
     return best_loss;
 }
