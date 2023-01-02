@@ -338,7 +338,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             if (best_loss < loss) {
                 best_loss = loss;
                 std::string progress_str = "[M-Step] Found Better Q: "
-                                           + std::to_string(best_loss) + " Write to File";
+                                           + std::to_string(best_loss) + " Write to File: " + out_param_filename;
                 comm->printToMasterOnly(progress_str.c_str());
                 writeParamsToFile(out_param_filename);
             }

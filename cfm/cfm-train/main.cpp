@@ -420,7 +420,7 @@ trainSingleEnergyCFM(std::string &param_filename, config_t &cfg, FeatureCalculat
                 double Q = em->trainModel(data, group, out_filename, energy);
                 if (Q > prev_Q) {
                     if (mpi_rank == MASTER) {
-                        std::cout << "Found better Q!" << std::endl;
+                        std::cout << "Found better Q! Write to " << eparam_filename <<  std::endl;
                         em->writeParamsToFile(eparam_filename);
                     }
                     prev_Q = Q;
