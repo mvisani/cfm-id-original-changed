@@ -80,16 +80,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
     // EM
     iter = 0;
-    double loss;
-    double prev_loss = -DBL_MAX;
-    double best_loss = -DBL_MAX;
 
-    // make of copy of learing rate
-    // so we can share the save lr var over all em iterations
-    //init some flags
-    float learning_rate = cfg->starting_step_size;
-    int sampling_method = cfg->ga_sampling_method;
-    int em_no_progress_count = 0;
 
     int num_training_mols = 0, num_val_mols = 0;
 
@@ -125,16 +116,30 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
         std::string pre_train_str = "";
         pre_train_str += "[Pre-Train][Max Possible Metrics for Current Fragmentation Setting]\n";
         pre_train_str += "Dice=" + std::to_string(max_pob_dice / num_training_mols)
-                        + " DotProduct=" + std::to_string(max_pob_dp / num_training_mols)
-                        + " Precision=" + std::to_string(max_pob_precision / num_training_mols / 100.0f)
-                        + " Recall=" + std::to_string(max_pob_recall / num_training_mols / 100.0f);
+                         + " DotProduct=" + std::to_string(max_pob_dp / num_training_mols)
+                         + " Precision=" + std::to_string(max_pob_precision / num_training_mols / 100.0f)
+                         + " Recall=" + std::to_string(max_pob_recall / num_training_mols / 100.0f);
 
         writeStatus(pre_train_str.c_str());
         comm->printToMasterOnly(pre_train_str.c_str());
     }
 
+    double best_loss_btw_em_iter = -DBL_MAX;
 
     while (iter < cfg->em_max_iterations) {
+
+        // make of copy of learing rate
+        // so we can share the save lr var over all em iterations
+        //init some flags
+        float learning_rate = cfg->starting_step_size;
+        int sampling_method = cfg->ga_sampling_method;
+        int em_no_progress_count = 0;
+
+        double loss;
+        double prev_loss = -DBL_MAX;
+        double best_loss = -DBL_MAX;
+
+
         std::string iter_out_param_filename =
                 out_param_filename + "_" + std::to_string(iter);
 
@@ -240,9 +245,9 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
                                val_dp, val_precision, val_recall);
             } else if (mol_it->getGroup() != validation_group && !cfg->disable_training_metrics) {
                 computeMetrics(mol_it->getOrigSpectrum(energy_level),  mol_it->getPredictedSpectrum(energy_level), train_dice,
-                                   train_dp, train_precision, train_recall);
+                               train_dp, train_precision, train_recall);
                 computeMetrics(mol_it->getSpectrum(energy_level),  mol_it->getPredictedSpectrum(energy_level), pruned_train_dice,
-                                   pruned_train_dp, pruned_train_precision, pruned_train_recall);
+                               pruned_train_dp, pruned_train_precision, pruned_train_recall);
             }
         }
 
@@ -333,7 +338,7 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
             if (best_loss < loss) {
                 best_loss = loss;
                 std::string progress_str = "[M-Step] Found Better Q: "
-                                               + std::to_string(best_loss) + " Write to File";
+                                           + std::to_string(best_loss) + " Write to File";
                 comm->printToMasterOnly(progress_str.c_str());
                 writeParamsToFile(out_param_filename);
             }
@@ -365,15 +370,18 @@ EmModel::trainModel(std::vector<MolData> &molDataSet, int group, std::string &ou
 
         prev_loss = loss;
         iter++;
+
+
+        /*if (iter >= cfg->em_max_iterations)
+            comm->printToMasterOnly(("Warning: EM Iteration " + std::to_string(iter) + " did not finish converge after " +
+                                     std::to_string(iter) +
+                                     " iterations.")
+                                            .c_str());*/
+
+        best_loss_btw_em_iter = std::max(best_loss_btw_em_iter, best_loss_btw_em_iter);
     }
 
-    /*if (iter >= cfg->em_max_iterations)
-        comm->printToMasterOnly(("Warning: EM did not converge after " +
-                                 std::to_string(iter) +
-                                 " iterations.")
-                                        .c_str());*/
-
-    return best_loss;
+    return best_loss_btw_em_iter;
 }
 
 float
