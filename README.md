@@ -193,11 +193,11 @@ Given an input spectrum and a list of candidate smiles (or inchi) strings, **cfm
 Assuming your current directory is in the working directory.
 To identify ESI-MS/MS [M+H]+ spectra  
 
-    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-id ./<spectrum_file> <id> root/<candidate_file>  10 0.001 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt Dice 1 output"
+    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-id ./<spectrum_file> <id> root/<candidate_file> -1 10 0.001 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt Dice 1 output"
 
 To identify ESI-MS/MS [M-H]- spectra  
 
-    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-id ./<spectrum_file> <id> root/<candidate_file>  10 0.001 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt Dice 1 output"
+    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-id ./<spectrum_file> <id> root/<candidate_file> -1 10 0.001 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt Dice 1 output"
 
 ## cfm-id-precomputed ##
 
