@@ -13,7 +13,7 @@
 #########################################################################*/
 # We may need higher verison cmake
 cmake_minimum_required(VERSION 3.7.0)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set a default build type if none was specified
@@ -38,11 +38,8 @@ set(INCLUDE_TRAIN OFF CACHE BOOL "Do you want to build the training code?")
 set(Boost_USE_STATIC_LIBS OFF CACHE BOOL "Use static libraries from Boost")
 include(FindBoost)
 
-set(Boost_components filesystem system serialization program_options)
+set(Boost_components filesystem system serialization program_options thread)
 # For some reason msvc will give LNK2019 if not include thread
-if (MSVC)
-    list(APPEND Boost_components thread)
-endif()
 
 if (INCLUDE_TESTS)
     list(APPEND Boost_components unit_test_framework)

@@ -362,11 +362,12 @@ make install
 
 ```
 cmake .. -DINCLUDE_TESTS=OFF\
-  -DINCLUDE_TRAIN=ON -DLPSOLVE_INCLUDE_DIR=/home/$HOME/libs/lpsolve\
-  -DLPSOLVE_LIBRARY_DIR=/home/$HOME/libs/lpsolve \
-  -DRDKIT_INCLUDE_DIR=/home/$HOME/libs/rdkit_2017_09_3/Code \
-  -DRDKIT_INCLUDE_EXT_DIR=/home/$HOME/libs/rdkit_2017_09_3/External \
-  -DRDKIT_LIBRARY_DIR=/home/$HOME/libs/rdkit_2017_09_3/lib \
+  -DINCLUDE_TRAIN=ON \
+  -DLPSOLVE_INCLUDE_DIR=/$HOME/libs/lpsolve\
+  -DLPSOLVE_LIBRARY_DIR=/$HOME/libs/lpsolve \
+  -DRDKIT_INCLUDE_DIR=/$HOME/libs/rdkit_2017_09_3/Code \
+  -DRDKIT_INCLUDE_EXT_DIR=/$HOME/libs/rdkit_2017_09_3/External \
+  -DRDKIT_LIBRARY_DIR=/$HOME/libs/rdkit_2017_09_3/lib \
   -DCMAKE_CXX_STANDARD=11 \
   -DBOOST_ROOT=$BOOST_ROOT\
   -DBoost_NO_BOOST_CMAKE=ON;
