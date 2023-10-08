@@ -16,6 +16,7 @@ Install CMake VERSION 3.7.0 or higher, and GCC 7 or higher. Eariler GCC version 
 
 Install Boost VERSION 1.62 or higher. At minimum, include the regex,serialization,filesystem,system,thread,program_options,test modules.
 You can install this from prebuild repo via ppa or your favorite package managment tool, here is an example on ubuntu:
+** Install Boost VERSION 1.73 would not work RDKit_2017_09_3 **
 
 ```bash
 sudo apt-get install libboost-all-dev
@@ -25,9 +26,13 @@ If you wish to install this from source code
 Download boost_1_71_0.tar.gz from <http://www.boost.org/users/history/version_1_71_0.html>
 
 ```bash
+wget https://boostorg.jfrog.io/artifactory/main/release/1.71.0/source/boost_1_71_0.tar.gz
+tar -xvzf boost_1_71_0.tar.gz
 cd boost_1_71_0
-./bootstrap.sh --prefix=. 
-./b2 address-model=64 install
+
+BOOST_ROOT=/opt/boost_1_71_0
+./bootstrap.sh --prefix=${BOOST_ROOT} --includedir=headers --libdir=dist
+sudo ./b2 --prefix=${BOOST_ROOT} address-model=64 install
 ```
 
 ### Get RDKit library
@@ -37,21 +42,36 @@ Download RDKit_2017_09_3.tgz from <https://github.com/rdkit/rdkit/archive/Releas
 
 *NOTE:Newer RDKit may work but we have not test it yet*
 
+#### Install to insource location
 ```bash
 wget https://github.com/rdkit/rdkit/archive/Release_2017_09_3.tar.gz;
 tar -zxvf Release_2017_09_3.tar.gz
-cd ./Release_2017_09_3
+cd ./rdkit-Release_2017_09_3
 mkdir build
 cd build
-cmake .. -DRDK_PGSQL_STATIC=OFF -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_CPP_TESTS=OFF -DRDK_BUILD_DESCRIPTORS3D=OFF -DRDK_INSTALL_STATIC_LIBS=OFF-DRDK_INSTALL_INTREE=ON -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_OPTIMIZE_NATIVE=ON -DCMAKE_CXX_STANDARD=11 -DCMAKE_BUILD_TYPE=Release
-make install -j8
+cmake .. -DRDK_PGSQL_STATIC=OFF -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_CPP_TESTS=OFF -DRDK_BUILD_DESCRIPTORS3D=OFF -DRDK_INSTALL_STATIC_LIBS=OFF-DRDK_INSTALL_INTREE=ON -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_OPTIMIZE_NATIVE=ON -DCMAKE_CXX_STANDARD=14 -DCMAKE_BUILD_TYPE=Release
+sudo make install -j8
+```
+#### Install to Custom location
+If You have a custom boost location such as ``` BOOST_ROOT=/opt/boost_1_71_0 ``` and rdkit install location such as ``` RDBASE=/opt/rdkit-Release_2017_09_3 ```:
+```bash
+BOOST_ROOT=/opt/boost_1_71_0
+RDBASE=/opt/rdkit-Release_2017_09_3
+cmake .. -DRDK_PGSQL_STATIC=OFF -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_CPP_TESTS=OFF -DRDK_BUILD_DESCRIPTORS3D=OFF -DRDK_INSTALL_STATIC_LIBS=OFF-DRDK_INSTALL_INTREE=ON -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_OPTIMIZE_NATIVE=ON -DCMAKE_CXX_STANDARD=14 -DCMAKE_BUILD_TYPE=Release  -DRDK_INSTALL_INTREE=OFF -DBoost_NO_BOOST_CMAKE=ON -DBOOST_ROOT=${BOOST_ROOT} -DCMAKE_INSTALL_PREFIX=${RDBASE}
+sudo make install -j8
 ```
 
-Note that ```-DRDK_INSTALL_INTREE=ON``` will install RDKit lib within its source file, while ```-DRDK_INSTALL_INTREE=OFF``` will install RDKit in the ```/usr/local/```. However, RDKit will not automaticlly install  InChI Extension in the  ```/usr/local/```. You can move InChI Extension with:
+**Note** that ```-DRDK_INSTALL_INTREE=ON``` will install RDKit lib within its source file, while ```-DRDK_INSTALL_INTREE=OFF``` will install RDKit in the ```/usr/local/``` by default or to ```DCMAKE_INSTALL_PREFIX``` if set. However, RDKit will not automaticlly install  InChI Extension in the  ```/usr/local/```. You can move InChI Extension with (assume you are inside ```build ``` directory):
 
 ```bash
-mkdir  -p  /usr/local/include/rdkit/External/INCHI-API/;\
-cp  ../External/INCHI-API/*.h  /usr/local/include/rdkit/External/INCHI-API/;\
+sudo mkdir  -p  /usr/local/include/rdkit/External/INCHI-API/;\
+sudo cp  ../External/INCHI-API/*.h  /usr/local/include/rdkit/External/INCHI-API/;\
+```
+
+In case you have a different install location such as ``` RDBASE=/opt/rdkit-Release_2017_09_3 ```
+```bash
+sudo mkdir  -p  ${RDBASE}/include/rdkit/External/INCHI-API/;\
+sudo cp  ../External/INCHI-API/*.h  ${RDBASE}/include/rdkit/External/INCHI-API/;\
 ```
 
 ### Get LPSolve library
@@ -67,18 +87,22 @@ mkdir lp_solve_dev_ux64
 tar xvzf lp_solve_dev_ux64.tar.gz -C lp_solve_dev_ux64;
 rm lp_solve_dev_ux64.tar.gz;
 
+LPSOLVE_INCLUDE_DIR=/opt/lp_solve/
+LPSOLVE_LIB_DIR=/opt/lp_solve/
 
-sudo mkdir -p /usr/local/include/lp_solve;
-sudo cp /tmp/lp_solve_dev_ux64/lp_Hash.h /usr/local/include/lp_solve/lp_Hash.h;
-sudo cp /tmp/lp_solve_dev_ux64/lp_SOS.h /usr/local/include/lp_solve/lp_SOS.h;
-sudo cp /tmp/lp_solve_dev_ux64/lp_lib.h /usr/local/include/lp_solve/lp_lib.h;
-sudo cp /tmp/lp_solve_dev_ux64/lp_matrix.h /usr/local/include/lp_solve/lp_matrix.h;
-sudo cp /tmp/lp_solve_dev_ux64/lp_mipbb.h /usr/local/include/lp_solve/lp_mipbb.h;
-sudo cp /tmp/lp_solve_dev_ux64/lp_types.h /usr/local/include/lp_solve/lp_types.h;
-sudo cp /tmp/lp_solve_dev_ux64/lp_utils.h /usr/local/include/lp_solve/lp_utils.h;
-sudo cp /tmp/lp_solve_dev_ux64/liblpsolve55.so /usr/local/lib/liblpsolve55.so;
-sudo cp /tmp/lp_solve_dev_ux64/liblpsolve55.a /usr/local/lib/liblpsolve55.a;
-rm -rf /tmp/lp_solve_dev_ux64;
+sudo mkdir -p ${LPSOLVE_INCLUDE_DIR};
+sudo mkdir -p ${LPSOLVE_LIB_DIR};
+sudo cp ./lp_solve_dev_ux64/lp_Hash.h ${LPSOLVE_INCLUDE_DIR}/lp_Hash.h;
+sudo cp ./lp_solve_dev_ux64/lp_SOS.h ${LPSOLVE_INCLUDE_DIR}/lp_SOS.h;
+sudo cp ./lp_solve_dev_ux64/lp_lib.h ${LPSOLVE_INCLUDE_DIR}/lp_lib.h;
+sudo cp ./lp_solve_dev_ux64/lp_matrix.h ${LPSOLVE_INCLUDE_DIR}/lp_matrix.h;
+sudo cp ./lp_solve_dev_ux64/lp_mipbb.h ${LPSOLVE_INCLUDE_DIR}/lp_mipbb.h;
+sudo cp ./lp_solve_dev_ux64/lp_types.h ${LPSOLVE_INCLUDE_DIR}/lp_types.h;
+sudo cp ./lp_solve_dev_ux64/lp_utils.h ${LPSOLVE_INCLUDE_DIR}/lp_utils.h;
+
+sudo cp ./lp_solve_dev_ux64/liblpsolve55.so ${LPSOLVE_LIB_DIR}/liblpsolve55.so;
+sudo cp ./lp_solve_dev_ux64/liblpsolve55.a ${LPSOLVE_LIB_DIR}/liblpsolve55.a;
+rm -rf ./lp_solve_dev_ux64;
 ```
 
 If you wish to build your own, download compile the source code for LPSolve. Download lp_solve_5.5.2.11_source.tar.gz from <https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11>
@@ -91,18 +115,22 @@ rm lp_solve_src.tar.gz;
 
 
 cd /tmp/lp_solve_5.5;
-sudo mkdir -p /usr/local/include/lp_solve;
-cp ./lp_Hash.h /usr/local/include/lp_solve/lp_Hash.h;
-cp ./lp_SOS.h /usr/local/include/lp_solve/lp_SOS.h;
-cp ./lp_lib.h /usr/local/include/lp_solve/lp_lib.h;
-cp ./lp_matrix.h /usr/local/include/lp_solve/lp_matrix.h;
-cp ./lp_mipbb.h /usr/local/include/lp_solve/lp_mipbb.h;
-cp ./lp_types.h /usr/local/include/lp_solve/lp_types.h;
-cp ./lp_utils.h /usr/local/include/lp_solve/lp_utils.h;
+LPSOLVE_INCLUDE_DIR=/opt/lp_solve/
+LPSOLVE_LIB_DIR=/opt/lp_solve/
+sudo mkdir -p ${LPSOLVE_INCLUDE_DIR};
+sudo mkdir -p ${LPSOLVE_LIB_DIR};
+
+sudo cp /tmp/lp_solve_dev_ux64/lp_Hash.h ${LPSOLVE_INCLUDE_DIR}/lp_Hash.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_SOS.h ${LPSOLVE_INCLUDE_DIR}/lp_SOS.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_lib.h ${LPSOLVE_INCLUDE_DIR}/lp_lib.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_matrix.h ${LPSOLVE_INCLUDE_DIR}/lp_matrix.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_mipbb.h ${LPSOLVE_INCLUDE_DIR}/lp_mipbb.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_types.h ${LPSOLVE_INCLUDE_DIR}/lp_types.h;
+sudo cp /tmp/lp_solve_dev_ux64/lp_utils.h ${LPSOLVE_INCLUDE_DIR}/lp_utils.h;
+
 cd ./lpsolve55 && sh ccc;
-sudo mkdir -p /usr/local/lib/lp_solve;
-cp ./bin/ux64/liblpsolve55.so /usr/local/lib/liblpsolve55.so;
-cp ./bin/ux64/liblpsolve55.a /usr/local/lib/liblpsolve55.a;
+cp ./bin/ux64/liblpsolve55.so ${LPSOLVE_LIB_DIR}/liblpsolve55.so;
+cp ./bin/ux64/liblpsolve55.a ${LPSOLVE_LIB_DIR}/liblpsolve55.a;
 rm -rf /tmp/lp_solve_5.5;
 ```
 
@@ -118,28 +146,30 @@ sudo apt-get install libopenmpi-dev
 
 ### Setup Libraries
 
-if your libaray installation is not under the stanard ```/usr/``` directory, you will need to set ```LD_LIBRARY_PATH``` to include Boost, RDKit and LPSolve library locations. This can be done in one of following method,
+if your libaray installation is not under the stanard ```/usr/``` directory, you will need to set ```LD_LIBRARY_PATH``` to include Boost, RDKit and LPSolve library locations. This can be done in **one of following method**,
 
 1. Add following command in ```~/.bashrc```
 
     ```bash
-    export LD_LIBRARY_PATH = $LD_LIBRARY_PATH:~/boost_1_71_0/lib:~/RDKit_2017_09_3/lib:~/lp_solve_5.5/lpsolve55/bin/ux64
-    ```
+   BOOST_ROOT=/opt/boost_1_71_0
+   RDBASE=/opt/rdkit-Release_2017_09_3
+   LP_SOLVE=/opt/lp_solve
+   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$BOOST_ROOT/lib:$RDBASE/lib:$LP_SOLVE
+   ```
 
    Then reload by  ```source ~/.bashrc```
+
 2. go to ```/etc/ld.so.conf.d``` add ```*.conf``` for each library Boost, RDKit and LPSolve library locations
 
 ```
 > boost.conf
-~/boost_1_71_0/lib
+/opt/boost_1_71_0/lib
 rdkit.conf
-~/RDKit_2017_09_3/lib
+/opt/rdkit-Release_2017_09_3/lib
 lp_solve.conf
-~/lp_solve_5.5/lpsolve55/bin/ux64
+/opt/lp_solve
 ```
-   Then reload ld by  ```sudo ldconfig```
-
-
+Then reload ld by  ```sudo ldconfig```
 ### Build CFM-ID
 
 Download CFM-ID Release version from <https://bitbucket.org/wishartlab/cfm-id-code/downloads/?tab=tags>, or clone git repo. Run cmake ```CFM_ROOT``` where ```CFM_ROOT``` is the location of the cfm directory
@@ -152,12 +182,13 @@ e.g. if you are in cfm/build, you can use cmake .. , setting the ```LPSOLVE_INCL
     cmake  ..  
         -DINCLUDE_TESTS=${BUILD_CFM_TEST}\
         -DINCLUDE_TRAIN=${BUILD_CFM_TRAIN}\
-        -DLPSOLVE_INCLUDE_DIR=/usr/local/include/lp_solve\
-        -DLPSOLVE_LIBRARY_DIR=/usr/local/lib\
-        -DRDKIT_INCLUDE_DIR=/usr/local/include/rdkit\
-        -DRDKIT_INCLUDE_EXT_DIR=/usr/local/include/rdkit/External\
-        -DRDKIT_LIBRARY_DIR=/usr/local/lib\
-        -DCMAKE_CXX_STANDARD=11;\
+        -DLPSOLVE_INCLUDE_DIR=${LP_SOLVE}\
+        -DLPSOLVE_LIBRARY_DIR=${LP_SOLVE}\
+        -DBOOST_ROOT=${BOOST_ROOT}\
+        -DRDKIT_INCLUDE_DIR=${RDBASE}/include/rdkit\
+        -DRDKIT_INCLUDE_EXT_DIR=${RDBASE}/include/rdkit/External\
+        -DRDKIT_LIBRARY_DIR=${RDBASE}lib\
+        -DCMAKE_CXX_STANDARD=14;
     make install
 ```
 
@@ -350,7 +381,7 @@ cmake .. -DRDK_PGSQL_STATIC=OFF \
      -DRDK_INSTALL_STATIC_LIBS=OFF \
      -DRDK_BUILD_INCHI_SUPPORT=ON \
      -DRDK_OPTIMIZE_NATIVE=ON \
-     -DCMAKE_CXX_STANDARD=11 \
+     -DCMAKE_CXX_STANDARD=14 \
      -DCMAKE_BUILD_TYPE=Release \
      -DRDK_INSTALL_INTREE=ON \
      -DBoost_NO_BOOST_CMAKE=ON\
@@ -368,8 +399,9 @@ cmake .. -DINCLUDE_TESTS=OFF\
   -DRDKIT_INCLUDE_DIR=/$HOME/libs/rdkit_2017_09_3/Code \
   -DRDKIT_INCLUDE_EXT_DIR=/$HOME/libs/rdkit_2017_09_3/External \
   -DRDKIT_LIBRARY_DIR=/$HOME/libs/rdkit_2017_09_3/lib \
-  -DCMAKE_CXX_STANDARD=11 \
+  -DCMAKE_CXX_STANDARD=14 \
   -DBOOST_ROOT=$BOOST_ROOT\
-  -DBoost_NO_BOOST_CMAKE=ON;
+  -DBoost_NO_BOOST_CMAKE=ON\
+  -DCMAKE_BUILD_TYPE=Release 
 make install
 ```

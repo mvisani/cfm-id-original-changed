@@ -52,6 +52,7 @@ else ()
                     /usr/local/rdkit/Code
                     /opt/rdkit/Code
                     /opt/rdkit/include
+                    $ENV{RDBASE}/include/rdkit/External
                     ~/rdkit/Code
                     )
             find_path(RDKIT_INCLUDE_EXT_DIR INCHI-API/inchi.h
@@ -61,6 +62,7 @@ else ()
                     $ENV{RDKIT_INCLUDE_EXT_PATH}
                     $ENV{RDKIT_BASE}/External
                     $ENV{RDBASE}/External
+                    $ENV{RDBASE}/include/rdkit
                     /usr/include/rdkit
                     /usr/local/include/rdkit
                     /usr/local/rdkit/include
