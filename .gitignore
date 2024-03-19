@@ -27,3 +27,4 @@ cfm/CMakeSettings\.json
 
 \.vs/
 cfm/out
+.vscode

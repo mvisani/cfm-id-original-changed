@@ -151,9 +151,9 @@ if your libaray installation is not under the stanard ```/usr/``` directory, you
 1. Add following command in ```~/.bashrc```
 
     ```bash
-   BOOST_ROOT=/opt/boost_1_71_0
-   RDBASE=/opt/rdkit-Release_2017_09_3
-   LP_SOLVE=/opt/lp_solve
+   export BOOST_ROOT=/opt/boost_1_71_0
+   export RDBASE=/opt/rdkit-Release_2017_09_3
+   export LP_SOLVE=/opt/lp_solve
    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$BOOST_ROOT/lib:$RDBASE/lib:$LP_SOLVE
    ```
 
@@ -179,16 +179,17 @@ e.g. if you are in cfm/build, you can use cmake .. , setting the ```LPSOLVE_INCL
     cd cfm
     mkdir  build;\
     cd  build;\
-    cmake  ..  
-        -DINCLUDE_TESTS=${BUILD_CFM_TEST}\
-        -DINCLUDE_TRAIN=${BUILD_CFM_TRAIN}\
+    cmake  .. \
         -DLPSOLVE_INCLUDE_DIR=${LP_SOLVE}\
         -DLPSOLVE_LIBRARY_DIR=${LP_SOLVE}\
         -DBOOST_ROOT=${BOOST_ROOT}\
+        -DBoost_NO_BOOST_CMAKE=ON \
         -DRDKIT_INCLUDE_DIR=${RDBASE}/include/rdkit\
         -DRDKIT_INCLUDE_EXT_DIR=${RDBASE}/include/rdkit/External\
-        -DRDKIT_LIBRARY_DIR=${RDBASE}lib\
-        -DCMAKE_CXX_STANDARD=14;
+        -DRDKIT_LIBRARY_DIR=${RDBASE}/lib\
+        -DCMAKE_CXX_STANDARD=14 \
+        -DINCLUDE_TESTS=${BUILD_CFM_TEST}\
+        -DINCLUDE_TRAIN=${BUILD_CFM_TRAIN};
     make install
 ```
 
