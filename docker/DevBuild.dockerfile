@@ -128,7 +128,7 @@ RUN apk add --no-cache g++ gcc make cmake boost-dev;\
 			 -DRDKIT_INCLUDE_DIR=/usr/local/include/rdkit\
 			 -DRDKIT_INCLUDE_EXT_DIR=/usr/local/include/rdkit/External\
 			 -DRDKIT_LIBRARY_DIR=/usr/local/lib\
-			 -DCMAKE_CXX_STANDARD=11;\
+			 -DCMAKE_CXX_STANDARD=14;\
 	make install -j 12;\
 	apk del g++ gcc make cmake boost-dev;\
 	apk add --no-cache boost-filesystem boost-serialization boost-system boost-thread;\
