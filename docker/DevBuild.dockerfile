@@ -84,26 +84,25 @@ RUN apk add --no-cache g++ gcc make cmake boost-dev;\
 # These options are passed to the steps below
 ARG MPICH_VERSION="3.2"
 ARG MPICH_CONFIGURE_OPTIONS="--disable-fortran"
-ARG MPICH_MAKE_OPTIONS
 
 # Download, build, and install MPICH
 RUN mkdir /tmp/mpich-src
 WORKDIR /tmp/mpich-src
-RUN apk update && apk add --no-cache wget tar g++ gcc make;\
+RUN apk update && apk add --no-cache wget tar g++ gcc make; \
 	wget http://www.mpich.org/static/downloads/${MPICH_VERSION}/mpich-${MPICH_VERSION}.tar.gz \
-      && tar xfz mpich-${MPICH_VERSION}.tar.gz  \
-      && cd mpich-${MPICH_VERSION}  \
-      && ./configure ${MPICH_CONFIGURE_OPTIONS}  \
-      && make ${MPICH_MAKE_OPTIONS} && make install -j 6\
-	  && cd /tmp;\
-      && rm -rf /tmp/mpich-src\
-	  && apk del wget tar g++ gcc make;
+    && tar xfz mpich-${MPICH_VERSION}.tar.gz  \
+    && cd mpich-${MPICH_VERSION} \
+    && ./configure ${MPICH_CONFIGURE_OPTIONS}  \
+    && make ${MPICH_MAKE_OPTIONS} && make install -j 6\
+	&& cd /tmp\
+    && rm -rf /tmp/mpich-src\
+	&& apk del wget tar g++ gcc make;
 
 ############################################################################################
 # Build CFM-ID 4 MSML
 ############################################################################################
 # build and install cfm
-ARG MSML_VERSION="4.4.4"
+ARG MSML_VERSION="DevBuild"
 ADD cfm/cfm-annotate /tmp/cfm/cfm-annotate
 ADD cfm/cfm-boost-test /tmp/cfm/cfm-boost-test
 ADD cfm/cfm-code /tmp/cfm/cfm-code
@@ -145,7 +144,7 @@ ADD cfm-pretrained-models/cfmid4/ ${MODEL_DIR}
 ############################################################################################
 # Build CFM-ID 4 MSRB
 ############################################################################################
-ARG MSRB_VERSION="1.1.13"
+ARG MSRB_VERSION="1.1.15"
 ENV PATH /opt/msrb:$PATH
 RUN apk update && apk add --no-cache wget;\
 	mkdir /opt/msrb;\

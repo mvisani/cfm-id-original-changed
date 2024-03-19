@@ -95,21 +95,19 @@ RUN	apk update && apk add --no-cache wget tar g++ gcc make;\
 # These options are passed to the steps below
 ARG MPICH_VERSION="3.2"
 ARG MPICH_CONFIGURE_OPTIONS="--disable-fortran"
-ARG MPICH_MAKE_OPTIONS
 
 # Download, build, and install MPICH
 RUN mkdir /tmp/mpich-src
 WORKDIR /tmp/mpich-src
-RUN apk update && apk add --no-cache wget tar g++ gcc make;\
+RUN apk update && apk add --no-cache wget tar g++ gcc make; \
 	wget http://www.mpich.org/static/downloads/${MPICH_VERSION}/mpich-${MPICH_VERSION}.tar.gz \
-      && tar xfz mpich-${MPICH_VERSION}.tar.gz  \
-      && cd mpich-${MPICH_VERSION}  \
-      && ./configure ${MPICH_CONFIGURE_OPTIONS}  \
-      && make ${MPICH_MAKE_OPTIONS} && make install -j 6\
-	  && cd /tmp\
-      && rm -rf /tmp/mpich-src\
-	  && apk del wget tar g++ gcc make;
-
+    && tar xfz mpich-${MPICH_VERSION}.tar.gz  \
+    && cd mpich-${MPICH_VERSION} \
+    && ./configure ${MPICH_CONFIGURE_OPTIONS}  \
+    && make ${MPICH_MAKE_OPTIONS} && make install -j 6\
+	&& cd /tmp\
+    && rm -rf /tmp/mpich-src\
+	&& apk del wget tar g++ gcc make;
 
 ############################################################################################
 # Build CFM-ID 3 MSML / CFM-ID 2.4
