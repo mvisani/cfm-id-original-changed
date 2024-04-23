@@ -266,12 +266,10 @@ The output contains the original spectra in the input format, but with fragment 
 Assuming your current directory is in the working directory.
 To annotate ESI-MS/MS [M+H]+ spectra
 
-    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" <spectrum_file>`<id>` 10 0.001 /trained_models_cfmid4.0/[M+H]+/param_config.txt output"
-
+sudo docker run --rm=true -v $(pwd):/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-annotate 'CC(O)C(NC(CCC(N)=O)C(O)=O)=O' <specrtra_file> <id> 10 0.001 /trained_models_cfmid4.0/[M+H]+/param_output.log /trained_models_cfmid4.0/[M+H]+/param_config.txt output.txt"
 To annotate ESI-MS/MS [M-H]- spectra
 
-    sudo docker run --rm=true -v $(pwd):/root -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-annotate "Oc1ccc(CC(NC(=O)C(N)CO)C(=O)NC(CC(O)=O)C(O)=O)cc1" <spectrum_file>`<id>` 10 0.001 /trained_models_cfmid4.0/[M-H]-/param_config.txt output"
-
+sudo docker run --rm=true -v $(pwd):/cfmid/public/ -i wishartlab/cfmid:latest sh -c "cd /cfmid/public/; cfm-annotate 'CC(O)C(NC(CCC(N)=O)C(O)=O)=O' <specrtra_file> <id> 10 0.001 /trained_models_cfmid4.0/[M-H]-/param_output.log /trained_models_cfmid4.0/[M-H]-/param_config.txt output.txt"
 ## cfm-train
 
  **cfm-train** trains the parameters for a CFM model using a list of input molecules and their corresponding spectra
