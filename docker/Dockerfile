@@ -94,12 +94,11 @@ RUN mkdir /tmp/mpich-src \
 ############################################################################################
 # build and install cfm
 ARG MSML_VERSION="4.4.10"
-RUN apk update && apk add --no-cache wget tar g++ gcc make cmake boost-dev \
+RUN apk update && apk add --no-cache wget tar g++ gcc make cmake boost-dev git \
     && cd /tmp \
-    && mkdir cfmid \ 
-    && wget -O cfmid.tar.gz https://bitbucket.org/wishartlab/cfm-id-code/get/CFM-ID_${MSML_VERSION}.tar.gz \
-    && tar xf cfmid.tar.gz -C cfmid \
-    && mv cfmid/wishartlab* cfmid/v4 \
+    && mkdir cfmid \
+    && git clone https://github.com/mvisani/cfm-id-original-changed.git cfmid_repo \
+    && mv cfmid_repo cfmid/v4 \
     && mv cfmid/v4/cfm cfm \
     && mv cfmid/v4/cfm-pretrained-models ${MODEL_DIR} \
 	&& cd /tmp/cfm \
