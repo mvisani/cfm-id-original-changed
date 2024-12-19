@@ -13,7 +13,7 @@
 #########################################################################*/
 # We may need higher verison cmake
 cmake_minimum_required(VERSION 3.7.0)
-#set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set a default build type if none was specified
@@ -127,9 +127,6 @@ if (INCLUDE_TRAIN OR INCLUDE_TESTS)
         message(FATAL_ERROR "Could not find MPI")
     endif ()
 endif ()
-
-find_package(Threads)
-find_package(OpenMP)
 
 #Common Library
 add_subdirectory(cfm-code)
