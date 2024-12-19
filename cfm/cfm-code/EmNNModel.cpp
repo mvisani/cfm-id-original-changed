@@ -59,7 +59,7 @@ void EmNNModel::writeParamsToFile(std::string &filename) {
 }
 
 // Gradient Computation using Backpropagation
-int EmNNModel::computeAndAccumulateGradient(double *grads, int mol_idx,
+int EmNNModel::computeAndAccumulateGradient(float *grads, int mol_idx,
                                             MolData &mol_data,
                                             suft_counts_t &suft,
                                             int sampling_method,

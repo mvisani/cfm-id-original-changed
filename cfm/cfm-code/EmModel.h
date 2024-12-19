@@ -50,7 +50,7 @@ public:
                     std::string &out_param_filename, int energy_level) override;
 
   // This is public so the test can access it....there must be a better way?
-  virtual int computeAndAccumulateGradient(double *grads, int mol_idx,
+  virtual int computeAndAccumulateGradient(float *grads, int mol_idx,
                                            MolData &mol_data,
                                            suft_counts_t &suft,
                                            int sampling_method,
