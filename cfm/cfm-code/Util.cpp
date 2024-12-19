@@ -92,9 +92,10 @@ int addIonicChargeLabels(RDKit::ROMol *romol) {
   int num_ionic = 0;
   for (RDKit::ROMol::AtomIterator ai = romol->beginAtoms();
        ai != romol->endAtoms(); ++ai) {
-    ai->setProp("IonicFragmentCharge", 0);
-    if (num_frags > 1 && ai->getDegree() == 0 && ai->getFormalCharge() != 0) {
-      ai->setProp("IonicFragmentCharge", ai->getFormalCharge());
+    (*ai)->setProp("IonicFragmentCharge", 0);
+    if (num_frags > 1 && (*ai)->getDegree() == 0 &&
+        (*ai)->getFormalCharge() != 0) {
+      (*ai)->setProp("IonicFragmentCharge", (*ai)->getFormalCharge());
       num_ionic++;
     }
   }
