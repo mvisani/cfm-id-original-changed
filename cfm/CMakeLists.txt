@@ -13,7 +13,7 @@
 #########################################################################*/
 # We may need higher verison cmake
 cmake_minimum_required(VERSION 3.7.0)
-set(CMAKE_CXX_STANDARD 14)
+#set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set a default build type if none was specified

@@ -41,264 +41,221 @@ probabilities using those thetas.
 #include "Param.h"
 #include "Spectrum.h"
 
-
 class MolData {
 public:
-    MolData(std::string &an_id, std::string &an_smiles_or_inchi, int a_group,
-            config_t *a_cfg)
-            : id(an_id), smiles_or_inchi(an_smiles_or_inchi), group(a_group),
-              graph_computed(false), ev_graph_computed(false), cfg(a_cfg) {};
+	MolData(std::string &an_id, std::string &an_smiles_or_inchi, int a_group, config_t *a_cfg)
+	    : id(an_id), smiles_or_inchi(an_smiles_or_inchi), group(a_group), graph_computed(false),
+	      ev_graph_computed(false), cfg(a_cfg) {};
 
-    MolData(const char *an_id, const char *an_smiles_or_inchi, config_t *a_cfg)
-            : id(an_id), smiles_or_inchi(an_smiles_or_inchi), group(0),
-              graph_computed(false), ev_graph_computed(false), cfg(a_cfg) {};
+	MolData(const char *an_id, const char *an_smiles_or_inchi, config_t *a_cfg)
+	    : id(an_id), smiles_or_inchi(an_smiles_or_inchi), group(0), graph_computed(false), ev_graph_computed(false),
+	      cfg(a_cfg) {};
 
-    // Access functions
-    const FragmentGraph *getFragmentGraph() const { return fg; };
+	// Access functions
+	const FragmentGraph *getFragmentGraph() const { return fg; };
 
-    bool hasComputedGraph() const { return graph_computed; };
+	bool hasComputedGraph() const { return graph_computed; };
 
-    const EvidenceFragmentGraph *getEvidenceFragmentGraph() const {
-        return ev_fg;
-    };
+	const EvidenceFragmentGraph *getEvidenceFragmentGraph() const { return ev_fg; };
 
-    const Spectrum *getSpectrum(int energy) const { return &(spectra[energy]); };
+	const Spectrum *getSpectrum(int energy) const { return &(spectra[energy]); };
 
-    const Spectrum *getOrigSpectrum(int energy) const { return &(orig_spectra[energy]); };
+	const Spectrum *getOrigSpectrum(int energy) const { return &(orig_spectra[energy]); };
 
-    const std::vector<Spectrum> *getSpectra() const { return &spectra; };
+	const std::vector<Spectrum> *getSpectra() const { return &spectra; };
 
+	const Spectrum *getPredictedSpectrum(int energy) const { return &(predicted_spectra[energy]); };
 
-    const Spectrum *getPredictedSpectrum(int energy) const {
-        return &(predicted_spectra[energy]);
-    };
+	unsigned int getNumSpectra() const { return spectra.size(); };
 
-    unsigned int getNumSpectra() const { return spectra.size(); };
+	unsigned int getNumPredictedSpectra() const { return predicted_spectra.size(); };
 
-    unsigned int getNumPredictedSpectra() const {
-        return predicted_spectra.size();
-    };
+	const FeatureVector *getFeatureVectorForIdx(int index) const {
+		return getTransitionAtIdx(index)->getFeatureVector();
+	};
 
-    const FeatureVector *getFeatureVectorForIdx(int index) const {
-        return getTransitionAtIdx(index)->getFeatureVector();
-    };
+	double getThetaForIdx(int energy, int index) const { return thetas[energy][index]; };
 
-    double getThetaForIdx(int energy, int index) const {
-        return thetas[energy][index];
-    };
+	double getLogTransitionProbForIdx(int energy, int index) const { return log_probs[energy][index]; };
 
-    double getLogTransitionProbForIdx(int energy, int index) const {
-        return log_probs[energy][index];
-    };
+	double getLogPersistenceProbForIdx(int energy, int index) const {
+		return log_probs[energy][fg->getNumTransitions() + index];
+	};
 
-    double getLogPersistenceProbForIdx(int energy, int index) const {
-        return log_probs[energy][fg->getNumTransitions() + index];
-    };
+	int getGroup() const { return group; };
 
-    int getGroup() const { return group; };
+	void setGroup(int val) { group = val; };
 
-    void setGroup(int val) { group = val; };
+	std::string getId() const { return id; };
 
-    std::string getId() const { return id; };
+	std::string getSmilesOrInchi() const { return smiles_or_inchi; };
 
-    std::string getSmilesOrInchi() const { return smiles_or_inchi; };
+	double getMolecularWeight() const;
 
-    double getMolecularWeight() const;
+	double getParentIonMass() const;
 
-    double getParentIonMass() const;
+	int getIonizationMode() const { return cfg->ionization_mode; };
 
-    int getIonizationMode() const { return cfg->ionization_mode; };
+	void readInSpectraFromFile(const std::string &filename, bool readToPredicted = false);
 
-    void readInSpectraFromFile(const std::string &filename,
-                               bool readToPredicted = false);
+	void readInSpectraFromMSP(MspReader &msp, bool readToPredicted = false);
 
-    void readInSpectraFromMSP(MspReader &msp, bool readToPredicted = false);
+	void cleanSpectra(double abs_tol, double ppm_tol);
 
-    void cleanSpectra(double abs_tol, double ppm_tol);
+	void freeSpectra() {
+		std::vector<Spectrum>().swap(spectra);
+		std::vector<Spectrum>().swap(predicted_spectra);
+	};
 
-    void freeSpectra() {
-        std::vector<Spectrum>().swap(spectra);
-        std::vector<Spectrum>().swap(predicted_spectra);
-    };
+	// Spectrum Related Functions
+	std::string removePeaksWithNoFragment(double abs_tol, double ppm_tol);
 
-    // Spectrum Related Functions
-    std::string removePeaksWithNoFragment(double abs_tol, double ppm_tol);
+	bool hasEmptySpectrum(int energy_level = -1) const;
 
-    bool hasEmptySpectrum(int energy_level = -1) const;
+	void writePredictedSpectraToFile(std::string &filename);
 
-    void writePredictedSpectraToFile(std::string &filename);
+	void writePredictedSpectraToMspFileStream(std::ostream &out);
 
-    void writePredictedSpectraToMspFileStream(std::ostream &out);
+	void writePredictedSpectraToMgfFileStream(std::ostream &out);
 
-    void writePredictedSpectraToMgfFileStream(std::ostream &out);
+	void writeFullEnumerationSpectrumToFile(std::string &filename);
 
-    void writeFullEnumerationSpectrumToFile(std::string &filename);
+	void writeFullEnumerationSpectrumToMspFileStream(std::ostream &out);
 
-    void writeFullEnumerationSpectrumToMspFileStream(std::ostream &out);
+	void outputSpectra(std::ostream &out, const char *spec_type, bool do_annotate = false, bool add_version = true);
 
-    void outputSpectra(std::ostream &out, const char *spec_type,
-                       bool do_annotate = false, bool add_version = true);
+	// More memory efficient alternative to calling computeFragmentGraph and
+	// then computeFeatureVectors with deleteMols = true
+	void computeFragmentGraphAndReplaceMolsWithFVs(FeatureCalculator *fc, bool retain_smiles = false);
 
-    // More memory efficient alternative to calling computeFragmentGraph and
-    // then computeFeatureVectors with deleteMols = true
-    void computeFragmentGraphAndReplaceMolsWithFVs(FeatureCalculator *fc,
-                                                   bool retain_smiles = false);
+	// Save/load state functions
+	void readInFVFragmentGraph(std::string &fv_filename);
 
-    // Save/load state functions
-    void readInFVFragmentGraph(std::string &fv_filename);
+	void readInFVFragmentGraphFromStream(std::istream &ifs);
 
-    void readInFVFragmentGraphFromStream(std::istream &ifs);
+	void writeFVFragmentGraph(std::string &fv_filename);
 
-    void writeFVFragmentGraph(std::string &fv_filename);
+	void writeFVFragmentGraphToStream(std::ofstream &out);
 
-    void writeFVFragmentGraphToStream(std::ofstream &out);
+	// Replaces computeFragmentGraph, computeFeatureVectors and
+	// computeTransitionThetas  below (delteMols = true), pruning according to
+	// prob_thresh_for_prune value.
+	void computeLikelyFragmentGraphAndSetThetas(LikelyFragmentGraphGenerator &fgen, bool retain_smiles);
 
-    // Replaces computeFragmentGraph, computeFeatureVectors and
-    // computeTransitionThetas  below (delteMols = true), pruning according to
-    // prob_thresh_for_prune value.
-    void computeLikelyFragmentGraphAndSetThetas(LikelyFragmentGraphGenerator &fgen, bool retain_smiles);
+	// Note that the following should be called in this order
+	// since each one assumes all previous have already been called.E
+	void computeFragmentGraph(FeatureCalculator *fc);
 
-    // Note that the following should be called in this order
-    // since each one assumes all previous have already been called.E
-    void computeFragmentGraph(FeatureCalculator *fc);
+	void computeTransitionThetas(Param &param);
 
-    void computeTransitionThetas(Param &param);
+	void computeLogTransitionProbabilities();
 
-    void computeLogTransitionProbabilities();
+	// compute predicted Spectra
+	// if engry < -1 , compute all  Spectra
+	void computePredictedSpectra(Param &param, bool use_existing_thetas, int energy_level, int min_peaks, int max_peaks,
+	                             double perc_thresh, double min_relative_intensity, int quantise_peaks_decimal_place,
+	                             bool log_to_linear);
 
-    // compute predicted Spectra
-    // if engry < -1 , compute all  Spectra
-    void computePredictedSpectra(Param &param, bool use_existing_thetas, int energy_level, int min_peaks, int max_peaks,
-                                 double perc_thresh, double min_relative_intensity, int quantise_peaks_decimal_place,
-                                 bool log_to_linear);
+	void postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks,
+	                                 double min_relative_intensity_prec, int quantise_peaks_decimal_place);
 
-    void postprocessPredictedSpectra(double perc_thresh, int min_peaks, int max_peaks,
-                                     double min_relative_intensity_prec, int quantise_peaks_decimal_place);
+	void quantisePredictedSpectra(int num_dec_places);
 
-    void quantisePredictedSpectra(int num_dec_places);
+	void quantiseMeasuredSpectra(int num_dec_places);
 
-    void quantiseMeasuredSpectra(int num_dec_places);
+	// Function to compute a much reduced fragment graph containing only those
+	// fragmentations as actually occur in the spectra, based on a computed set of
+	// beliefs  thresholding inclusion in the graph by the provided belief_thresh
+	// value (log domain)
+	void computeEvidenceFragmentGraph(beliefs_t *beliefs, double log_belief_thresh);
 
-    // Function to compute a much reduced fragment graph containing only those
-    // fragmentations as actually occur in the spectra, based on a computed set of
-    // beliefs  thresholding inclusion in the graph by the provided belief_thresh
-    // value (log domain)
-    void computeEvidenceFragmentGraph(beliefs_t *beliefs,
-                                      double log_belief_thresh);
+	void annotatePeaks(double abs_tol, double ppm_tol, bool prune_deadends = true);
 
-    void annotatePeaks(double abs_tol, double ppm_tol,
-                       bool prune_deadends = true);
+	void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
+	                                               double explore_weight);
 
+	void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_selection);
 
-    void getSampledTransitionIdsWeightedRandomWalk(std::set<int> &selected_ids, int max_num_iter, int energy,
-                                                   double explore_weight);
+	void getSampledTransitionIdUsingDiffMapBFS(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
 
-    void getSampledTransitionIdsRandomWalk(std::set<int> &selected_ids, int max_selection);
+	void getSampledTransitionIdUsingDiffMapCA(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
 
-    void getSampledTransitionIdUsingDiffMapBFS(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
+	void getRandomSampledTransitions(std::set<int> &selected_ids, int max_selection);
 
-    void getSampledTransitionIdUsingDiffMapCA(std::set<int> &selected_ids, std::set<unsigned int> &selected_weights);
+	unsigned int getNumTransitions() const { return fg->getNumTransitions(); };
 
-    void getRandomSampledTransitions(std::set<int> &selected_ids, int max_selection);
+	unsigned int getNumFragments() const { return fg->getNumFragments(); };
 
-    unsigned int getNumTransitions() const {
-        return fg->getNumTransitions();
-    };
+	const TransitionPtr getTransitionAtIdx(int index) const { return fg->getTransitionAtIdx(index); };
 
-    unsigned int getNumFragments() const {
-        return fg->getNumFragments();
-    };
+	virtual const Fragment *getFragmentAtIdx(int index) const { return fg->getFragmentAtIdx(index); };
 
-    const TransitionPtr getTransitionAtIdx(int index) const {
-        return fg->getTransitionAtIdx(index);
-    };
+	const tmap_t *getFromIdTMap() const { return fg->getFromIdTMap(); };
 
-    virtual const Fragment *getFragmentAtIdx(int index) const {
-        return fg->getFragmentAtIdx(index);
-    };
+	const tmap_t *getToIdTMap() const { return fg->getToIdTMap(); };
 
-    const tmap_t *getFromIdTMap() const {
-        return fg->getFromIdTMap();
-    };
+	void writeFullGraph(std::ostream &out) const { fg->writeFullGraph(out); };
 
-    const tmap_t *getToIdTMap() const {
-        return fg->getToIdTMap();
-    };
+	void writeFragmentsOnly(std::ostream &out) const { fg->writeFragmentsOnly(out); }
 
-    void writeFullGraph(std::ostream &out) const {
-        fg->writeFullGraph(out);
-    };
+	void writeFragmentsOnlyForIds(std::ostream &out, std::set<int> &ids) const {
+		fg->writeFragmentsOnlyForIds(out, ids);
+	}
 
-    void writeFragmentsOnly(std::ostream &out) const {
-        fg->writeFragmentsOnly(out);
-    }
+	bool hasIsotopesIncluded() const { return fg->hasIsotopesIncluded(); }
 
-    void writeFragmentsOnlyForIds(std::ostream &out, std::set<int> & ids) const {
-        fg->writeFragmentsOnlyForIds(out, ids);
-    }
+	int getFGHeight() const { return fg->getHeight(); };
 
-    bool hasIsotopesIncluded() const {
-        return fg->hasIsotopesIncluded();
-    }
+	// Return a listed of select weights in Fixed Point INT
+	// int_weight = std::round(weight * 1e-5)
+	void getSelectedMasses(std::set<unsigned int> &selected_weights, int energry_level);
 
-    int getFGHeight() const { return fg->getHeight(); };
+	void computeMergedPrediction();
 
-    // Return a listed of select weights in Fixed Point INT
-    // int_weight = std::round(weight * 1e-5)
-    void getSelectedMasses(std::set<unsigned int> &selected_weights, int energry_level);
+	const Spectrum *getMergedPrediction() { return m_merged_predicted_spectra; };
 
-    void computeMergedPrediction();
+	void convertSpectraToLogScale();
 
-    const Spectrum *getMergedPrediction() {
-        return m_merged_predicted_spectra;
-    };
+	void convertSpectraToLinearScale();
 
-    void convertSpectraToLogScale();
+	~MolData();
 
-    void convertSpectraToLinearScale();
+protected: // These items are protected rather than private for access during tests.
+	int group;
+	std::string id;
+	std::string smiles_or_inchi;
+	FragmentGraph *fg            = nullptr;
+	EvidenceFragmentGraph *ev_fg = nullptr;
+	bool graph_computed;
+	bool ev_graph_computed;
+	// spectra , which will be pruned during training
+	std::vector<Spectrum> spectra;
+	// orig copy of spectra
+	std::vector<Spectrum> orig_spectra;
+	// predicted spectra
+	std::vector<Spectrum> predicted_spectra;
 
-    ~MolData();
+	// merged predicted spectra
+	// used in casmi
+	Spectrum *m_merged_predicted_spectra = nullptr;
 
-protected
-    : // These items are protected rather than private for access during tests.
-    int group;
-    std::string id;
-    std::string smiles_or_inchi;
-    FragmentGraph *fg = nullptr;
-    EvidenceFragmentGraph *ev_fg = nullptr;
-    bool graph_computed;
-    bool ev_graph_computed;
-    // spectra , which will be pruned during training
-    std::vector<Spectrum> spectra;
-    // orig copy of spectra
-    std::vector<Spectrum> orig_spectra;
-    // predicted spectra
-    std::vector<Spectrum> predicted_spectra;
+	// std::vector<FeatureVector *> fvs;
+	std::vector<std::vector<double>> thetas;
+	std::vector<std::vector<double>> log_probs;
+	config_t *cfg = nullptr;
 
-    // merged predicted spectra
-    // used in casmi 
-    Spectrum *m_merged_predicted_spectra = nullptr;
+	// General utilty functions
+	void computeGraphWithGenerator(FragmentGraphGenerator &fgen);
 
-    //std::vector<FeatureVector *> fvs;
-    std::vector<std::vector<double>> thetas;
-    std::vector<std::vector<double>> log_probs;
-    config_t *cfg = nullptr;
+	void getEnumerationSpectraMasses(std::vector<double> &output_masses);
 
-    // General utilty functions
-    void computeGraphWithGenerator(FragmentGraphGenerator &fgen);
+	void translatePeaksFromMsgToSpectra(Spectrum &out_spec, Message *msg);
 
-    void getEnumerationSpectraMasses(std::vector<double> &output_masses);
+	void translatePeaksFromMsgToSpectraWithIsotopes(Spectrum &out_spec, Message *msg);
 
-    void translatePeaksFromMsgToSpectra(Spectrum &out_spec, Message *msg);
+	void computeFragmentEvidenceValues(std::vector<double> &evidence, int frag_idx, const beliefs_t *beliefs);
 
-    void translatePeaksFromMsgToSpectraWithIsotopes(Spectrum &out_spec,
-                                                    Message *msg);
-
-    void computeFragmentEvidenceValues(std::vector<double> &evidence,
-                                       int frag_idx, const beliefs_t *beliefs);
-
-    void createSpeactraSingleEnergry(unsigned int energy_level);
-
+	void createSpeactraSingleEnergry(unsigned int energy_level);
 };
 
 #endif // __MOLDATA_H__

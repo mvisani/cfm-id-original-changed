@@ -56,7 +56,7 @@ RUN apk update && apk add --no-cache wget tar g++ gcc make cmake boost-dev\
     && mkdir build \
     && cd build \
     && cmake .. -DRDK_PGSQL_STATIC=OFF -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_CPP_TESTS=OFF -DRDK_BUILD_DESCRIPTORS3D=OFF -DRDK_INSTALL_STATIC_LIBS=OFF -DRDK_INSTALL_INTREE=OFF -DRDK_BUILD_INCHI_SUPPORT=ON -DRDK_OPTIMIZE_NATIVE=OFF -DCMAKE_CXX_STANDARD=14 -DCMAKE_BUILD_TYPE=Release \
-    && make install -j 12 \
+    && make install -j 64 \
     && mkdir -p /usr/local/include/rdkit/External/INCHI-API/ \
     && cp ../External/INCHI-API/*.h /usr/local/include/rdkit/External/INCHI-API/ \
     && cd /tmp \
@@ -84,7 +84,7 @@ RUN mkdir /tmp/mpich-src \
     && tar xfz mpich-${MPICH_VERSION}.tar.gz  \
     && cd mpich-${MPICH_VERSION} \
     && ./configure ${MPICH_CONFIGURE_OPTIONS}  \
-    && make ${MPICH_MAKE_OPTIONS} && make install -j 6\
+    && make ${MPICH_MAKE_OPTIONS} && make install -j 64 \
     && cd /tmp\
     && rm -rf /tmp/mpich-src\
     && apk del wget tar g++ gcc make
@@ -114,7 +114,8 @@ RUN apk update && apk add --no-cache wget tar g++ gcc make cmake boost-dev \
              -DRDKIT_INCLUDE_EXT_DIR=/usr/local/include/rdkit/External\
              -DRDKIT_LIBRARY_DIR=/usr/local/lib\
              -DCMAKE_CXX_STANDARD=14 \
-    && make install -j 12 \
+             -DCMAKE_BUILD_TYPE=Release \
+    && make install -j 64 \
     && apk del g++ gcc make cmake boost-dev \
     && apk add --no-cache boost-filesystem boost-serialization boost-system boost-thread \
     && if [ ${BUILD_CFM_TRAIN} = "ON" ] ; then apk add --no-cache boost-program_options; fi \
