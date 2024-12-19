@@ -112,7 +112,7 @@ RUN apk update && apk add --no-cache wget tar g++ gcc make cmake boost-dev git \
              -DRDKIT_INCLUDE_DIR=/usr/local/include/rdkit\
              -DRDKIT_INCLUDE_EXT_DIR=/usr/local/include/rdkit/External\
              -DRDKIT_LIBRARY_DIR=/usr/local/lib\
-             -DCMAKE_CXX_STANDARD=14 \
+             -DCMAKE_CXX_STANDARD=17 \
              -DCMAKE_BUILD_TYPE=Release \
     && make install -j 64 \
     && apk del g++ gcc make cmake boost-dev \
