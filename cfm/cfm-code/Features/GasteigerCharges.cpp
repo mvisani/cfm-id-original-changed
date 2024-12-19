@@ -16,49 +16,44 @@
 #########################################################################*/
 #include "GasteigerCharges.h"
 
-int GasteigerCharges::discretizeGasteigerCharge(double gc) {
+int GasteigerCharges::discretizeGasteigerCharge(double gc) const {
 
-	// Discretize the Gasteiger Charges into 6 levels:
-	//  x < -0.5
-	//  -0.5 <= x < -0.1
-	//  -0.1 <= x < 0
-	//  0 <= x < 0.1
-	//  0.1 <= x <= 0.5
-	//  0.5 <= x
+    //Discretize the Gasteiger Charges into 6 levels:
+    // x < -0.5
+    // -0.5 <= x < -0.1
+    // -0.1 <= x < 0
+    // 0 <= x < 0.1
+    // 0.1 <= x <= 0.5
+    // 0.5 <= x
 
-	if (gc < -0.5)
-		return 0;
-	else if (gc < -0.1)
-		return 1;
-	else if (gc < 0)
-		return 2;
-	else if (gc < 0.1)
-		return 3;
-	else if (gc < 0.5)
-		return 4;
-	else
-		return 5;
+    if (gc < -0.5) return 0;
+    else if (gc < -0.1) return 1;
+    else if (gc < 0) return 2;
+    else if (gc < 0.1) return 3;
+    else if (gc < 0.5) return 4;
+    else return 5;
 }
 
-void GasteigerCharges::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
+void
+GasteigerCharges::compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const {
 
-	// Collect the charges from the root atoms
-	// Ion
-	double icharge;
-	ion->root->getProp<double>("OrigGasteigerCharge", icharge);
-	// Neutral Loss
-	double nlcharge;
-	nl->root->getProp<double>("OrigGasteigerCharge", nlcharge);
+    //Collect the charges from the root atoms
+    //Ion
+    double icharge;
+    ion->root->getProp<double>("OrigGasteigerCharge", icharge);
+    //Neutral Loss
+    double nlcharge;
+    nl->root->getProp<double>("OrigGasteigerCharge", nlcharge);
 
-	// Collate the charges
-	int gc_ion = discretizeGasteigerCharge(icharge);
-	int gc_nl  = discretizeGasteigerCharge(nlcharge);
-	for (int i = 0; i <= 5; i++) {
-		for (int j = 0; j <= 5; j++) {
-			if (i == gc_ion && j == gc_nl)
-				fv.addFeature(1.0);
-			else
-				fv.addFeature(0.0);
-		}
-	}
+    //Collate the charges
+    int gc_ion = discretizeGasteigerCharge(icharge);
+    int gc_nl = discretizeGasteigerCharge(nlcharge);
+    for (int i = 0; i <= 5; i++) {
+        for (int j = 0; j <= 5; j++) {
+            if (i == gc_ion && j == gc_nl)
+                fv.addFeature(1.0);
+            else
+                fv.addFeature(0.0);
+        }
+    }
 }

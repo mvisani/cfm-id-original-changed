@@ -4,8 +4,8 @@
 # FragmentGraphGenerator.cpp
 #
 # Description: 	FragmentGraphGenerator class for generating a fragment tree.
-#				Also contains Break and FragmentTreeNode
-classes, for use in #				this process.
+#				Also contains Break and FragmentTreeNode classes, for use in
+#				this process.
 #
 # Copyright (c) 2013, Felicity Allen
 # All rights reserved.
@@ -26,7 +26,6 @@ classes, for use in #				this process.
 #include <GraphMol/SmilesParse/SmilesWrite.h>
 #include <GraphMol/inchi.h>
 #include <GraphMol/new_canon.h>
-#include <iostream>
 
 // Start a graph. Compute can then add to this graph, but it is the caller's
 // responsibility to delete it
@@ -45,13 +44,11 @@ FragmentGraph *LikelyFragmentGraphGenerator::createNewGraph(config_t *cfg) {
 	return current_graph;
 }
 
-// Create the starting node from a smiles or inchi string - responsibility of
-// caller to delete
+// Create the starting node from a smiles or inchi string - responsibility of caller to delete
 FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or_inchi, int ionization_mode) {
 
 	// Create the RDKit mol - this will be the ion
 	RDKit::RWMol *rwmol;
-	std::cout << smiles_or_inchi << std::endl;
 
 	if (smiles_or_inchi.substr(0, 6) == "InChI=") {
 		RDKit::ExtraInchiReturnValues rv;
@@ -60,13 +57,12 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
 		rwmol = RDKit::SmilesToMol(smiles_or_inchi);
 
 	// This is hacky way to get mol Canonicalized
-	// rwmol = RDKit::SmilesToMol(RDKit::MolToSmiles(*rwmol));
+	rwmol = RDKit::SmilesToMol(RDKit::MolToSmiles(*rwmol));
 	// Canonical Rank Atoms
 	/*std::vector<unsigned int> atomRanks;
 	bool breakTies = true;
 	bool doIsomericSmiles = false;
-	RDKit::Canon::rankMolAtoms(*rwmol, atomRanks, doIsomericSmiles,
-	doIsomericSmiles);*/
+	RDKit::Canon::rankMolAtoms(*rwmol, atomRanks, doIsomericSmiles, doIsomericSmiles);*/
 
 	// This is dirty, but for some reason RDKit doesn't throw the exception...
 	if (!rwmol) throw RDKit::SmilesParseException("Error occurred - assuming Smiles Parse  Exception");
@@ -74,13 +70,7 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
 	// Remove stereochemistry
 	RDKit::MolOps::removeStereochemistry(*rwmol);
 
-	// Compute and label anything required by features that won't be present once
-	// the molecule breaks
-
-	if (!fh) {
-		if (!fc) { throw std::runtime_error("FeatureCalculator (fc) is null, unable to create FeatureHelper"); }
-		fh = new FeatureHelper(fc);
-	}
+	// Compute and label anything required by features that won't be present once the molecule breaks
 	fh->addLabels(rwmol);
 
 	// Kekulize and count the excess electron pairs
@@ -106,8 +96,7 @@ FragmentTreeNode *FragmentGraphGenerator::createStartNode(std::string &smiles_or
 		(*ai)->setProp("CurrentRingBreakRoot", 0);
 		// set origValence
 		auto orig_val = getValence(*ai);
-		// std::cout << "[DEBUG][ID " <<  (*ai)->getIdx() << "]" <<
-		// (*ai)->getSymbol() << " " << orig_val << std::endl;
+		// std::cout << "[DEBUG][ID " <<  (*ai)->getIdx() << "]" << (*ai)->getSymbol() << " " << orig_val << std::endl;
 		(*ai)->setProp("OrigValence", orig_val);
 	}
 	int num_ionic = addIonicChargeLabels(rwmol);
@@ -154,8 +143,7 @@ int FragmentGraphGenerator::countExtraElectronPairs(RDKit::RWMol *rwmol, std::ve
 	return (int)extra_bond_eps;
 }
 
-// Helper function - check if the fragment has already been computed to at least
-// this depth
+// Helper function - check if the fragment has already been computed to at least this depth
 bool FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 	if (id_depth_computed_cache.find(id) == id_depth_computed_cache.end() // Not found
 	    || id_depth_computed_cache[id] < remaining_depth) {               // Or computed previously higher on the tree
@@ -165,8 +153,8 @@ bool FragmentGraphGenerator::alreadyComputed(int id, int remaining_depth) {
 	return true;
 }
 
-// Compute a FragmentGraph starting at the given node and computing to the depth
-// given. The output will be appended to the current_graph
+// Compute a FragmentGraph starting at the given node and computing to the depth given.
+// The output will be appended to the current_graph
 void FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parent_id,
                                      int remaining_ring_breaks) {
 
@@ -182,8 +170,7 @@ void FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth
 	// Add the node to the graph, and return a fragment id
 	int id = -1;
 	if (mols_to_fv)
-		// id = current_graph->addToGraphWithThetas(node, node.getAllTmpThetas(),
-		// parent_id);
+		// id = current_graph->addToGraphWithThetas(node, node.getAllTmpThetas(), parent_id);
 		id = current_graph->addToGraphAndReplaceMolWithFV(node, parent_id, fc);
 	else
 		id = current_graph->addToGraph(node, parent_id);
@@ -193,10 +180,9 @@ void FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth
 	// Only compute to the desired depth
 	if (remaining_depth <= 0) return;
 
-	// If the node was already in the graph at sufficient depth, skip any further
-	// computation
+	// If the node was already in the graph at sufficient depth, skip any further computation
 	if (alreadyComputed(id, remaining_depth)) {
-		std::cout << "Node already computed: Skipping" << std::endl;
+		if (verbose) std::cout << "Node already computed: Skipping" << std::endl;
 		return;
 	}
 
@@ -254,8 +240,8 @@ void FragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth
 	node.children = std::vector<FragmentTreeNode>();
 }
 
-// Compute a FragmentGraph starting at the given node and computing to the depth
-// given. The output will be appended to the current_graph
+// Compute a FragmentGraph starting at the given node and computing to the depth given.
+// The output will be appended to the current_graph
 void LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining_depth, int parentid,
                                            double parent_log_prob, int remaining_ring_breaks) {
 
@@ -266,21 +252,19 @@ void LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining
 		if ((current_time - start_time) > cfg->fragraph_compute_timeout_in_secs) throw FragmentGraphTimeoutException();
 	}
 
-	// Add the node to the graph, and return a fragment id: note, no mols or fv
-	// will be set, but the precomputed theta value will be used instead
+	// Add the node to the graph, and return a fragment id: note, no mols or fv will be set,
+	// but the precomputed theta value will be used instead
 	int id = current_graph->addToGraphWithThetas(node, node.getAllTmpThetas(), parentid);
 
 	// Reached max depth?
 	if (remaining_depth <= 0) return;
 
-	// If we've already run the fragmentation on this fragment with an equal or
-	// higher If the node was already in the graph at sufficient depth, skip any
-	// further computation
+	// If we've already run the fragmentation on this fragment with an equal or higher
+	// If the node was already in the graph at sufficient depth, skip any further computation
 	if (alreadyComputed(id, remaining_depth)) { return; }
 
 	// probability offset, we don't need to run again, unless it is persisting
-	// if (alreadyComputedProb(id, parent_log_prob))
-	//     return;
+	if (alreadyComputedProb(id, parent_log_prob)) return;
 
 	// Important height trick
 	if (current_graph->getHeight() < (node.depth + 1)) current_graph->setHeight(node.depth + 1);
@@ -295,13 +279,12 @@ void LikelyFragmentGraphGenerator::compute(FragmentTreeNode &node, int remaining
 
 	node.generateBreaks(breaks, h_loss_allowed, current_graph->allowCyclization());
 
-	auto it = breaks.begin();
+	std::vector<Break>::iterator it = breaks.begin();
 
 	std::vector<int> children_remaining_ring_breaks;
 	std::vector<int> children_remaining_depth;
 	for (; it != breaks.end(); ++it) {
-		// Record the index where the children for this break start (if there are
-		// any)
+		// Record the index where the children for this break start (if there are any)
 		//  if this is not
 		if (remaining_ring_breaks == 0 && it->isRingBreak()) continue;
 
@@ -383,9 +366,7 @@ void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization
 	boost::tuple<bool, bool, bool> alreadyq_oktogo =
 	    FragmentTreeNode::findAlreadyChargedOrSplitCharge(pindx_nidx_ridx, *rwmol, 0, rad_side, is_neg);
 	if (boost::get<0>(alreadyq_oktogo) && !boost::get<1>(alreadyq_oktogo)) {
-		std::cerr << "Could not ionize - already charged molecule and didn't know "
-		             "what to do here"
-		          << std::endl;
+		std::cerr << "Could not ionize - already charged molecule and didn't know what to do here" << std::endl;
 		throw IonizationException();
 	} else if (!boost::get<0>(alreadyq_oktogo)) {
 		std::pair<int, int> qidx_ridx = FragmentTreeNode::findChargeLocation(*rwmol, 0, rad_side, is_neg);
@@ -398,8 +379,8 @@ void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization
 		}
 		try {
 			FragmentTreeNode::assignChargeAndRadical(*rwmol, qidx_ridx.first, qidx_ridx.second, is_neg);
-			RDKit::MolOps::sanitizeMol(*rwmol); // Re-sanitize...sometimes RDKit only throws the exception
-			                                    // the second time...
+			RDKit::MolOps::sanitizeMol(
+			    *rwmol); // Re-sanitize...sometimes RDKit only throws the exception the second time...
 		} catch (RDKit::MolSanitizeException e) {
 			std::cerr << "Could not ionize - sanitization failure" << std::endl;
 			throw IonizationException();
@@ -407,8 +388,7 @@ void FragmentGraphGenerator::applyIonization(RDKit::RWMol *rwmol, int ionization
 	}
 }
 
-// Helper function - check if the fragment has already been computed with at
-// least this probability offset
+// Helper function - check if the fragment has already been computed with at least this probability offset
 int LikelyFragmentGraphGenerator::alreadyComputedProb(int id, double prob_offset) {
 	if (id_prob_computed_cache.find(id) == id_prob_computed_cache.end() ||
 	    id_prob_computed_cache[id] < prob_offset) { // Or computed previously with lower prob

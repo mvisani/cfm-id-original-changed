@@ -21,13 +21,14 @@ param.cpp.
 
 class GasteigerCharges : public RootPathFeature {
 public:
-	GasteigerCharges() {
-		size = 36;
-		name = "GasteigerCharges";
-	};
+    GasteigerCharges() {
+        size = 36;
+        name = "GasteigerCharges";
+    };
 
-	void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
+    void
+    compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 
 private:
-	static int discretizeGasteigerCharge(double gc);
+    int discretizeGasteigerCharge(double gc) const;
 };

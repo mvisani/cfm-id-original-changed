@@ -1,62 +1,66 @@
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Features FEATURES_SRC_DIR)
-set(BASE_HEADERS
-    Comparators.h
-    Config.h
-    EmModel.h
-    EmNNModel.h
-    Feature.h
-    FeatureCalculator.h
-    FeatureVector.h
-    FragmentGraph.h
-    FragmentGraphGenerator.h
-    FragmentTreeNode.h
-    FunctionalGroups.h
-    Identifier.h
-    Inference.h
-    Isotope.h
-    MILP.h
-    Message.h
-    ModelBase.h
-    MolData.h
-    MspReader.h
-    NNParam.h
-    Param.h
-    Solver.h
-    Spectrum.h
-    Util.h
-    Version.h
-)
-set(BASE_SOURCES
-    ${FEATURES_SRC_DIR}
-    Comparators.cpp
-    Config.cpp
-    EmModel.cpp
-    EmNNModel.cpp
-    Feature.cpp
-    FeatureCalculator.cpp
-    FeatureVector.cpp
-    FragmentGraph.cpp
-    FragmentGraphGenerator.cpp
-    FragmentTreeNode.cpp
-    FunctionalGroups.cpp
-    Identifier.cpp
-    Inference.cpp
-    Isotope.cpp
-    MILP.cpp
-    Message.cpp
-    ModelBase.cpp
-    MolData.cpp
-    MspReader.cpp
-    NNParam.cpp
-    Param.cpp
-    Solver.cpp
-    Spectrum.cpp
-    Util.cpp
-)
+##########################################################################
+# Mass Spec Prediction and Identification of Metabolites
+#
+# cfm-code/CMakeLists.txt
+#
+# Author: Felicity Allen, Fei Wang
+# Created: August 2013
+# Last Modified: Sep 2017
+##########################################################################
 
-add_library(cfm-code STATIC ${BASE_HEADERS} ${BASE_SOURCES})  # Include both headers and sources
-set(REQUIRED_LIBS ${RDKIT_LIBRARIES} ${Boost_LIBRARIES} ${LPSOLVE_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} ${OpenMP_CXX_FLAGS})
+set(BASE_HEADERS Version.h FragmentGraph.h Feature.h FeatureVector.h FeatureCalculator.h Config.h Spectrum.h
+        FragmentGraphGenerator.h FragmentTreeNode.h Inference.h MILP.h Isotope.h
+        MolData.h MspReader.h Param.h NNParam.h Util.h Message.h Identifier.h Comparators.h
+        FunctionalGroups.h)
+
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Features FEATURES_SRC_DIR)
+
+set(TRAIN_HEADERS Comms.h ModelBase.h EmModel.h EmNNModel.h Solver.h)
+
+set(BASE_SRC_FILES FragmentGraph.cpp
+        Feature.cpp
+        FeatureVector.cpp
+        FeatureCalculator.cpp
+        ${FEATURES_SRC_DIR}
+        Config.cpp
+        FragmentGraphGenerator.cpp
+        FragmentTreeNode.cpp
+        FunctionalGroups.cpp
+        Identifier.cpp
+        Inference.cpp
+        Isotope.cpp
+        Message.cpp
+        MILP.cpp
+        MolData.cpp
+        MspReader.cpp
+        Param.cpp
+        NNParam.cpp
+        Spectrum.cpp
+        Util.cpp
+        Comparators.cpp)
+
+set(TRAIN_SRC_FILES Comms.cpp
+        ModelBase.cpp
+        EmModel.cpp
+        EmNNModel.cpp
+        Solver.cpp)
+
+if (INCLUDE_TRAIN)
+    set(SRC_FILES ${BASE_SRC_FILES} ${TRAIN_SRC_FILES})
+    set(HEADER_FILES ${BASE_HEADERS} ${TRAIN_HEADERS})
+    set(REQUIRED_LIBS ${RDKIT_LIBRARIES} ${Boost_LIBRARIES}
+            ${LPSOLVE_LIBRARY} ${MPI_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+else ()
+    set(SRC_FILES ${BASE_SRC_FILES})
+    set(HEADER_FILES ${BASE_HEADERS})
+    set(REQUIRED_LIBS ${RDKIT_LIBRARIES} ${Boost_LIBRARIES}
+            ${LPSOLVE_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+endif ()
+
+add_library(cfm-code STATIC ${SRC_FILES} ${HEADER_FILES})
 target_link_libraries(cfm-code ${REQUIRED_LIBS})
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/ISOTOPE.DAT DESTINATION ${CMAKE_BINARY_DIR}/bin)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ISOTOPE.DAT DESTINATION ${CFM_OUTPUT_DIR})
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/ISOTOPE.DAT
+        DESTINATION ${CFM_OUTPUT_DIR})

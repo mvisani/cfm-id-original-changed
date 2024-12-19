@@ -18,13 +18,15 @@
 #pragma once
 
 #include "../Feature.h"
+#include "FeatureHelper.h"
 
 class ExtraRingFeatures : public BreakFeature {
 public:
-	ExtraRingFeatures() {
-		size = 3;
-		name = "ExtraRingFeatures";
-	};
+    ExtraRingFeatures() {
+        size = 3;
+        name = "ExtraRingFeatures";
+    };
 
-	void compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
+    void
+    compute(FeatureVector &fv, const RootedROMol *ion, const RootedROMol *nl) const override;
 };
