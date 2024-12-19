@@ -94,7 +94,7 @@ RUN mkdir /tmp/mpich-src \
 ############################################################################################
 # build and install cfm
 ARG MSML_VERSION="4.4.10"
-RUN apk update && apk add --no-cache wget tar g++ gcc make cmake boost-dev git openmp \
+RUN apk update && apk add --no-cache wget tar g++ gcc make cmake boost-dev git openmp-dev \
     && cd /tmp \
     && mkdir cfmid \
     && git clone https://github.com/mvisani/cfm-id-original-changed.git cfmid_repo \
