@@ -99,7 +99,7 @@ protected:
   // nullptr means do not update grads
   virtual double getRegularizationTerm(unsigned int energy);
 
-  virtual void updateGradientForRegularizationTerm(double *grads,
+  virtual void updateGradientForRegularizationTerm(float *grads,
                                                    unsigned int energy);
 
   void getSubSampledTransitions(MolData &moldata, int sampling_method,

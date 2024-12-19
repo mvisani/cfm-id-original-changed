@@ -863,7 +863,7 @@ double EmModel::getRegularizationTerm(unsigned int energy) {
   return reg_term;
 }
 
-void EmModel::updateGradientForRegularizationTerm(double *grads,
+void EmModel::updateGradientForRegularizationTerm(float *grads,
                                                   unsigned int energy) {
 
   auto it = this->used_idxs.begin();
