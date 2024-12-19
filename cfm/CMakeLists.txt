@@ -128,6 +128,9 @@ if (INCLUDE_TRAIN OR INCLUDE_TESTS)
     endif ()
 endif ()
 
+find_package(Threads)
+find_package(OpenMP)
+
 #Common Library
 add_subdirectory(cfm-code)
 
