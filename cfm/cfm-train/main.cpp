@@ -33,6 +33,7 @@ void trainSingleEnergyCFM(std::string &param_filename, config_t &cfg,
 
 int main(int argc, char *argv[]) {
 
+  int mpi_rank = 0;
   // Define parameters
   std::string input_filename; // List (one per line): id, smiles_or_inchi, group
   std::string feature_filename; // List of features, line-spaced
