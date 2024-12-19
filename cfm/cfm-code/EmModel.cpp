@@ -252,7 +252,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data,
             continue;
 
           // Store the local gradient for the current thread
-          std::vector<double> local_grads(grads.size(), 0.0);
+          std::vector<float> local_grads(grads.size(), 0.0);
           num_trans += computeAndAccumulateGradient(
               &local_grads[0], molidx, mol_it, suft, sampling_method, energy);
 
