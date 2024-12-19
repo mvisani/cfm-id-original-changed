@@ -15,7 +15,7 @@ set(BASE_HEADERS Version.h FragmentGraph.h Feature.h FeatureVector.h FeatureCalc
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Features FEATURES_SRC_DIR)
 
-set(TRAIN_HEADERS Comms.h ModelBase.h EmModel.h EmNNModel.h Solver.h)
+set(TRAIN_HEADERS ModelBase.h EmModel.h EmNNModel.h Solver.h)
 
 set(BASE_SRC_FILES FragmentGraph.cpp
         Feature.cpp
@@ -39,7 +39,7 @@ set(BASE_SRC_FILES FragmentGraph.cpp
         Util.cpp
         Comparators.cpp)
 
-set(TRAIN_SRC_FILES Comms.cpp
+set(TRAIN_SRC_FILES
         ModelBase.cpp
         EmModel.cpp
         EmNNModel.cpp
