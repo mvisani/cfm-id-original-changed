@@ -117,18 +117,7 @@ mark_as_advanced(LPSOLVE_LIBRARY)
 
 find_package(Threads)
 
-#  MPI
-if (INCLUDE_TRAIN OR INCLUDE_TESTS)
-    include(FindMPI)
-    if (MPI_FOUND)
-        include_directories(${MPI_INCLUDE_PATH})
-        message(STATUS "Found MPI Headers ${MPI_INCLUDE_PATH}")
-    else ()
-        message(FATAL_ERROR "Could not find MPI")
-    endif ()
-endif ()
-
-find_package(Threads)
+MESSAGE(STATUS "Looking for OpenMP")
 find_package(OpenMP)
 
 #Common Library
