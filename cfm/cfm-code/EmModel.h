@@ -40,7 +40,7 @@ public:
   // name
   EmModel(config_t *a_cfg, FeatureCalculator *an_fc,
           std::string &a_status_filename,
-          const std::string &initial_params_filename = "");
+          std::string initial_params_filename = "");
 
   ~EmModel() = default;
 

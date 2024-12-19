@@ -34,7 +34,7 @@
 // constructor
 EmModel::EmModel(config_t *a_cfg, FeatureCalculator *an_fc,
                  std::string &a_status_filename,
-                 const std::string &initial_params_filename) {
+                 std::string initial_params_filename) {
   this->cfg = a_cfg;
   this->fc = an_fc;
   this->status_filename = a_status_filename;
@@ -178,7 +178,7 @@ double EmModel::updateParametersGradientAscent(std::vector<MolData> &data,
   // -DBL_MAX is the smallest negative double
   double loss = 0.0, prev_loss = -DBL_MAX, prev_best_loss = -DBL_MAX;
 
-  std::vector<double> grads(this->param->getNumWeights(), 0.0);
+  std::vector<float> grads(this->param->getNumWeights(), 0.0);
   Solver *solver = nullptr;
   solver = getSolver(cfg->ga_method, learning_rate);
 
