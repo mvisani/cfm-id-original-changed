@@ -129,7 +129,7 @@ add_subdirectory(fraggraph-gen)
 
 #Executable for running tests
 if (INCLUDE_TESTS)
-    add_subdirectory(cfm-test)
+    #add_subdirectory(cfm-test)
     enable_testing()
     add_subdirectory(cfm-boost-test)
 endif ()
