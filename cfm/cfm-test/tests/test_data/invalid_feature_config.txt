@@ -1,9 +1,0 @@
-BreakAtomPair
-IonRootPairs
-NLRootPairs
-IonRootTriples
-NLRootTriples
-MinDepthInvalid
-RatioAtomType
-RatioAtomPairType
-RatioPiSigma
