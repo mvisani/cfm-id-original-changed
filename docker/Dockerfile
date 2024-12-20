@@ -8,7 +8,7 @@ LABEL name="CFM-ID 4 Docker Image"
 ENV CFM_ROOT /opt/cfm
 ENV PATH /opt/cfm/bin:$PATH
 ARG BUILD_CFM_TRAIN="ON"
-ARG BUILD_CFM_TEST="OFF"
+ARG BUILD_CFM_TEST="ON"
 ARG MODEL_DIR="/trained_models_cfmid4.0"
 
 
